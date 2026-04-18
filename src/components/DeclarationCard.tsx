@@ -23,6 +23,9 @@ interface DeclarationCardProps {
     transactionDate?: Date | null;
     transactionVenue?: string | null;
     pdfParsed?: boolean;
+    signalScore?: number | null;
+    pctOfMarketCap?: number | null;
+    pctOfInsiderFlow?: number | null;
   };
   showCompany?: boolean;
 }
@@ -51,6 +54,21 @@ function fmtDate(d: Date): string {
   return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
 }
 
+// Signal score → visual indicator
+function SignalBadge({ score }: { score: number }) {
+  if (score >= 70) return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/15 border border-amber-400/25 text-amber-300">
+      <span className="text-[8px]">⚡</span>Signal fort {score}
+    </span>
+  );
+  if (score >= 45) return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-400/10 border border-indigo-400/20 text-indigo-300">
+      <span className="text-[8px]">◆</span>Signal {score}
+    </span>
+  );
+  return null;
+}
+
 const TYPE_BADGE: Record<DeclarationType, string> = {
   DIRIGEANTS: "bg-indigo-500/10 text-indigo-300 border border-indigo-500/20",
   SEUILS: "bg-sky-500/10 text-sky-300 border border-sky-500/20",
@@ -68,6 +86,9 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
   const trade = getTradeStyle(declaration.transactionNature);
   const hasDetail = declaration.pdfParsed && declaration.insiderName;
   const pubDate = declaration.transactionDate ?? declaration.pubDate;
+  const score = declaration.signalScore ?? 0;
+  const pctMcap = declaration.pctOfMarketCap;
+  const pctFlow = declaration.pctOfInsiderFlow;
 
   return (
     <div className="glass-card rounded-2xl p-4 group">
@@ -95,6 +116,8 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
                 {declaration.company.name}
               </Link>
             )}
+
+            {score >= 45 && <SignalBadge score={Math.round(score)} />}
           </div>
 
           {/* Insider row */}
@@ -132,6 +155,22 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 4,
                   }).format(declaration.unitPrice)}
+                </span>
+              )}
+              {/* % of market cap */}
+              {pctMcap != null && pctMcap > 0 && (
+                <span className="text-[11px] font-semibold text-amber-400/80 bg-amber-400/8 border border-amber-400/15 px-2 py-0.5 rounded-lg tabular-nums">
+                  {pctMcap < 0.01
+                    ? `${pctMcap.toFixed(4)}% mcap`
+                    : pctMcap < 0.1
+                    ? `${pctMcap.toFixed(3)}% mcap`
+                    : `${pctMcap.toFixed(2)}% mcap`}
+                </span>
+              )}
+              {/* % of insider's own flow */}
+              {pctFlow != null && pctFlow > 0 && (
+                <span className="text-[11px] text-slate-500 tabular-nums">
+                  {pctFlow.toFixed(1)}% de son flux
                 </span>
               )}
               {declaration.isin && (

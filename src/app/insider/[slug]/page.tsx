@@ -37,7 +37,7 @@ export default async function InsiderPage({ params, searchParams }: Props) {
         insiderName: true, insiderFunction: true, transactionNature: true,
         instrumentType: true, isin: true, unitPrice: true, volume: true,
         totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
-        pdfParsed: true,
+        pdfParsed: true, signalScore: true, pctOfMarketCap: true, pctOfInsiderFlow: true,
         company: { select: { name: true, slug: true } },
         insider: { select: { name: true, slug: true } },
       },

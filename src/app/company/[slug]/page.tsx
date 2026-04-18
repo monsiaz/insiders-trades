@@ -45,7 +45,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
           insiderName: true, insiderFunction: true, transactionNature: true,
           instrumentType: true, isin: true, unitPrice: true, volume: true,
           totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
-          pdfParsed: true,
+          pdfParsed: true, signalScore: true, pctOfMarketCap: true, pctOfInsiderFlow: true,
           company: { select: { name: true, slug: true } },
           insider: { select: { name: true, slug: true } },
         },
@@ -130,6 +130,13 @@ export default async function CompanyPage({ params, searchParams }: Props) {
                 )}
                 {company.market && (
                   <span className="text-xs text-slate-500">{company.market}</span>
+                )}
+                {company.marketCap && (
+                  <span className="text-xs text-amber-400/70 bg-amber-400/8 border border-amber-400/15 px-2 py-0.5 rounded-lg">
+                    Mcap {Number(company.marketCap) >= 1e9
+                      ? `${(Number(company.marketCap) / 1e9).toFixed(1)}Md€`
+                      : `${(Number(company.marketCap) / 1e6).toFixed(0)}M€`}
+                  </span>
                 )}
               </div>
             </div>

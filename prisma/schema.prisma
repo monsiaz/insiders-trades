@@ -15,6 +15,11 @@ model Company {
   description String?
   isin        String?
   market      String?
+  // Market cap enrichment (fetched from Yahoo Finance)
+  marketCap   BigInt?   // EUR, latest known market cap
+  sharesOut   BigInt?   // total shares outstanding
+  marketCapAt DateTime? // when market cap was last fetched
+  yahooSymbol String?   // cached Yahoo Finance symbol
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -60,19 +65,27 @@ model Declaration {
   updatedAt   DateTime        @updatedAt
 
   // Trade detail fields (parsed from PDF)
-  insiderName      String?
-  insiderFunction  String?
-  transactionNature String? // Acquisition / Cession / Exercice options...
-  instrumentType   String? // Action, Option, Obligation...
-  isin             String?
-  unitPrice        Float?
-  volume           Float?
-  totalAmount      Float?
-  currency         String?
-  transactionDate  DateTime?
-  transactionVenue String? // Euronext Paris, etc.
-  pdfParsed        Boolean  @default(false)
-  pdfUrl           String?
+  insiderName       String?
+  insiderFunction   String?
+  transactionNature String?
+  instrumentType    String?
+  isin              String?
+  unitPrice         Float?
+  volume            Float?
+  totalAmount       Float?
+  currency          String?
+  transactionDate   DateTime?
+  transactionVenue  String?
+  pdfParsed         Boolean  @default(false)
+  pdfUrl            String?
+
+  // Signal & analytics fields
+  pctOfMarketCap    Float?   // totalAmount / company.marketCap * 100
+  pctOfInsiderFlow  Float?   // totalAmount / sum(all trades by this insider on this company) * 100
+  insiderCumNet     Float?   // cumulative net position (buy - sell) by this insider on this company at this date
+  signalScore       Float?   // composite signal score 0–100
+  isCluster         Boolean  @default(false) // multiple insiders traded same week
+  scoredAt          DateTime? // when signals were last computed
 
   company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   insider Insider? @relation(fields: [insiderId], references: [id], onDelete: SetNull)
@@ -83,6 +96,8 @@ model Declaration {
   @@index([type])
   @@index([isin])
   @@index([pdfParsed])
+  @@index([signalScore])
+  @@index([scoredAt])
 }
 
 enum DeclarationType {

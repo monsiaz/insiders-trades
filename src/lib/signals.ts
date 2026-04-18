@@ -11,13 +11,14 @@
 import { prisma } from "./prisma";
 
 // ────────────────────────────────────────────────────────────────────────────
-// Score weights
+// Score weights  (total budget: 100 pts)
 // ────────────────────────────────────────────────────────────────────────────
-const W_PCT_MCAP = 45;   // % of market cap is the strongest signal
-const W_PCT_FLOW = 25;   // relative to this insider's own history
-const W_FUNCTION = 15;   // seniority of insider
-const W_CLUSTER = 10;    // cluster bonus
-const W_CUMNET = 5;      // directional conviction (cumulative position)
+//  35 pts — % of market cap        (size of trade relative to company)
+//  20 pts — % of insider own flow  (is this their biggest trade?)
+//  15 pts — insider function       (CEO > Director > Admin)
+//  10 pts — cluster                (multiple insiders same week)
+//   5 pts — directional conviction (net buyer on this stock)
+//  15 pts — company fundamentals   (analyst consensus + PE + leverage)
 
 function functionScore(fn: string | null): number {
   if (!fn) return 0;
@@ -30,17 +31,44 @@ function functionScore(fn: string | null): number {
 }
 
 function pctMcapScore(pct: number): number {
-  // 0.001% → 1pt, 0.01% → 5pt, 0.1% → 20pt, 0.5% → 35pt, 1%+ → 45pt
+  // 0.001% → 2pt, 0.01% → 8pt, 0.1% → 20pt, 0.5% → 30pt, 1%+ → 35pt
   if (pct <= 0) return 0;
-  const s = Math.min(45, Math.log10(pct + 0.001) * 14 + 35);
+  const s = Math.min(35, Math.log10(pct + 0.001) * 12 + 28);
   return Math.max(0, Math.round(s));
 }
 
 function pctFlowScore(pct: number): number {
-  // 5% → 5pt, 20% → 12pt, 50% → 20pt, 80%+ → 25pt
   if (pct <= 0) return 0;
-  const s = Math.min(25, (pct / 100) * 30);
+  const s = Math.min(20, (pct / 100) * 24);
   return Math.max(0, Math.round(s));
+}
+
+/** Analyst + valuation bonus (0–15 pts) */
+function fundamentalsScore(
+  analystScore: number | null,   // 1=strong buy → 5=strong sell
+  trailingPE: number | null,
+  debtToEquity: number | null,
+): number {
+  let pts = 0;
+  // Analyst consensus (0–8 pts)
+  if (analystScore != null) {
+    // 1.0 → 8, 1.5 → 7, 2.0 → 5, 2.5 → 3, 3.0 → 0, >3 → negative
+    pts += Math.max(-4, Math.round((3.5 - analystScore) * 3));
+  }
+  // Valuation: low PE = potential upside (0–4 pts)
+  if (trailingPE != null && trailingPE > 0 && trailingPE < 100) {
+    if (trailingPE < 10) pts += 4;
+    else if (trailingPE < 15) pts += 3;
+    else if (trailingPE < 20) pts += 2;
+    else if (trailingPE < 30) pts += 1;
+  }
+  // Leverage: low D/E = safer (0–3 pts)
+  if (debtToEquity != null) {
+    if (debtToEquity < 30) pts += 3;
+    else if (debtToEquity < 80) pts += 2;
+    else if (debtToEquity < 150) pts += 1;
+  }
+  return Math.min(15, Math.max(-4, pts));
 }
 
 function computeScore(
@@ -49,14 +77,17 @@ function computeScore(
   insiderFunction: string | null,
   isCluster: boolean,
   insiderCumNet: number | null,
+  analystScore?: number | null,
+  trailingPE?: number | null,
+  debtToEquity?: number | null,
 ): number {
   let score = 0;
   score += pctMcapScore(pctOfMarketCap ?? 0);
   score += pctFlowScore(pctOfInsiderFlow ?? 0);
   score += functionScore(insiderFunction);
-  if (isCluster) score += W_CLUSTER;
-  // Conviction bonus: if insider has been consistently buying (cumNet > 0) and this is a buy
-  if ((insiderCumNet ?? 0) > 0) score += W_CUMNET;
+  if (isCluster) score += 10;
+  if ((insiderCumNet ?? 0) > 0) score += 5;
+  score += fundamentalsScore(analystScore ?? null, trailingPE ?? null, debtToEquity ?? null);
   return Math.min(100, Math.max(0, score));
 }
 
@@ -98,7 +129,7 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
         totalAmount: true,
         transactionDate: true,
         pubDate: true,
-        company: { select: { marketCap: true } },
+        company: { select: { marketCap: true, analystScore: true, trailingPE: true, debtToEquity: true } },
       },
     });
 
@@ -190,6 +221,9 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
         decl.insiderFunction,
         isCluster,
         cumNet,
+        decl.company.analystScore,
+        decl.company.trailingPE,
+        decl.company.debtToEquity,
       );
 
       updates.push(
@@ -218,8 +252,7 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Market cap & financials enrichment via Yahoo Finance timeseries API
-// (no crumb required — works reliably in serverless environments)
+// Market cap enrichment (legacy — now use enrichCompanyFinancials from financials.ts)
 // ────────────────────────────────────────────────────────────────────────────
 export async function enrichMarketCaps(limit = 50) {
   const cutoff = new Date(Date.now() - 7 * 86400_000);

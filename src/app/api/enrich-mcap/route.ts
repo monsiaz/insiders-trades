@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { enrichMarketCaps } from "@/lib/signals";
+import { enrichCompanyFinancials } from "@/lib/financials";
 
 export const maxDuration = 300;
 
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
   const limit = Number(new URL(req.url).searchParams.get("limit") ?? "80");
   try {
-    await enrichMarketCaps(limit);
+    await enrichCompanyFinancials(limit);
     return NextResponse.json({ ok: true });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });

@@ -15,18 +15,41 @@ model Company {
   description String?
   isin        String?
   market      String?
-  // Financials enrichment (fetched from Yahoo Finance timeseries)
-  marketCap   BigInt?   // EUR, latest known market cap
-  sharesOut   BigInt?   // total shares outstanding
-  revenue     BigInt?   // annual total revenue
-  netIncome   BigInt?   // annual net income
-  ebitda      BigInt?   // annual EBITDA
-  totalDebt   BigInt?   // total debt
-  freeCashFlow BigInt?  // free cash flow
-  financialsAt DateTime? // when financials were last fetched
-  marketCapAt DateTime? // when market cap was last fetched (kept for compat)
-  yahooSymbol String?   // cached Yahoo Finance symbol
-  fiscalYearEnd String? // e.g. "2025-03-31"
+  // ── Financials (Yahoo timeseries, annual) ──────────────────────────────
+  marketCap    BigInt?   // EUR
+  sharesOut    BigInt?   // total shares outstanding
+  revenue      BigInt?   // annual revenue
+  netIncome    BigInt?   // annual net income
+  ebitda       BigInt?   // annual EBITDA
+  totalDebt    BigInt?   // total debt
+  freeCashFlow BigInt?   // free cash flow
+  grossProfit  BigInt?   // gross profit
+  dilutedEps   Float?    // diluted EPS (annual)
+  fiscalYearEnd String?  // "2025-03-31"
+  financialsAt DateTime?
+  // ── Valuation & analyst consensus (Yahoo quoteSummary) ─────────────────
+  trailingPE   Float?    // trailing P/E
+  forwardPE    Float?    // forward P/E
+  priceToBook  Float?    // P/B ratio
+  beta         Float?    // market beta
+  debtToEquity Float?    // D/E ratio
+  returnOnEquity Float?  // ROE
+  returnOnAssets Float?  // ROA
+  profitMargin Float?    // net margin
+  heldByInsiders Float?  // % capital détenu par dirigeants
+  heldByInstitutions Float? // % capital institutionnels
+  shortRatio   Float?    // short interest ratio
+  analystReco  String?   // "buy" | "hold" | "sell" | "strong_buy" | "underperform"
+  analystScore Float?    // 1.0 (strong buy) → 5.0 (strong sell)
+  targetMean   Float?    // objectif cours moyen analystes
+  targetHigh   Float?    // objectif cours haut
+  targetLow    Float?    // objectif cours bas
+  numAnalysts  Int?      // nombre d'analystes
+  currentPrice Float?    // dernier cours connu
+  analystAt    DateTime? // when analyst data was last fetched
+  // ── Misc ───────────────────────────────────────────────────────────────
+  marketCapAt  DateTime? // kept for compat
+  yahooSymbol  String?   // cached Yahoo Finance symbol
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

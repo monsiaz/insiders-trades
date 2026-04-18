@@ -5,6 +5,7 @@ import { DeclarationCard } from "@/components/DeclarationCard";
 import { CompanySyncButton } from "@/components/CompanySyncButton";
 import { EnrichButton } from "@/components/EnrichButton";
 import { StockChart } from "@/components/StockChart";
+import { CompanyFinancials } from "@/components/CompanyFinancials";
 import { DeclarationType } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,9 @@ export default async function CompanyPage({ params, searchParams }: Props) {
 
   const company = await prisma.company.findUnique({
     where: { slug },
-    include: { _count: { select: { declarations: true, insiders: true } } },
+    include: {
+      _count: { select: { declarations: true, insiders: true } },
+    },
   });
   if (!company) notFound();
 
@@ -181,6 +184,44 @@ export default async function CompanyPage({ params, searchParams }: Props) {
           isin={isin}
           companyName={company.name}
           trades={tradeEvents}
+        />
+      </div>
+
+      {/* Financial data */}
+      <div className="mb-6">
+        <CompanyFinancials
+          companyId={company.id}
+          companyName={company.name}
+          initial={company.financialsAt ? {
+            currentPrice: company.currentPrice ?? undefined,
+            marketCap: company.marketCap ? Number(company.marketCap) : undefined,
+            revenue: company.revenue ? Number(company.revenue) : undefined,
+            grossProfit: company.grossProfit ? Number(company.grossProfit) : undefined,
+            netIncome: company.netIncome ? Number(company.netIncome) : undefined,
+            ebitda: company.ebitda ? Number(company.ebitda) : undefined,
+            totalDebt: company.totalDebt ? Number(company.totalDebt) : undefined,
+            freeCashFlow: company.freeCashFlow ? Number(company.freeCashFlow) : undefined,
+            dilutedEps: company.dilutedEps ?? undefined,
+            fiscalYearEnd: company.fiscalYearEnd ?? undefined,
+            trailingPE: company.trailingPE ?? undefined,
+            forwardPE: company.forwardPE ?? undefined,
+            priceToBook: company.priceToBook ?? undefined,
+            beta: company.beta ?? undefined,
+            debtToEquity: company.debtToEquity ?? undefined,
+            returnOnEquity: company.returnOnEquity ?? undefined,
+            returnOnAssets: company.returnOnAssets ?? undefined,
+            profitMargin: company.profitMargin ?? undefined,
+            heldByInsiders: company.heldByInsiders ?? undefined,
+            heldByInstitutions: company.heldByInstitutions ?? undefined,
+            analystReco: company.analystReco ?? undefined,
+            analystScore: company.analystScore ?? undefined,
+            targetMean: company.targetMean ?? undefined,
+            targetHigh: company.targetHigh ?? undefined,
+            targetLow: company.targetLow ?? undefined,
+            numAnalysts: company.numAnalysts ?? undefined,
+            fetchedAt: company.financialsAt!.toISOString(),
+            source: ["cache"],
+          } : null}
         />
       </div>
 

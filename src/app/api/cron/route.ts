@@ -4,7 +4,8 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { syncLatest } from "@/lib/sync-latest";
-import { enrichMarketCaps, scoreDeclarations } from "@/lib/signals";
+import { enrichCompanyFinancials } from "@/lib/financials";
+import { scoreDeclarations } from "@/lib/signals";
 
 export const maxDuration = 300;
 
@@ -19,8 +20,8 @@ export async function GET(req: NextRequest) {
     // 1. Fetch latest 500 declarations from AMF
     const result = await syncLatest(500, true);
 
-    // 2. Enrich market caps for companies that need it (up to 80 per run)
-    await enrichMarketCaps(80).catch((e) => console.error("[cron] mcap:", e));
+    // 2. Enrich company financials (market cap, income, analyst data)
+    await enrichCompanyFinancials(80).catch((e) => console.error("[cron] fin:", e));
 
     // 3. Score any declarations that haven't been scored yet
     await scoreDeclarations(false).catch((e) => console.error("[cron] score:", e));

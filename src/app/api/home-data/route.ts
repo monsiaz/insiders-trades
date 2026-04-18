@@ -1,12 +1,9 @@
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { HomeLive } from "@/components/HomeLive";
-import Link from "next/link";
 
-// Always render fresh on the server — client takes over auto-refresh
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
-async function getInitialData() {
+export async function GET() {
   const since90d = new Date(Date.now() - 90 * 86400_000);
 
   const [
@@ -95,50 +92,22 @@ async function getInitialData() {
     insider: insiderMap.get(r.insiderName ?? "") ?? null,
   }));
 
-  return {
-    stats: { totalDeclarations, totalCompanies, totalInsiders, totalBuys, totalSells },
-    recentDeclarations: recentDeclarations.map((d) => ({
-      ...d,
-      pubDate: d.pubDate.toISOString(),
-      transactionDate: d.transactionDate?.toISOString() ?? null,
-    })),
-    topCompanies,
-    topInsiders,
-    updatedAt: new Date().toISOString(),
-  };
-}
-
-export default async function HomePage() {
-  const initial = await getInitialData();
-
-  return (
-    <div className="content-wrapper">
-      {/* Hero — static */}
-      <div className="mb-14 text-center animate-fade-in">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card-static text-emerald-400 text-xs font-semibold mb-7 border-emerald-500/15">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          Données AMF · Mis à jour en continu
-        </div>
-        <h1 className="heading-hero text-gradient mb-5">
-          Transactions des
-          <br />
-          <span className="text-gradient-indigo">dirigeants</span>
-        </h1>
-        <p className="text-lg text-slate-400 max-w-xl mx-auto leading-relaxed">
-          Suivez les déclarations publiées par l'AMF pour toutes les sociétés cotées françaises — en temps réel.
-        </p>
-        <div className="flex items-center justify-center gap-3 mt-8">
-          <Link href="/companies" className="btn-emerald px-5 py-2.5 rounded-xl text-sm font-semibold">
-            Explorer les sociétés
-          </Link>
-          <Link href="/insiders" className="btn-glass px-5 py-2.5 rounded-xl text-sm font-semibold">
-            Voir les dirigeants
-          </Link>
-        </div>
-      </div>
-
-      {/* Live section — stats, rankings, recent transactions — client auto-refresh */}
-      <HomeLive initial={initial} />
-    </div>
+  return NextResponse.json(
+    {
+      stats: { totalDeclarations, totalCompanies, totalInsiders, totalBuys, totalSells },
+      recentDeclarations: recentDeclarations.map((d) => ({
+        ...d,
+        pubDate: d.pubDate.toISOString(),
+        transactionDate: d.transactionDate?.toISOString() ?? null,
+      })),
+      topCompanies,
+      topInsiders,
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
+    }
   );
 }

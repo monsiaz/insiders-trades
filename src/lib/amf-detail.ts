@@ -25,7 +25,9 @@ export async function fetchDeclarationDetail(
 
     const docs: AmfDocumentInfo[] = meta.documents || [];
     const pdfDoc = docs.find(
-      (d) => d.accessible && d.nomFichier?.toLowerCase().endsWith(".pdf")
+      (d) =>
+        d.accessible &&
+        d.nomFichier?.toLowerCase().match(/\.(pdf)$/)
     );
 
     if (!pdfDoc?.path) return null;
@@ -42,7 +44,7 @@ export async function fetchDeclarationDetail(
 
     const pdfBuffer = await pdfRes.arrayBuffer();
 
-    // Step 3: Extract text (with fallback for corrupted XRef tables)
+    // Step 3: Extract text (pdfjs-dist first, pdf-parse as fallback)
     const text = await extractPdfText(Buffer.from(pdfBuffer));
     if (!text || text.trim().length < 30) return null;
 
@@ -59,60 +61,95 @@ export async function fetchDeclarationDetail(
   }
 }
 
+/**
+ * Extract plain text from a PDF buffer.
+ * Tries pdfjs-dist first (handles modern/compressed PDFs), then pdf-parse as fallback.
+ */
 async function extractPdfText(buffer: Buffer): Promise<string | null> {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParse = require("pdf-parse") as (
-    buf: Buffer,
-    opts?: Record<string, unknown>
-  ) => Promise<{ text: string }>;
-
-  // Attempt 1: normal parsing
+  // Attempt 1: pdfjs-dist (handles bad XRef tables, compressed streams)
   try {
+    const text = await extractWithPdfjs(buffer);
+    if (text && text.trim().length > 30) return text;
+  } catch {
+    // fall through
+  }
+
+  // Attempt 2: pdf-parse (good for older flat PDFs)
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const pdfParse = require("pdf-parse") as (
+      buf: Buffer,
+      opts?: Record<string, unknown>
+    ) => Promise<{ text: string }>;
     const data = await pdfParse(buffer, { max: 0 });
-    if (data.text && data.text.trim().length > 20) return data.text;
+    if (data.text && data.text.trim().length > 30) return data.text;
   } catch {
-    // Fall through to attempt 2
+    // fall through
   }
 
-  // Attempt 2: relaxed parsing (tolerant of bad XRef entries)
-  try {
-    const data = await pdfParse(buffer, {
-      max: 0,
-      // Some pdf-parse builds accept a `version` override
-      version: "v1.10.100",
-    });
-    if (data.text && data.text.trim().length > 20) return data.text;
-  } catch {
-    // Fall through
-  }
-
-  // Attempt 3: try extracting text from raw buffer using a simple heuristic
-  // (reads printable ASCII runs between PDF stream markers)
+  // Attempt 3: raw BT/ET block extraction (last resort for uncompressed streams)
   try {
     const raw = buffer.toString("latin1");
-    const text = extractTextFromRawPdf(raw);
+    const text = extractRawPdfText(raw);
     if (text && text.trim().length > 50) return text;
   } catch {
-    // Give up
+    // give up
   }
 
   return null;
 }
 
 /**
- * Minimal fallback: extract printable text from raw PDF bytes.
- * Useful for PDFs with corrupted XRef tables that pdf-parse can't handle.
+ * Use pdfjs-dist to extract text with proper line-break preservation.
  */
-function extractTextFromRawPdf(raw: string): string {
+async function extractWithPdfjs(buffer: Buffer): Promise<string> {
+  // Dynamic import to avoid bundling issues
+  const { getDocument } = await import(
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    "pdfjs-dist/legacy/build/pdf.mjs"
+  );
+
+  const data = new Uint8Array(buffer);
+  const loadingTask = getDocument({
+    data,
+    useWorkerFetch: false,
+    isEvalSupported: false,
+    disableFontFace: true,
+    // Suppress font warning — we don't need font rendering
+    standardFontDataUrl: undefined,
+  });
+
+  // Suppress non-critical warnings (type cast needed as pdfjs types are incomplete)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (loadingTask as any).onUnsupportedFeature = () => {};
+
+  const pdf = await loadingTask.promise;
+  let fullText = "";
+
+  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+    const page = await pdf.getPage(pageNum);
+    const content = await page.getTextContent();
+
+    for (const item of content.items as Array<{ str: string; hasEOL: boolean }>) {
+      fullText += item.str;
+      fullText += item.hasEOL ? "\n" : " ";
+    }
+    fullText += "\n";
+  }
+
+  return fullText;
+}
+
+/**
+ * Fallback: minimal text extraction from raw PDF bytes (uncompressed streams only).
+ */
+function extractRawPdfText(raw: string): string {
   const parts: string[] = [];
 
-  // Extract text between BT and ET (PDF text blocks)
-  const btEt = raw.matchAll(/BT\s*([\s\S]*?)\s*ET/g);
-  for (const m of btEt) {
-    const block = m[1];
-    // Extract strings in parentheses: (Hello World)
-    const strMatches = block.matchAll(/\(([^)\\]*(?:\\.[^)\\]*)*)\)/g);
-    for (const s of strMatches) {
+  // Extract strings from PDF BT/ET text blocks
+  for (const block of raw.matchAll(/BT\s*([\s\S]*?)\s*ET/g)) {
+    for (const s of block[1].matchAll(/\(([^)\\]*(?:\\.[^)\\]*)*)\)/g)) {
       const decoded = s[1]
         .replace(/\\n/g, "\n")
         .replace(/\\r/g, "\r")
@@ -121,15 +158,6 @@ function extractTextFromRawPdf(raw: string): string {
         .replace(/\\\(/g, "(")
         .replace(/\\\)/g, ")");
       parts.push(decoded);
-    }
-  }
-
-  if (parts.length === 0) {
-    // Try extracting text from stream objects directly
-    const streams = raw.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g);
-    for (const s of streams) {
-      const printable = s[1].replace(/[^\x20-\x7E\n\r\t]/g, " ");
-      if (printable.match(/[A-Za-z]{3}/)) parts.push(printable);
     }
   }
 

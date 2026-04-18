@@ -15,14 +15,52 @@ export interface TradeDetails {
 
 // ── Normalizers ────────────────────────────────────────────────────────────
 
-/** Collapse all whitespace / newlines to a single space for field matching */
-function normalizeWs(s: string): string {
-  return s.replace(/[\r\n\t]+/g, " ").replace(/ {2,}/g, " ");
-}
-
 /** Replace typographic apostrophes / backticks with standard ' */
 function normalizeApostrophes(s: string): string {
   return s.replace(/[\u2018\u2019\u02BC\u0060\u00B4]/g, "'");
+}
+
+/**
+ * Known AMF field labels. Inserted as regex alternation to ensure each label
+ * always starts on its own line (handles pdfjs-dist output where space is used
+ * instead of \n between text blocks).
+ */
+const KNOWN_LABELS = [
+  "DATE DE LA TRANSACTION",
+  "LIEU DE LA TRANSACTION",
+  "NATURE DE LA TRANSACTION",
+  "DESCRIPTION DE L'INSTRUMENT FINANCIER",
+  "CODE D'IDENTIFICATION DE L'INSTRUMENT FINANCIER",
+  "CODE ISIN",
+  "PRIX UNITAIRE",
+  "VOLUME",
+  "INFORMATIONS AGREGEES",
+  "INFORMATION DETAILLEE PAR OPERATION",
+  "NOTIFICATION INITIALE",
+  "NOTIFICATION INITIALE / MODIFICATION",
+  "COORDONNEES DE L'EMETTEUR",
+  "DETAIL DE LA TRANSACTION",
+  "NOM / FONCTION",
+  "NOM /FONCTION",
+  "TRANSACTION LIEE",
+  "DATE DE RECEPTION",
+  "COMMENTAIRES",
+];
+
+/**
+ * Ensure each known field label starts on its own line.
+ * pdfjs-dist sometimes uses a space between text blocks instead of \n,
+ * causing fields to run together: "NATURE : Cession DESCRIPTION : Action"
+ */
+function normalizeFieldBreaks(text: string): string {
+  let t = normalizeApostrophes(text.replace(/\r\n/g, "\n").replace(/\r/g, "\n"));
+  for (const label of KNOWN_LABELS) {
+    // Escape regex special chars in label
+    const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // Insert newline before label if not already at start of line
+    t = t.replace(new RegExp(`(?<!\n)(${escaped}\\s*:)`, "gi"), "\n$1");
+  }
+  return t;
 }
 
 // ── Field extraction ───────────────────────────────────────────────────────
@@ -238,10 +276,13 @@ function extractOpeningPrice(text: string): number | undefined {
 
 // ── Main parser ────────────────────────────────────────────────────────────
 
-export function parsePdfText(text: string, pdfUrl?: string): TradeDetails {
+export function parsePdfText(rawText: string, pdfUrl?: string): TradeDetails {
   const result: TradeDetails = { pdfUrl };
 
-  if (!text || text.trim().length < 50) return result;
+  if (!rawText || rawText.trim().length < 50) return result;
+
+  // Normalize: ensure each field label is on its own line
+  const text = normalizeFieldBreaks(rawText);
 
   // ── Insider ──
   const insiderInfo = extractInsiderInfo(text);
@@ -316,7 +357,7 @@ export function parsePdfText(text: string, pdfUrl?: string): TradeDetails {
 // ── Debug helper ──────────────────────────────────────────────────────────
 
 export function debugParse(text: string): Record<string, unknown> {
-  const norm = normalizeApostrophes(text).replace(/\r\n/g, "\n");
+  const norm = normalizeFieldBreaks(text);
   return {
     isinField: extractField(norm, "CODE D'IDENTIFICATION DE L'INSTRUMENT FINANCIER"),
     isinExtracted: extractIsin(text),

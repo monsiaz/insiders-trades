@@ -33,7 +33,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
     ...(filterType ? { type: filterType } : {}),
   };
 
-  const [declarations, totalCount, typeCounts, lastDecl, isinRow, buyTotal, sellTotal] =
+  const [declarations, totalCount, typeCounts, lastDecl, isinRow, buyTotal, sellTotal, allTradeEvents] =
     await Promise.all([
       prisma.declaration.findMany({
         where,
@@ -73,17 +73,28 @@ export default async function CompanyPage({ params, searchParams }: Props) {
         _sum: { totalAmount: true },
         _count: true,
       }),
+      // All trade events for chart (up to 500 most recent, sorted by date)
+      prisma.declaration.findMany({
+        where: {
+          companyId: company.id,
+          type: "DIRIGEANTS",
+          transactionNature: { not: null },
+        },
+        orderBy: { pubDate: "desc" },
+        take: 500,
+        select: { transactionDate: true, pubDate: true, transactionNature: true, totalAmount: true, insiderName: true },
+      }),
     ]);
 
   const typeMap = Object.fromEntries(typeCounts.map((t) => [t.type, t._count]));
   const totalPages = Math.ceil(totalCount / limit);
   const isin = isinRow?.isin ?? company.isin ?? null;
 
-  // Build trade events for chart overlay (last 6 months)
-  const tradeEvents = declarations
-    .filter((d) => d.type === "DIRIGEANTS" && d.transactionDate && d.transactionNature)
+  // Build ALL trade events for chart (uses raw ISO string so chart can normalize timezone)
+  const tradeEvents = allTradeEvents
+    .filter((d) => d.transactionNature)
     .map((d) => ({
-      date: new Date(d.transactionDate!).toISOString().split("T")[0],
+      date: (d.transactionDate ?? d.pubDate).toISOString(),
       type: d.transactionNature!.toLowerCase().includes("cession") ? ("sell" as const) : ("buy" as const),
       amount: d.totalAmount ?? undefined,
       person: d.insiderName ?? undefined,

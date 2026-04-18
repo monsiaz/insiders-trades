@@ -14,12 +14,16 @@ export interface TradeDetails {
 }
 
 function extractField(text: string, label: string): string | undefined {
+  // Normalize: replace curly/typographic apostrophes with straight apostrophe for matching
+  const normalized = text.replace(/[\u2018\u2019\u02BC\u0060]/g, "'");
+  const labelNorm = label.replace(/[\u2018\u2019\u02BC\u0060]/g, "'");
+
   const patterns = [
-    new RegExp(`${label}\\s*:\\s*(.+?)(?=\\n[A-ZÉÈÊËÀÂÙÛÎÏÔÇ]{3}|$)`, "is"),
-    new RegExp(`${label}\\s*:\\s*(.+)`, "i"),
+    new RegExp(`${labelNorm}\\s*:\\s*(.+?)(?=\\n[A-ZÉÈÊËÀÂÙÛÎÏÔÇ]{3}|$)`, "is"),
+    new RegExp(`${labelNorm}\\s*:\\s*(.+)`, "i"),
   ];
   for (const pattern of patterns) {
-    const match = text.match(pattern);
+    const match = normalized.match(pattern);
     if (match) return match[1].trim();
   }
   return undefined;
@@ -107,6 +111,12 @@ export function parsePdfText(text: string, pdfUrl?: string): TradeDetails {
   result.instrumentType = extractField(text, "DESCRIPTION DE L'INSTRUMENT FINANCIER");
   result.isin = extractField(text, "CODE D'IDENTIFICATION DE L'INSTRUMENT FINANCIER");
   result.transactionVenue = extractField(text, "LIEU DE LA TRANSACTION");
+
+  // ISIN fallback: the PDF header line is always "<AMFID>\n<ISIN> - <ref>\n<date>"
+  if (!result.isin) {
+    const headerMatch = text.match(/\n([A-Z]{2}[A-Z0-9]{10})\s*[-–]\s*DD/);
+    if (headerMatch) result.isin = headerMatch[1];
+  }
 
   // Price / volume - use "INFORMATIONS AGREGEES" section for total values
   const agregSection = text.match(/INFORMATIONS AGREGEES\s*\n([\s\S]*?)(?=\nTRANSACTION|\nDATE DE RECEPTION|$)/i);

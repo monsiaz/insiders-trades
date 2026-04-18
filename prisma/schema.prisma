@@ -15,11 +15,18 @@ model Company {
   description String?
   isin        String?
   market      String?
-  // Market cap enrichment (fetched from Yahoo Finance)
+  // Financials enrichment (fetched from Yahoo Finance timeseries)
   marketCap   BigInt?   // EUR, latest known market cap
   sharesOut   BigInt?   // total shares outstanding
-  marketCapAt DateTime? // when market cap was last fetched
+  revenue     BigInt?   // annual total revenue
+  netIncome   BigInt?   // annual net income
+  ebitda      BigInt?   // annual EBITDA
+  totalDebt   BigInt?   // total debt
+  freeCashFlow BigInt?  // free cash flow
+  financialsAt DateTime? // when financials were last fetched
+  marketCapAt DateTime? // when market cap was last fetched (kept for compat)
   yahooSymbol String?   // cached Yahoo Finance symbol
+  fiscalYearEnd String? // e.g. "2025-03-31"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

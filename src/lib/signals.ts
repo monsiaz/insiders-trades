@@ -218,21 +218,21 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Market cap enrichment via Yahoo Finance chart API
+// Market cap & financials enrichment via Yahoo Finance timeseries API
+// (no crumb required — works reliably in serverless environments)
 // ────────────────────────────────────────────────────────────────────────────
 export async function enrichMarketCaps(limit = 50) {
-  // Companies that haven't been enriched yet (or enriched > 7 days ago)
   const cutoff = new Date(Date.now() - 7 * 86400_000);
   const companies = await prisma.company.findMany({
     where: {
       OR: [
-        { marketCapAt: null },
-        { marketCapAt: { lt: cutoff } },
+        { financialsAt: null },
+        { financialsAt: { lt: cutoff } },
       ],
       isin: { not: null },
     },
     take: limit,
-    orderBy: { marketCapAt: "asc" },
+    orderBy: { financialsAt: "asc" },
     select: { id: true, name: true, isin: true, yahooSymbol: true },
   });
 
@@ -242,37 +242,34 @@ export async function enrichMarketCaps(limit = 50) {
     try {
       const symbol = co.yahooSymbol ?? (await resolveSymbol(co.isin, co.name));
       if (!symbol) {
-        await prisma.company.update({ where: { id: co.id }, data: { marketCapAt: new Date() } });
+        await prisma.company.update({ where: { id: co.id }, data: { financialsAt: new Date() } });
         continue;
       }
 
-      const info = await fetchYahooInfo(symbol);
-      if (!info) {
-        await prisma.company.update({
-          where: { id: co.id },
-          data: { yahooSymbol: symbol, marketCapAt: new Date() },
-        });
-        continue;
-      }
+      const fin = await fetchYahooTimeseries(symbol);
 
       await prisma.company.update({
         where: { id: co.id },
         data: {
           yahooSymbol: symbol,
-          marketCap: info.marketCap ? BigInt(Math.round(info.marketCap)) : undefined,
-          sharesOut: info.sharesOutstanding
-            ? BigInt(Math.round(info.sharesOutstanding))
-            : undefined,
+          marketCap: fin?.marketCap ? BigInt(Math.round(fin.marketCap)) : undefined,
+          sharesOut: fin?.sharesOut ? BigInt(Math.round(fin.sharesOut)) : undefined,
+          revenue: fin?.revenue ? BigInt(Math.round(fin.revenue)) : undefined,
+          netIncome: fin?.netIncome ? BigInt(Math.round(fin.netIncome)) : undefined,
+          ebitda: fin?.ebitda ? BigInt(Math.round(fin.ebitda)) : undefined,
+          totalDebt: fin?.totalDebt ? BigInt(Math.round(fin.totalDebt)) : undefined,
+          freeCashFlow: fin?.freeCashFlow ? BigInt(Math.round(fin.freeCashFlow)) : undefined,
+          fiscalYearEnd: fin?.asOfDate ?? undefined,
+          financialsAt: new Date(),
           marketCapAt: new Date(),
         },
       });
-      console.log(`[mcap] ${co.name} → ${symbol} mcap=${info.marketCap?.toLocaleString() ?? "n/a"}`);
+      console.log(`[mcap] ${co.name} → ${symbol} mcap=${fin?.marketCap?.toLocaleString() ?? "n/a"}`);
     } catch (err) {
       console.error(`[mcap] error for ${co.name}:`, err);
     }
 
-    // Respect Yahoo rate limits
-    await new Promise((r) => setTimeout(r, 300));
+    await new Promise((r) => setTimeout(r, 200));
   }
 }
 
@@ -311,22 +308,65 @@ function preferredSuffixFromIsin(isin: string): string {
   return ".PA";
 }
 
-interface YahooInfo {
+interface YahooFinancials {
   marketCap?: number;
-  sharesOutstanding?: number;
+  sharesOut?: number;
+  revenue?: number;
+  netIncome?: number;
+  ebitda?: number;
+  totalDebt?: number;
+  freeCashFlow?: number;
+  asOfDate?: string;
 }
 
-async function fetchYahooInfo(symbol: string): Promise<YahooInfo | null> {
+// Yahoo Finance fundamentals-timeseries — no crumb required, works in serverless
+async function fetchYahooTimeseries(symbol: string): Promise<YahooFinancials | null> {
+  const types = [
+    "annualMarketCap",
+    "annualTotalRevenue",
+    "annualNetIncome",
+    "annualEbitda",
+    "annualTotalDebt",
+    "annualFreeCashFlow",
+    "annualSharesOutstanding",
+  ].join(",");
+  const p1 = Math.floor(Date.now() / 1000) - 4 * 365 * 86400;
+  const p2 = Math.floor(Date.now() / 1000) + 86400;
+
   try {
-    // yahoo-finance2 handles crumb/cookie negotiation automatically
-    const yf = require("yahoo-finance2") as { default?: { quote: (s: string, f: object, o: object) => Promise<{ marketCap?: number; sharesOutstanding?: number }> }; quote?: (s: string, f: object, o: object) => Promise<{ marketCap?: number; sharesOutstanding?: number }> };
-    const lib = yf.default ?? yf;
-    if (!lib.quote) return null;
-    const q = await lib.quote(symbol, {}, { validateResult: false });
-    return {
-      marketCap: (q as { marketCap?: number }).marketCap ?? undefined,
-      sharesOutstanding: (q as { sharesOutstanding?: number }).sharesOutstanding ?? undefined,
-    };
+    const url = `https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/${encodeURIComponent(symbol)}?type=${types}&period1=${p1}&period2=${p2}`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const results: Array<{ meta: { type: string[] }; [key: string]: unknown }> =
+      data?.timeseries?.result ?? [];
+
+    const out: YahooFinancials = {};
+    let latestDate: string | undefined;
+
+    for (const r of results) {
+      const type = r.meta?.type?.[0];
+      if (!type) continue;
+      const vals = r[type] as Array<{ reportedValue?: { raw?: number }; asOfDate?: string }> | undefined;
+      if (!vals?.length) continue;
+      const latest = vals[vals.length - 1];
+      const raw = latest?.reportedValue?.raw;
+      if (raw == null) continue;
+      if (!latestDate && latest.asOfDate) latestDate = latest.asOfDate;
+
+      if (type === "annualMarketCap") out.marketCap = raw;
+      else if (type === "annualTotalRevenue") out.revenue = raw;
+      else if (type === "annualNetIncome") out.netIncome = raw;
+      else if (type === "annualEbitda") out.ebitda = raw;
+      else if (type === "annualTotalDebt") out.totalDebt = raw;
+      else if (type === "annualFreeCashFlow") out.freeCashFlow = raw;
+      else if (type === "annualSharesOutstanding") out.sharesOut = raw;
+    }
+    out.asOfDate = latestDate;
+    return Object.keys(out).length > 0 ? out : null;
   } catch {
     return null;
   }

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { DeclarationType } from "@prisma/client";
-import { formatDate } from "@/lib/utils";
 
 interface DeclarationCardProps {
   declaration: {
@@ -12,7 +11,6 @@ interface DeclarationCardProps {
     description: string;
     company: { name: string; slug: string };
     insider?: { name: string; slug: string } | null;
-    // Trade detail fields
     insiderName?: string | null;
     insiderFunction?: string | null;
     transactionNature?: string | null;
@@ -29,153 +27,131 @@ interface DeclarationCardProps {
   showCompany?: boolean;
 }
 
-const TYPE_CONFIG: Record<DeclarationType, { label: string; color: string }> = {
-  DIRIGEANTS: {
-    label: "Dirigeants",
-    color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  },
-  SEUILS: {
-    label: "Seuils",
-    color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  },
-  PROSPECTUS: {
-    label: "Prospectus",
-    color: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  },
-  OTHER: {
-    label: "Autre",
-    color: "bg-gray-500/10 text-gray-400 border-gray-500/20",
-  },
-};
-
-const NATURE_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
-  acquisition: { label: "Achat", color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20", icon: "▲" },
-  cession: { label: "Vente", color: "text-red-400 bg-red-500/10 border-red-500/20", icon: "▼" },
-  exercice: { label: "Options", color: "text-orange-400 bg-orange-500/10 border-orange-500/20", icon: "⚡" },
-  attribution: { label: "Attribution", color: "text-violet-400 bg-violet-500/10 border-violet-500/20", icon: "🎁" },
-};
-
-function getNatureConfig(nature?: string | null) {
+function getTradeStyle(nature?: string | null) {
   if (!nature) return null;
-  const key = Object.keys(NATURE_CONFIG).find((k) =>
-    nature.toLowerCase().includes(k)
-  );
-  return key ? NATURE_CONFIG[key] : { label: nature, color: "text-gray-400 bg-gray-500/10 border-gray-500/20", icon: "●" };
+  const n = nature.toLowerCase();
+  if (n.includes("cession")) return { label: "Vente", icon: "▼", cls: "badge-sell", amountCls: "text-rose-400" };
+  if (n.includes("acquisition")) return { label: "Achat", icon: "▲", cls: "badge-buy", amountCls: "text-emerald-400" };
+  if (n.includes("exercice") || n.includes("option")) return { label: "Options", icon: "⚡", cls: "bg-amber-400/10 border border-amber-400/20 text-amber-400", amountCls: "text-amber-400" };
+  if (n.includes("attribution")) return { label: "Attribution", icon: "✦", cls: "bg-violet-400/10 border border-violet-400/20 text-violet-400", amountCls: "text-violet-400" };
+  return { label: nature, icon: "●", cls: "badge-neutral", amountCls: "text-slate-300" };
 }
 
-function formatAmount(amount: number | null | undefined, currency?: string | null): string {
+function fmt(amount: number | null | undefined, currency?: string | null): string {
   if (!amount) return "";
-  const curr = currency || "EUR";
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
-    currency: curr,
+    currency: currency || "EUR",
     maximumFractionDigits: 0,
+    notation: amount >= 1_000_000 ? "compact" : "standard",
   }).format(amount);
 }
 
-function formatVolume(vol: number | null | undefined): string {
-  if (!vol) return "";
-  return new Intl.NumberFormat("fr-FR").format(vol) + " titres";
+function fmtDate(d: Date): string {
+  return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export function DeclarationCard({
-  declaration,
-  showCompany = true,
-}: DeclarationCardProps) {
-  const config = TYPE_CONFIG[declaration.type];
-  const natureConfig = getNatureConfig(declaration.transactionNature);
+const TYPE_BADGE: Record<DeclarationType, string> = {
+  DIRIGEANTS: "bg-indigo-500/10 text-indigo-300 border border-indigo-500/20",
+  SEUILS: "bg-sky-500/10 text-sky-300 border border-sky-500/20",
+  PROSPECTUS: "bg-violet-500/10 text-violet-300 border border-violet-500/20",
+  OTHER: "bg-slate-500/10 text-slate-400 border border-slate-500/20",
+};
+const TYPE_LABEL: Record<DeclarationType, string> = {
+  DIRIGEANTS: "Dirigeants",
+  SEUILS: "Seuils",
+  PROSPECTUS: "Prospectus",
+  OTHER: "Autre",
+};
+
+export function DeclarationCard({ declaration, showCompany = true }: DeclarationCardProps) {
+  const trade = getTradeStyle(declaration.transactionNature);
   const hasDetail = declaration.pdfParsed && declaration.insiderName;
+  const pubDate = declaration.transactionDate ?? declaration.pubDate;
 
   return (
-    <div className="group rounded-xl border border-gray-800 bg-gray-900/30 hover:bg-gray-900/60 hover:border-gray-700 transition-all p-4">
+    <div className="glass-card rounded-2xl p-4 group">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          {/* Header row */}
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${config.color}`}>
-              {config.label}
+
+          {/* Top row: badges + company */}
+          <div className="flex flex-wrap items-center gap-2 mb-2.5">
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${TYPE_BADGE[declaration.type]}`}>
+              {TYPE_LABEL[declaration.type]}
             </span>
 
-            {/* Transaction nature badge */}
-            {natureConfig && (
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${natureConfig.color}`}>
-                <span>{natureConfig.icon}</span>
-                {natureConfig.label}
+            {trade && (
+              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${trade.cls}`}>
+                <span className="text-[9px]">{trade.icon}</span>
+                {trade.label}
               </span>
             )}
 
             {showCompany && (
               <Link
                 href={`/company/${declaration.company.slug}`}
-                className="text-sm font-semibold text-white hover:text-emerald-400 transition-colors"
+                className="text-sm font-semibold text-slate-200 hover:text-white transition-colors"
               >
                 {declaration.company.name}
               </Link>
             )}
           </div>
 
-          {/* Insider name */}
+          {/* Insider row */}
           {hasDetail && declaration.insiderName && (
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-6 h-6 rounded-full bg-violet-500/20 border border-violet-500/20 flex items-center justify-center text-xs text-violet-400 font-bold flex-shrink-0">
-                {declaration.insiderName.charAt(0).toUpperCase()}
+            <div className="flex items-center gap-2 mb-2.5">
+              <div className="w-6 h-6 rounded-full avatar-glass flex items-center justify-center text-[10px] text-violet-300 font-bold flex-shrink-0">
+                {declaration.insiderName.charAt(0)}
               </div>
-              <div>
-                <span className="text-sm font-medium text-gray-200">
-                  {declaration.insiderName}
-                </span>
-                {declaration.insiderFunction && (
-                  <span className="text-xs text-gray-500 ml-2">
-                    {declaration.insiderFunction}
-                  </span>
-                )}
-              </div>
+              <span className="text-sm font-medium text-slate-200">{declaration.insiderName}</span>
+              {declaration.insiderFunction && (
+                <span className="text-xs text-slate-500 truncate">{declaration.insiderFunction}</span>
+              )}
             </div>
           )}
 
           {/* Trade details row */}
-          {hasDetail && (declaration.totalAmount || declaration.volume || declaration.unitPrice) && (
-            <div className="flex flex-wrap items-center gap-3 mb-2">
+          {hasDetail && (declaration.totalAmount || declaration.volume) && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2.5">
               {declaration.totalAmount && (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-gray-500">Montant</span>
-                  <span className={`text-sm font-bold ${declaration.transactionNature?.toLowerCase().includes("cession") ? "text-red-400" : "text-emerald-400"}`}>
-                    {formatAmount(declaration.totalAmount, declaration.currency)}
-                  </span>
-                </div>
+                <span className={`text-base font-bold tabular-nums ${trade?.amountCls ?? "text-slate-200"}`}>
+                  {fmt(declaration.totalAmount, declaration.currency)}
+                </span>
               )}
               {declaration.volume && (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-gray-500">Volume</span>
-                  <span className="text-sm text-gray-300">{formatVolume(declaration.volume)}</span>
-                </div>
+                <span className="text-xs text-slate-500">
+                  {new Intl.NumberFormat("fr-FR").format(declaration.volume)} titres
+                </span>
               )}
               {declaration.unitPrice && (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-gray-500">Prix unit.</span>
-                  <span className="text-sm text-gray-300">
-                    {new Intl.NumberFormat("fr-FR", { style: "currency", currency: declaration.currency || "EUR", minimumFractionDigits: 2 }).format(declaration.unitPrice)}
-                  </span>
-                </div>
+                <span className="text-xs text-slate-500">
+                  @{" "}
+                  {new Intl.NumberFormat("fr-FR", {
+                    style: "currency",
+                    currency: declaration.currency || "EUR",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 4,
+                  }).format(declaration.unitPrice)}
+                </span>
               )}
               {declaration.isin && (
-                <span className="text-xs font-mono text-gray-500 bg-gray-800 px-2 py-0.5 rounded">
+                <span className="font-mono text-[10px] text-slate-600 bg-white/5 px-2 py-0.5 rounded">
                   {declaration.isin}
                 </span>
               )}
             </div>
           )}
 
-          {/* Extra details */}
+          {/* Secondary details */}
           {hasDetail && (declaration.instrumentType || declaration.transactionVenue) && (
             <div className="flex flex-wrap items-center gap-2 mb-2">
               {declaration.instrumentType && (
-                <span className="text-xs text-gray-500 bg-gray-800/50 px-2 py-0.5 rounded">
+                <span className="text-[11px] text-slate-600 bg-white/4 border border-white/5 px-2 py-0.5 rounded-lg">
                   {declaration.instrumentType}
                 </span>
               )}
               {declaration.transactionVenue && (
-                <span className="text-xs text-gray-500">
+                <span className="text-[11px] text-slate-600">
                   📍 {declaration.transactionVenue}
                 </span>
               )}
@@ -183,24 +159,22 @@ export function DeclarationCard({
           )}
 
           {/* Footer */}
-          <div className="flex items-center gap-3 text-xs text-gray-500">
-            <span className="font-mono text-gray-600">{declaration.amfId}</span>
+          <div className="flex items-center gap-2 text-[11px] text-slate-600">
+            <span className="font-mono">{declaration.amfId}</span>
             <span>·</span>
-            <time dateTime={declaration.pubDate.toISOString()}>
-              {formatDate(declaration.transactionDate ?? declaration.pubDate)}
-            </time>
+            <time>{fmtDate(pubDate)}</time>
             {!declaration.pdfParsed && declaration.type === "DIRIGEANTS" && (
-              <span className="text-gray-600 italic">Détails en cours de chargement...</span>
+              <span className="text-slate-700 italic">détails non chargés</span>
             )}
           </div>
         </div>
 
+        {/* AMF link */}
         <a
           href={declaration.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 bg-gray-800/50 hover:bg-gray-800 transition-all"
-          title="Voir sur AMF"
+          className="flex-shrink-0 btn-glass px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-1"
         >
           AMF ↗
         </a>

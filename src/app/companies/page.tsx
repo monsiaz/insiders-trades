@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { formatDate } from "@/lib/utils";
 import { SyncButton } from "@/components/SyncButton";
 
 export const dynamic = "force-dynamic";
@@ -27,121 +26,128 @@ export default async function CompaniesPage({ searchParams }: Props) {
         where: { type: "DIRIGEANTS" },
         orderBy: { pubDate: "desc" },
         take: 1,
-        select: { pubDate: true },
+        select: { pubDate: true, insiderName: true, transactionNature: true, totalAmount: true },
       },
     },
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="flex items-center justify-between mb-6">
+    <div className="content-wrapper">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Sociétés suivies</h1>
-          <p className="text-gray-400 mt-1">
-            {companies.length} société{companies.length !== 1 ? "s" : ""}
+          <h1 className="text-3xl font-bold text-gradient tracking-tight">Sociétés</h1>
+          <p className="text-slate-500 text-sm mt-1">
+            {companies.length.toLocaleString("fr-FR")} société{companies.length !== 1 ? "s" : ""}
             {!showAll && " avec déclarations de dirigeants"}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <SyncButton />
-          <Link
-            href="/companies/add"
-            className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-colors"
-          >
+          <Link href="/companies/add" className="btn-emerald px-4 py-2 rounded-xl text-sm font-semibold">
             + Ajouter
           </Link>
         </div>
       </div>
 
-      {/* Search + Filter bar */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        <form action="/companies" className="flex-1 min-w-64">
+      {/* Filters + search */}
+      <div className="flex flex-wrap gap-3 mb-7">
+        <form action="/companies" className="flex-1 min-w-56 relative">
           <input
             name="q"
             defaultValue={q || ""}
-            placeholder="Rechercher une société..."
-            className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 text-sm"
+            placeholder="Filtrer par nom..."
+            className="glass-input w-full pl-9 pr-4 py-2.5 rounded-xl text-sm"
           />
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
           {all && <input type="hidden" name="all" value="1" />}
         </form>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 p-1 glass-card-static rounded-xl">
           <Link
             href={`/companies${q ? `?q=${q}` : ""}`}
-            className={`px-3 py-2 rounded-lg text-sm transition-colors ${!showAll ? "bg-emerald-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${!showAll ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300"}`}
           >
             Avec déclarations
           </Link>
           <Link
             href={`/companies?all=1${q ? `&q=${q}` : ""}`}
-            className={`px-3 py-2 rounded-lg text-sm transition-colors ${showAll ? "bg-emerald-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${showAll ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300"}`}
           >
-            Toutes (2207)
+            Toutes (2 207)
           </Link>
         </div>
       </div>
 
+      {/* Companies grid */}
       {companies.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-700 p-16 text-center">
-          <div className="text-5xl mb-4">🏢</div>
-          <h2 className="text-xl font-semibold text-white mb-2">
-            Aucune société ajoutée
-          </h2>
-          <p className="text-gray-400 mb-6">
-            Ajoutez des sociétés avec leur jeton AMF pour commencer le suivi.
+        <div className="glass-card rounded-3xl p-16 text-center">
+          <div className="text-5xl mb-4">🔍</div>
+          <h2 className="text-xl font-semibold text-white mb-2">Aucune société trouvée</h2>
+          <p className="text-slate-500">Essayez un autre terme de recherche ou{" "}
+            <Link href="/companies?all=1" className="text-indigo-400 hover:text-indigo-300">affichez toutes les sociétés</Link>.
           </p>
-          <Link
-            href="/companies/add"
-            className="inline-flex px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors"
-          >
-            + Ajouter une société
-          </Link>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {companies.map((company) => (
-            <Link
-              key={company.id}
-              href={`/company/${company.slug}`}
-              className="group rounded-xl border border-gray-800 bg-gray-900/30 hover:bg-gray-900/60 hover:border-gray-700 transition-all p-5"
-            >
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/20 flex items-center justify-center text-lg font-bold text-emerald-400">
-                  {company.name.charAt(0)}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {companies.map((company) => {
+            const lastDecl = company.declarations[0];
+            const nature = lastDecl?.transactionNature?.toLowerCase();
+            const isBuy = nature?.includes("acquisition");
+            const isSell = nature?.includes("cession");
+
+            return (
+              <Link
+                key={company.id}
+                href={`/company/${company.slug}`}
+                className="glass-card rounded-2xl p-5 flex flex-col gap-3 group"
+              >
+                {/* Top row */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/15 to-violet-500/15 border border-indigo-500/15 flex items-center justify-center text-base font-bold text-indigo-300 flex-shrink-0">
+                      {company.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-200 group-hover:text-white transition-colors text-sm leading-tight">
+                        {company.name}
+                      </h3>
+                      <span className="text-[10px] font-mono text-slate-600">{company.amfToken}</span>
+                    </div>
+                  </div>
+                  {lastDecl?.totalAmount && (
+                    <span className={`text-xs font-bold tabular-nums flex-shrink-0 ${isBuy ? "text-emerald-400" : isSell ? "text-rose-400" : "text-slate-400"}`}>
+                      {isBuy ? "▲" : isSell ? "▼" : ""}
+                      {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0, notation: lastDecl.totalAmount >= 1_000_000 ? "compact" : "standard" }).format(lastDecl.totalAmount)}
+                    </span>
+                  )}
                 </div>
-                <span className="text-xs text-gray-500 font-mono bg-gray-800 px-2 py-1 rounded">
-                  {company.amfToken}
-                </span>
-              </div>
 
-              <h3 className="font-semibold text-white group-hover:text-emerald-400 transition-colors mb-1">
-                {company.name}
-              </h3>
+                {/* Stats row */}
+                <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-slate-400 font-semibold tabular-nums">
+                      {company._count.declarations}
+                    </span>
+                    <span className="text-xs text-slate-600">décl.</span>
+                  </div>
+                  {lastDecl && (
+                    <span className="text-[10px] text-slate-600">
+                      {new Date(lastDecl.pubDate).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit" })}
+                    </span>
+                  )}
+                </div>
 
-              {company.description && (
-                <p className="text-sm text-gray-500 mb-3 line-clamp-2">
-                  {company.description}
-                </p>
-              )}
-
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-800">
-                <span className="text-sm text-gray-400">
-                  {company._count.declarations} déclaration
-                  {company._count.declarations !== 1 ? "s" : ""}
-                </span>
-                {company.declarations[0] && (
-                  <span className="text-xs text-gray-500">
-                    {formatDate(company.declarations[0].pubDate)}
-                  </span>
+                {/* Last insider */}
+                {lastDecl?.insiderName && (
+                  <div className="text-[11px] text-slate-600 truncate">
+                    <span className="text-slate-500">{lastDecl.insiderName}</span>
+                  </div>
                 )}
-              </div>
-
-              {company.isin && (
-                <div className="mt-2 text-xs text-gray-500">
-                  ISIN: <span className="font-mono text-gray-400">{company.isin}</span>
-                </div>
-              )}
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

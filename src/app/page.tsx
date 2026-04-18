@@ -16,7 +16,12 @@ async function getStats() {
         where: { type: "DIRIGEANTS" },
         orderBy: { pubDate: "desc" },
         take: 20,
-        include: {
+        select: {
+          id: true, amfId: true, type: true, pubDate: true, link: true, description: true,
+          insiderName: true, insiderFunction: true, transactionNature: true,
+          instrumentType: true, isin: true, unitPrice: true, volume: true,
+          totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
+          pdfParsed: true,
           company: { select: { name: true, slug: true } },
           insider: { select: { name: true, slug: true } },
         },

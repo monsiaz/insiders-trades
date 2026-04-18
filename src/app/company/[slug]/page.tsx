@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DeclarationCard } from "@/components/DeclarationCard";
 import { StatsCard } from "@/components/StatsCard";
 import { CompanySyncButton } from "@/components/CompanySyncButton";
+import { EnrichButton } from "@/components/EnrichButton";
 import { formatDate } from "@/lib/utils";
 import { DeclarationType } from "@prisma/client";
 
@@ -43,7 +44,12 @@ export default async function CompanyPage({ params, searchParams }: Props) {
       orderBy: { pubDate: "desc" },
       take: limit,
       skip: offset,
-      include: {
+      select: {
+        id: true, amfId: true, type: true, pubDate: true, link: true, description: true,
+        insiderName: true, insiderFunction: true, transactionNature: true,
+        instrumentType: true, isin: true, unitPrice: true, volume: true,
+        totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
+        pdfParsed: true,
         company: { select: { name: true, slug: true } },
         insider: { select: { name: true, slug: true } },
       },
@@ -102,6 +108,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
 
           <div className="flex items-center gap-2">
             <CompanySyncButton companyId={company.id} />
+            <EnrichButton companyId={company.id} />
             <a
               href={`https://bdif.amf-france.org/fr?xtor=RSS-1`}
               target="_blank"

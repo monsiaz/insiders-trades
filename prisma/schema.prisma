@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  amfToken    String   @unique
+  description String?
+  isin        String?
+  market      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  declarations Declaration[]
+  insiders     CompanyInsider[]
+}
+
+model Insider {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companies    CompanyInsider[]
+  declarations Declaration[]
+}
+
+model CompanyInsider {
+  id         String   @id @default(cuid())
+  companyId  String
+  insiderId  String
+  function   String?
+  createdAt  DateTime @default(now())
+
+  company  Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  insider  Insider @relation(fields: [insiderId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, insiderId])
+}
+
+model Declaration {
+  id          String          @id @default(cuid())
+  amfId       String          @unique
+  companyId   String
+  insiderId   String?
+  type        DeclarationType
+  pubDate     DateTime
+  link        String
+  description String
+  rawData     Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  insider Insider? @relation(fields: [insiderId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([insiderId])
+  @@index([pubDate])
+  @@index([type])
+}
+
+enum DeclarationType {
+  DIRIGEANTS
+  SEUILS
+  PROSPECTUS
+  OTHER
+}

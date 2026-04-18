@@ -318,18 +318,14 @@ interface YahooInfo {
 
 async function fetchYahooInfo(symbol: string): Promise<YahooInfo | null> {
   try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`;
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0" },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const meta = data?.chart?.result?.[0]?.meta;
-    if (!meta) return null;
+    // yahoo-finance2 handles crumb/cookie negotiation automatically
+    const yf = require("yahoo-finance2") as { default?: { quote: (s: string, f: object, o: object) => Promise<{ marketCap?: number; sharesOutstanding?: number }> }; quote?: (s: string, f: object, o: object) => Promise<{ marketCap?: number; sharesOutstanding?: number }> };
+    const lib = yf.default ?? yf;
+    if (!lib.quote) return null;
+    const q = await lib.quote(symbol, {}, { validateResult: false });
     return {
-      marketCap: meta.marketCap ?? undefined,
-      sharesOutstanding: meta.sharesOutstanding ?? undefined,
+      marketCap: (q as { marketCap?: number }).marketCap ?? undefined,
+      sharesOutstanding: (q as { sharesOutstanding?: number }).sharesOutstanding ?? undefined,
     };
   } catch {
     return null;

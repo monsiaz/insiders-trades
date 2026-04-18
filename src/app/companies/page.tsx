@@ -5,8 +5,21 @@ import { SyncButton } from "@/components/SyncButton";
 
 export const dynamic = "force-dynamic";
 
-export default async function CompaniesPage() {
+interface Props {
+  searchParams: Promise<{ all?: string; q?: string }>;
+}
+
+export default async function CompaniesPage({ searchParams }: Props) {
+  const { all, q } = await searchParams;
+  const showAll = all === "1";
+
+  const where = {
+    ...(q ? { name: { contains: q.toUpperCase() } } : {}),
+    ...(!showAll ? { declarations: { some: { type: "DIRIGEANTS" as const } } } : {}),
+  };
+
   const companies = await prisma.company.findMany({
+    where,
     orderBy: { name: "asc" },
     include: {
       _count: { select: { declarations: true } },
@@ -21,11 +34,12 @@ export default async function CompaniesPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Sociétés suivies</h1>
           <p className="text-gray-400 mt-1">
-            {companies.length} société{companies.length !== 1 ? "s" : ""} dans la base
+            {companies.length} société{companies.length !== 1 ? "s" : ""}
+            {!showAll && " avec déclarations de dirigeants"}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -35,6 +49,33 @@ export default async function CompaniesPage() {
             className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-colors"
           >
             + Ajouter
+          </Link>
+        </div>
+      </div>
+
+      {/* Search + Filter bar */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <form action="/companies" className="flex-1 min-w-64">
+          <input
+            name="q"
+            defaultValue={q || ""}
+            placeholder="Rechercher une société..."
+            className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 text-sm"
+          />
+          {all && <input type="hidden" name="all" value="1" />}
+        </form>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/companies${q ? `?q=${q}` : ""}`}
+            className={`px-3 py-2 rounded-lg text-sm transition-colors ${!showAll ? "bg-emerald-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
+          >
+            Avec déclarations
+          </Link>
+          <Link
+            href={`/companies?all=1${q ? `&q=${q}` : ""}`}
+            className={`px-3 py-2 rounded-lg text-sm transition-colors ${showAll ? "bg-emerald-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
+          >
+            Toutes (2207)
           </Link>
         </div>
       </div>

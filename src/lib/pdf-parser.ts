@@ -67,31 +67,21 @@ function normalizeFieldBreaks(text: string): string {
 
 /**
  * Extract the value following a labelled field in AMF PDF text.
- * Handles multi-line values and typographic characters.
+ * 
+ * The text passed here should already be normalized by normalizeFieldBreaks(),
+ * meaning each known label is on its own line. So we simply take everything
+ * from the colon to the end of the line (no complex lookaheads needed).
  */
 function extractField(text: string, label: string): string | undefined {
-  const t = normalizeApostrophes(text);
   const l = normalizeApostrophes(label);
+  const escaped = l.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  // 1. Exact match with colon (single-line value, stops at next ALL-CAPS label)
-  const patternSingleLine = new RegExp(
-    l.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
-      "\\s*:\\s*(.+?)(?=\\n[A-ZÉÈÊËÀÂÙÛÎÏÔÇ ]{3,}\\s*:|$)",
-    "is"
-  );
-  const m1 = t.match(patternSingleLine);
-  if (m1) {
-    const val = m1[1].trim().replace(/\r?\n/g, " ").replace(/ {2,}/g, " ");
+  // Each label is on its own line after normalization → take to end of line
+  const m = text.match(new RegExp(`${escaped}\\s*:\\s*([^\n]+)`, "i"));
+  if (m) {
+    const val = m[1].trim().replace(/ {2,}/g, " ");
     if (val) return val;
   }
-
-  // 2. Greedy fallback (first colon, take rest of line)
-  const patternLine = new RegExp(
-    l.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*:\\s*(.+)",
-    "i"
-  );
-  const m2 = t.match(patternLine);
-  if (m2) return m2[1].trim();
 
   return undefined;
 }

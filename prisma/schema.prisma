@@ -61,6 +61,7 @@ model Insider {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+  gender    String?  // "M" | "F" | null (inferred from function title or name)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -135,15 +136,20 @@ model BacktestResult {
   id            String      @id @default(cuid())
   declarationId String      @unique
   declaration   Declaration @relation(fields: [declarationId], references: [id])
+  direction     String      @default("BUY")  // BUY | SELL | OTHER
   priceAtTrade  Float?
   price30d      Float?
   price60d      Float?
   price90d      Float?
-  price180d     Float?
+  price160d     Float?
+  price365d     Float?
+  price730d     Float?
   return30d     Float?
   return60d     Float?
   return90d     Float?
-  return180d    Float?
+  return160d    Float?
+  return365d    Float?
+  return730d    Float?
   computedAt    DateTime    @default(now())
 }
 
@@ -152,4 +158,53 @@ enum DeclarationType {
   SEUILS
   PROSPECTUS
   OTHER
+}
+
+// ── User & Portfolio ──────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  emailVerified DateTime?
+  verifyToken   String?   @unique
+  resetToken    String?   @unique
+  resetTokenExp DateTime?
+  role          String    @default("user")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  positions PortfolioPosition[]
+}
+
+model PortfolioPosition {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name         String
+  isin         String?
+  yahooSymbol  String?
+  quantity     Float
+  buyingPrice  Float    // average cost price per share
+  currentPrice Float?
+  lastUpdated  DateTime?
+
+  // Computed
+  totalInvested Float    // quantity * buyingPrice
+  currentValue  Float?   // quantity * currentPrice
+  pnl           Float?   // currentValue - totalInvested
+  pnlPct        Float?   // pnl / totalInvested * 100
+
+  // Alerts
+  alertBelow   Float?
+  alertAbove   Float?
+  notes        String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isin])
 }

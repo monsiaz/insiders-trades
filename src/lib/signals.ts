@@ -9,6 +9,7 @@
  */
 
 import { prisma } from "./prisma";
+import { roleFunctionScore } from "./role-utils";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Score weights  (total budget: 100 pts)
@@ -21,13 +22,7 @@ import { prisma } from "./prisma";
 //  15 pts — company fundamentals   (analyst consensus + PE + leverage)
 
 function functionScore(fn: string | null): number {
-  if (!fn) return 0;
-  const f = fn.toLowerCase();
-  if (f.includes("président") || f.includes("directeur général") || f.includes("ceo") || f.includes("pdg")) return 15;
-  if (f.includes("directeur") || f.includes("chief")) return 12;
-  if (f.includes("administrateur") || f.includes("conseil") || f.includes("board")) return 8;
-  if (f.includes("dirigeant")) return 6;
-  return 3;
+  return roleFunctionScore(fn);
 }
 
 function pctMcapScore(pct: number): number {

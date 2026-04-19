@@ -38,7 +38,7 @@ function getTradeStyle(nature?: string | null) {
   const n = nature.toLowerCase();
   if (n.includes("cession")) return { label: "Vente", icon: "▼", cls: "badge-sell", amountCls: "text-rose-400" };
   if (n.includes("acquisition")) return { label: "Achat", icon: "▲", cls: "badge-buy", amountCls: "text-emerald-400" };
-  if (n.includes("exercice") || n.includes("option")) return { label: "Options", icon: "⚡", cls: "bg-amber-400/10 border border-amber-400/20 text-amber-400", amountCls: "text-amber-400" };
+  if (n.includes("exercice") || n.includes("option")) return { label: "Options", icon: "◇", cls: "bg-amber-400/10 border border-amber-400/20 text-amber-400", amountCls: "text-amber-400" };
   if (n.includes("attribution")) return { label: "Attribution", icon: "✦", cls: "bg-violet-400/10 border border-violet-400/20 text-violet-400", amountCls: "text-violet-400" };
   return { label: nature, icon: "●", cls: "badge-neutral", amountCls: "text-slate-300" };
 }
@@ -61,7 +61,7 @@ function fmtDate(d: Date): string {
 function SignalBadge({ score }: { score: number }) {
   if (score >= 70) return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-400/15 border border-emerald-400/30 text-emerald-300 shadow-sm shadow-emerald-400/10">
-      <span>⚡</span>Score fort · {score}
+Score fort · {score}
     </span>
   );
   if (score >= 45) return (

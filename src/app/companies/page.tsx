@@ -36,15 +36,15 @@ export default async function CompaniesPage({ searchParams }: Props) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gradient tracking-tight">Sociétés</h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="heading-page">Sociétés</h1>
+          <p style={{ color: "var(--tx-3)", fontSize: "0.875rem", marginTop: "4px" }}>
             {companies.length.toLocaleString("fr-FR")} société{companies.length !== 1 ? "s" : ""}
             {!showAll && " avec déclarations de dirigeants"}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <SyncButton />
-          <Link href="/companies/add" className="btn-emerald px-4 py-2 rounded-xl text-sm font-semibold">
+          <Link href="/companies/add" className="btn btn-primary">
             + Ajouter
           </Link>
         </div>
@@ -59,34 +59,68 @@ export default async function CompaniesPage({ searchParams }: Props) {
             placeholder="Filtrer par nom..."
             className="glass-input w-full pl-9 pr-4 py-2.5 rounded-xl text-sm"
           />
-          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+            style={{ color: "var(--tx-3)" }}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           {all && <input type="hidden" name="all" value="1" />}
         </form>
-        <div className="flex items-center gap-1.5 p-1 glass-card-static rounded-xl">
+
+        {/* Filter tabs */}
+        <div className="flex items-center gap-1 p-1 card-raised rounded-xl" style={{ borderRadius: "12px" }}>
           <Link
             href={`/companies${q ? `?q=${q}` : ""}`}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${!showAll ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300"}`}
+            style={{
+              padding: "5px 12px",
+              borderRadius: "9px",
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              transition: "all 0.15s",
+              textDecoration: "none",
+              background: !showAll ? "var(--c-indigo-bg)" : "transparent",
+              color: !showAll ? "var(--c-indigo-2)" : "var(--tx-3)",
+              border: !showAll ? "1px solid var(--c-indigo-bd)" : "1px solid transparent",
+            }}
           >
             Avec déclarations
           </Link>
           <Link
             href={`/companies?all=1${q ? `&q=${q}` : ""}`}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${showAll ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300"}`}
+            style={{
+              padding: "5px 12px",
+              borderRadius: "9px",
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              transition: "all 0.15s",
+              textDecoration: "none",
+              background: showAll ? "var(--c-indigo-bg)" : "transparent",
+              color: showAll ? "var(--c-indigo-2)" : "var(--tx-3)",
+              border: showAll ? "1px solid var(--c-indigo-bd)" : "1px solid transparent",
+            }}
           >
-            Toutes (2 207)
+            Toutes
           </Link>
         </div>
       </div>
 
       {/* Companies grid */}
       {companies.length === 0 ? (
-        <div className="glass-card rounded-3xl p-16 text-center">
-          <div className="text-5xl mb-4">🔍</div>
-          <h2 className="text-xl font-semibold text-white mb-2">Aucune société trouvée</h2>
-          <p className="text-slate-500">Essayez un autre terme de recherche ou{" "}
-            <Link href="/companies?all=1" className="text-indigo-400 hover:text-indigo-300">affichez toutes les sociétés</Link>.
+        <div className="card p-16 text-center">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" className="mx-auto mb-4" style={{ color: "var(--tx-3)" }}>
+            <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--tx-1)", marginBottom: "8px" }}>
+            Aucune société trouvée
+          </h2>
+          <p style={{ color: "var(--tx-3)" }}>
+            Essayez un autre terme de recherche ou{" "}
+            <Link href="/companies?all=1" style={{ color: "var(--c-indigo-2)", textDecoration: "none" }}>
+              affichez toutes les sociétés
+            </Link>.
           </p>
         </div>
       ) : (
@@ -101,48 +135,96 @@ export default async function CompaniesPage({ searchParams }: Props) {
               <Link
                 key={company.id}
                 href={`/company/${company.slug}`}
-                className="glass-card rounded-2xl p-5 flex flex-col gap-3 group"
+                className="card p-5 flex flex-col gap-3 group"
+                style={{ textDecoration: "none" }}
               >
                 {/* Top row */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/15 to-violet-500/15 border border-indigo-500/15 flex items-center justify-center text-base font-bold text-indigo-300 flex-shrink-0">
+                    {/* Avatar */}
+                    <div
+                      className="flex-shrink-0 flex items-center justify-center text-base font-bold"
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "10px",
+                        background: "var(--c-indigo-bg)",
+                        border: "1px solid var(--c-indigo-bd)",
+                        color: "var(--c-indigo-2)",
+                        fontFamily: "JetBrains Mono, monospace",
+                      }}
+                    >
                       {company.name.charAt(0)}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-200 group-hover:text-white transition-colors text-sm leading-tight">
+                      <h3 style={{
+                        fontWeight: 700,
+                        fontSize: "0.875rem",
+                        color: "var(--tx-1)",
+                        letterSpacing: "-0.01em",
+                        lineHeight: 1.3,
+                      }}>
                         {company.name}
                       </h3>
-                      <span className="text-[10px] font-mono text-slate-600">{company.amfToken}</span>
+                      <span style={{
+                        fontSize: "0.65rem",
+                        fontFamily: "JetBrains Mono, monospace",
+                        color: "var(--tx-4)",
+                        letterSpacing: "0.03em",
+                      }}>
+                        {company.amfToken}
+                      </span>
                     </div>
                   </div>
+
                   {lastDecl?.totalAmount && (
-                    <span className={`text-xs font-bold tabular-nums flex-shrink-0 ${isBuy ? "text-emerald-400" : isSell ? "text-rose-400" : "text-slate-400"}`}>
+                    <span
+                      className="flex-shrink-0 tabular-nums"
+                      style={{
+                        fontSize: "0.78rem",
+                        fontWeight: 700,
+                        color: isBuy ? "var(--c-mint)" : isSell ? "var(--c-red)" : "var(--tx-3)",
+                        fontFamily: "JetBrains Mono, monospace",
+                      }}
+                    >
                       {isBuy ? "▲" : isSell ? "▼" : ""}
-                      {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0, notation: lastDecl.totalAmount >= 1_000_000 ? "compact" : "standard" }).format(lastDecl.totalAmount)}
+                      {new Intl.NumberFormat("fr-FR", {
+                        style: "currency",
+                        currency: "EUR",
+                        maximumFractionDigits: 0,
+                        notation: lastDecl.totalAmount >= 1_000_000 ? "compact" : "standard",
+                      }).format(lastDecl.totalAmount)}
                     </span>
                   )}
                 </div>
 
                 {/* Stats row */}
-                <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                <div
+                  className="flex items-center justify-between"
+                  style={{ paddingTop: "10px", borderTop: "1px solid var(--border)" }}
+                >
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-400 font-semibold tabular-nums">
+                    <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--tx-2)", fontFamily: "JetBrains Mono, monospace" }}>
                       {company._count.declarations}
                     </span>
-                    <span className="text-xs text-slate-600">décl.</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--tx-3)" }}>décl.</span>
                   </div>
                   {lastDecl && (
-                    <span className="text-[10px] text-slate-600">
-                      {new Date(lastDecl.pubDate).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit" })}
+                    <span style={{ fontSize: "0.68rem", color: "var(--tx-4)", fontFamily: "JetBrains Mono, monospace" }}>
+                      {new Date(lastDecl.pubDate).toLocaleDateString("fr-FR", {
+                        day: "numeric", month: "short", year: "2-digit",
+                      })}
                     </span>
                   )}
                 </div>
 
                 {/* Last insider */}
                 {lastDecl?.insiderName && (
-                  <div className="text-[11px] text-slate-600 truncate">
-                    <span className="text-slate-500">{lastDecl.insiderName}</span>
+                  <div
+                    className="truncate"
+                    style={{ fontSize: "0.72rem", color: "var(--tx-3)" }}
+                  >
+                    {lastDecl.insiderName}
                   </div>
                 )}
               </Link>

@@ -17,7 +17,6 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg">📊</span>
             <h2 className="text-sm font-semibold text-white">Performance historique</h2>
           </div>
           <div className="grid grid-cols-3 gap-6">

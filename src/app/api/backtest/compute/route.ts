@@ -15,11 +15,11 @@ interface YahooChartResult {
   indicators: { quote: Array<{ close: (number | null)[] }> };
 }
 
-/** Fetch daily close prices for a Yahoo symbol, range 2y */
+/** Fetch daily close prices for a Yahoo symbol — 20y range to cover all AMF dates */
 async function fetchYahooChart(
   symbol: string
 ): Promise<Array<{ ts: number; close: number }>> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=2y&includePrePost=false`;
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=20y&includePrePost=false`;
   const res = await fetch(url, {
     headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" },
     signal: AbortSignal.timeout(12000),
@@ -112,10 +112,20 @@ async function handle(req: NextRequest) {
 
   for (const decl of declarations) {
     const symbol = decl.company.yahooSymbol!;
-    // Use transactionDate when available, fall back to pubDate
-    const tradeDate = decl.transactionDate ?? decl.pubDate;
-    const tradeDateTs = tradeDate.getTime();
     const direction = getDirection(decl.transactionNature ?? null);
+
+    // Smart date: if transactionDate is in the future or >3y before pubDate (parsing error)
+    // fall back to pubDate — the date the signal became public.
+    const now = Date.now();
+    let tradeDate = decl.pubDate;
+    if (decl.transactionDate) {
+      const txMs = decl.transactionDate.getTime();
+      const pubMs = decl.pubDate.getTime();
+      const isFuture = txMs > now;
+      const isAnomalous = pubMs - txMs > 3 * 365 * 86400_000;
+      if (!isFuture && !isAnomalous) tradeDate = decl.transactionDate;
+    }
+    const tradeDateTs = tradeDate.getTime();
 
     try {
       const points = await fetchYahooChart(symbol);

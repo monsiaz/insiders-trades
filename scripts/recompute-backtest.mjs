@@ -34,11 +34,13 @@ function getDirection(transactionNature) {
 // ── Yahoo Finance ───────────────────────────────────────────────────────────
 
 async function fetchChart(symbol) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=10y&includePrePost=false`;
+  // range=20y covers daily data back to ~2006, which includes all legit AMF transaction dates.
+  // range=10y only goes back to 2016, missing ~13k declarations with dates 2006-2016.
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=20y&includePrePost=false`;
   try {
     const res = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" },
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(20000),
     });
     if (!res.ok) return [];
     const data = await res.json();
@@ -156,9 +158,24 @@ async function main() {
     for (const decl of batch) {
       const sym = decl.company.yahooSymbol;
       const points = priceCache.get(sym) ?? [];
-      const tradeDate = decl.transactionDate ?? decl.pubDate;
-      const tradeDateTs = tradeDate.getTime();
       const direction = getDirection(decl.transactionNature);
+
+      // Smart date resolution:
+      // - If transactionDate is in the future → use pubDate
+      // - If transactionDate is > 3 years before pubDate → likely a parsing error → use pubDate
+      // - Otherwise use transactionDate (preferred: actual trade moment)
+      const now = Date.now();
+      let tradeDate = decl.pubDate; // safe default
+      if (decl.transactionDate) {
+        const txMs = decl.transactionDate.getTime();
+        const pubMs = decl.pubDate.getTime();
+        const isFuture = txMs > now;
+        const isAnomalous = pubMs - txMs > 3 * 365 * 86400_000; // tx >3y before publication
+        if (!isFuture && !isAnomalous) {
+          tradeDate = decl.transactionDate;
+        }
+      }
+      const tradeDateTs = tradeDate.getTime();
 
       const priceAtTrade = priceNear(points, tradeDateTs, 12);
 

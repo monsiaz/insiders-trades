@@ -97,7 +97,7 @@ async function computeBacktestIncremental(
   }
 
   async function fetchChart(symbol: string): Promise<Array<{ ts: number; close: number }>> {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=10y&includePrePost=false`;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=20y&includePrePost=false`;
     try {
       const r = await fetch(url, {
         headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" },
@@ -144,7 +144,16 @@ async function computeBacktestIncremental(
     if (points.length === 0) { errors += group.length; continue; }
 
     await Promise.all(group.map(async (decl) => {
-      const tradeDate = decl.transactionDate ?? decl.pubDate;
+      // Smart date: skip anomalous transactionDate (future or >3y before pubDate)
+      const now = Date.now();
+      let tradeDate = decl.pubDate;
+      if (decl.transactionDate) {
+        const txMs = decl.transactionDate.getTime();
+        const pubMs = decl.pubDate.getTime();
+        if (txMs <= now && pubMs - txMs <= 3 * 365 * 86400_000) {
+          tradeDate = decl.transactionDate;
+        }
+      }
       const ts = tradeDate.getTime();
       const base = priceNear(points, ts);
       if (!base) { errors++; return; }

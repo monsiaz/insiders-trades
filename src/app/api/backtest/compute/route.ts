@@ -72,22 +72,26 @@ async function handle(req: NextRequest) {
   const limitParam = new URL(req.url).searchParams.get("limit");
   const limit: number = Math.min(body?.limit ?? Number(limitParam ?? 200), 500);
 
-  // Fetch declarations eligible for backtesting that don't have results yet
+  // Fetch declarations eligible for backtesting that don't have results yet.
+  // - totalAmount is NOT required: a null amount is still a valid price signal.
+  //   It falls into the "Unknown" bucket in amount-based analysis.
+  // - Both BUY (Acquisition, Souscription…) and SELL (Cession) are included.
+  // - transactionDate may be null; we fall back to pubDate when computing the trade timestamp.
   const declarations = await prisma.declaration.findMany({
     where: {
       type: "DIRIGEANTS",
-      transactionNature: { contains: "Acquisition", mode: "insensitive" },
-      transactionDate: { not: null },
+      transactionNature: { not: null },
       isin: { not: null },
-      totalAmount: { gt: 0 },
       backtestResult: null,
       company: { yahooSymbol: { not: null } },
     },
     take: limit,
-    orderBy: { transactionDate: "desc" },
+    orderBy: { pubDate: "desc" },
     select: {
       id: true,
       transactionDate: true,
+      pubDate: true,
+      transactionNature: true,
       company: { select: { yahooSymbol: true } },
     },
   });
@@ -97,10 +101,21 @@ async function handle(req: NextRequest) {
   let computed = 0;
   let errors = 0;
 
+  // Direction helper (mirrors recompute-backtest.mjs)
+  function getDirection(nature: string | null): "BUY" | "SELL" | "OTHER" {
+    if (!nature) return "OTHER";
+    const n = nature.toLowerCase();
+    if (n.includes("cession")) return "SELL";
+    if (n.includes("acquisition") || n.includes("souscription") || n.includes("exercice")) return "BUY";
+    return "BUY"; // gratuites / attribution treated as BUY
+  }
+
   for (const decl of declarations) {
     const symbol = decl.company.yahooSymbol!;
-    const tradeDate = decl.transactionDate!;
+    // Use transactionDate when available, fall back to pubDate
+    const tradeDate = decl.transactionDate ?? decl.pubDate;
     const tradeDateTs = tradeDate.getTime();
+    const direction = getDirection(decl.transactionNature ?? null);
 
     try {
       const points = await fetchYahooChart(symbol);
@@ -117,10 +132,12 @@ async function handle(req: NextRequest) {
         continue;
       }
 
-      const price30d = priceNear(points, tradeDateTs + 30 * 86400_000, 10);
-      const price60d = priceNear(points, tradeDateTs + 60 * 86400_000, 10);
-      const price90d = priceNear(points, tradeDateTs + 90 * 86400_000, 10);
-      const price180d = priceNear(points, tradeDateTs + 180 * 86400_000, 10);
+      const price30d  = priceNear(points, tradeDateTs + 30  * 86400_000, 10);
+      const price60d  = priceNear(points, tradeDateTs + 60  * 86400_000, 10);
+      const price90d  = priceNear(points, tradeDateTs + 90  * 86400_000, 10);
+      const price160d = priceNear(points, tradeDateTs + 160 * 86400_000, 10);
+      const price365d = priceNear(points, tradeDateTs + 365 * 86400_000, 10);
+      const price730d = priceNear(points, tradeDateTs + 730 * 86400_000, 10);
 
       const ret = (p: number | null) =>
         p != null ? ((p - priceAtTrade) / priceAtTrade) * 100 : null;
@@ -129,26 +146,18 @@ async function handle(req: NextRequest) {
         where: { declarationId: decl.id },
         create: {
           declarationId: decl.id,
+          direction,
           priceAtTrade,
-          price30d,
-          price60d,
-          price90d,
-          price180d,
-          return30d: ret(price30d),
-          return60d: ret(price60d),
-          return90d: ret(price90d),
-          return180d: ret(price180d),
+          price30d, price60d, price90d, price160d, price365d, price730d,
+          return30d: ret(price30d), return60d: ret(price60d), return90d: ret(price90d),
+          return160d: ret(price160d), return365d: ret(price365d), return730d: ret(price730d),
         },
         update: {
+          direction,
           priceAtTrade,
-          price30d,
-          price60d,
-          price90d,
-          price180d,
-          return30d: ret(price30d),
-          return60d: ret(price60d),
-          return90d: ret(price90d),
-          return180d: ret(price180d),
+          price30d, price60d, price90d, price160d, price365d, price730d,
+          return30d: ret(price30d), return60d: ret(price60d), return90d: ret(price90d),
+          return160d: ret(price160d), return365d: ret(price365d), return730d: ret(price730d),
           computedAt: new Date(),
         },
       });
@@ -184,10 +193,8 @@ export async function stats(req: NextRequest) {
   const pending = await prisma.declaration.count({
     where: {
       type: "DIRIGEANTS",
-      transactionNature: { contains: "Acquisition", mode: "insensitive" },
-      transactionDate: { not: null },
+      transactionNature: { not: null },
       isin: { not: null },
-      totalAmount: { gt: 0 },
       backtestResult: null,
       company: { yahooSymbol: { not: null } },
     },

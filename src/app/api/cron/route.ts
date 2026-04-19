@@ -34,7 +34,13 @@ export async function GET(req: NextRequest) {
     // 4. Score any declarations that haven't been scored yet
     await scoreDeclarations(false).catch((e) => console.error("[cron] score:", e));
 
-    // 5. GPT-4o gender classification for insiders still unknown after local heuristics
+    // 5. Backtest compute: process up to 300 declarations without results yet
+    //    (runs incrementally each day; full dataset covered over time)
+    const backtestResult = await computeBacktestIncremental(300).catch(
+      (e) => { console.error("[cron] backtest:", e); return { computed: 0, errors: 0 }; }
+    );
+
+    // 6. GPT-4o gender classification for insiders still unknown after local heuristics
     //    (capped at 200 to stay well within Vercel's 5-min timeout)
     const genderResult = await gptGenderForUnknownInsiders({
       maxInsiders: 200,
@@ -46,11 +52,125 @@ export async function GET(req: NextRequest) {
       source: "daily-deep-sync",
       ...syncResult,
       reparsed,
+      backtest: backtestResult,
       genderGpt: genderResult,
     });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
+}
+
+/**
+ * Incrementally compute backtest results for declarations that don't have one yet.
+ * Fetches Yahoo Finance charts with a 10y range, computes all 6 horizons.
+ * Capped at `limit` per cron run so we stay within Vercel's 5-min timeout.
+ */
+async function computeBacktestIncremental(
+  limit: number
+): Promise<{ computed: number; errors: number }> {
+  const decls = await prisma.declaration.findMany({
+    where: {
+      type: "DIRIGEANTS",
+      transactionNature: { not: null },
+      isin: { not: null },
+      backtestResult: null,
+      company: { yahooSymbol: { not: null } },
+    },
+    take: limit,
+    orderBy: { pubDate: "desc" },
+    select: {
+      id: true,
+      transactionDate: true,
+      pubDate: true,
+      transactionNature: true,
+      company: { select: { yahooSymbol: true } },
+    },
+  });
+
+  if (decls.length === 0) return { computed: 0, errors: 0 };
+
+  function direction(nature: string | null): string {
+    if (!nature) return "BUY";
+    const n = nature.toLowerCase();
+    if (n.includes("cession")) return "SELL";
+    return "BUY";
+  }
+
+  async function fetchChart(symbol: string): Promise<Array<{ ts: number; close: number }>> {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=10y&includePrePost=false`;
+    try {
+      const r = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" },
+        signal: AbortSignal.timeout(12000),
+      });
+      if (!r.ok) return [];
+      const data = await r.json();
+      const result = data?.chart?.result?.[0];
+      if (!result) return [];
+      const ts: number[] = result.timestamp ?? [];
+      const closes: (number | null)[] = result.indicators?.quote?.[0]?.close ?? [];
+      return ts
+        .map((t: number, i: number) => ({ ts: t * 1000, close: closes[i] ?? 0 }))
+        .filter((p: { ts: number; close: number }) => p.close > 0);
+    } catch { return []; }
+  }
+
+  function priceNear(points: Array<{ ts: number; close: number }>, targetTs: number): number | null {
+    const maxDelta = 12 * 86400_000;
+    let best: number | null = null;
+    let bestDelta = Infinity;
+    for (const p of points) {
+      const delta = p.ts - targetTs;
+      if (delta >= 0 && delta < maxDelta && delta < bestDelta) { best = p.close; bestDelta = delta; }
+    }
+    return best;
+  }
+
+  const HORIZONS = [30, 60, 90, 160, 365, 730];
+
+  // Group by symbol to minimise Yahoo API calls
+  const bySymbol = new Map<string, typeof decls>();
+  for (const d of decls) {
+    const sym = d.company.yahooSymbol!;
+    if (!bySymbol.has(sym)) bySymbol.set(sym, []);
+    bySymbol.get(sym)!.push(d);
+  }
+
+  let computed = 0;
+  let errors   = 0;
+
+  for (const [symbol, group] of bySymbol) {
+    const points = await fetchChart(symbol);
+    if (points.length === 0) { errors += group.length; continue; }
+
+    await Promise.all(group.map(async (decl) => {
+      const tradeDate = decl.transactionDate ?? decl.pubDate;
+      const ts = tradeDate.getTime();
+      const base = priceNear(points, ts);
+      if (!base) { errors++; return; }
+
+      const prices: Record<string, number | null> = {};
+      const returns: Record<string, number | null> = {};
+      for (const h of HORIZONS) {
+        const p = priceNear(points, ts + h * 86400_000);
+        prices[`price${h}d`]  = p;
+        returns[`return${h}d`] = p != null ? ((p - base) / base) * 100 : null;
+      }
+
+      try {
+        await prisma.backtestResult.upsert({
+          where: { declarationId: decl.id },
+          create: { declarationId: decl.id, direction: direction(decl.transactionNature), priceAtTrade: base, ...prices, ...returns },
+          update: { direction: direction(decl.transactionNature), priceAtTrade: base, ...prices, ...returns, computedAt: new Date() },
+        });
+        computed++;
+      } catch { errors++; }
+    }));
+
+    await new Promise((r) => setTimeout(r, 250));
+  }
+
+  return { computed, errors };
 }
 
 /**

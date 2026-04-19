@@ -70,17 +70,19 @@ Score fort · {score}
     </span>
   );
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/5 border border-white/10 text-slate-500">
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium"
+      style={{ background: "var(--bg-raised)", border: "1px solid var(--border-med)", color: "var(--tx-3)" }}>
       {score}
     </span>
   );
 }
 
-const TYPE_BADGE: Record<DeclarationType, string> = {
-  DIRIGEANTS: "bg-indigo-500/10 text-indigo-300 border border-indigo-500/20",
-  SEUILS: "bg-sky-500/10 text-sky-300 border border-sky-500/20",
-  PROSPECTUS: "bg-violet-500/10 text-violet-300 border border-violet-500/20",
-  OTHER: "bg-slate-500/10 text-slate-400 border border-slate-500/20",
+// Use CSS-variable-based badge classes defined in globals.css
+const TYPE_BADGE_CLS: Record<DeclarationType, string> = {
+  DIRIGEANTS: "badge badge-indigo",
+  SEUILS:     "badge badge-indigo",
+  PROSPECTUS: "badge badge-amber",
+  OTHER:      "badge badge-neutral",
 };
 const TYPE_LABEL: Record<DeclarationType, string> = {
   DIRIGEANTS: "Dirigeants",
@@ -113,7 +115,7 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
 
           {/* Top row: badges + company */}
           <div className="flex flex-wrap items-center gap-2 mb-2.5">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${TYPE_BADGE[declaration.type]}`}>
+            <span className={`${TYPE_BADGE_CLS[declaration.type]} text-[11px]`}>
               {TYPE_LABEL[declaration.type]}
             </span>
 
@@ -127,7 +129,8 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
             {showCompany && (
               <Link
                 href={`/company/${declaration.company.slug}`}
-                className="text-sm font-semibold text-slate-200 hover:text-white transition-colors"
+                className="text-sm font-semibold transition-colors"
+                style={{ color: "var(--tx-1)" }}
               >
                 {declaration.company.name}
               </Link>
@@ -139,12 +142,13 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
           {/* Insider row */}
           {hasDetail && declaration.insiderName && (
             <div className="flex items-center gap-2 mb-2.5">
-              <div className="w-6 h-6 rounded-full avatar-glass flex items-center justify-center text-[10px] text-violet-300 font-bold flex-shrink-0">
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+                style={{ background: "var(--c-indigo-bg)", border: "1px solid var(--c-indigo-bd)", color: "var(--c-indigo-2)" }}>
                 {declaration.insiderName.charAt(0)}
               </div>
-              <span className="text-sm font-medium text-slate-200">{declaration.insiderName}</span>
+              <span className="text-sm font-medium" style={{ color: "var(--tx-1)" }}>{declaration.insiderName}</span>
               {declaration.insiderFunction && (
-                <span className="text-xs text-slate-500 truncate">{declaration.insiderFunction}</span>
+                <span className="text-xs truncate" style={{ color: "var(--tx-3)" }}>{declaration.insiderFunction}</span>
               )}
             </div>
           )}
@@ -194,7 +198,8 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
                   type="button"
                   onClick={copyIsin}
                   title={copied ? "Copié !" : "Copier l'ISIN"}
-                  className="font-mono text-[10px] text-slate-500 bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded transition-colors cursor-pointer flex items-center gap-1"
+                  className="font-mono text-[10px] px-2 py-0.5 rounded transition-colors cursor-pointer flex items-center gap-1"
+                  style={{ color: "var(--tx-3)", background: "var(--bg-raised)", border: "1px solid var(--border)" }}
                 >
                   {declaration.isin}
                   <span className="text-[9px] opacity-50">{copied ? "✓" : "⎘"}</span>
@@ -207,12 +212,13 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
           {hasDetail && (declaration.instrumentType || declaration.transactionVenue) && (
             <div className="flex flex-wrap items-center gap-2 mb-2">
               {declaration.instrumentType && (
-                <span className="text-[11px] text-slate-600 bg-white/4 border border-white/5 px-2 py-0.5 rounded-lg">
+                <span className="text-[11px] px-2 py-0.5 rounded-lg"
+                  style={{ color: "var(--tx-3)", background: "var(--bg-raised)", border: "1px solid var(--border)" }}>
                   {declaration.instrumentType}
                 </span>
               )}
               {declaration.transactionVenue && (
-                <span className="text-[11px] text-slate-600">
+                <span className="text-[11px]" style={{ color: "var(--tx-3)" }}>
                   📍 {declaration.transactionVenue}
                 </span>
               )}
@@ -220,12 +226,12 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
           )}
 
           {/* Footer */}
-          <div className="flex items-center gap-2 text-[11px] text-slate-600">
+          <div className="flex items-center gap-2 text-[11px]" style={{ color: "var(--tx-3)" }}>
             <span className="font-mono">{declaration.amfId}</span>
             <span>·</span>
             <time>{fmtDate(pubDate)}</time>
             {!declaration.pdfParsed && declaration.type === "DIRIGEANTS" && (
-              <span className="text-slate-700 italic">détails non chargés</span>
+              <span className="italic" style={{ color: "var(--tx-4)" }}>détails non chargés</span>
             )}
           </div>
         </div>

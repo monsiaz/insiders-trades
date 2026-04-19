@@ -10,17 +10,13 @@ const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
-  const [mounted, setMounted] = useState(false);
+  // Read the theme already applied by the inline script in layout.tsx
+  const getInitialTheme = (): Theme => {
+    if (typeof window === "undefined") return "dark";
+    return (document.documentElement.classList.contains("light") ? "light" : "dark") as Theme;
+  };
 
-  useEffect(() => {
-    const saved = localStorage.getItem("it-theme") as Theme | null;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initial = saved ?? (prefersDark ? "dark" : "light");
-    setTheme(initial);
-    applyTheme(initial);
-    setMounted(true);
-  }, []);
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
   function applyTheme(t: Theme) {
     const html = document.documentElement;
@@ -35,9 +31,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("it-theme", next);
   }
 
-  // Avoid flash: render children immediately but apply class server-side too
-  if (!mounted) return <div style={{ visibility: "hidden" }}>{children}</div>;
-
+  // No visibility:hidden flash — the inline script in layout.tsx sets the correct
+  // class on <html> before React hydrates, so content is always visible at the right theme.
   return (
     <ThemeCtx.Provider value={{ theme, toggle }}>
       {children}

@@ -67,7 +67,7 @@ export function CompanyBacktestWidget({ companyId }: { companyId: string }) {
     <div className="glass-card-static rounded-2xl p-5 border border-indigo-500/10 bg-gradient-to-br from-indigo-500/5 to-transparent">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm font-semibold text-white">📊 Historique de performance</h3>
+          <h3 className="text-sm font-semibold text-white">Historique de performance</h3>
           <p className="text-xs text-slate-500 mt-0.5">
             {data.count} achat{data.count > 1 ? "s" : ""} tracé{data.count > 1 ? "s" : ""} sur {new Set(data.points.map((p) => p.date.slice(0, 4))).size} an{new Set(data.points.map((p) => p.date.slice(0, 4))).size > 1 ? "s" : ""}
           </p>

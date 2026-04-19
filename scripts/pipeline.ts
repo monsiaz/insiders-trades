@@ -281,7 +281,9 @@ async function runBacktest() {
       const p30 = priceNear(points, tradeDateTs + 30 * 86400_000, 10);
       const p60 = priceNear(points, tradeDateTs + 60 * 86400_000, 10);
       const p90 = priceNear(points, tradeDateTs + 90 * 86400_000, 10);
-      const p180 = priceNear(points, tradeDateTs + 180 * 86400_000, 10);
+      const p160 = priceNear(points, tradeDateTs + 160 * 86400_000, 10);
+      const p365 = priceNear(points, tradeDateTs + 365 * 86400_000, 10);
+      const p730 = priceNear(points, tradeDateTs + 730 * 86400_000, 10);
       const ret = (p: number | null) => p != null ? ((p - priceAtTrade) / priceAtTrade) * 100 : null;
 
       upserts.push(
@@ -290,13 +292,13 @@ async function runBacktest() {
           create: {
             declarationId: decl.id,
             priceAtTrade,
-            price30d: p30, price60d: p60, price90d: p90, price180d: p180,
-            return30d: ret(p30), return60d: ret(p60), return90d: ret(p90), return180d: ret(p180),
+            price30d: p30, price60d: p60, price90d: p90, price160d: p160, price365d: p365, price730d: p730,
+            return30d: ret(p30), return60d: ret(p60), return90d: ret(p90), return160d: ret(p160), return365d: ret(p365), return730d: ret(p730),
           },
           update: {
             priceAtTrade,
-            price30d: p30, price60d: p60, price90d: p90, price180d: p180,
-            return30d: ret(p30), return60d: ret(p60), return90d: ret(p90), return180d: ret(p180),
+            price30d: p30, price60d: p60, price90d: p90, price160d: p160, price365d: p365, price730d: p730,
+            return30d: ret(p30), return60d: ret(p60), return90d: ret(p90), return160d: ret(p160), return365d: ret(p365), return730d: ret(p730),
             computedAt: new Date(),
           },
         })

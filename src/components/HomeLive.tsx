@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { DeclarationCard } from "./DeclarationCard";
+import { FileText, Building2, User, TrendingUp, TrendingDown } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -105,11 +106,11 @@ export function HomeLive({ initial }: { initial: HomeData }) {
     <>
       {/* Stats grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-14 animate-fade-in-delay">
-        <StatTile label="Déclarations" value={stats.totalDeclarations.toLocaleString("fr-FR")} icon="📋" accent="indigo" />
-        <StatTile label="Sociétés" value={stats.totalCompanies.toLocaleString("fr-FR")} icon="🏢" accent="violet" />
-        <StatTile label="Dirigeants" value={stats.totalInsiders.toLocaleString("fr-FR")} icon="👤" accent="slate" className="hidden sm:flex" />
-        <StatTile label="Achats" value={stats.totalBuys.toLocaleString("fr-FR")} icon="▲" accent="emerald" />
-        <StatTile label="Ventes" value={stats.totalSells.toLocaleString("fr-FR")} icon="▼" accent="rose" />
+        <StatTile label="Déclarations" value={stats.totalDeclarations.toLocaleString("fr-FR")} icon={<FileText size={15} strokeWidth={1.8} />} accent="indigo" />
+        <StatTile label="Sociétés" value={stats.totalCompanies.toLocaleString("fr-FR")} icon={<Building2 size={15} strokeWidth={1.8} />} accent="violet" />
+        <StatTile label="Dirigeants" value={stats.totalInsiders.toLocaleString("fr-FR")} icon={<User size={15} strokeWidth={1.8} />} accent="slate" className="hidden sm:flex" />
+        <StatTile label="Achats" value={stats.totalBuys.toLocaleString("fr-FR")} icon={<TrendingUp size={15} strokeWidth={1.8} />} accent="emerald" />
+        <StatTile label="Ventes" value={stats.totalSells.toLocaleString("fr-FR")} icon={<TrendingDown size={15} strokeWidth={1.8} />} accent="rose" />
       </div>
 
       {/* Rankings */}
@@ -242,7 +243,7 @@ function StatTile({
 }: {
   label: string;
   value: string;
-  icon: string;
+  icon: React.ReactNode;
   accent: "indigo" | "violet" | "emerald" | "rose" | "slate";
   className?: string;
 }) {
@@ -255,7 +256,7 @@ function StatTile({
   };
   return (
     <div className={`glass-card-static rounded-2xl p-4 bg-gradient-to-br ${accentMap[accent]} flex flex-col gap-2 ${className}`}>
-      <span className="text-base">{icon}</span>
+      <span className="opacity-60">{icon}</span>
       <div className="stat-number">{value}</div>
       <div className="text-xs text-slate-500 font-medium">{label}</div>
     </div>

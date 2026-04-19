@@ -1,139 +1,106 @@
 /**
- * Overnight enrichment script — runs indefinitely until Ctrl+C
- * Alternates between:
- *   1. Reparse (missing ISIN, unparsed, missing amount)
- *   2. Financial enrichment via Vercel cron
- *   3. Re-score signals
- *
- * Run: node scripts/overnight-enrich.mjs
+ * Overnight enrichment loop:
+ * 1. Reparse unparsed/incomplete declarations (PDF → trade details)
+ * 2. Enrich market caps / financials for companies
+ * 3. Score signals
  */
+const BASE = "https://insiders-trades-sigma.vercel.app";
+const SECRET = process.env.CRON_SECRET || "insider-trades-cron-secret";
 
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const envPath = join(__dirname, '../.env');
-
-// Parse .env
-const env = {};
-for (const line of readFileSync(envPath, 'utf8').split('\n')) {
-  const m = line.match(/^([A-Z_]+)\s*=\s*"?(.+?)"?\s*$/);
-  if (m) env[m[1]] = m[2].trim().replace(/^"|"$/g, '');
+function now() {
+  return new Date().toLocaleTimeString("fr-FR");
 }
 
-const SECRET = env.CRON_SECRET;
-const BASE = 'https://insiders-trades-sigma.vercel.app';
-
-let totalProcessed = 0;
-let totalImproved = 0;
-let round = 0;
-const startTime = Date.now();
-
-function elapsed() {
-  const s = Math.floor((Date.now() - startTime) / 1000);
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  return `${h}h${m.toString().padStart(2,'0')}m`;
+function elapsed(ms) {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  return `${h}h${String(m).padStart(2, "0")}m`;
 }
 
-async function post(path, body = {}) {
+async function apiCall(path, method = "GET", body = null) {
   try {
-    const res = await fetch(`${BASE}${path}`, {
-      method: 'POST',
+    const opts = {
+      method,
       headers: {
-        'Authorization': `Bearer ${SECRET}`,
-        'x-cron-secret': SECRET,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${SECRET}`,
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
       signal: AbortSignal.timeout(290000),
-    });
-    if (!res.ok) return null;
-    return res.json();
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(`${BASE}${path}`, opts);
+    if (!res.ok) return { error: `HTTP ${res.status}` };
+    return await res.json();
   } catch (e) {
-    return null;
+    return { error: e.message };
   }
 }
 
 async function getStats() {
-  try {
-    const res = await fetch(`${BASE}/api/reparse`, {
-      headers: { 'Authorization': `Bearer ${SECRET}` },
-      signal: AbortSignal.timeout(10000),
-    });
-    return res.json();
-  } catch { return null; }
-}
-
-async function printStats() {
-  const s = await getStats();
-  if (!s) return;
-  console.log(`\n📊 [${elapsed()}] Dataset status:`);
-  console.log(`   Total: ${s.total} | Parsed: ${s.parsed} (${s.coverage.parsed})`);
-  console.log(`   ISIN: ${s.coverage.withIsin} | Amount: ${s.coverage.withAmount}`);
-  console.log(`   Missing ISIN: ${s.missingIsin} | Unparsed: ${s.unparsed} | No amount: ${s.missingAmount}`);
-}
-
-async function runReparseBatch(mode) {
-  const r = await post('/api/reparse', { mode, limit: 100 });
-  if (!r) return { processed: 0, improved: 0 };
-  totalProcessed += r.processed || 0;
-  totalImproved += r.improved || 0;
+  const r = await apiCall("/api/reparse?mode=stats");
+  if (r.error) return null;
   return r;
 }
 
-async function runFinancialEnrich() {
-  const r = await post('/api/enrich-mcap', { limit: 50 });
-  if (r) console.log(`   💰 Financial enrich: ${r.enriched ?? r.updated ?? '?'} companies updated`);
-}
+async function main() {
+  const startTime = Date.now();
+  console.log(`🚀 Overnight enrichment started at ${now()}`);
+  console.log(`   Target: ${BASE}\n`);
 
-async function runScoring() {
-  const r = await post('/api/score-signals', { force: false });
-  if (r?.ok) console.log(`   📈 Signals scored`);
-}
+  let round = 0;
 
-// Main loop
-console.log(`🚀 Overnight enrichment started at ${new Date().toLocaleTimeString()}`);
-console.log(`   Target: ${BASE}`);
-console.log(`   Press Ctrl+C to stop\n`);
+  while (true) {
+    round++;
+    const roundElapsed = elapsed(Date.now() - startTime);
+    console.log(`⚙️  [${roundElapsed}] Round ${round} — processing...`);
 
-await printStats();
+    // Run all 3 reparse modes in parallel
+    const [unparsed, missingIsin, missingAmount] = await Promise.all([
+      apiCall("/api/reparse", "POST", { mode: "unparsed", limit: 100 }),
+      apiCall("/api/reparse", "POST", { mode: "missing-isin", limit: 100 }),
+      apiCall("/api/reparse", "POST", { mode: "missing-amount", limit: 100 }),
+    ]);
 
-while (true) {
-  round++;
-  const now = new Date().toLocaleTimeString();
-  process.stdout.write(`\r⚙️  [${elapsed()}] Round ${round} — processing...`);
+    const improved =
+      (unparsed.improved ?? 0) +
+      (missingIsin.improved ?? 0) +
+      (missingAmount.improved ?? 0);
+    const errors =
+      (unparsed.errors ?? 0) + (missingIsin.errors ?? 0) + (missingAmount.errors ?? 0);
+    console.log(`   Reparse: +${improved} improved, ${errors} errors`);
 
-  // Batch 1: Parse unparsed PDFs
-  const r1 = await runReparseBatch('unparsed');
-  
-  // Batch 2: Fix missing ISIN
-  const r2 = await runReparseBatch('missing-isin');
-  
-  // Batch 3: Fix missing amount
-  const r3 = await runReparseBatch('missing-amount');
+    // Enrich financials (companies without market cap)
+    const enrich = await apiCall(`/api/enrich-mcap?limit=50`);
+    if (enrich.enriched != null) {
+      console.log(`   Enrich: ${enrich.enriched} companies enriched`);
+    }
 
-  const totalThisRound = (r1.processed || 0) + (r2.processed || 0) + (r3.processed || 0);
-  process.stdout.write(`\r✅ [${elapsed()}] Round ${round} — ${totalThisRound} processed (total: ${totalProcessed})\n`);
+    // Score signals
+    const score = await apiCall("/api/score-signals");
+    if (score.scored != null) {
+      console.log(`   Scores: ${score.scored} declarations scored`);
+    }
 
-  // Every 5 rounds: print stats + run financial enrichment
-  if (round % 5 === 0) {
-    await printStats();
-    await runFinancialEnrich();
-    await runScoring();
+    // Stats every 5 rounds
+    if (round % 5 === 0) {
+      const stats = await getStats();
+      if (stats) {
+        console.log(`\n📊 [${roundElapsed}] Dataset status:`);
+        console.log(`   Total: ${stats.total} | Parsed: ${stats.parsed} (${((stats.parsed / stats.total) * 100).toFixed(1)}%)`);
+        console.log(
+          `   ISIN: ${((stats.withIsin / stats.total) * 100).toFixed(1)}% | Amount: ${((stats.withAmount / stats.total) * 100).toFixed(1)}%\n`
+        );
+      }
+    }
+
+    // Check if all parsed — if nothing improved in 3 consecutive rounds, slow down
+    if (improved === 0 && errors === 0) {
+      console.log(`   Nothing to process, waiting 5min...`);
+      await new Promise((r) => setTimeout(r, 300000));
+    } else {
+      await new Promise((r) => setTimeout(r, 5000));
+    }
   }
-
-  // If nothing to process, slow down and just maintain
-  if (totalThisRound === 0) {
-    console.log(`   ⏸️  Nothing to parse — sleeping 10 minutes then checking again...`);
-    await new Promise(r => setTimeout(r, 10 * 60 * 1000));
-    // Run financial enrichment instead
-    await runFinancialEnrich();
-    await runScoring();
-    await printStats();
-  } else {
-    // Small delay between rounds
-    await new Promise(r => setTimeout(r, 3000));
-  }
 }
+
+main().catch(console.error);

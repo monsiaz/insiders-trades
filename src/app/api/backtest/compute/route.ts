@@ -60,15 +60,17 @@ function priceNear(
   return best;
 }
 
-export async function POST(req: NextRequest) {
+async function handle(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
+  const secret = new URL(req.url).searchParams.get("secret");
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}` && secret !== cronSecret) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => ({}));
-  const limit: number = Math.min(body?.limit ?? 100, 500);
+  const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
+  const limitParam = new URL(req.url).searchParams.get("limit");
+  const limit: number = Math.min(body?.limit ?? Number(limitParam ?? 200), 500);
 
   // Fetch declarations eligible for backtesting that don't have results yet
   const declarations = await prisma.declaration.findMany({
@@ -168,7 +170,10 @@ export async function POST(req: NextRequest) {
   });
 }
 
-export async function GET(req: NextRequest) {
+export const GET = handle;
+export const POST = handle;
+
+export async function stats(req: NextRequest) {
   const url = new URL(req.url);
   const secret = url.searchParams.get("secret");
   if (secret !== process.env.CRON_SECRET) {

@@ -7,6 +7,14 @@
     {
       "path": "/api/cron",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/enrich-mcap",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/backtest/compute",
+      "schedule": "0 5 * * 0"
     }
   ]
 }

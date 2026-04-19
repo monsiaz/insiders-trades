@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { DeclarationType } from "@prisma/client";
 
 interface DeclarationCardProps {
@@ -54,19 +57,23 @@ function fmtDate(d: Date): string {
   return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
 }
 
-// Signal score → visual indicator
+// Signal score → visual indicator (more prominent)
 function SignalBadge({ score }: { score: number }) {
   if (score >= 70) return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/15 border border-amber-400/25 text-amber-300">
-      <span className="text-[8px]">⚡</span>Signal fort {score}
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-400/15 border border-emerald-400/30 text-emerald-300 shadow-sm shadow-emerald-400/10">
+      <span>⚡</span>Score fort · {score}
     </span>
   );
   if (score >= 45) return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-400/10 border border-indigo-400/20 text-indigo-300">
-      <span className="text-[8px]">◆</span>Signal {score}
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-400/12 border border-amber-400/25 text-amber-300">
+      <span>◆</span>Signal · {score}
     </span>
   );
-  return null;
+  return (
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/5 border border-white/10 text-slate-500">
+      {score}
+    </span>
+  );
 }
 
 const TYPE_BADGE: Record<DeclarationType, string> = {
@@ -89,6 +96,15 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
   const score = declaration.signalScore ?? 0;
   const pctMcap = declaration.pctOfMarketCap;
   const pctFlow = declaration.pctOfInsiderFlow;
+  const [copied, setCopied] = useState(false);
+
+  function copyIsin() {
+    if (!declaration.isin) return;
+    navigator.clipboard.writeText(declaration.isin).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }).catch(() => {});
+  }
 
   return (
     <div className="glass-card rounded-2xl p-4 group">
@@ -117,7 +133,7 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
               </Link>
             )}
 
-            {score >= 45 && <SignalBadge score={Math.round(score)} />}
+            <SignalBadge score={Math.round(score)} />
           </div>
 
           {/* Insider row */}
@@ -174,9 +190,15 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
                 </span>
               )}
               {declaration.isin && (
-                <span className="font-mono text-[10px] text-slate-600 bg-white/5 px-2 py-0.5 rounded">
+                <button
+                  type="button"
+                  onClick={copyIsin}
+                  title={copied ? "Copié !" : "Copier l'ISIN"}
+                  className="font-mono text-[10px] text-slate-500 bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded transition-colors cursor-pointer flex items-center gap-1"
+                >
                   {declaration.isin}
-                </span>
+                  <span className="text-[9px] opacity-50">{copied ? "✓" : "⎘"}</span>
+                </button>
               )}
             </div>
           )}

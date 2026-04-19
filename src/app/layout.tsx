@@ -57,6 +57,12 @@ export default function RootLayout({
               >
                 Dirigeants
               </Link>
+              <Link
+                href="/backtest"
+                className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+              >
+                Backtesting
+              </Link>
             </div>
 
             {/* Spacer */}

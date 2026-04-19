@@ -6,6 +6,7 @@ import { CompanySyncButton } from "@/components/CompanySyncButton";
 import { EnrichButton } from "@/components/EnrichButton";
 import { StockChart } from "@/components/StockChart";
 import { CompanyFinancials } from "@/components/CompanyFinancials";
+import { CompanyBacktestWidget } from "@/components/CompanyBacktestWidget";
 import { DeclarationType } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -223,6 +224,11 @@ export default async function CompanyPage({ params, searchParams }: Props) {
             source: ["cache"],
           } : null}
         />
+      </div>
+
+      {/* Backtest mini-widget */}
+      <div className="mb-6">
+        <CompanyBacktestWidget companyId={company.id} />
       </div>
 
       {/* Last declaration date */}

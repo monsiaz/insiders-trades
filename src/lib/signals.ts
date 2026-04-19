@@ -80,21 +80,30 @@ function computeScore(
   analystScore?: number | null,
   trailingPE?: number | null,
   debtToEquity?: number | null,
+  nearbyInsiderCount?: number,
 ): number {
   let score = 0;
   score += pctMcapScore(pctOfMarketCap ?? 0);
   score += pctFlowScore(pctOfInsiderFlow ?? 0);
   score += functionScore(insiderFunction);
-  if (isCluster) score += 10;
+  // Use clusterStrength instead of flat +10 for cluster
+  score += clusterStrengthScore(nearbyInsiderCount ?? (isCluster ? 2 : 0));
   if ((insiderCumNet ?? 0) > 0) score += 5;
   score += fundamentalsScore(analystScore ?? null, trailingPE ?? null, debtToEquity ?? null);
   return Math.min(100, Math.max(0, score));
 }
 
+/** Cluster strength bonus (0–10 pts): ≥3 distinct insiders → 10, 2 → 5 */
+function clusterStrengthScore(nearbyInsiderCount: number): number {
+  if (nearbyInsiderCount >= 3) return 10;
+  if (nearbyInsiderCount >= 2) return 5;
+  return 0;
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // Cluster detection helpers
 // ────────────────────────────────────────────────────────────────────────────
-const CLUSTER_WINDOW_DAYS = 5;
+const CLUSTER_WINDOW_DAYS = 30;
 
 function withinDays(a: Date, b: Date, days: number) {
   return Math.abs(a.getTime() - b.getTime()) <= days * 86400_000;
@@ -213,7 +222,8 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
           nearbyInsiders.add(t.insiderName);
         }
       }
-      const isCluster = nearbyInsiders.size >= 2;
+      const nearbyInsiderCount = nearbyInsiders.size;
+      const isCluster = nearbyInsiderCount >= 2;
 
       const signalScore = computeScore(
         pctOfMarketCap,
@@ -224,6 +234,7 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
         decl.company.analystScore,
         decl.company.trailingPE,
         decl.company.debtToEquity,
+        nearbyInsiderCount,
       );
 
       updates.push(

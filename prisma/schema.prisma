@@ -117,8 +117,9 @@ model Declaration {
   isCluster         Boolean  @default(false) // multiple insiders traded same week
   scoredAt          DateTime? // when signals were last computed
 
-  company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  insider Insider? @relation(fields: [insiderId], references: [id], onDelete: SetNull)
+  company       Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  insider       Insider?       @relation(fields: [insiderId], references: [id], onDelete: SetNull)
+  backtestResult BacktestResult?
 
   @@index([companyId])
   @@index([insiderId])
@@ -128,6 +129,22 @@ model Declaration {
   @@index([pdfParsed])
   @@index([signalScore])
   @@index([scoredAt])
+}
+
+model BacktestResult {
+  id            String      @id @default(cuid())
+  declarationId String      @unique
+  declaration   Declaration @relation(fields: [declarationId], references: [id])
+  priceAtTrade  Float?
+  price30d      Float?
+  price60d      Float?
+  price90d      Float?
+  price180d     Float?
+  return30d     Float?
+  return60d     Float?
+  return90d     Float?
+  return180d    Float?
+  computedAt    DateTime    @default(now())
 }
 
 enum DeclarationType {

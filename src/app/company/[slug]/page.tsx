@@ -112,7 +112,8 @@ export default async function CompanyPage({ params, searchParams }: Props) {
   return (
     <div className="content-wrapper">
       {/* Back */}
-      <Link href="/companies" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-300 transition-colors mb-6">
+      <Link href="/companies" className="inline-flex items-center gap-1.5 text-sm transition-colors mb-6"
+        style={{ color: "var(--tx-3)" }}>
         ← Sociétés
       </Link>
 
@@ -120,23 +121,26 @@ export default async function CompanyPage({ params, searchParams }: Props) {
       <div className="glass-card-static rounded-3xl p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-indigo-500/20 flex items-center justify-center text-2xl font-bold text-indigo-300">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold flex-shrink-0"
+              style={{ background: "var(--c-indigo-bg)", border: "1px solid var(--c-indigo-bd)", color: "var(--c-indigo-2)" }}>
               {company.name.charAt(0)}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">{company.name}</h1>
+              <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--tx-1)" }}>{company.name}</h1>
               <div className="flex flex-wrap items-center gap-2 mt-1">
-                <span className="font-mono text-xs text-slate-500">{company.amfToken}</span>
+                <span className="font-mono text-xs" style={{ color: "var(--tx-3)" }}>{company.amfToken}</span>
                 {isin && (
-                  <span className="font-mono text-xs text-slate-500 bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">
+                  <span className="font-mono text-xs px-2 py-0.5 rounded-lg"
+                    style={{ color: "var(--tx-3)", background: "var(--bg-raised)", border: "1px solid var(--border)" }}>
                     {isin}
                   </span>
                 )}
                 {company.market && (
-                  <span className="text-xs text-slate-500">{company.market}</span>
+                  <span className="text-xs" style={{ color: "var(--tx-3)" }}>{company.market}</span>
                 )}
                 {company.marketCap && (
-                  <span className="text-xs text-amber-400/70 bg-amber-400/8 border border-amber-400/15 px-2 py-0.5 rounded-lg">
+                  <span className="text-xs px-2 py-0.5 rounded-lg"
+                    style={{ color: "var(--c-amber)", background: "var(--c-amber-bg)", border: "1px solid var(--c-amber-bd)" }}>
                     Mcap {Number(company.marketCap) >= 1e9
                       ? `${(Number(company.marketCap) / 1e9).toFixed(1)}Md€`
                       : `${(Number(company.marketCap) / 1e6).toFixed(0)}M€`}
@@ -233,7 +237,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
 
       {/* Last declaration date */}
       {lastDecl && (
-        <div className="mb-6 text-xs text-slate-600 text-right">
+        <div className="mb-6 text-xs text-right" style={{ color: "var(--tx-3)" }}>
           Dernière déclaration le{" "}
           {new Date(lastDecl.pubDate).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
         </div>
@@ -268,7 +272,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
       {/* Declarations list */}
       <div className="space-y-2">
         {declarations.length === 0 ? (
-          <div className="glass-card rounded-2xl p-12 text-center text-slate-500">
+          <div className="glass-card rounded-2xl p-12 text-center" style={{ color: "var(--tx-3)" }}>
             Aucune déclaration trouvée
           </div>
         ) : (
@@ -289,7 +293,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
               ← Précédent
             </Link>
           )}
-          <span className="text-sm text-slate-500">
+          <span className="text-sm" style={{ color: "var(--tx-3)" }}>
             Page {pageNum} / {totalPages}
           </span>
           {pageNum < totalPages && (
@@ -303,7 +307,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
         </div>
       )}
 
-      <div className="mt-4 text-center text-xs text-slate-700">
+      <div className="mt-4 text-center text-xs" style={{ color: "var(--tx-3)" }}>
         {totalCount} déclaration{totalCount !== 1 ? "s" : ""} au total
       </div>
     </div>
@@ -321,17 +325,18 @@ function MiniStat({
   sub?: string;
   accent: "indigo" | "sky" | "emerald" | "rose";
 }) {
-  const map = {
-    indigo: "from-indigo-500/8 to-transparent border-indigo-500/12",
-    sky: "from-sky-500/8 to-transparent border-sky-500/12",
-    emerald: "from-emerald-500/8 to-transparent border-emerald-500/12",
-    rose: "from-rose-500/8 to-transparent border-rose-500/12",
+  const borderMap: Record<string, string> = {
+    indigo: "var(--c-indigo)",
+    sky:    "var(--c-indigo-2)",
+    emerald: "var(--c-mint)",
+    rose:   "var(--c-red)",
   };
   return (
-    <div className={`glass-card-static rounded-2xl p-4 bg-gradient-to-br ${map[accent]}`}>
-      <div className="text-xl font-bold text-white tracking-tight">{value}</div>
-      {sub && <div className="text-xs text-slate-600 mt-0.5">{sub}</div>}
-      <div className="text-xs text-slate-500 mt-1">{label}</div>
+    <div className="glass-card-static rounded-2xl p-4"
+      style={{ borderTop: `3px solid ${borderMap[accent]}` }}>
+      <div className="text-xl font-bold tracking-tight" style={{ color: "var(--tx-1)" }}>{value}</div>
+      {sub && <div className="text-xs mt-0.5" style={{ color: "var(--tx-3)" }}>{sub}</div>}
+      <div className="text-xs mt-1" style={{ color: "var(--tx-3)" }}>{label}</div>
     </div>
   );
 }

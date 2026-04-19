@@ -65,10 +65,10 @@ export function AppSidebar() {
 
   return (
     <nav className="app-sidebar" aria-label="Navigation principale">
-      {/* Logo */}
-      <div className="mb-6 flex-shrink-0">
+      {/* Logo — icon always visible; on hover: name beside + tagline below */}
+      <div className="mb-4 flex-shrink-0 w-full">
         <Link href="/" className="block" aria-label="InsiderTrades accueil">
-          <div className="flex items-center gap-3 px-3">
+          <div className="flex items-center gap-3 px-3 py-1">
             <LogoMark size={36} />
             <div className="sidebar-label">
               <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: "0.9rem", letterSpacing: "-0.02em", color: "var(--tx-1)" }}>InsiderTrades</div>
@@ -76,6 +76,21 @@ export function AppSidebar() {
             </div>
           </div>
         </Link>
+        {/* Brand tagline — slides in below logo when sidebar expands */}
+        <div className="sidebar-brand-text px-3 pb-1">
+          <div style={{
+            fontFamily: "Space Grotesk, sans-serif",
+            fontSize: "0.62rem",
+            fontWeight: 600,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: "var(--c-indigo-2)",
+            paddingLeft: "8px",
+            borderLeft: "2px solid var(--c-indigo)",
+          }}>
+            Transactions · Signaux · Backtest
+          </div>
+        </div>
       </div>
 
       {/* Nav links */}

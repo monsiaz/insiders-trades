@@ -342,7 +342,7 @@ function SignalsTable({ combos }: { combos: SignalCombo[] }) {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm table-zebra">
           <thead>
             <tr className="border-b border-soft">
               <th className="text-left pb-2 text-xs text-muted font-medium w-8">#</th>
@@ -442,7 +442,7 @@ function TopTradesTable({ trades }: { trades: StatsData["topTrades"] }) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm table-zebra">
           <thead>
             <tr className="border-b border-soft">
               <th className="text-left pb-2 text-xs text-muted font-medium">#</th>
@@ -522,9 +522,17 @@ function TopTradesTable({ trades }: { trades: StatsData["topTrades"] }) {
 
 // ── KPI card ───────────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
+function KpiCard({
+  label, value, sub, accent, border,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  accent?: boolean;
+  border?: "indigo" | "red" | "mint" | "amber";
+}) {
   return (
-    <div className="card p-4 flex flex-col gap-1">
+    <div className={`card p-4 flex flex-col gap-1${border ? ` kpi-card-${border}` : ""}`}>
       <div className="text-xs text-muted font-medium uppercase tracking-wide">{label}</div>
       <div className={`text-2xl font-bold font-mono ${accent ? "text-mint" : "text-primary"}`}>{value}</div>
       {sub && <div className="text-xs text-secondary">{sub}</div>}
@@ -594,12 +602,12 @@ export default function BacktestDashboard() {
 
       {/* ─ KPI strip ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        <KpiCard label="Achats backtestés" value={(data.totalBuys ?? data.total).toLocaleString("fr")} />
-        <KpiCard label="Ventes backtestées" value={(data.totalSells ?? 0).toLocaleString("fr")} sub="signal baissier" />
-        <KpiCard label="Retour achat T+90" value={fmt(g.avgReturn90d)} accent={(g.avgReturn90d ?? 0) > 0} />
-        <KpiCard label="Retour achat T+365" value={fmt(g.avgReturn365d)} accent={(g.avgReturn365d ?? 0) > 0} />
-        <KpiCard label="Win rate T+90" value={g.winRate90d != null ? `${g.winRate90d.toFixed(0)}%` : "—"} />
-        <KpiCard label="Win rate T+1an" value={g.winRate365d != null ? `${g.winRate365d.toFixed(0)}%` : "—"} />
+        <KpiCard label="Achats backtestés"  value={(data.totalBuys ?? data.total).toLocaleString("fr")}       border="indigo" />
+        <KpiCard label="Ventes backtestées" value={(data.totalSells ?? 0).toLocaleString("fr")}               border="red"    sub="signal baissier" />
+        <KpiCard label="Retour achat T+90"  value={fmt(g.avgReturn90d)}  accent={(g.avgReturn90d ?? 0) > 0}   border="mint" />
+        <KpiCard label="Retour achat T+365" value={fmt(g.avgReturn365d)} accent={(g.avgReturn365d ?? 0) > 0}  border="mint" />
+        <KpiCard label="Win rate T+90"      value={g.winRate90d  != null ? `${g.winRate90d.toFixed(0)}%`  : "—"} border="mint" />
+        <KpiCard label="Win rate T+1an"     value={g.winRate365d != null ? `${g.winRate365d.toFixed(0)}%` : "—"} border="mint" />
       </div>
 
       {/* ─ Insights ───────────────────────────────────────────────────── */}

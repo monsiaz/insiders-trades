@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { syncLatest } from "@/lib/sync-latest";
 import { enrichCompanyFinancials } from "@/lib/financials";
 import { scoreDeclarations } from "@/lib/signals";
+import { gptGenderForUnknownInsiders } from "@/lib/gender-gpt";
 import { prisma } from "@/lib/prisma";
 import { fetchDeclarationDetail } from "@/lib/amf-detail";
 
@@ -33,11 +34,19 @@ export async function GET(req: NextRequest) {
     // 4. Score any declarations that haven't been scored yet
     await scoreDeclarations(false).catch((e) => console.error("[cron] score:", e));
 
+    // 5. GPT-4o gender classification for insiders still unknown after local heuristics
+    //    (capped at 200 to stay well within Vercel's 5-min timeout)
+    const genderResult = await gptGenderForUnknownInsiders({
+      maxInsiders: 200,
+      apiKey: process.env.OPENAI_API_KEY,
+    }).catch((e) => { console.error("[cron] gender-gpt:", e); return { resolved: 0, skipped: 0, errors: 1 }; });
+
     return NextResponse.json({
       success: true,
       source: "daily-deep-sync",
       ...syncResult,
       reparsed,
+      genderGpt: genderResult,
     });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });

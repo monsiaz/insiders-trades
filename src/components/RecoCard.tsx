@@ -1,120 +1,140 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { useState } from "react";
 import type { RecoItem } from "@/lib/recommendation-engine";
-import { CompanyAvatar } from "@/components/CompanyBadge";
 
-function fmt(n: number | null | undefined, d = 1): string {
+function fmtPct(n: number | null | undefined, d = 1): string {
   if (n == null) return "—";
   return `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
 }
+
 function fmtAmt(n: number | null): string {
   if (!n) return "—";
-  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M€`;
-  if (n >= 1e3) return `${(n / 1e3).toFixed(0)}k€`;
-  return `${n.toFixed(0)}€`;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)} Md€`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)} M€`;
+  if (n >= 1e3) return `${(n / 1e3).toFixed(0)} k€`;
+  return `${n.toFixed(0)} €`;
 }
+
 function fmtDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-const BADGE_STYLE: Record<string, React.CSSProperties> = {
-  "Cluster":    { background: "var(--c-indigo-bg)", border: "1px solid var(--c-indigo-bd)", color: "var(--c-indigo-2)" },
-  "Score ≥80":  { background: "var(--c-mint-bg)",   border: "1px solid var(--c-mint-bd)",   color: "var(--c-mint)" },
-  "Score ≥65":  { background: "var(--c-mint-bg)",   border: "1px solid var(--c-mint-bd)",   color: "var(--c-mint)" },
-  "PDG/DG":     { background: "var(--c-indigo-bg)", border: "1px solid var(--c-indigo-bd)", color: "var(--c-indigo-2)" },
-  "CFO/DAF":    { background: "var(--c-amber-bg)",  border: "1px solid var(--c-amber-bd)",  color: "var(--c-amber)" },
-  ">2% mcap":   { background: "var(--c-red-bg)",    border: "1px solid var(--c-red-bd)",    color: "var(--c-red)" },
-  ">0.5% mcap": { background: "var(--c-amber-bg)",  border: "1px solid var(--c-amber-bd)",  color: "var(--c-amber)" },
-  ">1M€":       { background: "var(--c-mint-bg)",   border: "1px solid var(--c-mint-bd)",   color: "var(--c-mint)" },
-  ">200k€":     { background: "var(--bg-raised)",   border: "1px solid var(--border-med)",  color: "var(--tx-2)" },
-};
+function fmtMcap(n: number | null): string | null {
+  if (!n) return null;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)} Md€`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(0)} M€`;
+  return null;
+}
 
-// Score bar: 0-100 → visual ring/bar
-function ScoreRing({ score }: { score: number }) {
-  const pct = Math.round(score);
-  const color = pct >= 75 ? "var(--c-mint)" : pct >= 55 ? "var(--c-amber)" : "var(--c-red)";
-  const r = 18;
-  const circ = 2 * Math.PI * r;
-  const dash = (pct / 100) * circ;
-  return (
-    <div className="flex-shrink-0 relative" style={{ width: 48, height: 48 }}>
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-        <circle cx="24" cy="24" r={r} stroke="var(--bg-raised)" strokeWidth="4" />
-        <circle cx="24" cy="24" r={r}
-          stroke={color} strokeWidth="4"
-          strokeDasharray={`${dash} ${circ - dash}`}
-          strokeLinecap="round"
-          transform="rotate(-90 24 24)"
+// Badge → accent class mapping
+function tagAccent(b: string): string {
+  if (b === "Cluster" || b === "PDG/DG") return "accent-indigo";
+  if (b.startsWith("Score")) return "accent-pos";
+  if (b === ">1M€" || b === "Mega-cap" || b === "Large-cap") return "accent-pos";
+  if (b === ">2% mcap" || b === "CFO/DAF") return "accent-gold";
+  if (b === ">0.5% mcap" || b === ">200k€") return "accent-gold";
+  return "";
+}
+
+// Rank → Roman numeral for the 1st, ordinal number otherwise
+function folioLabel(rank: number): string {
+  return rank.toString().padStart(2, "0");
+}
+
+// Inline company logo — integrated, not boxed avatar style
+function InlineLogo({ name, logoUrl }: { name: string; logoUrl?: string | null }) {
+  const [err, setErr] = useState(false);
+  const letter = name.replace(/^(la |le |les |l')/i, "").charAt(0).toUpperCase();
+
+  if (logoUrl && !err) {
+    return (
+      <span className="tearsheet-logo">
+        <Image
+          src={logoUrl}
+          alt={name}
+          width={44}
+          height={44}
+          style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          onError={() => setErr(true)}
+          unoptimized
         />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center"
-        style={{ fontSize: "0.72rem", fontWeight: 800, fontFamily: "'Space Grotesk', sans-serif", color }}>
-        {pct}
-      </div>
-    </div>
+      </span>
+    );
+  }
+  return (
+    <span className="tearsheet-logo" style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.25rem", color: "var(--gold)", fontStyle: "italic" }}>
+      {letter}
+    </span>
   );
 }
 
 export function RecoCard({ item, rank }: { item: RecoItem; rank: number }) {
   const isBuy = item.action === "BUY";
-  const actionColor = isBuy ? "var(--c-mint)" : "var(--c-red)";
-  const actionBg    = isBuy ? "var(--c-mint-bg)" : "var(--c-red-bg)";
-  const actionBd    = isBuy ? "var(--c-mint-bd)" : "var(--c-red-bd)";
-  const marketCap   = item.marketCap;
-  const mcapStr     = marketCap
-    ? marketCap >= 1e9 ? `${(marketCap / 1e9).toFixed(1)}Md€` : `${(marketCap / 1e6).toFixed(0)}M€`
-    : null;
+  const actionClass = isBuy ? "buy" : "sell";
+
+  const mcapStr = fmtMcap(item.marketCap);
+  const expectedRet = item.expectedReturn90d ?? 0;
+  const winRate = item.historicalWinRate90d ?? 0;
+
+  // Score tier
+  const scoreRound = Math.round(item.recoScore);
+  const scoreTier = scoreRound >= 75 ? "high" : scoreRound >= 55 ? "mid" : "low";
+
+  const pctMcapStr =
+    item.pctOfMarketCap != null && item.pctOfMarketCap > 0
+      ? item.pctOfMarketCap < 0.01
+        ? `${item.pctOfMarketCap.toFixed(3)}% mcap`
+        : item.pctOfMarketCap < 0.1
+        ? `${item.pctOfMarketCap.toFixed(2)}% mcap`
+        : `${item.pctOfMarketCap.toFixed(1)}% mcap`
+      : null;
+
+  const companySlug = item.company.slug || "#";
 
   return (
-    <div className="card p-5 flex flex-col gap-4"
-      style={{ borderTop: `3px solid ${actionColor}` }}>
+    <article className="tearsheet">
+      {/* Signature elements */}
+      <span className={`tearsheet-stripe ${actionClass}`} aria-hidden="true" />
+      <span className="tearsheet-folio" aria-hidden="true">{folioLabel(rank)}</span>
 
-      {/* Header row */}
-      <div className="flex items-start gap-3">
-        {/* Rank + company logo */}
-        <div className="flex flex-col items-center gap-1 flex-shrink-0">
-          <CompanyAvatar name={item.company.name} logoUrl={item.company.logoUrl} size="md" />
-          <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--tx-4)" }}>#{rank}</div>
-        </div>
+      {/* Head: logo + company + score */}
+      <div className="tearsheet-head">
+        <InlineLogo name={item.company.name} logoUrl={item.company.logoUrl} />
 
-        <div className="flex-1 min-w-0">
-          {/* Company + action */}
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <Link href={`/company/${item.company.slug}`}
-              className="text-sm font-bold hover:opacity-80 transition-opacity"
-              style={{ color: "var(--tx-1)" }}>
-              {item.company.name}
-            </Link>
-            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full"
-              style={{ background: actionBg, border: `1px solid ${actionBd}`, color: actionColor }}>
-              {isBuy ? "▲ Achat" : "▼ Vente"}
+        <div className="tearsheet-company">
+          <div className="flex items-center gap-3 flex-wrap">
+            {companySlug !== "#" ? (
+              <Link href={`/company/${companySlug}`} className="tearsheet-company-name">
+                {item.company.name}
+              </Link>
+            ) : (
+              <span className="tearsheet-company-name">{item.company.name}</span>
+            )}
+            <span className={`tearsheet-action-tag ${actionClass}`}>
+              <span className="tag-dot" aria-hidden="true" />
+              {isBuy ? "Achat" : "Vente"}
             </span>
           </div>
 
-          {/* Insider */}
           {item.insider.name && (
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="w-4 h-4 rounded flex items-center justify-center text-[9px] font-bold flex-shrink-0"
-                style={{ background: "var(--c-indigo-bg)", border: "1px solid var(--c-indigo-bd)", color: "var(--c-indigo-2)" }}>
-                {item.insider.name.charAt(0)}
-              </div>
-              <span className="text-xs" style={{ color: "var(--tx-2)" }}>{item.insider.name}</span>
+            <div className="tearsheet-insider">
+              <span style={{ fontWeight: 500 }}>{item.insider.name}</span>
               {item.insider.role !== "Autre" && (
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                  style={{ background: "var(--bg-raised)", color: "var(--tx-3)" }}>
-                  {item.insider.role}
-                </span>
+                <>
+                  <span className="tearsheet-insider-sep">·</span>
+                  <span className="tearsheet-insider-role">{item.insider.role}</span>
+                </>
               )}
             </div>
           )}
 
-          {/* Badges */}
           {item.badges.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {item.badges.map((b) => (
-                <span key={b} className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                  style={BADGE_STYLE[b] ?? { background: "var(--bg-raised)", border: "1px solid var(--border)", color: "var(--tx-3)" }}>
+            <div className="tearsheet-tags">
+              {item.badges.slice(0, 4).map((b) => (
+                <span key={b} className={`tearsheet-tag ${tagAccent(b)}`}>
                   {b}
                 </span>
               ))}
@@ -122,94 +142,75 @@ export function RecoCard({ item, rank }: { item: RecoItem; rank: number }) {
           )}
         </div>
 
-        {/* Score ring */}
-        <ScoreRing score={item.recoScore} />
+        <div className="tearsheet-score">
+          <div className={`tearsheet-score-num ${scoreTier}`}>{scoreRound}</div>
+          <div className="tearsheet-score-sub">/ 100 · score</div>
+          <div className={`tearsheet-score-bar ${scoreTier}`}>
+            <div style={{ width: `${Math.max(4, scoreRound)}%` }} />
+          </div>
+        </div>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3">
-        <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: "var(--tx-4)" }}>
-            Win rate hist.
-          </div>
-          <div className="text-sm font-bold tabular-nums"
-            style={{ color: (item.historicalWinRate90d ?? 0) >= 60 ? "var(--c-mint)" : "var(--tx-2)" }}>
+      {/* Data strip */}
+      <div className="tearsheet-strip">
+        <div className="tearsheet-strip-cell">
+          <span className="tearsheet-strip-label">Retour estimé T+90</span>
+          <span className={`tearsheet-strip-value ${expectedRet >= 4 ? "pos" : expectedRet < 0 ? "neg" : ""}`}>
+            {fmtPct(item.expectedReturn90d, 1)}
+          </span>
+          <span className="tearsheet-strip-sub">moy. historique</span>
+        </div>
+        <div className="tearsheet-strip-cell">
+          <span className="tearsheet-strip-label">Win rate</span>
+          <span className={`tearsheet-strip-value ${winRate >= 60 ? "pos" : ""}`}>
             {item.historicalWinRate90d != null ? `${item.historicalWinRate90d.toFixed(0)}%` : "—"}
-          </div>
-          <div className="text-[10px]" style={{ color: "var(--tx-4)" }}>T+90 · {item.sampleSize} trades</div>
-        </div>
-        <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: "var(--tx-4)" }}>
-            Retour estimé
-          </div>
-          <div className="text-sm font-bold tabular-nums"
-            style={{ color: (item.expectedReturn90d ?? 0) >= 5 ? "var(--c-mint)" : (item.expectedReturn90d ?? 0) >= 0 ? "var(--tx-2)" : "var(--c-red)" }}>
-            {fmt(item.expectedReturn90d)}
-          </div>
-          <div className="text-[10px]" style={{ color: "var(--tx-4)" }}>moy. T+90 histo.</div>
-        </div>
-        <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: "var(--tx-4)" }}>
-            Montant
-          </div>
-          <div className="text-sm font-bold tabular-nums" style={{ color: "var(--tx-1)" }}>
-            {fmtAmt(item.totalAmount)}
-          </div>
-          {item.pctOfMarketCap != null && item.pctOfMarketCap > 0 && (
-            <div className="text-[10px]" style={{ color: "var(--tx-4)" }}>
-              {item.pctOfMarketCap < 0.01
-                ? `${item.pctOfMarketCap.toFixed(4)}% mcap`
-                : item.pctOfMarketCap < 0.1
-                ? `${item.pctOfMarketCap.toFixed(3)}% mcap`
-                : `${item.pctOfMarketCap.toFixed(2)}% mcap`}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Score breakdown bar */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--tx-4)" }}>
-            Score de recommandation
           </span>
-          <span className="text-[10px] font-bold" style={{ color: actionColor }}>
-            {item.recoScore.toFixed(0)}/100
+          <span className="tearsheet-strip-sub">
+            T+90 · {item.sampleSize.toLocaleString("fr-FR")} trades
           </span>
         </div>
-        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-raised)" }}>
-          <div className="h-full rounded-full transition-all"
-            style={{ width: `${item.recoScore}%`, background: actionColor, opacity: 0.8 }} />
+        <div className="tearsheet-strip-cell">
+          <span className="tearsheet-strip-label">Montant déclaré</span>
+          <span className="tearsheet-strip-value">{fmtAmt(item.totalAmount)}</span>
+          {pctMcapStr && <span className="tearsheet-strip-sub">{pctMcapStr}</span>}
         </div>
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="tearsheet-foot">
+        <div className="tearsheet-foot-meta">
           {mcapStr && (
-            <span className="text-[11px] px-2 py-0.5 rounded-lg"
-              style={{ color: "var(--c-amber)", background: "var(--c-amber-bg)", border: "1px solid var(--c-amber-bd)" }}>
-              Mcap {mcapStr}
+            <span>
+              MCap <strong>{mcapStr}</strong>
             </span>
           )}
           {item.analystReco && (
-            <span className="text-[11px] px-2 py-0.5 rounded-lg"
-              style={{ background: "var(--bg-raised)", border: "1px solid var(--border)", color: "var(--tx-3)" }}>
-              Analystes: {item.analystReco}
-              {item.targetMean && ` · obj. ${item.targetMean.toFixed(1)}€`}
-            </span>
+            <>
+              {mcapStr && <span className="tearsheet-foot-sep" aria-hidden="true" />}
+              <span>
+                Analystes · <strong>{item.analystReco}</strong>
+                {item.targetMean && ` · obj. ${item.targetMean.toFixed(1)}€`}
+              </span>
+            </>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px]" style={{ color: "var(--tx-4)" }}>
-            {fmtDate(item.pubDate)}
-          </span>
-          <a href={item.amfLink} target="_blank" rel="noopener noreferrer"
-            className="btn-glass px-2 py-1 rounded-lg text-[11px] font-medium">
-            AMF ↗
-          </a>
+        <div className="flex items-center gap-3">
+          <time className="tearsheet-foot-date">{fmtDate(item.pubDate)}</time>
+          {item.amfLink && item.amfLink !== "#" && (
+            <a
+              href={item.amfLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tearsheet-foot-link"
+            >
+              Source AMF
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7 17L17 7M17 7H8M17 7v9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </a>
+          )}
         </div>
       </div>
-    </div>
+    </article>
   );
 }

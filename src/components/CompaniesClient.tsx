@@ -244,89 +244,150 @@ function CompanyCard({ company, q }: { company: CompanyRow; q: string }) {
     </>;
   }
 
+  const stripeClass = isB ? "buy" : isS ? "sell" : "";
+
   return (
     <Link
       href={`/company/${company.slug}`}
-      className="card p-5 flex flex-col gap-3 group"
-      style={{ textDecoration: "none" }}
+      className="tearsheet"
+      style={{
+        textDecoration: "none",
+        padding: "16px 18px 14px 22px",
+        gap: "12px",
+      }}
     >
-      {/* Top row */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-3">
-          {/* Logo */}
-          <CompanyLogo name={company.name} logoUrl={company.logoUrl} size={40} />
-          <div>
-            <h3 style={{
-              fontWeight: 700, fontSize: "0.875rem", color: "var(--tx-1)",
-              letterSpacing: "-0.01em", lineHeight: 1.3,
-            }}>
-              {highlight(company.name)}
-            </h3>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
-              {company.yahooSymbol && (
-                <span style={{ fontSize: "0.63rem", fontFamily: "JetBrains Mono, monospace", color: "var(--c-indigo-2)", letterSpacing: "0.04em" }}>
-                  {company.yahooSymbol.replace(".PA", "")}
+      <span className={`tearsheet-stripe ${stripeClass}`} aria-hidden="true" />
+
+      {/* Head: logo + name + last amount */}
+      <div className="flex items-start gap-3">
+        <CompanyLogo name={company.name} logoUrl={company.logoUrl} size={38} />
+        <div className="min-w-0 flex-1">
+          <h3 style={{
+            fontFamily: "'DM Serif Display', Georgia, serif",
+            fontWeight: 400,
+            fontSize: "1.05rem",
+            color: "var(--tx-1)",
+            letterSpacing: "-0.005em",
+            lineHeight: 1.15,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}>
+            {highlight(company.name)}
+          </h3>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "3px" }}>
+            {company.yahooSymbol && (
+              <span style={{
+                fontSize: "0.65rem",
+                fontFamily: "'JetBrains Mono', monospace",
+                color: "var(--gold)",
+                letterSpacing: "0.04em",
+                fontWeight: 600,
+              }}>
+                {company.yahooSymbol.replace(".PA", "")}
+              </span>
+            )}
+            {company.currentPrice && (
+              <>
+                <span style={{ color: "var(--border-strong)", fontSize: "0.55rem" }}>·</span>
+                <span style={{
+                  fontSize: "0.65rem",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  color: "var(--tx-3)",
+                }}>
+                  {company.currentPrice.toFixed(2)} €
                 </span>
-              )}
-              {company.currentPrice && (
-                <>
-                  <span style={{ color: "var(--border-strong)", fontSize: "0.6rem" }}>·</span>
-                  <span style={{ fontSize: "0.63rem", fontFamily: "JetBrains Mono, monospace", color: "var(--tx-3)" }}>
-                    {company.currentPrice.toFixed(2)} €
-                  </span>
-                </>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </div>
 
         {lastDecl?.totalAmount ? (
-          <span style={{
-            flexShrink: 0,
-            fontSize: "0.78rem", fontWeight: 700,
-            color: isB ? "var(--c-emerald)" : isS ? "var(--c-crimson)" : "var(--tx-3)",
-            fontFamily: "JetBrains Mono, monospace",
-          }}>
-            {isB ? "▲" : isS ? "▼" : ""}{fmtAmount(lastDecl.totalAmount)}
-          </span>
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <div style={{
+              fontSize: "0.92rem",
+              fontWeight: 700,
+              color: isB ? "var(--signal-pos)" : isS ? "var(--signal-neg)" : "var(--tx-2)",
+              fontFamily: "'Banana Grotesk', sans-serif",
+              letterSpacing: "-0.02em",
+              fontVariantNumeric: "tabular-nums",
+              lineHeight: 1,
+            }}>
+              {isB ? "▲ " : isS ? "▼ " : ""}{fmtAmount(lastDecl.totalAmount)}
+            </div>
+            <div style={{
+              fontSize: "0.55rem",
+              fontFamily: "'JetBrains Mono', monospace",
+              color: "var(--tx-4)",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              fontWeight: 600,
+              marginTop: "3px",
+            }}>
+              Dernier
+            </div>
+          </div>
         ) : null}
       </div>
 
-      {/* Meta row: marketcap + count */}
+      {/* Rule + meta */}
       <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        paddingTop: "10px", borderTop: "1px solid var(--border)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingTop: "10px",
+        borderTop: "1px solid var(--border)",
+        gap: "8px",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--tx-2)", fontFamily: "JetBrains Mono, monospace" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "0.68rem",
+            color: "var(--tx-3)",
+            letterSpacing: "0.02em",
+          }}>
+            <strong style={{ color: "var(--tx-1)", fontWeight: 700 }}>
               {company.declarationCount}
-            </span>
-            <span style={{ fontSize: "0.7rem", color: "var(--tx-4)" }}>décl.</span>
-          </div>
+            </strong>{" "}
+            décl.
+          </span>
           {mcap && (
             <>
-              <span style={{ color: "var(--border-strong)", fontSize: "0.6rem" }}>·</span>
+              <span className="tearsheet-foot-sep" aria-hidden="true" />
               <span style={{
-                fontSize: "0.68rem", fontFamily: "JetBrains Mono, monospace", color: "var(--tx-4)",
-                background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: "4px", padding: "1px 5px",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "0.68rem",
+                color: "var(--tx-3)",
+                letterSpacing: "0.02em",
               }}>
-                {mcap}
+                MCap <strong style={{ color: "var(--gold)", fontWeight: 600 }}>{mcap}</strong>
               </span>
             </>
           )}
         </div>
         {lastDecl && (
-          <span style={{ fontSize: "0.68rem", color: "var(--tx-4)", fontFamily: "JetBrains Mono, monospace" }}>
-            {new Date(lastDecl.pubDate).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit" })}
+          <span style={{
+            fontSize: "0.64rem",
+            color: "var(--tx-4)",
+            fontFamily: "'JetBrains Mono', monospace",
+            letterSpacing: "0.04em",
+          }}>
+            {new Date(lastDecl.pubDate).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "2-digit" })}
           </span>
         )}
       </div>
 
-      {/* Last insider */}
       {lastDecl?.insiderName && (
-        <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {lastDecl.insiderName}
+        <div style={{
+          fontSize: "0.72rem",
+          color: "var(--tx-3)",
+          fontStyle: "italic",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          marginTop: "-4px",
+        }}>
+          — {lastDecl.insiderName}
         </div>
       )}
     </Link>

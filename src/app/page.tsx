@@ -618,82 +618,160 @@ type Signal = {
 };
 
 function SignalCard({ sig }: { sig: Signal }) {
-  const score = sig.signalScore ?? 0;
-  const isPremium = score >= 75;
-  const isHigh = score >= 65;
+  const score = Math.round(sig.signalScore ?? 0);
 
   const amtStr = sig.totalAmount
-    ? sig.totalAmount >= 1e6 ? `${(sig.totalAmount / 1e6).toFixed(1)}M€`
-    : sig.totalAmount >= 1e3 ? `${(sig.totalAmount / 1e3).toFixed(0)}k€`
-    : `${sig.totalAmount.toFixed(0)}€`
+    ? sig.totalAmount >= 1e6 ? `${(sig.totalAmount / 1e6).toFixed(1)} M€`
+    : sig.totalAmount >= 1e3 ? `${(sig.totalAmount / 1e3).toFixed(0)} k€`
+    : `${sig.totalAmount.toFixed(0)} €`
     : null;
 
-  const scoreClass = isPremium ? "score-premium" : isHigh ? "score-high" : "score-mid";
-  const avatarBg = isPremium ? "var(--c-violet-bg)" : isHigh ? "var(--c-emerald-bg)" : "var(--c-indigo-bg)";
-  const avatarBd = isPremium ? "var(--c-violet-bd)" : isHigh ? "var(--c-emerald-bd)" : "var(--c-indigo-bd)";
-  const avatarTx = isPremium ? "var(--c-violet)" : isHigh ? "var(--c-emerald)" : "var(--c-indigo-2)";
+  const pubDate = new Date(sig.pubDate).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+  const pctMcapStr =
+    sig.pctOfMarketCap != null && sig.pctOfMarketCap > 0
+      ? sig.pctOfMarketCap < 0.1
+        ? `${sig.pctOfMarketCap.toFixed(2)}%`
+        : `${sig.pctOfMarketCap.toFixed(1)}%`
+      : null;
 
   return (
-    <Link href={`/company/${sig.company.slug}`}
-      className="card group block"
-      style={{ textDecoration: "none", padding: "16px 18px", borderLeft: `3px solid ${avatarTx}`, borderRadius: "0 16px 16px 0" }}>
+    <Link
+      href={`/company/${sig.company.slug}`}
+      className="tearsheet"
+      style={{ textDecoration: "none", padding: "18px 18px 14px 22px", gap: "12px" }}
+    >
+      <span className="tearsheet-stripe buy" aria-hidden="true" />
 
-      <div className="flex items-start justify-between gap-2 mb-3">
-        {/* Logo */}
-        <CompanyAvatar name={sig.company.name} logoUrl={(sig.company as { logoUrl?: string | null }).logoUrl} size="md" />
-
-        {/* Score badge */}
-        <div className={`score-pill ${scoreClass}`} style={{ fontFamily: "'Banana Grotesk', 'Inter', system-ui" }}>
-          ▲ {Math.round(score)}
+      {/* Head */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <CompanyAvatar
+            name={sig.company.name}
+            logoUrl={(sig.company as { logoUrl?: string | null }).logoUrl}
+            size="md"
+          />
+          <div className="min-w-0 flex-1">
+            <div style={{
+              fontFamily: "'DM Serif Display', Georgia, serif",
+              fontSize: "1.05rem",
+              fontWeight: 400,
+              color: "var(--tx-1)",
+              letterSpacing: "-0.005em",
+              lineHeight: 1.15,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}>
+              {sig.company.name}
+            </div>
+            {sig.insiderName && (
+              <div style={{
+                fontSize: "0.72rem",
+                color: "var(--tx-3)",
+                marginTop: "2px",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}>
+                {sig.insiderName}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Company */}
-      <div style={{
-        fontFamily: "'Banana Grotesk', 'Inter', system-ui",
-        fontWeight: 700,
-        fontSize: "0.9rem",
-        color: "var(--tx-1)",
-        marginBottom: "2px",
-        letterSpacing: "-0.015em",
-      }}>
-        {sig.company.name}
-      </div>
-
-      {/* Insider */}
-      {sig.insiderName && (
-        <div style={{
-          fontFamily: "'Inter', system-ui",
-          fontSize: "0.74rem",
-          color: "var(--tx-3)",
-          marginBottom: "10px",
-          fontWeight: 400,
-        }}>
-          {sig.insiderName}
-          {sig.insiderFunction && <> · <span style={{ color: "var(--tx-4)" }}>{sig.insiderFunction}</span></>}
-        </div>
-      )}
-
-      {/* Data row */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {amtStr && (
-          <span style={{
-            fontFamily: "'Banana Grotesk', 'Inter', system-ui",
-            fontSize: "0.85rem",
+        {/* Score typographic */}
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{
+            fontFamily: "'Banana Grotesk', sans-serif",
+            fontSize: "1.5rem",
             fontWeight: 700,
-            color: "var(--c-emerald)",
+            letterSpacing: "-0.04em",
+            color: score >= 75 ? "var(--signal-pos)" : "var(--gold)",
+            lineHeight: 1,
             fontVariantNumeric: "tabular-nums",
           }}>
-            +{amtStr}
-          </span>
+            {score}
+          </div>
+          <div style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "0.52rem",
+            color: "var(--tx-4)",
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+          }}>
+            Signal
+          </div>
+        </div>
+      </div>
+
+      {/* Rule + metrics */}
+      <div style={{
+        display: "flex",
+        alignItems: "baseline",
+        gap: "18px",
+        paddingTop: "10px",
+        borderTop: "1px solid var(--border)",
+      }}>
+        {amtStr && (
+          <div>
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "0.55rem",
+              color: "var(--tx-3)",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              fontWeight: 600,
+              marginBottom: "2px",
+            }}>
+              Ticket
+            </div>
+            <div style={{
+              fontFamily: "'Banana Grotesk', sans-serif",
+              fontSize: "0.92rem",
+              fontWeight: 700,
+              color: "var(--signal-pos)",
+              letterSpacing: "-0.02em",
+              fontVariantNumeric: "tabular-nums",
+            }}>
+              {amtStr}
+            </div>
+          </div>
         )}
-        {sig.pctOfMarketCap != null && sig.pctOfMarketCap > 0 && (
-          <span className="badge badge-amber" style={{ fontFamily: "'Inter', ui-monospace, monospace", fontSize: "0.68rem" }}>
-            {sig.pctOfMarketCap < 0.01 ? sig.pctOfMarketCap.toFixed(4)
-              : sig.pctOfMarketCap < 0.1 ? sig.pctOfMarketCap.toFixed(3)
-              : sig.pctOfMarketCap.toFixed(2)}% mcap
-          </span>
+        {pctMcapStr && (
+          <div>
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "0.55rem",
+              color: "var(--tx-3)",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              fontWeight: 600,
+              marginBottom: "2px",
+            }}>
+              % MCap
+            </div>
+            <div style={{
+              fontFamily: "'Banana Grotesk', sans-serif",
+              fontSize: "0.92rem",
+              fontWeight: 700,
+              color: "var(--gold)",
+              letterSpacing: "-0.02em",
+              fontVariantNumeric: "tabular-nums",
+            }}>
+              {pctMcapStr}
+            </div>
+          </div>
         )}
+        <div style={{ marginLeft: "auto", textAlign: "right" }}>
+          <div style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "0.65rem",
+            color: "var(--tx-4)",
+            letterSpacing: "0.04em",
+          }}>
+            {pubDate}
+          </div>
+        </div>
       </div>
     </Link>
   );

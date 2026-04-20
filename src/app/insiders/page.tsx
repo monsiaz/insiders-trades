@@ -23,9 +23,45 @@ export default async function InsidersPage() {
   return (
     <div className="content-wrapper">
       <div className="mb-8">
-        <h1 className="heading-page">Dirigeants</h1>
-        <p style={{ color: "var(--tx-3)", fontSize: "0.875rem", marginTop: "4px" }}>
-          {insiders.length} dirigeant{insiders.length !== 1 ? "s" : ""} dans la base
+        <div className="flex items-center gap-3 mb-3">
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "0.64rem",
+            fontWeight: 600,
+            color: "var(--gold)",
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+          }}>
+            Registre
+          </span>
+          <span style={{ flex: 1, height: "1px", background: "var(--border-med)" }} />
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "0.64rem",
+            color: "var(--tx-3)",
+            letterSpacing: "0.08em",
+          }}>
+            {insiders.length.toLocaleString("fr-FR")} dirigeants
+          </span>
+        </div>
+        <h1 style={{
+          fontFamily: "'DM Serif Display', Georgia, serif",
+          fontSize: "clamp(2.25rem, 4.5vw, 3.25rem)",
+          fontWeight: 400,
+          letterSpacing: "-0.015em",
+          lineHeight: 1.05,
+          color: "var(--tx-1)",
+        }}>
+          Dirigeants
+        </h1>
+        <p style={{
+          color: "var(--tx-2)",
+          fontSize: "0.9rem",
+          marginTop: "6px",
+          maxWidth: "520px",
+          lineHeight: 1.6,
+        }}>
+          L'ensemble des dirigeants français déclarant des transactions auprès de l'AMF.
         </p>
       </div>
 
@@ -58,41 +94,45 @@ export default async function InsidersPage() {
             const nature = lastDecl?.transactionNature?.toLowerCase();
             const isSell = nature?.includes("cession");
 
+            const stripeClass = isSell ? "sell" : lastDecl?.totalAmount ? "buy" : "";
             return (
               <Link
                 key={insider.id}
                 href={`/insider/${insider.slug}`}
-                className="card p-5 group flex flex-col gap-3"
-                style={{ textDecoration: "none" }}
+                className="tearsheet"
+                style={{ textDecoration: "none", padding: "16px 18px 14px 22px", gap: "10px" }}
               >
-                {/* Header row */}
+                <span className={`tearsheet-stripe ${stripeClass}`} aria-hidden="true" />
+
+                {/* Head */}
                 <div className="flex items-center gap-3">
-                  {/* Avatar */}
                   <div
-                    className="flex-shrink-0 flex items-center justify-center text-sm font-bold"
+                    className="flex-shrink-0 flex items-center justify-center"
                     style={{
-                      width: "42px",
-                      height: "42px",
-                      borderRadius: "12px",
-                      background: "var(--c-indigo-bg)",
-                      border: "1px solid var(--c-indigo-bd)",
-                      color: "var(--c-indigo-2)",
-                      fontFamily: "JetBrains Mono, monospace",
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "3px",
+                      background: "var(--bg-raised)",
+                      border: "1px solid var(--border-med)",
+                      color: "var(--gold)",
+                      fontFamily: "'DM Serif Display', Georgia, serif",
+                      fontStyle: "italic",
+                      fontSize: "1rem",
                       letterSpacing: "-0.02em",
                     }}
                   >
                     {initials}
                   </div>
 
-                  {/* Name + function */}
                   <div className="min-w-0 flex-1">
                     <h3
                       style={{
-                        fontWeight: 700,
-                        fontSize: "0.875rem",
+                        fontFamily: "'DM Serif Display', Georgia, serif",
+                        fontWeight: 400,
+                        fontSize: "1.05rem",
                         color: "var(--tx-1)",
-                        letterSpacing: "-0.01em",
-                        lineHeight: 1.3,
+                        letterSpacing: "-0.005em",
+                        lineHeight: 1.15,
                       }}
                       className="truncate"
                     >
@@ -101,70 +141,92 @@ export default async function InsidersPage() {
                     {insider.companies[0]?.function && (
                       <p
                         className="truncate"
-                        style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "1px" }}
+                        style={{
+                          fontFamily: "'JetBrains Mono', monospace",
+                          fontSize: "0.64rem",
+                          color: "var(--tx-3)",
+                          marginTop: "3px",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          fontWeight: 600,
+                        }}
                       >
                         {insider.companies[0].function}
                       </p>
                     )}
                   </div>
 
-                  {/* Amount badge */}
                   {lastDecl?.totalAmount && (
-                    <span
-                      className="flex-shrink-0 tabular-nums"
-                      style={{
-                        fontSize: "0.78rem",
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div style={{
+                        fontFamily: "'Banana Grotesk', sans-serif",
+                        fontSize: "0.92rem",
                         fontWeight: 700,
-                        color: isSell ? "var(--c-red)" : "var(--c-mint)",
-                        fontFamily: "JetBrains Mono, monospace",
-                      }}
-                    >
-                      {isSell ? "▼" : "▲"}
-                      {new Intl.NumberFormat("fr-FR", {
-                        style: "currency",
-                        currency: "EUR",
-                        maximumFractionDigits: 0,
-                        notation: lastDecl.totalAmount >= 1_000_000 ? "compact" : "standard",
-                      }).format(lastDecl.totalAmount)}
-                    </span>
+                        color: isSell ? "var(--signal-neg)" : "var(--signal-pos)",
+                        letterSpacing: "-0.02em",
+                        fontVariantNumeric: "tabular-nums",
+                        lineHeight: 1,
+                      }}>
+                        {isSell ? "▼ " : "▲ "}
+                        {new Intl.NumberFormat("fr-FR", {
+                          style: "currency",
+                          currency: "EUR",
+                          maximumFractionDigits: 0,
+                          notation: lastDecl.totalAmount >= 1_000_000 ? "compact" : "standard",
+                        }).format(lastDecl.totalAmount)}
+                      </div>
+                      <div style={{
+                        fontSize: "0.55rem",
+                        fontFamily: "'JetBrains Mono', monospace",
+                        color: "var(--tx-4)",
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        fontWeight: 600,
+                        marginTop: "3px",
+                      }}>
+                        Dernier
+                      </div>
+                    </div>
                   )}
                 </div>
 
-                {/* Company chips */}
+                {/* Companies as editorial byline */}
                 {insider.companies.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {insider.companies.map((ci) => (
-                      <span
-                        key={ci.company.slug}
-                        style={{
-                          fontSize: "0.65rem",
-                          fontWeight: 600,
-                          letterSpacing: "0.02em",
-                          padding: "2px 7px",
-                          borderRadius: "5px",
-                          background: "var(--bg-raised)",
-                          border: "1px solid var(--border-med)",
-                          color: "var(--tx-3)",
-                        }}
-                      >
-                        {ci.company.name}
-                      </span>
-                    ))}
+                  <div style={{
+                    fontSize: "0.72rem",
+                    color: "var(--tx-3)",
+                    fontStyle: "italic",
+                    lineHeight: 1.4,
+                  }}>
+                    — {insider.companies.slice(0, 3).map((ci) => ci.company.name).join(" · ")}
                   </div>
                 )}
 
-                {/* Footer */}
+                {/* Rule + meta */}
                 <div
                   className="flex items-center justify-between"
-                  style={{ paddingTop: "10px", borderTop: "1px solid var(--border)" }}
+                  style={{ paddingTop: "9px", borderTop: "1px solid var(--border)" }}
                 >
-                  <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--tx-3)" }}>
-                    {insider._count.declarations} décl.
+                  <span style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: "0.68rem",
+                    color: "var(--tx-3)",
+                    letterSpacing: "0.02em",
+                  }}>
+                    <strong style={{ color: "var(--tx-1)", fontWeight: 700 }}>
+                      {insider._count.declarations}
+                    </strong>{" "}
+                    décl.
                   </span>
                   {lastDecl && (
-                    <span style={{ fontSize: "0.72rem", color: "var(--tx-4)", fontFamily: "JetBrains Mono, monospace" }}>
+                    <span style={{
+                      fontSize: "0.64rem",
+                      color: "var(--tx-4)",
+                      fontFamily: "'JetBrains Mono', monospace",
+                      letterSpacing: "0.04em",
+                    }}>
                       {new Date(lastDecl.pubDate).toLocaleDateString("fr-FR", {
-                        day: "numeric",
+                        day: "2-digit",
                         month: "short",
                         year: "2-digit",
                       })}

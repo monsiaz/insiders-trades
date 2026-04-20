@@ -7,6 +7,7 @@ import { EnrichButton } from "@/components/EnrichButton";
 import { StockChart } from "@/components/StockChart";
 import { CompanyFinancials } from "@/components/CompanyFinancials";
 import { CompanyBacktestWidget } from "@/components/CompanyBacktestWidget";
+import { CompanyNews } from "@/components/CompanyNews";
 import { DeclarationType } from "@prisma/client";
 import { CompanyLogo } from "@/components/CompanyLogo";
 
@@ -232,6 +233,13 @@ export default async function CompanyPage({ params, searchParams }: Props) {
       <div className="mb-6">
         <CompanyBacktestWidget companyId={company.id} />
       </div>
+
+      {/* Latest news (Yahoo Finance RSS) */}
+      {company.yahooSymbol && (
+        <div className="mb-6">
+          <CompanyNews slug={company.slug} companyName={company.name} />
+        </div>
+      )}
 
       {/* Last declaration date */}
       {lastDecl && (

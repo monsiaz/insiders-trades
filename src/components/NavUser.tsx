@@ -32,7 +32,7 @@ export function NavUser() {
     router.refresh();
   }
 
-  if (user === "loading") return <div className="w-8 h-8 rounded-full bg-white/5 animate-pulse" />;
+  if (user === "loading") return <div className="w-8 h-8 rounded-full bg-[var(--bg-raised)] animate-pulse" />;
 
   if (!user) {
     return (

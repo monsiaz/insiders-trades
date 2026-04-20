@@ -64,7 +64,7 @@ export default async function InsiderPage({ params, searchParams }: Props) {
   return (
     <div className="content-wrapper">
       {/* Back */}
-      <Link href="/insiders" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-300 transition-colors mb-6">
+      <Link href="/insiders" className="inline-flex items-center gap-1.5 text-sm text-[var(--tx-3)] hover:text-[var(--tx-2)] transition-colors mb-6">
         ← Dirigeants
       </Link>
 
@@ -75,13 +75,13 @@ export default async function InsiderPage({ params, searchParams }: Props) {
             {initials}
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">{insider.name}</h1>
+            <h1 className="text-2xl font-bold text-[var(--tx-1)] tracking-tight">{insider.name}</h1>
             <div className="flex flex-wrap gap-1.5 mt-2">
               {insider.companies.map((ci) => (
                 <Link
                   key={ci.company.slug}
                   href={`/company/${ci.company.slug}`}
-                  className="text-xs px-2.5 py-1 rounded-full glass-card-static border-white/8 text-slate-400 hover:text-slate-200 transition-colors"
+                  className="text-xs px-2.5 py-1 rounded-full glass-card-static border-white/8 text-[var(--tx-2)] hover:text-[var(--tx-1)] transition-colors"
                 >
                   {ci.company.name}
                 </Link>
@@ -94,27 +94,27 @@ export default async function InsiderPage({ params, searchParams }: Props) {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7">
         <div className="glass-card-static rounded-2xl p-4 bg-gradient-to-br from-indigo-500/8 to-transparent border-indigo-500/12">
-          <div className="text-xl font-bold text-white">{insider._count.declarations}</div>
-          <div className="text-xs text-slate-500 mt-1">Déclarations totales</div>
+          <div className="text-xl font-bold text-[var(--tx-1)]">{insider._count.declarations}</div>
+          <div className="text-xs text-[var(--tx-3)] mt-1">Déclarations totales</div>
         </div>
         <div className="glass-card-static rounded-2xl p-4 bg-gradient-to-br from-sky-500/8 to-transparent border-sky-500/12">
-          <div className="text-xl font-bold text-white">{insider.companies.length}</div>
-          <div className="text-xs text-slate-500 mt-1">Société{insider.companies.length > 1 ? "s" : ""}</div>
+          <div className="text-xl font-bold text-[var(--tx-1)]">{insider.companies.length}</div>
+          <div className="text-xs text-[var(--tx-3)] mt-1">Société{insider.companies.length > 1 ? "s" : ""}</div>
         </div>
         <div className="glass-card-static rounded-2xl p-4 bg-gradient-to-br from-emerald-500/8 to-transparent border-emerald-500/12">
           <div className="text-xl font-bold text-emerald-400">{fmt(buyAgg._sum.totalAmount)}</div>
-          <div className="text-xs text-slate-500 mt-1">▲ Achats ({buyAgg._count} opér.)</div>
+          <div className="text-xs text-[var(--tx-3)] mt-1">▲ Achats ({buyAgg._count} opér.)</div>
         </div>
         <div className="glass-card-static rounded-2xl p-4 bg-gradient-to-br from-rose-500/8 to-transparent border-rose-500/12">
           <div className="text-xl font-bold text-rose-400">{fmt(sellAgg._sum.totalAmount)}</div>
-          <div className="text-xs text-slate-500 mt-1">▼ Ventes ({sellAgg._count} opér.)</div>
+          <div className="text-xs text-[var(--tx-3)] mt-1">▼ Ventes ({sellAgg._count} opér.)</div>
         </div>
       </div>
 
       {/* Declarations */}
       <div className="space-y-2">
         {declarations.length === 0 ? (
-          <div className="glass-card rounded-2xl p-12 text-center text-slate-500">
+          <div className="glass-card rounded-2xl p-12 text-center text-[var(--tx-3)]">
             Aucune déclaration
           </div>
         ) : (
@@ -130,7 +130,7 @@ export default async function InsiderPage({ params, searchParams }: Props) {
               ← Précédent
             </Link>
           )}
-          <span className="text-sm text-slate-500">Page {pageNum} / {totalPages}</span>
+          <span className="text-sm text-[var(--tx-3)]">Page {pageNum} / {totalPages}</span>
           {pageNum < totalPages && (
             <Link href={`/insider/${slug}?page=${pageNum + 1}`} className="btn-glass px-4 py-2 rounded-xl text-sm font-medium">
               Suivant →

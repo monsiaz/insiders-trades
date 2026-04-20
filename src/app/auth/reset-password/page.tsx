@@ -39,26 +39,26 @@ function ResetForm() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white mb-1">Nouveau mot de passe</h1>
-          <p className="text-slate-400 text-sm">Choisissez un nouveau mot de passe sécurisé</p>
+          <h1 className="text-2xl font-bold text-[var(--tx-1)] mb-1">Nouveau mot de passe</h1>
+          <p className="text-[var(--tx-2)] text-sm">Choisissez un nouveau mot de passe sécurisé</p>
         </div>
         <div className="glass-card rounded-2xl p-6">
           <form onSubmit={onSubmit} className="space-y-4">
             {error && <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3 text-sm text-rose-400">{error}</div>}
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Nouveau mot de passe</label>
+              <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Nouveau mot de passe</label>
               <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 transition-all"
+                className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                 placeholder="8 caractères minimum" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5">Confirmer</label>
+              <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Confirmer</label>
               <input type="password" required value={confirm} onChange={(e) => setConfirm(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 transition-all"
+                className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                 placeholder="••••••••" />
             </div>
             <button type="submit" disabled={loading}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
               {loading ? "Mise à jour…" : "Mettre à jour le mot de passe"}
             </button>
           </form>

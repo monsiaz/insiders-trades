@@ -22,17 +22,17 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
           <div className="grid grid-cols-3 gap-6">
             <div>
               <div className="text-xl font-bold text-white tabular-nums">{total.toLocaleString("fr-FR")}</div>
-              <div className="text-xs text-slate-500 mt-0.5">Trades analysés</div>
+              <div className="text-xs text-[var(--tx-3)] mt-0.5">Trades analysés</div>
             </div>
             <div>
               <div className={`text-xl font-bold tabular-nums ${avg90d >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
                 {sign}{avg90d.toFixed(1)}%
               </div>
-              <div className="text-xs text-slate-500 mt-0.5">Rendement moyen T+90</div>
+              <div className="text-xs text-[var(--tx-3)] mt-0.5">Rendement moyen T+90</div>
             </div>
             <div>
               <div className="text-xl font-bold text-violet-400 tabular-nums">{winRate90d.toFixed(0)}%</div>
-              <div className="text-xs text-slate-500 mt-0.5">Taux de réussite</div>
+              <div className="text-xs text-[var(--tx-3)] mt-0.5">Taux de réussite</div>
             </div>
           </div>
         </div>

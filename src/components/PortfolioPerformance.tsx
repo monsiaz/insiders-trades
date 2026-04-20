@@ -65,10 +65,19 @@ function fmtDate(iso: string) {
 
 // ── Custom Tooltips ────────────────────────────────────────────────────────
 
-function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) {
+type TooltipPayload = { dataKey?: string; value?: number; payload?: Record<string, number> };
+
+function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipPayload[]; label?: string }) {
   if (!active || !payload?.length) return null;
-  const value    = payload[0]?.value;
-  const invested = payload[1]?.value;
+
+  // Pull fields by dataKey (not by index) — Recharts may emit items in render
+  // order, which flipped our value/invested math and produced wrong P&L signs.
+  const row      = payload[0]?.payload ?? {};
+  const value    = (payload.find((p) => p.dataKey === "value")?.value)
+                 ?? (typeof row.value === "number" ? row.value : undefined);
+  const invested = (payload.find((p) => p.dataKey === "invested")?.value)
+                 ?? (typeof row.invested === "number" ? row.invested : undefined);
+
   const pnl      = value != null && invested != null ? value - invested : null;
   const pct      = pnl != null && invested != null && invested > 0 ? (pnl / invested) * 100 : null;
   const isPos    = (pnl ?? 0) >= 0;

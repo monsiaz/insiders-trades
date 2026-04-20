@@ -1,3396 +1,1626 @@
 {
-  "good": 154,
-  "bad": 310,
+  "good": 201,
+  "bad": 270,
   "bad_list": [
     {
-      "id": "cmo5y53x9001avp2wq043a3nt",
+      "name": "ABIVAX",
+      "reason": "not a valid image file",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/abivax.png"
+    },
+    {
       "name": "74SOFTWARE",
-      "slug": "74software-5245",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/74software.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/74software.svg"
     },
     {
-      "id": "cmo5y548g009tvp2wtomlezsf",
       "name": "ADEUNIS",
-      "slug": "adeunis-6508",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/adeunis.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/adeunis.svg"
     },
     {
-      "id": "cmo5y545t0063vp2w5z8kxrc8",
-      "name": "ALAN ALLMAN ASSOCIATES",
-      "slug": "alan-allman-associates-1298",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/alan-allman-associates-1298.svg",
-      "logoSource": "openai_url",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "AIR FRANCE-KLM",
+      "reason": "not a valid image file",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/air-france-klm.png"
     },
     {
-      "id": "cmo5y548h00ahvp2wzvd5cjdy",
       "name": "1000MERCIS",
-      "slug": "1000mercis-4325",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/1000mercis.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is not the logo of '1000MERCIS'; it is for 'numberly'.",
+      "reason": "logo is for a different company",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/1000mercis.png"
     },
     {
-      "id": "cmo5y54370048vp2ws1pk6lf9",
       "name": "AFFLUENT MEDICAL",
-      "slug": "affluent-medical-6602",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/affluent-medical.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for Carvolix, not Affluent Medical.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/affluent-medical.png"
     },
     {
-      "id": "cmo5y53x80006vp2w3fphq9pu",
-      "name": "ABEO",
-      "slug": "abeo-6263",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/abeo.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image contains a person working on a laptop, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5436003ivp2w5fl8ovfh",
-      "name": "2CRSI",
-      "slug": "2crsi-6601",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/2crsi.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image displays server equipment rather than a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545v0080vp2wg9blo4wa",
-      "name": "AMPLITUDE SURGICAL",
-      "slug": "amplitude-surgical-6019",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/amplitude-surgical.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62bcw507t3vp6kpe98et8u",
-      "name": "ADOMOS",
-      "slug": "adomos-2066",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/adomos.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is a photograph of Paris, including the Eiffel Tower, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548f008wvp2wyrz69sau",
-      "name": "ARCURE",
-      "slug": "arcure-6711",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/arcure.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y548g009xvp2wwhpbodc2",
-      "name": "ADOCIA",
-      "slug": "adocia-5312",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/adocia.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a person in a laboratory setting, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545u0077vp2w7oeqe8hc",
-      "name": "ADVICENNE",
-      "slug": "advicenne-6526",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/advicenne.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "abstract art, not a recognizable company logo",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y54380050vp2wyzfiavha",
-      "name": "AFYREN",
-      "slug": "afyren-7368",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/afyren.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The logo does not match AFYREN's known branding.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62b5st00sgvp6kkcn9aeu5",
-      "name": "ARTEA",
-      "slug": "artea-2722",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/artea.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62bdiy08l0vp6khecf41np",
       "name": "ADTHINK",
-      "slug": "adthink-4633",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/adthink.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image appears to be a logo for GoDaddy, not ADTHINK.",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/adthink.png"
     },
     {
-      "id": "cmo5y545u0072vp2wapck2mvu",
-      "name": "ALTAMIR",
-      "slug": "altamir-3545",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/altamir.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is of a bridge, not a logo.",
+      "name": "ADVICENNE",
+      "reason": "abstract art",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/advicenne.jpg"
     },
     {
-      "id": "cmo5y548f0090vp2w4vjb6nas",
+      "name": "ABIONYX PHARMA",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/abionyx-pharma.png"
+    },
+    {
+      "name": "ACTIA GROUP",
+      "reason": "image contains a website screenshot",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/actia.jpg"
+    },
+    {
+      "name": "AMA CORPORATION PLC",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ama-corporation.svg"
+    },
+    {
+      "name": "ADOCIA",
+      "reason": "image of a person",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/adocia.jpg"
+    },
+    {
+      "name": "ABEO",
+      "reason": "image contains a person, not a logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/abeo.png"
+    },
+    {
       "name": "ALCHIMIE",
-      "slug": "alchimie-7181",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/alchimie.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is a generic letter 'A' and does not specifically identify the company 'ALCHIMIE'.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "reason": "generic icon",
+      "confidence": "medium",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/alchimie.png"
     },
     {
-      "id": "cmo5y545u006dvp2w9ntmp3w2",
+      "name": "AFYREN",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/afyren.png"
+    },
+    {
       "name": "ALSTOM",
-      "slug": "alstom-2500",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/alstom.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image depicts people and a train, not a company logo.",
+      "reason": "photo of a train with people",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/alstom.jpg"
     },
     {
-      "id": "cmo5y54380056vp2wny3fatvg",
+      "name": "ADOMOS",
+      "reason": "image of a landscape, not a logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/adomos.png"
+    },
+    {
+      "name": "ALTAMIR",
+      "reason": "The image is a landscape photo of a bridge, not a logo.",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/altamir.jpg"
+    },
+    {
+      "name": "ARCURE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/arcure.svg"
+    },
+    {
       "name": "ALTAREA",
-      "slug": "altarea-1187",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/altarea.webp",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts buildings and scenery, not a company logo.",
+      "reason": "image is a landscape",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/altarea.webp"
     },
     {
-      "id": "cmo5y53x9001vvp2wibbpr71l",
-      "name": "AUBAY",
-      "slug": "aubay-2459",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/aubay.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "ARTEA",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/artea.jpg"
     },
     {
-      "id": "cmo5y54370042vp2w3xk2q92q",
-      "name": "AUDACIA",
-      "slug": "audacia-7474",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/audacia.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "AMPLITUDE SURGICAL",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/amplitude-surgical.svg"
     },
     {
-      "id": "cmo5y53x8000uvp2wd3i3p1tc",
-      "name": "AXA",
-      "slug": "axa-1476",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/axa.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62bf2n0a52vp6kzj1ubtog",
-      "name": "BANQUE POPULAIRE DU SUD",
-      "slug": "banque-populaire-du-sud-5145",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/banque-populaire-du-sud.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545t005pvp2warxugarm",
-      "name": "ARAMIS GROUP",
-      "slug": "aramis-group-7321",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/aramis.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The logo says 'ARAMIS PERFORMANCE,' which might not be the same as 'ARAMIS GROUP.'",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545w0088vp2w9i114wsh",
-      "name": "BELIEVE",
-      "slug": "believe-7301",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/believe.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y54b000b6vp2wfqfbgs40",
-      "name": "BENETEAU",
-      "slug": "beneteau-1234",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/beneteau.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62b6q301kgvp6kjtasm39e",
-      "name": "ASHLER & MANSON",
-      "slug": "ashler-and-manson-7239",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ashler-manson.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is a favicon that does not match the company's official logo",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548f0093vp2wrnd6ibia",
       "name": "AMOEBA",
-      "slug": "amoeba-6013",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/amoeba.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo belongs to a different company, not 'AMOEBA'.",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/amoeba.png"
     },
     {
-      "id": "cmo5y548g009evp2wp6m94uyb",
-      "name": "BILENDI",
-      "slug": "bilendi-4223",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bilendi.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "ASHLER & MANSON",
+      "reason": "image is not a logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ashler-manson.png"
     },
     {
-      "id": "cmo62baqj05gzvp6kmr9yz81r",
+      "name": "ARAMIS GROUP",
+      "reason": "represents Aramis Performance, not Aramis Group",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/aramis.png"
+    },
+    {
+      "name": "ALTUR INVESTISSEMENT",
+      "reason": "Cannot verify if it is the correct company logo",
+      "confidence": "low",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/altur-investissement.png"
+    },
+    {
       "name": "AST GROUPE",
-      "slug": "ast-groupe-2466",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ast.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image appears to be an abstract shape without identifiable company branding.",
+      "reason": "image does not represent company logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ast.png"
     },
     {
-      "id": "cmo5y545u006ivp2wcbelklyu",
-      "name": "ATLAND",
-      "slug": "atland-1528",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/atland.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Vision API error: the JSON object must be str, bytes or bytearray, n"
+      "name": "BANQUE POPULAIRE DU SUD",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/banque-populaire-du-sud.svg"
     },
     {
-      "id": "cmo5y545w0087vp2wscns74sp",
-      "name": "BLUELINEA",
-      "slug": "bluelinea-5833",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bluelinea.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545u006gvp2wnvb1a171",
-      "name": "ARKEMA",
-      "slug": "arkema-4102",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/arkema.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is a photograph of Paris, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5436002vvp2weqwndrbs",
-      "name": "ATOS SE",
-      "slug": "atos-se-2826",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/atos.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is a photo of people in a meeting, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548f0099vp2wwi0zg771",
-      "name": "AVENIR TELECOM",
-      "slug": "avenir-telecom-3433",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/avenir-telecom.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image appears to be a generic icon or favicon and not the official logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548h00b1vp2wf5le7pxj",
       "name": "AURES TECHNOLOGIES",
-      "slug": "aures-technologies-3427",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/aures-technologies.webp",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is a logo for a different company.",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/aures-technologies.webp"
     },
     {
-      "id": "cmo5y53xa002gvp2wct145ekx",
-      "name": "BASSAC",
-      "slug": "bassac-4499",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bassac.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo does not match any known official logo for the company BASSAC.",
+      "name": "ARKEMA",
+      "reason": "image of a landscape",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/arkema.jpg"
     },
     {
-      "id": "cmo62bdiy08kyvp6knsdmnpat",
-      "name": "ARTEFACT",
-      "slug": "artefact-4425",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/artefact.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image appears to be a background with text overlay, not an official logo.",
+      "name": "ATEME",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ateme.png"
     },
     {
-      "id": "cmo5y548f008kvp2wkxksseht",
       "name": "AUREA",
-      "slug": "aurea-1441",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/aurea.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for a company named 'dovendi', not 'AUREA'.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/aurea.png"
     },
     {
-      "id": "cmo5y548f008ovp2wu6uf0a0t",
+      "name": "ARTEFACT",
+      "reason": "photo with text overlay",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/artefact.jpg"
+    },
+    {
+      "name": "BIGBEN INTERACTIVE",
+      "reason": "not a valid image file",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bigben-interactive.png"
+    },
+    {
+      "name": "AVENIR TELECOM",
+      "reason": "Does not match official company logo.",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/avenir-telecom.png"
+    },
+    {
+      "name": "BILENDI",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bilendi.svg"
+    },
+    {
+      "name": "BLUELINEA",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bluelinea.svg"
+    },
+    {
+      "name": "BELIEVE",
+      "reason": "Cannot determine company from logo",
+      "confidence": "low",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/believe.png"
+    },
+    {
+      "name": "ATLAND",
+      "reason": "icon of a building in a hand",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/atland.png"
+    },
+    {
+      "name": "BASSAC",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bassac.png"
+    },
+    {
+      "name": "BEL",
+      "reason": "The logo does not match the known logo of 'BEL'.",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bel.png"
+    },
+    {
       "name": "BIO-UV GROUP",
-      "slug": "bio-uv-group-6595",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bio-uv.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is a generic water droplet icon, not a specific company logo.",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bio-uv.png"
+    },
+    {
+      "name": "ATOS SE",
+      "reason": "The image features people in an office setting, not a logo.",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/atos.jpg"
     },
     {
-      "id": "cmo5y54370041vp2wpbs99oox",
-      "name": "BERNARD LOISEAU SA",
-      "slug": "bernard-loiseau-sa-1962",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bernard-loiseau.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows a building with branding but not an official company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548g009vvp2wk74vme0e",
-      "name": "BIOSYNEX",
-      "slug": "biosynex-5224",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/biosynex.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image does not match the BIOSYNEX logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x90016vp2w49bd8k99",
-      "name": "BOLLORE SE",
-      "slug": "bollore-se-987",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bollore.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows an office environment with a person walking, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548h00auvp2wsfz4pzni",
-      "name": "CBO TERRITORIA",
-      "slug": "cbo-territoria-4249",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cbo-territoria.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y548f008vvp2wc8lzfmo2",
-      "name": "CASINO GUICHARD-PERRACHON",
-      "slug": "casino-guichard-perrachon-3343",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/casino-guichard-perrachon.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62b6q301kfvp6kqkqdbh9n",
-      "name": "BOIRON",
-      "slug": "boiron-1779",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/boiron.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Image shows a website or app interface, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y54380053vp2wq6dsoz7e",
-      "name": "CFI-COMPAGNIE FONCIERE INTERNATIONALE",
-      "slug": "cfi-compagnie-fonciere-internationale-1258",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cfi-compagnie-fonciere-internationale.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y548h00anvp2wcfnpnueq",
-      "name": "BROADPEAK",
-      "slug": "broadpeak-7639",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/broadpeak.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo does not contain elements typically associated with the 'BROADPEAK' branding.",
-      "confidence": "medium",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62b98503wxvp6kk6ba9cxk",
       "name": "BOOSTHEAT",
-      "slug": "boostheat-5950",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/boostheat.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is an icon related to cards and poker, not a logo for BOOSTHEAT.",
+      "reason": "generic icon",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/boostheat.png"
     },
     {
-      "id": "cmo62b98603wzvp6ku806036g",
-      "name": "CABASSE S.A.",
-      "slug": "cabasse-sa-7811",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cabasse.webp",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image represents a logo for H\u00f4tellerie du domaine de Cabasse, not CABASSE S.A.",
+      "name": "BOLLORE SE",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bollore.png"
     },
     {
-      "id": "cmo62b5st00shvp6kbquas17t",
-      "name": "BPCE",
-      "slug": "bpce-4957",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bpce.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is a collage of various scenes, not a company logo.",
+      "name": "BOIRON",
+      "reason": "This logo is of the company BOIRON.",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/boiron-1779.jpg"
     },
     {
-      "id": "cmo5y5438004uvp2wq8ecrqs9",
-      "name": "CALIBRE",
-      "slug": "calibre-3420",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/calibre.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows a computer with software, not a logo.",
+      "name": "BERNARD LOISEAU SA",
+      "reason": "image of a building",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/bernard-loiseau.jpg"
     },
     {
-      "id": "cmo62b98503wqvp6k6trnu39o",
-      "name": "CAPELLI",
-      "slug": "capelli-4127",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/capelli.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts industrial machinery, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "name": "BROADPEAK",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/broadpeak.png"
     },
     {
-      "id": "cmo5y54b000bpvp2wvncfhoaw",
-      "name": "CARMILA SA",
-      "slug": "carmila-sa-3583",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/carmila.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image does not appear to be the official logo of CARMILA SA.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "name": "CASINO GUICHARD-PERRACHON",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/casino-guichard-perrachon.svg"
     },
     {
-      "id": "cmo5y54360030vp2wdp2x6hf4",
+      "name": "BIOSYNEX",
+      "reason": "image is not recognized as the logo for BIOSYNEX",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/biosynex.png"
+    },
+    {
+      "name": "CFI-COMPAGNIE FONCIERE INTERNATIONALE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cfi-compagnie-fonciere-internationale.svg"
+    },
+    {
       "name": "CAPITAL B",
-      "slug": "capital-b-5244",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/capital-b.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image shows a stylized letter 'B' but it is not identifiable as the official logo of 'CAPITAL B'.",
+      "reason": "image not related to the company logo",
       "confidence": "low",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/capital-b.png"
     },
     {
-      "id": "cmo5y53x9001yvp2wjrtywz87",
-      "name": "COMPAGNIE DE L'ODET",
-      "slug": "compagnie-de-lodet-990",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/compagnie-de-l-odet.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "CALIBRE",
+      "reason": "image of a laptop and books, not a logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/calibre.jpg"
     },
     {
-      "id": "cmo5y53x9001wvp2w9kljt3xy",
+      "name": "CABASSE S.A.",
+      "reason": "image represents a different entity",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cabasse.webp"
+    },
+    {
+      "name": "CAPELLI",
+      "reason": "The image is of industrial equipment, not a logo.",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/capelli.jpg"
+    },
+    {
       "name": "CELLECTIS",
-      "slug": "cellectis-4567",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cellectis.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Vision API error: the JSON object must be str, bytes or bytearray, n"
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cellectis.png"
     },
     {
-      "id": "cmo5y53x8000gvp2w9pdh7js1",
-      "name": "CEGEDIM",
-      "slug": "cegedim-2627",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cegedim.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image is empty or not visible.",
+      "name": "CARMAT",
+      "reason": "The image is not a logo; it seems to be part of a construction or under maintenance notice.",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/carmat.png"
     },
     {
-      "id": "cmo5y5437004gvp2w8ibxkcwq",
-      "name": "COMPAGNIE DE SAINT-GOBAIN",
-      "slug": "compagnie-de-saint-gobain-1264",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/compagnie-de-saint-gobain.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545u006hvp2w1evjmuzo",
-      "name": "COMPAGNIE GENERALE DES ETABLISSEMENTS MICHELIN",
-      "slug": "compagnie-generale-des-etablissements-michelin-3393",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/compagnie-generale-des-etablissements-michelin.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545t0066vp2wnxyfzy59",
-      "name": "COMPAGNIE LEBON",
-      "slug": "compagnie-lebon-1337",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/compagnie-lebon.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545t005yvp2wz7swyx62",
       "name": "CATANA GROUP",
-      "slug": "catana-group-4194",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/catana.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image is a ship wheel, which does not appear to be associated with the CATANA GROUP logo.",
+      "reason": "generic icon or symbol not specific to CATANA GROUP",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/catana.png"
     },
     {
-      "id": "cmo62b5st00scvp6k266dhslf",
-      "name": "COMPAGNIE DES ALPES",
-      "slug": "compagnie-des-alpes-1942",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/compagnie-des-alpes.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "COMPAGNIE DE L'ODET",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/compagnie-de-l-odet.svg"
     },
     {
-      "id": "cmo5y5437004cvp2ww69zmn4n",
+      "name": "CARMILA SA",
+      "reason": "logo does not match company",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/carmila.png"
+    },
+    {
       "name": "CREDIT AGRICOLE S.A.",
-      "slug": "credit-agricole-sa-3391",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/credit-agricole.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/credit-agricole.svg"
     },
     {
-      "id": "cmo5y545t005lvp2wy3mibkmz",
-      "name": "CLARANOVA",
-      "slug": "claranova-2134",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/claranova.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows a person, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5436003bvp2wht0g0ljc",
-      "name": "CLARIANE SE",
-      "slug": "clariane-se-4248",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/clariane.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows people in a hallway, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548g009mvp2wj21sj70z",
-      "name": "CHARGEURS",
-      "slug": "chargeurs-2511",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/chargeurs.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows an interior scene of a museum or gallery, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62b4sq0005vp6kucvgxkt5",
-      "name": "CMG CLEAN TECH",
-      "slug": "cmg-clean-tech-6321",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cmg-clean-tech.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts solar panels and a sky, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y54360031vp2ws9decec9",
-      "name": "COTY INC",
-      "slug": "coty-inc-7956",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/coty.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is not a logo; it appears to be a photo of people.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548f008lvp2wpd1t6j4d",
-      "name": "CROSSJECT",
-      "slug": "crossject-5705",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/crossject.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image is an information icon, not related to CROSSJECT.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y54360037vp2w4u6gasmk",
-      "name": "COFACE SA",
-      "slug": "coface-sa-3335",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/coface.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows people, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548f008ivp2wwhywnkdn",
-      "name": "CORETECH 5",
-      "slug": "coretech-5-6541",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/coretech-5.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for 'Reboost Blockchain Corp' not 'CORETECH 5'.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62bcw507t4vp6k0pixcl6l",
-      "name": "COLAS SA",
-      "slug": "colas-sa-3332",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/colas.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The text in the logo does not match 'COLAS SA'; it reads 'AXIMUM'.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5438005avp2wx1l2d38t",
-      "name": "COGELEC",
-      "slug": "cogelec-6594",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cogelec.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows a building and surroundings, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548g00a2vp2wypua9wd5",
-      "name": "D.L.S.I.",
-      "slug": "dlsi-4490",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/d-l-s-i.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Vision API error: the JSON object must be str, bytes or bytearray, n"
-    },
-    {
-      "id": "cmo62b98503wrvp6kh6sw8os8",
-      "name": "CS GROUP",
-      "slug": "cs-group-1609",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cs.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for CompuServe, not CS GROUP.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5438005dvp2wf536b9hs",
-      "name": "DAMARTEX",
-      "slug": "damartex-1057",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/damartex.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts people, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548g00a5vp2wu7dqx8kj",
-      "name": "DRONE VOLT",
-      "slug": "drone-volt-6017",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/drone-volt.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x9001zvp2wpa59sug9",
-      "name": "COVIVIO",
-      "slug": "covivio-1195",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/covivio.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is of a building not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548g00a6vp2wbzxl7kjt",
-      "name": "COURBET HERITAGE",
-      "slug": "courbet-heritage-8152",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/courbet-heritage.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The logo appears to be for CHANEL, not COURBET HERITAGE.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5436003mvp2w3gdzuw3m",
-      "name": "EDENRED",
-      "slug": "edenred-5100",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/edenred.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y5436003jvp2wmy620444",
-      "name": "EIFFAGE",
-      "slug": "eiffage-1635",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/eiffage.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62b6q301klvp6kf51hkk0b",
-      "name": "COURTOIS S.A.",
-      "slug": "courtois-sa-2907",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/courtois.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The logo does not match 'COURTOIS S.A.' and shows 'Realnames' instead.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5437003xvp2wxscyv3wu",
-      "name": "DASSAULT SYSTEMES",
-      "slug": "dassault-systemes-1148",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/dassault-systemes.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is of people in a bus, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x8000yvp2wjlhoq8qd",
-      "name": "ELIS",
-      "slug": "elis-5861",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/elis.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y54b000b7vp2wodhxqc8w",
-      "name": "EMEIS",
-      "slug": "emeis-3495",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/emeis.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62bbib068uvp6kb7fy57g2",
-      "name": "DEEZER S.A.",
-      "slug": "deezer-sa-6063",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/deezer.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image does not match the official DEEZER S.A. logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548g009uvp2wp7bp6ja5",
-      "name": "DBT",
-      "slug": "dbt-6121",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/dbt.webp",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image features an urban scene of roads and overpasses, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62b4sq0004vp6kfwibwgru",
-      "name": "ENERTIME",
-      "slug": "enertime-6203",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/enertime.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y54b000bkvp2w2wz4gfhx",
-      "name": "EAGLE FOOTBALL GROUP",
-      "slug": "eagle-football-group-4542",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/eagle-football.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "This logo does not appear to be associated with 'EAGLE FOOTBALL GROUP'.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62b5st00sdvp6kponodbfo",
-      "name": "DERICHEBOURG",
-      "slug": "derichebourg-3595",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/derichebourg.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is a generic icon or favicon and doesn't match the Derichebourg company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545u006svp2wcdd2nob6",
-      "name": "DEEZER SA",
-      "slug": "deezer-sa-7390",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/deezer.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image does not match the official logo of DEEZER SA.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y54b000b8vp2wz4pgfyvs",
-      "name": "DEKUPLE",
-      "slug": "dekuple-3552",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/dekuple.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Logo symbol does not specifically indicate 'DEKUPLE'.",
+      "name": "COMPAGNIE LEBON",
+      "reason": "wrong company logo",
       "confidence": "medium",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/compagnie-lebon.png"
     },
     {
-      "id": "cmo5y53x90012vp2wcbd7mpvr",
-      "name": "ENGIE",
-      "slug": "engie-2933",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/engie.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "CHARGEURS",
+      "reason": "The image is of a museum exhibition, not a logo.",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/chargeurs.jpg"
     },
     {
-      "id": "cmo62baqj05gvvp6kf1katejn",
-      "name": "ENOGIA",
-      "slug": "enogia-7361",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/enogia.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "CLARIANE SE",
+      "reason": "image of people",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/clariane.jpg"
     },
     {
-      "id": "cmo5y5436002yvp2wut4fvlo6",
+      "name": "CLASQUIN",
+      "reason": "image features shipping containers",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/clasquin.jpg"
+    },
+    {
+      "name": "CROSSJECT",
+      "reason": "generic icon",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/crossject.png"
+    },
+    {
+      "name": "COFACE SA",
+      "reason": "This is a photo of people, not a logo.",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/coface.png"
+    },
+    {
+      "name": "CORETECH 5",
+      "reason": "Logo is for a different company",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/coretech-5.png"
+    },
+    {
+      "name": "COURTOIS S.A.",
+      "reason": "Wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/courtois.png"
+    },
+    {
+      "name": "CS GROUP",
+      "reason": "Logo for different company",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cs.png"
+    },
+    {
+      "name": "COGELEC",
+      "reason": "image of a building",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/cogelec.jpg"
+    },
+    {
+      "name": "COLAS SA",
+      "reason": "Logo does not match COLAS SA",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/colas.png"
+    },
+    {
+      "name": "COURBET HERITAGE",
+      "reason": "The logo represents a different company.",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/courbet-heritage.png"
+    },
+    {
+      "name": "D.L.S.I.",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/d-l-s-i.png"
+    },
+    {
+      "name": "COTY INC",
+      "reason": "Image contains people and abstract elements",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/coty.jpg"
+    },
+    {
+      "name": "CLARANOVA",
+      "reason": "photo of a person",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/claranova.jpg"
+    },
+    {
       "name": "DNXCORP",
-      "slug": "dnxcorp-4607",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/dnxcorp.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image appears to be a generic icon or favicon and not the official logo.",
+      "reason": "not a valid image file",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/dnxcorp.png"
     },
     {
-      "id": "cmo62bcw507suvp6ke23kdfde",
+      "name": "DAMARTEX",
+      "reason": "image of people",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/damartex.jpg"
+    },
+    {
+      "name": "COVIVIO",
+      "reason": "image of a building",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/covivio.png"
+    },
+    {
+      "name": "DASSAULT SYSTEMES",
+      "reason": "image of people on public transport",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/dassault-systemes.jpg"
+    },
+    {
+      "name": "DEEZER S.A.",
+      "reason": "abstract art",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/deezer.png"
+    },
+    {
+      "name": "DEEZER SA",
+      "reason": "The image does not resemble the official logo of Deezer SA",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/deezer.png"
+    },
+    {
       "name": "DEVOTEAM",
-      "slug": "devoteam-3500",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/devoteam.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is abstract art and does not represent a company logo.",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/devoteam.png"
+    },
+    {
+      "name": "DEKUPLE",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/dekuple.jpg"
     },
     {
-      "id": "cmo5y53x90014vp2w7pby02ar",
-      "name": "EURAZEO",
-      "slug": "eurazeo-1613",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/eurazeo.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545v0079vp2wcwztkbct",
-      "name": "DELFINGEN",
-      "slug": "delfingen-2486",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/delfingen.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is not a logo; it depicts a car.",
+      "name": "EDENRED",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/edenred.png"
     },
     {
-      "id": "cmo62b4sq000bvp6k7oy5dg6k",
+      "name": "EMEIS",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/emeis.svg"
+    },
+    {
+      "name": "ENGIE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/engie.svg"
+    },
+    {
+      "name": "ENERTIME",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/enertime.svg"
+    },
+    {
+      "name": "ENOGIA",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/enogia.svg"
+    },
+    {
+      "name": "ELIOR GROUP",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/elior.png"
+    },
+    {
+      "name": "EAGLE FOOTBALL GROUP",
+      "reason": "abstract art or generic icon",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/eagle-football.jpg"
+    },
+    {
       "name": "EURO RESSOURCES SA",
-      "slug": "euro-ressources-sa-2878",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/euro-ressources.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/euro-ressources.svg"
     },
     {
-      "id": "cmo62b7lu02cmvp6kg89inh5x",
-      "name": "EURONEXT NV",
-      "slug": "euronext-nv-84",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/euronext.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "EURAZEO",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/eurazeo.svg"
     },
     {
-      "id": "cmo5y54b000bovp2w8c26iild",
       "name": "EMOVA GROUP",
-      "slug": "emova-group-4947",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/emova.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a product advertisement, not a company logo.",
+      "reason": "Not a logo; contains product images and a person",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/emova.png"
     },
     {
-      "id": "cmo5y53x8000ovp2w0h3maz5x",
-      "name": "EXOSENS",
-      "slug": "exosens-8080",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/exosens.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62baqj05gwvp6koy3w789s",
-      "name": "EROLD",
-      "slug": "erold-4237",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/erold.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is of a person, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548h00arvp2w32knomex",
       "name": "DOLFINES",
-      "slug": "dolfines-4591",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/dolfines.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is of wind turbines in the ocean, not a logo.",
+      "reason": "The image is a landscape of wind turbines, not a logo.",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/dolfines.jpg"
     },
     {
-      "id": "cmo5y545t0068vp2w5yn9a9b6",
-      "name": "FERMENTALG",
-      "slug": "fermentalg-5396",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/fermentalg.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "EURONEXT NV",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/euronext.svg"
     },
     {
-      "id": "cmo62bcw507swvp6klzgm2505",
-      "name": "ENVEA SA",
-      "slug": "envea-sa-4271",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/envea.webp",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image appears to be a photograph, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62bdiy08kxvp6k5wfdk0sy",
-      "name": "ESI GROUP",
-      "slug": "esi-group-3575",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/esi.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image appears to be a generic icon, not a specific company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62b8ew034nvp6kdwlqf961",
       "name": "EUREKING",
-      "slug": "eureking-7600",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/eureking.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The logo does not explicitly indicate it belongs to EUREKING.",
-      "confidence": "low",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x90028vp2wlovgq6r0",
-      "name": "ESSILORLUXOTTICA",
-      "slug": "essilorluxottica-1646",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/essilorluxottica.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is abstract and does not contain any recognizable brand elements.",
+      "reason": "Logo does not match expected design",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/eureking.png"
     },
     {
-      "id": "cmo5y53x9001ivp2wtis9zhmt",
-      "name": "EXAIL TECHNOLOGIES",
-      "slug": "exail-technologies-2372",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/exail-technologies.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is a generic icon and doesn't match the 'EXAIL TECHNOLOGIES' logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62b8ew034jvp6kzxerbnnz",
-      "name": "EUROAPI",
-      "slug": "euroapi-7543",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/euroapi.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image does not resemble or match the official logo of EUROAPI.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548g009hvp2w41qmqjcs",
       "name": "EQUASENS",
-      "slug": "equasens-3529",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/equasens.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image appears to be a still from a video or an image of a person, not a company logo.",
+      "reason": "image contains people, not a logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/equasens.png"
     },
     {
-      "id": "cmo5y53xa002qvp2w5z6mbtg2",
-      "name": "GAZTRANSPORT ET TECHNIGAZ",
-      "slug": "gaztransport-et-technigaz-5704",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/gaztransport-et-technigaz-5704.svg",
-      "logoSource": "openai_url",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "ESSILORLUXOTTICA",
+      "reason": "Invalid format for company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/essilorluxottica.png"
     },
     {
-      "id": "cmo5y548h00akvp2wl2ii9pmm",
+      "name": "ENVEA SA",
+      "reason": "image of an airplane wing, not a logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/envea.webp"
+    },
+    {
+      "name": "EXOSENS",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/exosens.svg"
+    },
+    {
+      "name": "ENERGISME",
+      "reason": "screenshot of a webpage",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/energisme.png"
+    },
+    {
       "name": "EUROBIO-SCIENTIFIC",
-      "slug": "eurobio-scientific-4121",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/eurobio-scientific.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a person working in a laboratory, not a company logo.",
+      "reason": "The image is a product, not a logo.",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/eurobio-scientific.jpg"
     },
     {
-      "id": "cmo5y5438005bvp2w0z3gkz7s",
-      "name": "GRAINES VOLTZ",
-      "slug": "graines-voltz-3456",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/graines-voltz.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "ENTECH",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/entech.png"
     },
     {
-      "id": "cmo62b7lu02covp6kfvgj5lu3",
+      "name": "EROLD",
+      "reason": "not a logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/erold.jpg"
+    },
+    {
+      "name": "GAZTRANSPORT ET TECHNIGAZ",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/gaztransport-et-technigaz.svg"
+    },
+    {
       "name": "FASHION BEL AIR",
-      "slug": "fashion-bel-air-3256",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/fashion-bel-air.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is a generic letter 'S' and not specific to the company 'FASHION BEL AIR'.",
+      "reason": "generic icon",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/fashion-bel-air.png"
     },
     {
-      "id": "cmo5y548f0097vp2wknoba2p4",
-      "name": "GROLLEAU",
-      "slug": "grolleau-7517",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/grolleau.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62b98503wwvp6kkbkjkzzx",
-      "name": "GROUPE FLO",
-      "slug": "groupe-flo-3559",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-flo.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545u006qvp2wres5rec6",
-      "name": "GROUPE AIRWELL",
-      "slug": "groupe-airwell-7437",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-airwell.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y548g009yvp2wi4vp4uup",
-      "name": "EXCLUSIVE NETWORKS",
-      "slug": "exclusive-networks-7422",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/exclusive-networks.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is a small icon or favicon, not a detailed logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548f008fvp2wowftcike",
-      "name": "FORSEE POWER",
-      "slug": "forsee-power-7434",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/forsee-power.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Image is a photo of a person, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548h00avvp2w8g0bu1z7",
-      "name": "FIGEAC AERO",
-      "slug": "figeac-aero-5731",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/figeac-aero.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo does not match 'FIGEAC AERO', it is for 'dovendi'.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x9001qvp2wuqcsyeqg",
-      "name": "GROUPE PARTOUCHE",
-      "slug": "groupe-partouche-3362",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-partouche.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545u006uvp2wbkftj48x",
       "name": "FDJ UNITED",
-      "slug": "fdj-united-6881",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/fdj-united.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image features people and is not a logo.",
+      "reason": "image of a person",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/fdj-united.png"
     },
     {
-      "id": "cmo62b5st00s9vp6kw9mzvfis",
-      "name": "GASCOGNE",
-      "slug": "gascogne-3396",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/gascogne.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Vision API error: the JSON object must be str, bytes or bytearray, n"
-    },
-    {
-      "id": "cmo5y545u006nvp2wh8aejghr",
-      "name": "GUERBET",
-      "slug": "guerbet-1072",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/guerbet.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545v007ivp2wgwdi416r",
-      "name": "FORVIA",
-      "slug": "forvia-1240",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/forvia.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "This is not the logo of FORVIA.",
+      "name": "EXAIL TECHNOLOGIES",
+      "reason": "provided image is not a text-based logo",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/exail-technologies.png"
     },
     {
-      "id": "cmo5y54b000bavp2wweqrh1xv",
+      "name": "FORSEE POWER",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/forsee-power.png"
+    },
+    {
       "name": "GALIMMO",
-      "slug": "galimmo-1725",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/galimmo.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is not for the company 'GALIMMO'. It is for a different company.",
+      "reason": "Logo belongs to a different company",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/galimmo.png"
     },
     {
-      "id": "cmo62bc90070yvp6keriyceoc",
-      "name": "HIGHCO",
-      "slug": "highco-2653",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/highco.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "GROUPE AIRWELL",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-airwell.svg"
     },
     {
-      "id": "cmo62ba1904p0vp6kd9h4rwk6",
-      "name": "HOLCIM LTD",
-      "slug": "holcim-ltd-5815",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/holcim.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62b8ew034pvp6k4ww1foe0",
-      "name": "HITECHPROS",
-      "slug": "hitechpros-4530",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/hitechpros.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53xa002ovp2wp6m2k8he",
-      "name": "GOLD BY GOLD",
-      "slug": "gold-by-gold-5329",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/gold-by-gold.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image is a logo for a different company.",
+      "name": "EUROAPI",
+      "reason": "This appears to be a generic abstract symbol.",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/euroapi.png"
     },
     {
-      "id": "cmo5y53x9002dvp2wyd16of17",
-      "name": "FREELANCE.COM",
-      "slug": "freelancecom-495",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/freelance-com.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts domain extensions and is not a logo.",
+      "name": "FIGEAC AERO",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/figeac-aero.png"
     },
     {
-      "id": "cmo5y53x80002vp2wsjchyi39",
-      "name": "FREY",
-      "slug": "frey-4736",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/frey.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a scene with a ferris wheel and buildings, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "name": "GASCOGNE",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/gascogne.png"
     },
     {
-      "id": "cmo5y548h00alvp2wqvfopelp",
-      "name": "IDI",
-      "slug": "idi-2103",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/idi.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y54b000b5vp2w5j57n1sy",
-      "name": "GROUPE PAREDES",
-      "slug": "groupe-paredes-7992",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-paredes.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "Vision API error: the JSON object must be str, bytes or bytearray, n"
-    },
-    {
-      "id": "cmo5y545u006lvp2wbp0ogfps",
-      "name": "GROUPE LDLC",
-      "slug": "groupe-ldlc-2443",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-ldlc.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for dovendi, not GROUPE LDLC.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548g009svp2wpmfju0b0",
-      "name": "GROUPE CRIT",
-      "slug": "groupe-crit-1554",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-crit.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for 'Efty', not 'GROUPE CRIT'.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y54b000bsvp2waj1nlp48",
       "name": "GROUPE PAROT",
-      "slug": "groupe-parot-6300",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-parot.jpg",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The symbol does not match the official logo of 'GROUPE PAROT'.",
+      "reason": "not a valid image file",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-parot.png"
     },
     {
-      "id": "cmo5y545v007rvp2w9kadpqd5",
+      "name": "GROUPE FLO",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-flo.svg"
+    },
+    {
+      "name": "HAULOTTE GROUP",
+      "reason": "not a valid image file",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/haulotte.png"
+    },
+    {
+      "name": "FREELANCE.COM",
+      "reason": "image depicts domain icons and not a company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/freelance-com.png"
+    },
+    {
+      "name": "GROUPE PARTOUCHE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-partouche.svg"
+    },
+    {
+      "name": "GOLD BY GOLD",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/gold-by-gold.png"
+    },
+    {
+      "name": "GRAINES VOLTZ",
+      "reason": "Unable to verify company logo",
+      "confidence": "low",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/graines-voltz.png"
+    },
+    {
+      "name": "GROUPE CRIT",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-crit.png"
+    },
+    {
+      "name": "HITECHPROS",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/hitechpros.svg"
+    },
+    {
+      "name": "HOLCIM LTD",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/holcim.svg"
+    },
+    {
+      "name": "GROUPE PAREDES",
+      "reason": "generic icon",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-paredes.png"
+    },
+    {
+      "name": "FREY",
+      "reason": "Image is a landscape with buildings and people, not a logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/frey.png"
+    },
+    {
       "name": "HAFFNER ENERGY",
-      "slug": "haffner-energy-7535",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/haffner-energy.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is an advertisement for HugeDomains and not related to HAFFNER ENERGY.",
+      "reason": "domain placeholder image",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/haffner-energy.png"
     },
     {
-      "id": "cmo62b7lu02cqvp6k6ei20i5j",
-      "name": "INTRASENSE",
-      "slug": "intrasense-5348",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/intrasense.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y5437003svp2wzyc7h0e1",
-      "name": "IPSEN SA",
-      "slug": "ipsen-sa-3997",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ipsen.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62bbib0691vp6kjiwzs0ws",
-      "name": "HEXAOM",
-      "slug": "hexaom-1012",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/hexaom.webp",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts an interior living space, not a company logo.",
+      "name": "GROUPE LDLC",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/groupe-ldlc.png"
     },
     {
-      "id": "cmo62b5st00smvp6ka0c1fjt8",
-      "name": "HF COMPANY",
-      "slug": "hf-company-2430",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/hf-company.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The logo is for 'Lea Networks', not 'HF COMPANY'.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548f008uvp2wvc7vt7i2",
-      "name": "HERIGE",
-      "slug": "herige-1310",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/herige.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is an advertisement for 'HugeDomains' and not related to 'HERIGE'.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545v007bvp2wrtqflqme",
-      "name": "IPSOS",
-      "slug": "ipsos-3274",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ipsos.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y5436003kvp2w59csrkzt",
-      "name": "KAUFMAN & BROAD SA",
-      "slug": "kaufman-and-broad-sa-1630",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/kaufman-broad.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x9002bvp2wll3jjw9v",
       "name": "ID LOGISTICS GROUP",
-      "slug": "id-logistics-group-5298",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/id-logistics.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is an abstract black and white design, not related to ID LOGISTICS GROUP.",
+      "reason": "abstract art",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/id-logistics.png"
     },
     {
-      "id": "cmo5y5437003zvp2w866708p3",
+      "name": "ICADE",
+      "reason": "image of a building, not a logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/icade.jpg"
+    },
+    {
+      "name": "IKONISYS",
+      "reason": "incorrect company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ikonisys.webp"
+    },
+    {
       "name": "ICAPE HOLDING",
-      "slug": "icape-holding-7629",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/icape.png",
-      "logoSource": "scraped",
-      "valid": false,
       "reason": "The logo is for InMotion Hosting, not ICAPE HOLDING.",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/icape.png"
     },
     {
-      "id": "cmo5y545u006pvp2wzz784zmg",
-      "name": "HOPSCOTCH GROUPE",
-      "slug": "hopscotch-groupe-1537",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/hopscotch.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is a generic icon and not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "name": "IDSUD",
+      "reason": "Cannot confirm company association",
+      "confidence": "low",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/idsud.png"
     },
     {
-      "id": "cmo62b98603wyvp6kdmcl10cr",
-      "name": "KERLINK",
-      "slug": "kerlink-6220",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/kerlink.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "HERIGE",
+      "reason": "incorrect image type",
+      "confidence": "low",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/herige.png"
     },
     {
-      "id": "cmo5y548g00a1vp2wylms6e1m",
-      "name": "ICADE",
-      "slug": "icade-1516",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/icade.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a building, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "name": "IPSEN SA",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ipsen.svg"
     },
     {
-      "id": "cmo62bcw507ssvp6kh477y2pt",
-      "name": "HOPIUM",
-      "slug": "hopium-7272",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/hopium.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is not for Hopium, it appears to be for a different company.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "name": "IPSOS",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ipsos.svg"
     },
     {
-      "id": "cmo5y53x9002cvp2wydof6pxk",
-      "name": "IKONISYS",
-      "slug": "ikonisys-7431",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ikonisys.webp",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image appears to be an abstract design and not a recognizable company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62b4sq000avp6kvepqt4fx",
-      "name": "IMPLANET",
-      "slug": "implanet-5662",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/implanet.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image depicts a person and does not contain any logo or branding related to IMPLANET.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x8000vvp2w8v74s9hq",
-      "name": "L'AIR LIQUIDE",
-      "slug": "lair-liquide-1372",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/l-air-liquide.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y548f008rvp2wolbwacwu",
-      "name": "LAGARDERE SA",
-      "slug": "lagardere-sa-3417",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lagardere.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y54360036vp2wp29u8y4j",
-      "name": "KUMULUS VAPE",
-      "slug": "kumulus-vape-6829",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/kumulus-vape.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x9001uvp2wtczjcxzm",
-      "name": "LAURENT-PERRIER",
-      "slug": "laurent-perrier-3308",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/laurent-perrier.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x9001xvp2w5lkgg0k3",
-      "name": "INNELEC MULTIMEDIA",
-      "slug": "innelec-multimedia-1182",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/innelec-multimedia.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "This appears to be a logo resembling LinkedIn, not INNELEC MULTIMEDIA.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5438004qvp2wdoh177gb",
-      "name": "INVENTIVA",
-      "slug": "inventiva-6262",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/inventiva.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image does not represent the official logo of the company 'INVENTIVA'.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5438004mvp2wu2lzv3bv",
-      "name": "LEPERMISLIBRE",
-      "slug": "lepermislibre-7770",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lepermislibre.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y548g009ivp2wb489jt9n",
-      "name": "JCDECAUX SE",
-      "slug": "jcdecaux-se-3277",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/jcdecaux.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Vision API error: the JSON object must be str, bytes or bytearray, n"
-    },
-    {
-      "id": "cmo5y548g00aevp2wsa3i4zb6",
-      "name": "LES HOTELS DE PARIS",
-      "slug": "les-hotels-de-paris-1837",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/les-hotels-de-paris.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y548f009bvp2w5jqvnk8r",
-      "name": "LEXIBOOK",
-      "slug": "lexibook-1153",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lexibook.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y5437004kvp2w6c8y9gls",
-      "name": "KALRAY",
-      "slug": "kalray-6598",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/kalray.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The design does not clearly match the known Kalray logo.",
-      "confidence": "medium",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y54360035vp2wzef5cj2r",
-      "name": "KER HOLDING",
-      "slug": "ker-holding-8144",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ker.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows a person with a horse, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62b7lu02cnvp6kb01kxtgc",
-      "name": "LUMIBIRD",
-      "slug": "lumibird-1782",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lumibird.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62b6q301kmvp6kdmhvnm0v",
-      "name": "KEYRUS",
-      "slug": "keyrus-3492",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/keyrus.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The logo does not explicitly indicate it belongs to 'KEYRUS'.",
-      "confidence": "medium",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5436003dvp2w37rb39mv",
-      "name": "LANSON-BCC",
-      "slug": "lanson-bcc-2502",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lanson-bcc.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image does not match the official logo of LANSON-BCC.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y54360032vp2wt5llfh6a",
-      "name": "KLEA HOLDING",
-      "slug": "klea-holding-5261",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/klea.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The logo belongs to 'Orbia', not 'KLEA HOLDING'.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5437003qvp2wom8m2984",
-      "name": "L'OREAL",
-      "slug": "loreal-1556",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/l-oreal.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is not a logo; it features a person with artistic elements.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545u0076vp2wb47qklkp",
       "name": "IMMOBILIERE DASSAULT SA",
-      "slug": "immobiliere-dassault-sa-1932",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/immobiliere-dassault.jpg",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image appears to be an abstract design or icon, not a recognizable logo of IMMOBILIERE DASSAULT SA.",
+      "reason": "abstract art",
+      "confidence": "medium",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/immobiliere-dassault.jpg"
+    },
+    {
+      "name": "KAUFMAN & BROAD SA",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/kaufman-broad.svg"
+    },
+    {
+      "name": "INNELEC MULTIMEDIA",
+      "reason": "This logo does not match INNELEC MULTIMEDIA",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/innelec-multimedia.png"
     },
     {
-      "id": "cmo62b8ew034mvp6keh4ashuk",
-      "name": "MANITOU BF",
-      "slug": "manitou-bf-1743",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/manitou-bf.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "KERLINK",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/kerlink.svg"
     },
     {
-      "id": "cmo5y54b000bjvp2why0jl887",
-      "name": "MC PHY ENERGY",
-      "slug": "mc-phy-energy-5743",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mc-phy-energy.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "L'AIR LIQUIDE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/l-air-liquide.svg"
     },
     {
-      "id": "cmo5y548f0098vp2wh2nadv6q",
-      "name": "LATECOERE",
-      "slug": "latecoere-1460",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/latecoere.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image does not display a company logo.",
+      "name": "KUMULUS VAPE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/kumulus-vape.svg"
+    },
+    {
+      "name": "LAGARDERE SA",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lagardere.svg"
+    },
+    {
+      "name": "IMPLANET",
+      "reason": "abstract art",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/implanet.png"
     },
     {
-      "id": "cmo5y5436003cvp2wezphthp7",
-      "name": "LDC",
-      "slug": "ldc-1507",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ldc.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo does not match the known brand imagery for LDC.",
+      "name": "INVENTIVA",
+      "reason": "abstract art",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/inventiva.png"
     },
     {
-      "id": "cmo62ba1804owvp6kd9852lyn",
-      "name": "LE TANNEUR ET CIE",
-      "slug": "le-tanneur-et-cie-3546",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/le-tanneur-et-cie.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image is a photo of an object, not a logo.",
+      "name": "LA FRANCAISE DE L'ENERGIE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/la-francaise-de-lenergie-6149.svg"
+    },
+    {
+      "name": "LEPERMISLIBRE",
+      "reason": "not a valid image file",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lepermislibre.png"
     },
     {
-      "id": "cmo5y53x8000zvp2w6pt1c0uo",
-      "name": "LISI",
-      "slug": "lisi-1239",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lisi.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The logo shown is for Realnames, not LISI.",
+      "name": "LAURENT-PERRIER",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/laurent-perrier.svg"
+    },
+    {
+      "name": "LES HOTELS DE PARIS",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/les-hotels-de-paris.svg"
+    },
+    {
+      "name": "IT LINK",
+      "reason": "image is a collage",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/it-link.png"
     },
     {
-      "id": "cmo5y545t0065vp2w02its5ps",
       "name": "KLARSEN",
-      "slug": "klarsen-5243",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/klarsen.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image does not display the logo for 'KLARSEN'. It shows a logo for a different company.",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/klarsen.jpg"
     },
     {
-      "id": "cmo5y53x90018vp2wf9ebogs8",
-      "name": "LOUIS HACHETTE GROUP S.A.",
-      "slug": "louis-hachette-group-sa-8221",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/louis-hachette-group.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The text design is not a recognized logo format.",
+      "name": "KER HOLDING",
+      "reason": "image of a person and a horse",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ker.jpg"
     },
     {
-      "id": "cmo5y53x8000pvp2wr9lu1u7r",
+      "name": "LEXIBOOK",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lexibook.svg"
+    },
+    {
+      "name": "L'OREAL",
+      "reason": "The image features a person, not a logo.",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/l-oreal.jpg"
+    },
+    {
+      "name": "LDC",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ldc.png"
+    },
+    {
+      "name": "MANITOU BF",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/manitou-bf.svg"
+    },
+    {
+      "name": "LATECOERE",
+      "reason": "image contains a webpage screenshot, not a logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/latecoere.jpg"
+    },
+    {
       "name": "LNA SANTE",
-      "slug": "lna-sante-4382",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lna-sante.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The logo does not match LNA SANTE.",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lna-sante.png"
     },
     {
-      "id": "cmo5y548g00a4vp2wnnpas87u",
+      "name": "LOUIS HACHETTE GROUP S.A.",
+      "reason": "incorrect company name",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/louis-hachette-group.png"
+    },
+    {
       "name": "LHYFE",
-      "slug": "lhyfe-7634",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lhyfe.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a building, not a company logo.",
+      "reason": "building image",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lhyfe.png"
     },
     {
-      "id": "cmo5y54b000b4vp2wl4mep513",
-      "name": "MINT",
-      "slug": "mint-4492",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mint.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62bbib068xvp6kbqh8d22k",
-      "name": "LYSOGENE",
-      "slug": "lysogene-6395",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lysogene.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The logo does not match the company 'LYSOGENE'.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548h00amvp2wzyhjlppp",
-      "name": "MEDESIS PHARMA S.A.",
-      "slug": "medesis-pharma-sa-7275",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/medesis-pharma.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is a generic icon and not a recognizable company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545v007wvp2wkr6l6h4e",
-      "name": "MAISONS DU MONDE",
-      "slug": "maisons-du-monde-6229",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/maisons-du-monde.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image appears to be related to a promotion, not an official company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5437004evp2w655at3i9",
-      "name": "MAAT PHARMA",
-      "slug": "maat-pharma-7438",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/maat-pharma.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is blank or improperly loaded.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62bbib068tvp6kbp2jvrly",
       "name": "MARE NOSTRUM",
-      "slug": "mare-nostrum-6742",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mare-nostrum.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for a different company named 'BOISCHAUT', not 'MARE NOSTRUM'.",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mare-nostrum.png"
     },
     {
-      "id": "cmo5y548g009jvp2whw2xessw",
-      "name": "NEOEN",
-      "slug": "neoen-6631",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/neoen.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "LYSOGENE",
+      "reason": "The image does not appear to represent the company 'LYSOGENE'.",
+      "confidence": "low",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/lysogene.png"
     },
     {
-      "id": "cmo62b98503wsvp6krfg4crl9",
+      "name": "MAISONS DU MONDE",
+      "reason": "promotional graphic",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/maisons-du-monde.jpg"
+    },
+    {
+      "name": "MINT",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mint.svg"
+    },
+    {
+      "name": "MEDESIS PHARMA S.A.",
+      "reason": "Image represents an abstract art or icon",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/medesis-pharma.png"
+    },
+    {
       "name": "METABOLIC EXPLORER",
-      "slug": "metabolic-explorer-4608",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/metabolic-explorer.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The logo does not belong to METABOLIC EXPLORER.",
-      "confidence": "medium",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548f0092vp2wvb8cl64a",
-      "name": "NEOLIFE",
-      "slug": "neolife-6534",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/neolife.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545t0064vp2wgm78zu8f",
-      "name": "MERSEN",
-      "slug": "mersen-3353",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mersen.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a scene with various objects and technology, not a logo.",
+      "reason": "generic icon",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/metabolic-explorer.png"
     },
     {
-      "id": "cmo5y545v007nvp2wosf5dnmr",
-      "name": "NFL BIOSCIENCES",
-      "slug": "nfl-biosciences-7420",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/nfl-biosciences.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62bebp09d0vp6k2325k732",
       "name": "MGI FRANCE",
-      "slug": "mgi-france-1165",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mgi-france.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for OVHcloud, not MGI FRANCE.",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mgi-france.png"
     },
     {
-      "id": "cmo5y53x8000evp2ww5ixe5wf",
-      "name": "MOULINVEST",
-      "slug": "moulinvest-5249",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/moulinvest.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image appears to be an abstract art or design, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545t005qvp2wuuor3674",
-      "name": "MR BRICOLAGE",
-      "slug": "mr-bricolage-3515",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mr-bricolage.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "This logo does not match the known logo of Mr Bricolage.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548h00awvp2wcia46mml",
-      "name": "MICROPOLE",
-      "slug": "micropole-2329",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/micropole.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image appears to be abstract art rather than a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y54370045vp2wvlc9cr21",
-      "name": "NATIXIS",
-      "slug": "natixis-2912",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/natixis.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image does not contain any logo or brand symbol.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545u006ovp2w29vf43y2",
       "name": "MEDIAN TECHNOLOGIES",
-      "slug": "median-technologies-5269",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/median-technologies.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows people, not a company logo.",
+      "reason": "The image shows people and does not contain any company logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/median-technologies.jpg"
     },
     {
-      "id": "cmo5y5436003fvp2wja6rcfre",
-      "name": "NACON",
-      "slug": "nacon-6972",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/nacon.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The design does not match the known logo of NACON.",
+      "name": "MICROPOLE",
+      "reason": "abstract art",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/micropole.png"
     },
     {
-      "id": "cmo5y53xa002fvp2wn8bg23eh",
-      "name": "NEURONES",
-      "slug": "neurones-2838",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/neurones.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Image shows a building, not a logo.",
+      "name": "MOULINVEST",
+      "reason": "abstract art",
+      "confidence": "low",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/moulinvest.png"
+    },
+    {
+      "name": "MEMSCAP",
+      "reason": "image does not correspond to a recognizable company logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/memscap.png"
     },
     {
-      "id": "cmo5y53xa002jvp2wkovl9dj5",
-      "name": "NEXANS",
-      "slug": "nexans-3553",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/nexans.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows a person and equipment, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "name": "NEOEN",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/neoen.svg"
     },
     {
-      "id": "cmo5y548h00aovp2warxbp65v",
-      "name": "NHOA",
-      "slug": "nhoa-5956",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/nhoa.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The logo does not match the company NHOA.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "name": "NEOLIFE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/neolife.svg"
     },
     {
-      "id": "cmo5y54370047vp2wnium2e92",
-      "name": "NEXITY",
-      "slug": "nexity-4116",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/nexity.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The logo does not match the official logo of NEXITY; it contains 'nxt'.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545w0089vp2wy9ec8wbc",
-      "name": "OSMOSUN",
-      "slug": "osmosun-7882",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/osmosun.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545t005uvp2wcis4rujy",
-      "name": "OVH GROUPE",
-      "slug": "ovh-groupe-7415",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ovh.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y548g00afvp2w9oc66jyz",
       "name": "MRM",
-      "slug": "mrm-1309",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mrm.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows text with no distinctive branding elements.",
+      "reason": "generic icon",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mrm.png"
     },
     {
-      "id": "cmo5y53x8000svp2w5s8x2qvn",
-      "name": "OBIZ",
-      "slug": "obiz-7309",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/obiz.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The logo is for AXA, not OBIZ.",
+      "name": "MR BRICOLAGE",
+      "reason": "wrong company logo",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mr-bricolage.png"
     },
     {
-      "id": "cmo62b4sq0002vp6ko674p90a",
+      "name": "NANOBIOTIX",
+      "reason": "Image is likely an advertisement, not solely a logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/nanobiotix.jpg"
+    },
+    {
+      "name": "NACON",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/nacon.png"
+    },
+    {
+      "name": "MERSEN",
+      "reason": "The image contains multiple elements like a vehicle, wind turbines, and a person, not a logo.",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/mersen.jpg"
+    },
+    {
+      "name": "NEURONES",
+      "reason": "Image of a building",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/neurones.jpg"
+    },
+    {
+      "name": "NOVATECH INDUSTRIES",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/novatech-industries.png"
+    },
+    {
       "name": "NETMEDIA GROUP",
-      "slug": "netmedia-group-2883",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/netmedia.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is an advertisement and not a standalone company logo.",
+      "reason": "The image is an advertisement, not a standalone logo.",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/netmedia.png"
     },
     {
-      "id": "cmo5y545t005rvp2wkse54eap",
-      "name": "PEUGEOT INVEST",
-      "slug": "peugeot-invest-2982",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/peugeot-invest-2982.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "OVH GROUPE",
+      "reason": "not a valid image file",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ovh.svg"
     },
     {
-      "id": "cmo5y54b000bbvp2wu9bkti46",
       "name": "OCTOPUS BIOSAFETY",
-      "slug": "octopus-biosafety-6578",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/octopus-biosafety.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts products and not a company logo.",
+      "reason": "product image",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/octopus-biosafety.jpg"
     },
     {
-      "id": "cmo5y548g00agvp2wmrfr10gu",
-      "name": "POUJOULAT SA",
-      "slug": "poujoulat-sa-1718",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/poujoulat.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62ba1804otvp6kczsqsm6m",
-      "name": "ONCODESIGN",
-      "slug": "oncodesign-5723",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/oncodesign.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image appears to be abstract art and not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545v007tvp2wzulqci1u",
       "name": "ONE EXPERIENCE",
-      "slug": "one-experience-7712",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/one-experience.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is related to GoDaddy, not ONE EXPERIENCE.",
+      "reason": "image related to another company",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/one-experience.png"
     },
     {
-      "id": "cmo5y54b000bevp2wxrrrswtm",
-      "name": "OREGE",
-      "slug": "orege-5540",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/orege.webp",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Vision API error: the JSON object must be str, bytes or bytearray, n"
-    },
-    {
-      "id": "cmo5y545v007svp2wp22edgcp",
-      "name": "PROLOGUE",
-      "slug": "prologue-3576",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/prologue.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x90015vp2wt0iq2x6p",
       "name": "ODIOT HOLDING",
-      "slug": "odiot-holding-6484",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/odiot.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image features an ornate object which does not resemble a company logo.",
+      "reason": "image depicts a decorative item, not a logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/odiot.jpg"
     },
     {
-      "id": "cmo62b8ew034qvp6kdv0znlhl",
+      "name": "NEXITY",
+      "reason": "Logo does not match the official Nexity branding",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/nexity.png"
+    },
+    {
+      "name": "POUJOULAT SA",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/poujoulat.svg"
+    },
+    {
+      "name": "OBIZ",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/obiz.png"
+    },
+    {
+      "name": "PROLOGUE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/prologue.svg"
+    },
+    {
+      "name": "ONCODESIGN",
+      "reason": "abstract art",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/oncodesign.png"
+    },
+    {
       "name": "ONLINEFORMAPRO",
-      "slug": "onlineformapro-7885",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/onlineformapro.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is not an isolated logo. It appears to be a promotional banner or advertisement.",
+      "reason": "image contains more than just a logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/onlineformapro.jpg"
     },
     {
-      "id": "cmo5y545t005ovp2wt5xla67c",
-      "name": "QWAMPLIFY",
-      "slug": "qwamplify-5073",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/qwamplify.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62bcw507svvp6k0m8sssub",
-      "name": "RAMSAY GENERALE DE SANTE",
-      "slug": "ramsay-generale-de-sante-3587",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ramsay-generale-de-sante.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545t0060vp2womhzsl1g",
-      "name": "REXEL",
-      "slug": "rexel-4603",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/rexel.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62b4sp0000vp6kush1mo5t",
-      "name": "PACTE NOVATION SA",
-      "slug": "pacte-novation-sa-2614",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/pacte-novation.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is a photo of a cityscape, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548h00ayvp2wk2its9fe",
-      "name": "PHAXIAM THERAPEUTICS",
-      "slug": "phaxiam-therapeutics-5297",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/phaxiam-therapeutics.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is not identified as the logo for PHAXIAM THERAPEUTICS.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62ba1804ovvp6kc6qegeca",
-      "name": "RIBER",
-      "slug": "riber-3509",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/riber.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x8000rvp2wibbb2nw0",
-      "name": "ROCHE BOBOIS SA",
-      "slug": "roche-bobois-sa-6604",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/roche-bobois.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y548g009zvp2wfsv04goj",
-      "name": "PIERRE ET VACANCES",
-      "slug": "pierre-et-vacances-3288",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/pierre-et-vacances.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The logo does not contain elements specifically associated with Pierre et Vacances.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545t006bvp2w18zx688n",
-      "name": "PRODWAYS GROUP",
-      "slug": "prodways-group-6433",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/prodways.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image does not match the official logo of PRODWAYS GROUP.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62b6q301kivp6kc83mc6af",
-      "name": "ROTHSCHILD & CO",
-      "slug": "rothschild-and-co-1034",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/rothschild-co.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545u0075vp2wd50117yo",
       "name": "PLANISWARE",
-      "slug": "planisware-7966",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/planisware.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows people working at a computer, not a company logo.",
+      "reason": "generic icon",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/planisware.png"
     },
     {
-      "id": "cmo5y5438004rvp2w8bukv5vh",
-      "name": "PRODWARE",
-      "slug": "prodware-4376",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/prodware.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is of a person using virtual reality, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y54b100bwvp2w28p7zydj",
       "name": "PAREF",
-      "slug": "paref-4268",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/paref.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a building, not a company logo.",
+      "reason": "The image is of a building, not a logo.",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/paref.jpg"
     },
     {
-      "id": "cmo62bebp09d4vp6k4iwhzb01",
-      "name": "PSB INDUSTRIES",
-      "slug": "psb-industries-1169",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/psb-industries.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for Texen, not PSB INDUSTRIES.",
+      "name": "PACTE NOVATION SA",
+      "reason": "image is a cityscape",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/pacte-novation.jpg"
     },
     {
-      "id": "cmo5y54b000bivp2wial60o4i",
-      "name": "REALITES",
-      "slug": "realites-5556",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/realites.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is too small and abstract to be identified as a company logo.",
+      "name": "PHAXIAM THERAPEUTICS",
+      "reason": "Unable to identify as official logo",
       "confidence": "low",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/phaxiam-therapeutics.png"
     },
     {
-      "id": "cmo62b5st00skvp6k2kw8nlqi",
-      "name": "RALLYE",
-      "slug": "rallye-983",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/rallye.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for Franprix, not Rallye.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "name": "RAMSAY GENERALE DE SANTE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ramsay-generale-de-sante.svg"
     },
     {
-      "id": "cmo5y53x80010vp2wyokfijh7",
-      "name": "SCOR SE",
-      "slug": "scor-se-1410",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/scor.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "PRODWAYS GROUP",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/prodways.png"
     },
     {
-      "id": "cmo5y54380052vp2wzxmucaf0",
-      "name": "QUADIENT S.A.",
-      "slug": "quadient-sa-3498",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/quadient.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image is a data visualization, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "name": "REXEL",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/rexel.svg"
     },
     {
-      "id": "cmo62bf2n0a54vp6kilivn2l2",
-      "name": "RECYLEX",
-      "slug": "recylex-2929",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/recylex.webp",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image appears to be a generic recycling symbol rather than a specific company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x8000kvp2wexo07afv",
       "name": "PREDILIFE",
-      "slug": "predilife-6666",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/predilife.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image shows people, not a company logo.",
+      "reason": "image of people",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/predilife.jpg"
     },
     {
-      "id": "cmo5y53x90017vp2wue2phvji",
-      "name": "RENAULT",
-      "slug": "renault-3070",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/renault.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image contains cars and is not a company logo.",
+      "name": "ROCHE BOBOIS SA",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/roche-bobois.svg"
+    },
+    {
+      "name": "OREGE",
+      "reason": "The image does not display a logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/orege.webp"
     },
     {
-      "id": "cmo5y53x80003vp2womrgvnrs",
-      "name": "ROBERTET SA",
-      "slug": "robertet-sa-1200",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/robertet.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is not a company logo; it appears to be a photo of a vanilla bean.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545v007yvp2w6d75nn70",
-      "name": "REWORLD MEDIA",
-      "slug": "reworld-media-5834",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/reworld-media.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "abstract art or icon, not a company logo",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x9001cvp2wm96ow4uo",
-      "name": "SOCIETE BIC",
-      "slug": "societe-bic-1327",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/societe-bic.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x9001ovp2whm8bobwo",
-      "name": "SAFRAN",
-      "slug": "safran-1430",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/safran.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The logo design and color scheme do not match the official branding of SAFRAN.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545u006jvp2w2hwwfdoz",
-      "name": "SANOFI",
-      "slug": "sanofi-2618",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/sanofi.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is of a person working in a lab, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5437004ivp2wpocxs8px",
-      "name": "ROCTOOL",
-      "slug": "roctool-5702",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/roctool.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is not a company logo; it appears to be a product image or 3D rendering.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x70000vp2w09jsc6rf",
-      "name": "RUBIS",
-      "slug": "rubis-2157",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/rubis.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts landscapes and infrastructure, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5437004avp2wdrkfouja",
-      "name": "SAINT JEAN GROUPE",
-      "slug": "saint-jean-groupe-1777",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/saint-jean.jpg",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image is a generic 'S' and does not specifically indicate 'SAINT JEAN GROUPE'.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548g009rvp2w64i45d0d",
-      "name": "SPARTOO",
-      "slug": "spartoo-7356",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/spartoo.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545u006rvp2watomxlcf",
-      "name": "SOPRA STERIA GROUP",
-      "slug": "sopra-steria-group-3302",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/sopra-steria.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y54370049vp2wqtut4xsw",
-      "name": "SENSORION",
-      "slug": "sensorion-5925",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/sensorion.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is of a person and not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62bdiy08l3vp6k3jtg83k7",
-      "name": "STELLANTIS NV",
-      "slug": "stellantis-nv-7226",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/stellantis.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y545u006tvp2whils2551",
-      "name": "STIF",
-      "slug": "stif-7968",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/stif.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x9001nvp2wvqv7iaso",
-      "name": "SERGE FERRARI GROUP",
-      "slug": "serge-ferrari-group-5794",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/serge-ferrari.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is of a building, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545t005wvp2wjx3oifi3",
-      "name": "TARKETT S.A.",
-      "slug": "tarkett-sa-4395",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/tarkett.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x90013vp2w7cgx26lo",
-      "name": "SIDETRADE",
-      "slug": "sidetrade-4219",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/sidetrade.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image features a character, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62bcw507t1vp6ku10hjkq5",
-      "name": "TESSI",
-      "slug": "tessi-3267",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/tessi.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y5436002zvp2w9p7x7wog",
-      "name": "SODEXO",
-      "slug": "sodexo-1029",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/sodexo.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a group of people, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548g009gvp2wku5i787x",
-      "name": "SOLOCAL GROUP",
-      "slug": "solocal-group-4089",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/solocal.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The logo does not match that of SOLOCAL GROUP.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62bf2n0a53vp6kp3e9scy9",
-      "name": "SIGNAUX GIROD",
-      "slug": "signaux-girod-1574",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/signaux-girod.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a landscape with a building and a train, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x80007vp2wqnaa64m8",
-      "name": "THERACLION",
-      "slug": "theraclion-5233",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/theraclion.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x90027vp2wpevauw60",
-      "name": "THERMADOR GROUPE",
-      "slug": "thermador-groupe-2078",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/thermador.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x8000wvp2wifkym0l5",
-      "name": "TOTALENERGIES SE",
-      "slug": "totalenergies-se-3321",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/totalenergies.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x8000tvp2w3f96p522",
-      "name": "TRACTIAL",
-      "slug": "tractial-5292",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/tractial.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y5435002svp2woh5bfobc",
-      "name": "SPIE SA",
-      "slug": "spie-sa-5333",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/spie.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image depicts a crowd forming a pattern, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548g009lvp2wr2kuewj7",
-      "name": "SOGECLAIR",
-      "slug": "sogeclair-3419",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/sogeclair.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image depicts people working on computers, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545t0067vp2w8xjxcafc",
-      "name": "TRANSGENE S.A.",
-      "slug": "transgene-sa-3291",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/transgene.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62baqj05gxvp6k39s5tqpm",
-      "name": "SRP GROUPE",
-      "slug": "srp-groupe-6066",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/srp.jpg",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image depicts an abstract or symbolic mask, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62bf2m0a4xvp6k67z9hftu",
-      "name": "SUPERSONIC IMAGINE",
-      "slug": "supersonic-imagine-5388",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/supersonic-imagine.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image appears to be a single letter and not a distinctive logo or identifiable as Supersonic Imagine.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548f008hvp2wy9dtbcu3",
-      "name": "TELEVERBIER SA",
-      "slug": "televerbier-sa-104",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/televerbier.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image does not match the logo of TELEVERBIER SA.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x90019vp2w6ypi6jtw",
-      "name": "U 10 CORP",
-      "slug": "u-10-corp-2619",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/u-10.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x80005vp2wfr1mirbz",
-      "name": "UBISOFT ENTERTAINMENT",
-      "slug": "ubisoft-entertainment-3416",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ubisoft-entertainment.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62b98603x0vp6kx4h4c0n4",
-      "name": "SOMFY SA",
-      "slug": "somfy-sa-1233",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/somfy.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image does not depict a logo; it shows a product setting.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62bc90070uvp6k8wlzrzhm",
-      "name": "UCAR",
-      "slug": "ucar-5275",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ucar.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x8000mvp2waxfxc6ow",
-      "name": "TELEPERFORMANCE",
-      "slug": "teleperformance-3268",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/teleperformance.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image does not depict a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62bcw507stvp6kz8dhgv0r",
-      "name": "SUEZ",
-      "slug": "suez-4788",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/suez.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image shows an individual wearing a uniform with 'SUEZ' on it, not an official standalone logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y54b000bqvp2wwlfe5qw5",
-      "name": "TOOSLA",
-      "slug": "toosla-7465",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/toosla.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo does not match the known branding for TOOSLA.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y545v0083vp2wyv98w33p",
-      "name": "THALES",
-      "slug": "thales-1360",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/thales.webp",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image contains text and design elements not consistent with the official THALES logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5438005hvp2wneyoy8yw",
-      "name": "TRANSITION EVERGREEN",
-      "slug": "transition-evergreen-1886",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/transition-evergreen.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The logo does not match the known logo of Transition Evergreen.",
-      "confidence": "medium",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62bfrw0ax2vp6k114ppt35",
-      "name": "THERADIAG",
-      "slug": "theradiag-5389",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/theradiag.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo primarily represents 'BIOSYNEX' rather than 'THERADIAG'.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x9001hvp2wf67q49n4",
-      "name": "VAZIVA",
-      "slug": "vaziva-7449",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vaziva.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x9001evp2wvq413jz1",
-      "name": "THX PHARMA",
-      "slug": "thx-pharma-6501",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/thx-pharma.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a production line, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5438004svp2wktr5ny3d",
-      "name": "TONNER DRONES",
-      "slug": "tonner-drones-5559",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/tonner-drones.jpg",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The image does not appear to be the official logo of 'TONNER DRONES'.",
-      "confidence": "medium",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x90026vp2we53vq2gm",
-      "name": "TXCOM",
-      "slug": "txcom-5213",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/txcom.png",
-      "logoSource": "google_favicon",
-      "valid": false,
-      "reason": "The logo is for WordPress, not TXCOM.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y548g00a9vp2w4ab72vyt",
-      "name": "THE AZUR SELECTION S.A",
-      "slug": "the-azur-selection-sa-7872",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/the-azur-selection-s-a.webp",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "The logo appears to be for a different company related to books and CDs.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x8000lvp2wsz2hz51q",
-      "name": "VICAT S.A.",
-      "slug": "vicat-sa-995",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vicat.svg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y53x9001bvp2wf8cs77v8",
-      "name": "VIRIDIEN",
-      "slug": "viridien-1780",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/viridien.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y548f008tvp2wnwztgzc9",
-      "name": "UTI GROUP",
-      "slug": "uti-group-3475",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/uti.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Vision API error: the JSON object must be str, bytes or bytearray, n"
-    },
-    {
-      "id": "cmo5y54b000blvp2wnadslhje",
-      "name": "VISIATIV",
-      "slug": "visiativ-5780",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/visiativ.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y548f008mvp2weouu0wmf",
-      "name": "VALBIOTIS",
-      "slug": "valbiotis-6443",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/valbiotis.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The image shows people, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5435002tvp2wnheyfd8m",
-      "name": "VOGO",
-      "slug": "vogo-6663",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vogo.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo62bdiy08l1vp6kz3kjb61y",
-      "name": "VOLUNTIS",
-      "slug": "voluntis-6580",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/voluntis.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
-    },
-    {
-      "id": "cmo5y548f008yvp2wb5zmg2j9",
-      "name": "VALLOUREC",
-      "slug": "vallourec-1389",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vallourec.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "Image shows an offshore oil platform, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62bbib0690vp6krg7fr9wd",
-      "name": "UMANIS",
-      "slug": "umanis-2888",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/umanis.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Vision API error: the JSON object must be str, bytes or bytearray, n"
-    },
-    {
-      "id": "cmo5y5437004fvp2w2c0588aj",
-      "name": "VALNEVA SE",
-      "slug": "valneva-se-4615",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/valneva.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is a photograph of people outdoors, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62b5st00s8vp6k7w0epc65",
-      "name": "VANTIVA",
-      "slug": "vantiva-2326",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vantiva.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "favicon too small to determine official logo",
+      "name": "REALITES",
+      "reason": "No recognizable company branding",
       "confidence": "low",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/realites.png"
     },
     {
-      "id": "cmo5y545u006wvp2wbpm3nhs5",
+      "name": "ROTHSCHILD & CO",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/rothschild-co.svg"
+    },
+    {
+      "name": "PSB INDUSTRIES",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/psb-industries.jpg"
+    },
+    {
+      "name": "SAINT GOBAIN NEDERLAND BV",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/saint-gobain-nederland.svg"
+    },
+    {
+      "name": "SCOR SE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/scor.svg"
+    },
+    {
+      "name": "RECYLEX",
+      "reason": "image depicts a generic recycle symbol",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/recylex.webp"
+    },
+    {
+      "name": "S.T. DUPONT",
+      "reason": "Logo belongs to a different company",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/s-t-dupont.png"
+    },
+    {
+      "name": "RALLYE",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/rallye.jpg"
+    },
+    {
+      "name": "RIBER",
+      "reason": "image error or inappropriate content",
+      "confidence": "low",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/riber.jpg"
+    },
+    {
+      "name": "REMY COINTREAU",
+      "reason": "generic icon",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/remy-cointreau.png"
+    },
+    {
+      "name": "SAFRAN",
+      "reason": "incorrect logo for Safran",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/safran.png"
+    },
+    {
+      "name": "SEB S.A.",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/seb.png"
+    },
+    {
+      "name": "SOCIETE BIC",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/societe-bic.svg"
+    },
+    {
+      "name": "SAINT JEAN GROUPE",
+      "reason": "Generic icon or incorrect logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/saint-jean.jpg"
+    },
+    {
+      "name": "SERGE FERRARI GROUP",
+      "reason": "The image is a building, not a logo.",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/serge-ferrari.png"
+    },
+    {
+      "name": "SPARTOO",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/spartoo.svg"
+    },
+    {
+      "name": "ROBERTET SA",
+      "reason": "image of a vanilla pod",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/robertet.jpg"
+    },
+    {
+      "name": "SIRIUS MEDIA",
+      "reason": "Cannot verify if associated with SIRIUS MEDIA",
+      "confidence": "low",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/sirius-media.png"
+    },
+    {
+      "name": "SENSORION",
+      "reason": "image includes a person",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/sensorion.png"
+    },
+    {
+      "name": "SOLOCAL GROUP",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/solocal-group.png"
+    },
+    {
+      "name": "SIGNAUX GIROD",
+      "reason": "landscape image",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/signaux-girod.jpg"
+    },
+    {
+      "name": "SOGECLAIR",
+      "reason": "generic icon",
+      "confidence": "low",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/sogeclair.png"
+    },
+    {
+      "name": "SIDETRADE",
+      "reason": "image contains a person not a logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/sidetrade.png"
+    },
+    {
+      "name": "STELLANTIS NV",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/stellantis.svg"
+    },
+    {
+      "name": "TARKETT S.A.",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/tarkett.svg"
+    },
+    {
+      "name": "SOMFY SA",
+      "reason": "The image is of a product, not a logo.",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/somfy.jpg"
+    },
+    {
+      "name": "TECHNICOLOR CREATIVE STUDIOS",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/technicolor-creative-studios.svg"
+    },
+    {
+      "name": "TESSI",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/tessi.svg"
+    },
+    {
+      "name": "THERACLION",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/theraclion.svg"
+    },
+    {
+      "name": "THERMADOR GROUPE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/thermador.svg"
+    },
+    {
+      "name": "SPINEGUARD",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/spineguard.png"
+    },
+    {
+      "name": "SPIE SA",
+      "reason": "The image is formed by a group of people and does not clearly represent a company's official logo.",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/spie.jpg"
+    },
+    {
+      "name": "SRP GROUPE",
+      "reason": "unrelated image",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/srp.jpg"
+    },
+    {
+      "name": "TRACTIAL",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/tractial.svg"
+    },
+    {
+      "name": "TRANSGENE S.A.",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/transgene.svg"
+    },
+    {
+      "name": "THALES",
+      "reason": "logo appears incorrect",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/thales.webp"
+    },
+    {
+      "name": "TELEVERBIER SA",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/televerbier.png"
+    },
+    {
+      "name": "SUPERSONIC IMAGINE",
+      "reason": "generic icon",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/supersonic-imagine.png"
+    },
+    {
+      "name": "THERADIAG",
+      "reason": "The logo is for BIOSYNEX, not THERADIAG",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/theradiag.png"
+    },
+    {
+      "name": "TOOSLA",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/toosla.png"
+    },
+    {
+      "name": "U 10 CORP",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/u-10.svg"
+    },
+    {
+      "name": "UBISOFT ENTERTAINMENT",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/ubisoft-entertainment.svg"
+    },
+    {
+      "name": "THX PHARMA",
+      "reason": "image of products not logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/thx-pharma.jpg"
+    },
+    {
+      "name": "TONNER DRONES",
+      "reason": "generic icon",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/tonner-drones.jpg"
+    },
+    {
+      "name": "TRANSITION EVERGREEN",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/transition-evergreen.png"
+    },
+    {
+      "name": "UMANIS",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/umanis.png"
+    },
+    {
+      "name": "VAZIVA",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vaziva.svg"
+    },
+    {
       "name": "TRIGANO",
-      "slug": "trigano-3383",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/trigano.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is a photo of a beach and landscape, not a logo.",
+      "reason": "image is a landscape",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/trigano.jpg"
     },
     {
-      "id": "cmo5y53x9001fvp2w8cmqolpu",
-      "name": "WORLDLINE",
-      "slug": "worldline-5782",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/worldline.svg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "VEOLIA ENVIRONNEMENT",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/veolia-environnement.svg"
     },
     {
-      "id": "cmo62bebp09d3vp6k397aa5vc",
-      "name": "XPO LOGISTICS EUROPE",
-      "slug": "xpo-logistics-europe-3279",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/xpo-logistics-europe.svg",
-      "logoSource": "openai",
-      "valid": false,
-      "reason": "Could not download image"
+      "name": "UTI GROUP",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/uti.png"
     },
     {
-      "id": "cmo5y54b100buvp2wel1llill",
+      "name": "VISIATIV",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/visiativ.svg"
+    },
+    {
+      "name": "VICAT S.A.",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vicat.svg"
+    },
+    {
+      "name": "VIRIDIEN",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/viridien.svg"
+    },
+    {
       "name": "VERIMATRIX",
-      "slug": "verimatrix-5265",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/verimatrix.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a payment transaction and not a company logo.",
+      "reason": "This logo does not match Verimatrix branding.",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/verimatrix.png"
     },
     {
-      "id": "cmo5y54370040vp2w3uhyxi52",
-      "name": "VOLTALIA",
-      "slug": "voltalia-5417",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/voltalia.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for 'dovendi', not 'VOLTALIA'.",
-      "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "name": "VOLUNTIS",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/voluntis.svg"
     },
     {
-      "id": "cmo5y5436002uvp2w0diqnc7v",
-      "name": "VIVENDI SE",
-      "slug": "vivendi-se-2343",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vivendi.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is a painting and not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "name": "VIDELIO",
+      "reason": "vision error: the JSON object must be str, bytes or bytearray, not NoneTyp",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/videlio.png"
     },
     {
-      "id": "cmo5y54b000bdvp2w3ktdoum6",
-      "name": "WE.CONNECT",
-      "slug": "weconnect-4217",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/we-connect.png",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for 'dovendi', not 'WE.CONNECT'",
+      "name": "VALBIOTIS",
+      "reason": "The image is of people, not a logo",
       "confidence": "high",
-      "is_logo": true,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/valbiotis.jpg"
     },
     {
-      "id": "cmo5y53x8000cvp2wbbips072",
-      "name": "WAVESTONE",
-      "slug": "wavestone-3563",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/wavestone.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is of people, not a logo.",
+      "name": "TXCOM",
+      "reason": "WordPress logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/txcom.png"
     },
     {
-      "id": "cmo62bc90070xvp6kdscweqn0",
-      "name": "VITURA",
-      "slug": "vitura-4335",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vitura.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is of a building, not a logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y5437003tvp2wylwfxufm",
-      "name": "VOYAGEURS DU MONDE",
-      "slug": "voyageurs-du-monde-4404",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/voyageurs-du-monde.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a person on a boat looking at a landscape, not a company logo.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y53x90021vp2wb6gavxzl",
-      "name": "VUSIONGROUP",
-      "slug": "vusiongroup-4307",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vusiongroup.png",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image is a generic symbol (letter 'V') and does not specifically identify the company VUSIONGROUP.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo62bf2n0a51vp6ko1f8em5e",
-      "name": "WINFARM",
-      "slug": "winfarm-7166",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/winfarm.jpg",
-      "logoSource": "scraped",
-      "valid": false,
-      "reason": "The logo is for Germain Maureau, not WINFARM.",
-      "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
-    },
-    {
-      "id": "cmo5y54b100bvvp2wid7t2sck",
       "name": "VIRBAC",
-      "slug": "virbac-1201",
-      "logoUrl": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/virbac.jpg",
-      "logoSource": "og_image",
-      "valid": false,
-      "reason": "The image depicts a person petting a cat, not a company logo.",
+      "reason": "image of a cat with a human hand, not a logo",
       "confidence": "high",
-      "is_logo": false,
-      "is_correct": false
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/virbac.jpg"
+    },
+    {
+      "name": "WAVESTONE",
+      "reason": "generic icon",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/wavestone.png"
+    },
+    {
+      "name": "XPO LOGISTICS EUROPE",
+      "reason": "vision error: Error code: 400 - {'error': {'message': \"You uploaded an uns",
+      "confidence": "?",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/xpo-logistics-europe.svg"
+    },
+    {
+      "name": "WE.CONNECT",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/we-connect.png"
+    },
+    {
+      "name": "VITURA",
+      "reason": "image of a building or landscape",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vitura.jpg"
+    },
+    {
+      "name": "VIVENDI SE",
+      "reason": "Image is a landscape painting, not a logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vivendi.jpg"
+    },
+    {
+      "name": "WENDEL",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/wendel.png"
+    },
+    {
+      "name": "VOLTALIA",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/voltalia.png"
+    },
+    {
+      "name": "VUSIONGROUP",
+      "reason": "wrong company logo",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/vusiongroup.png"
+    },
+    {
+      "name": "WINFARM",
+      "reason": "Logo belongs to Germain Maureau, not WINFARM",
+      "confidence": "high",
+      "url": "https://jgfyfeemh9oaokpn.public.blob.vercel-storage.com/logos/winfarm.jpg"
     }
   ]
 }

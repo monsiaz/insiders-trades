@@ -24,14 +24,21 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
-   CAPITAL INTELLIGENCE — Design System v4
-   3-color palette: Ink · Gold · Signal
-   Typography: DM Serif Display + Inter + JetBrains Mono
-   Philosophy: investment bank · editorial · data-precise
+   SIGMA — Design System v5
+   Brand: Corporate Navy #112A46 + Gold #B8955A + Signal
+   Typography: DM Serif Display + Inter + Futura (logo)
+   Philosophy: minimalist · clear vision · integration (Σ)
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Primary 3-color palette ── */
+  /* ── Corporate brand primary ── */
+  --corporate:    #112A46;   /* corporate navy — core brand, trust */
+  --corporate-2:  #1E3D63;   /* hover / lifted */
+  --corporate-3:  #0A1B30;   /* deep / text */
+  --corporate-bg: rgba(17,42,70,0.06);
+  --corporate-bd: rgba(17,42,70,0.18);
+
+  /* ── Secondary editorial accent ── */
   --gold:    #B8955A;   /* financial gold — muted, authoritative */
   --gold-2:  #D4AF76;   /* gold light / hover */
   --gold-3:  #8B6E3F;   /* gold dark / text */
@@ -48,12 +55,12 @@
   --signal-neg-bg: rgba(232,54,74,0.08);
   --signal-neg-bd: rgba(232,54,74,0.18);
 
-  /* ── Legacy aliases (preserve existing code) ── */
-  --c-indigo:    #5B6FD4;    /* remapped to ink-blue */
-  --c-indigo-2:  #7B8FEA;
-  --c-indigo-3:  #3B4FB8;
-  --c-indigo-bg: rgba(91,111,212,0.08);
-  --c-indigo-bd: rgba(91,111,212,0.18);
+  /* ── Legacy aliases — remapped to corporate navy for visual harmony ── */
+  --c-indigo:    #17305C;    /* was #5B6FD4 → now aligned with corporate */
+  --c-indigo-2:  #3A5687;    /* hover / text on dark bg */
+  --c-indigo-3:  #112A46;    /* deepest */
+  --c-indigo-bg: rgba(23,48,92,0.07);
+  --c-indigo-bd: rgba(23,48,92,0.18);
 
   --c-emerald:    #00C078;
   --c-emerald-2:  #00E891;

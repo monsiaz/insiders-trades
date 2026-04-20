@@ -24,9 +24,9 @@ const dmSerif = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "InsiderTrades · Intelligence des transactions dirigeants",
+  title: "Insiders Trades Sigma · Intelligence des transactions dirigeants",
   description: "Suivez les déclarations AMF des dirigeants français. Détectez les signaux d'accumulation, backtestez les performances historiques. Réglementation MAR · AMF France.",
-  keywords: ["insider trading", "AMF", "déclarations dirigeants", "transactions initiés", "signal financier"],
+  keywords: ["insider trading", "AMF", "déclarations dirigeants", "transactions initiés", "signal financier", "Sigma"],
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -39,13 +39,20 @@ export const metadata: Metadata = {
   },
   manifest: "/site.webmanifest",
   openGraph: {
-    title: "InsiderTrades · Intelligence des transactions dirigeants",
+    title: "Insiders Trades Sigma · Intelligence des transactions dirigeants",
     description: "Suivez les déclarations AMF des dirigeants français. Signaux d'accumulation + backtesting historique.",
     type: "website",
     locale: "fr_FR",
-    siteName: "InsiderTrades",
-    images: [{ url: "/logo-mark.png", width: 512, height: 247, alt: "InsiderTrades" }],
+    siteName: "Insiders Trades Sigma",
+    images: [{ url: "/logo-mark.png", width: 512, height: 323, alt: "Insiders Trades Sigma" }],
   },
+};
+
+export const viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FDFBF7" },
+    { media: "(prefers-color-scheme: dark)",  color: "#112A46" },
+  ],
 };
 
 export default function RootLayout({

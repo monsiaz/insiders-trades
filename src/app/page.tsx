@@ -6,9 +6,9 @@ import { HowItWorksAnimations } from "@/components/HowItWorksAnimations";
 import { CompanyAvatar } from "@/components/CompanyBadge";
 import Link from "next/link";
 import Image from "next/image";
+import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60; // Revalidate home every 60s (ISR)
 
 async function getBacktestSnapshot() {
   try {
@@ -351,7 +351,13 @@ export default async function HomePage() {
       </section>
 
       {/* ── LIVE FEED ────────────────────────────────────────────────── */}
-      <HomeLive initial={initial} />
+      <Suspense fallback={
+        <div style={{ animation: "pulse 1.5s ease-in-out infinite", display: "flex", flexDirection: "column", gap: "10px" }}>
+          {[1,2,3,4,5].map(i => <div key={i} style={{ height: "64px", borderRadius: "12px", background: "var(--bg-raised)" }} />)}
+        </div>
+      }>
+        <HomeLive initial={initial} />
+      </Suspense>
 
     </div>
   );

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // Revalidate every 5 min
 
 export default async function InsidersPage() {
   const insiders = await prisma.insider.findMany({

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function GET() {
   const since90d = new Date(Date.now() - 90 * 86400_000);
@@ -121,7 +121,7 @@ export async function GET() {
     },
     {
       headers: {
-        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=30",
       },
     }
   );

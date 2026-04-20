@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   turbopack: {},
   serverExternalPackages: ["pdfjs-dist", "pdf-parse", "canvas"],
 
+
   images: {
     // Logos are already WebP on Blob — no need for Next.js re-optimization
     formats: ["image/webp", "image/avif"],

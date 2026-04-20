@@ -1,10 +1,51 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Suspense } from "react";
+import { unstable_cache } from "next/cache";
 import { SyncButton } from "@/components/SyncButton";
 import { CompaniesClient, type CompanyRow } from "@/components/CompaniesClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // Revalidate every 5 min
+
+// Cache the Prisma query — invalidated every 5min or on demand
+const getCompaniesWithDecl = unstable_cache(
+  async () => prisma.company.findMany({
+    where: { declarations: { some: { type: "DIRIGEANTS" } } },
+    select: {
+      id: true, name: true, slug: true, amfToken: true,
+      marketCap: true, yahooSymbol: true, currentPrice: true, logoUrl: true,
+      _count: { select: { declarations: { where: { type: "DIRIGEANTS" } } } },
+      declarations: {
+        where: { type: "DIRIGEANTS" },
+        orderBy: { pubDate: "desc" },
+        take: 1,
+        select: { pubDate: true, insiderName: true, transactionNature: true, totalAmount: true },
+      },
+    },
+    orderBy: { name: "asc" },
+  }),
+  ["companies-with-decl"],
+  { revalidate: 300 }
+);
+
+const getAllCompanies = unstable_cache(
+  async () => prisma.company.findMany({
+    select: {
+      id: true, name: true, slug: true, amfToken: true,
+      marketCap: true, yahooSymbol: true, currentPrice: true, logoUrl: true,
+      _count: { select: { declarations: { where: { type: "DIRIGEANTS" } } } },
+      declarations: {
+        where: { type: "DIRIGEANTS" },
+        orderBy: { pubDate: "desc" },
+        take: 1,
+        select: { pubDate: true, insiderName: true, transactionNature: true, totalAmount: true },
+      },
+    },
+    orderBy: { name: "asc" },
+  }),
+  ["companies-all"],
+  { revalidate: 300 }
+);
 
 interface Props {
   searchParams: Promise<{ all?: string; q?: string }>;
@@ -14,10 +55,11 @@ export default async function CompaniesPage({ searchParams }: Props) {
   const { all, q } = await searchParams;
   const showAll = all === "1";
 
-  const raw = await prisma.company.findMany({
-    where: showAll ? undefined : {
-      declarations: { some: { type: "DIRIGEANTS" } },
-    },
+  const raw = await (showAll ? getAllCompanies() : getCompaniesWithDecl());
+
+  // dead code kept for TypeScript type inference only — replaced by cached queries above
+  if (false) await prisma.company.findMany({
+    where: showAll ? undefined : { declarations: { some: { type: "DIRIGEANTS" } } },
       select: {
       id: true,
       name: true,

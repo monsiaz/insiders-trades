@@ -55,41 +55,17 @@ export default async function InsidersPage() {
   return (
     <div className="content-wrapper">
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-3">
-          <span
-            style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: "0.64rem",
-              fontWeight: 600,
-              color: "var(--gold)",
-              letterSpacing: "0.22em",
-              textTransform: "uppercase",
-            }}
-          >
-            Registre
-          </span>
-          <span
-            style={{
-              flex: 1,
-              height: "1px",
-              background: "var(--border-med)",
-            }}
-          />
-          <span
-            style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: "0.64rem",
-              color: "var(--tx-3)",
-              letterSpacing: "0.08em",
-            }}
-          >
+        <div className="masthead-dateline">
+          <span className="masthead-folio">Registre</span>
+          <span className="masthead-rule" aria-hidden="true" />
+          <span className="masthead-count">
             {insiders.length.toLocaleString("fr-FR")} dirigeants
           </span>
         </div>
         <h1
           style={{
             fontFamily: "var(--font-dm-serif), Georgia, serif",
-            fontSize: "clamp(2.25rem, 4.5vw, 3.25rem)",
+            fontSize: "clamp(2rem, 5vw, 3.25rem)",
             fontWeight: 400,
             letterSpacing: "-0.015em",
             lineHeight: 1.05,

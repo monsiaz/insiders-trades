@@ -223,49 +223,37 @@ export default async function RecommendationsPage({
 
       {/* ── Page header — editorial masthead ── */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <span style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: "0.64rem",
-            fontWeight: 600,
-            color: "var(--gold)",
-            letterSpacing: "0.22em",
-            textTransform: "uppercase",
-          }}>
+        <div className="masthead-dateline">
+          <span className="masthead-folio">
             № {new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
           </span>
-          <span style={{ flex: 1, height: "1px", background: "var(--border-med)" }} />
-          <span className="inline-flex items-center gap-2" style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: "0.62rem",
-            color: "var(--signal-pos)",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            fontWeight: 600,
-          }}>
+          <span className="masthead-rule" aria-hidden="true" />
+          <span className="masthead-live">
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--signal-pos)" }} />
             Live · mis à jour quotidiennement
           </span>
         </div>
         <h1 style={{
-          fontFamily: "'DM Serif Display', Georgia, serif",
-          fontSize: "clamp(2.5rem, 5vw, 3.75rem)",
+          fontFamily: "var(--font-dm-serif), Georgia, serif",
+          fontSize: "clamp(2rem, 6vw, 3.75rem)",
           fontWeight: 400,
           letterSpacing: "-0.015em",
           lineHeight: 1.05,
           color: "var(--tx-1)",
           marginBottom: "14px",
+          overflowWrap: "break-word",
+          hyphens: "auto",
         }}>
           Recommandations <span style={{ fontStyle: "italic", color: "var(--gold)" }}>actionnables</span>
         </h1>
         <p style={{
-          fontSize: "0.94rem",
+          fontSize: "0.92rem",
           color: "var(--tx-2)",
           maxWidth: "640px",
-          lineHeight: 1.65,
-          fontFamily: "'Inter', sans-serif",
+          lineHeight: 1.6,
+          fontFamily: "var(--font-inter), sans-serif",
         }}>
-          Signaux d'achat classés par score composite — signal AMF × backtest historique × récence × conviction.
+          Signaux d&apos;achat classés par score composite — signal AMF × backtest historique × récence × conviction.
           Nous ne présentons que les dossiers avec un retour estimé supérieur à <strong style={{ color: "var(--tx-1)" }}>+4 % T+90</strong>.
           {user && hasPortfolio && " Les alertes de vente sur vos positions figurent également."}
         </p>

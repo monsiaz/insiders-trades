@@ -109,53 +109,83 @@ export default async function CompaniesPage({ searchParams }: Props) {
 
   return (
     <div className="content-wrapper">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="heading-page">Sociétés</h1>
-          <p style={{ color: "var(--tx-3)", fontSize: "0.875rem", marginTop: "4px" }}>
-            {companies.length.toLocaleString("fr-FR")} société{companies.length !== 1 ? "s" : ""}
-            {!showAll && " avec déclarations de dirigeants"}
-          </p>
+      {/* Header — editorial masthead */}
+      <div className="mb-8">
+        <div className="masthead-dateline">
+          <span className="masthead-folio">Cotation</span>
+          <span className="masthead-rule" aria-hidden="true" />
+          <span className="masthead-count">
+            {companies.length.toLocaleString("fr-FR")} sociétés
+          </span>
         </div>
-        <div className="flex items-center gap-2">
-          <SyncButton />
-          {/* Avec déclarations / Toutes toggle */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: "2px",
-            padding: "3px", background: "var(--bg-raised)",
-            border: "1px solid var(--border)", borderRadius: "10px",
-          }}>
-            <Link
-              href="/companies"
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div className="min-w-0">
+            <h1
               style={{
-                padding: "5px 12px", borderRadius: "8px",
-                fontSize: "0.75rem", fontWeight: 700,
-                textDecoration: "none", transition: "all 0.15s",
-                background: !showAll ? "var(--c-indigo-bg)" : "transparent",
-                color: !showAll ? "var(--c-indigo-2)" : "var(--tx-3)",
-                outline: !showAll ? "1px solid var(--c-indigo-bd)" : "none",
+                fontFamily: "var(--font-dm-serif), Georgia, serif",
+                fontSize: "clamp(2rem, 5vw, 3.25rem)",
+                fontWeight: 400,
+                letterSpacing: "-0.015em",
+                lineHeight: 1.05,
+                color: "var(--tx-1)",
               }}
             >
-              Avec décl.
-            </Link>
-            <Link
-              href="/companies?all=1"
+              Sociétés
+            </h1>
+            <p style={{ color: "var(--tx-2)", fontSize: "0.9rem", marginTop: "6px", lineHeight: 1.6, maxWidth: "480px" }}>
+              {!showAll
+                ? "Toutes les sociétés cotées ayant fait l'objet d'une déclaration de dirigeant à l'AMF."
+                : "L'ensemble des sociétés françaises référencées dans la base."}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div
               style={{
-                padding: "5px 12px", borderRadius: "8px",
-                fontSize: "0.75rem", fontWeight: 700,
-                textDecoration: "none", transition: "all 0.15s",
-                background: showAll ? "var(--c-indigo-bg)" : "transparent",
-                color: showAll ? "var(--c-indigo-2)" : "var(--tx-3)",
-                outline: showAll ? "1px solid var(--c-indigo-bd)" : "none",
+                display: "flex",
+                alignItems: "center",
+                gap: "2px",
+                padding: "3px",
+                background: "var(--bg-raised)",
+                border: "1px solid var(--border-med)",
+                borderRadius: "6px",
               }}
             >
-              Toutes
+              <Link
+                href="/companies"
+                style={{
+                  padding: "5px 10px",
+                  borderRadius: "3px",
+                  fontSize: "0.72rem",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                  letterSpacing: "0.02em",
+                  background: !showAll ? "var(--gold-bg)" : "transparent",
+                  color: !showAll ? "var(--gold)" : "var(--tx-3)",
+                }}
+              >
+                Avec décl.
+              </Link>
+              <Link
+                href="/companies?all=1"
+                style={{
+                  padding: "5px 10px",
+                  borderRadius: "3px",
+                  fontSize: "0.72rem",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                  letterSpacing: "0.02em",
+                  background: showAll ? "var(--gold-bg)" : "transparent",
+                  color: showAll ? "var(--gold)" : "var(--tx-3)",
+                }}
+              >
+                Toutes
+              </Link>
+            </div>
+            <SyncButton />
+            <Link href="/companies/add" className="btn btn-primary" style={{ fontSize: "0.8rem" }}>
+              + Ajouter
             </Link>
           </div>
-          <Link href="/companies/add" className="btn btn-primary">
-            + Ajouter
-          </Link>
         </div>
       </div>
 

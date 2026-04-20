@@ -9,7 +9,7 @@ import { enrichCompanyFinancials } from "@/lib/financials";
 import { scoreDeclarations } from "@/lib/signals";
 import { gptGenderForUnknownInsiders } from "@/lib/gender-gpt";
 import { getRecommendations } from "@/lib/recommendation-engine";
-import { sendSignalAlertEmail } from "@/lib/email";
+import { buildDigestForUser, sendDailyDigestEmail } from "@/lib/digest";
 import { prisma } from "@/lib/prisma";
 import { fetchDeclarationDetail } from "@/lib/amf-detail";
 
@@ -242,7 +242,7 @@ async function reparseIncomplete(limit: number): Promise<{ improved: number; err
   return { improved, errors };
 }
 
-// ── Step 7: dispatch alert emails ─────────────────────────────────────────────
+// ── Step 7: dispatch alert emails (new branded digest) ───────────────────────
 
 async function dispatchAlertEmails(): Promise<{ sent: number; skipped: number }> {
   // Only send once per day per user (check lastAlertAt)
@@ -258,68 +258,36 @@ async function dispatchAlertEmails(): Promise<{ sent: number; skipped: number }>
         { lastAlertAt: { lt: todayStart } },
       ],
     },
-    select: { id: true, email: true, name: true },
+    select: { id: true, email: true, firstName: true, name: true },
   });
 
   if (users.length === 0) return { sent: 0, skipped: 0 };
 
-  // Fetch general top signals once (shared baseline)
-  const generalRecos = await getRecommendations({ mode: "general", limit: 5, lookbackDays: 2 });
-  if (generalRecos.length === 0) return { sent: 0, skipped: users.length };
-
-  function recoToSignal(r: (typeof generalRecos)[0]) {
-    const fmtAmt = (n: number | null) => {
-      if (!n) return "—";
-      if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M€`;
-      if (n >= 1e3) return `${(n / 1e3).toFixed(0)}k€`;
-      return `${n.toFixed(0)}€`;
-    };
-    return {
-      company: r.company.name,
-      insider: r.insider.name ?? "Dirigeant",
-      role: r.insider.role,
-      action: r.action,
-      amount: fmtAmt(r.totalAmount),
-      score: r.recoScore,
-      expectedReturn: r.expectedReturn90d != null ? `${r.expectedReturn90d >= 0 ? "+" : ""}${r.expectedReturn90d.toFixed(1)}%` : "—",
-      winRate: r.historicalWinRate90d != null ? `${r.historicalWinRate90d.toFixed(0)}%` : "—",
-      badges: r.badges,
-      pubDate: r.pubDate,
-      companySlug: r.company.slug,
-    };
-  }
+  // Pre-fetch once (shared across all users) — buy & sell recos are user-agnostic.
+  const [topBuys, topSells] = await Promise.all([
+    getRecommendations({ mode: "general", limit: 3, lookbackDays: 7 }),
+    getRecommendations({ mode: "sells",   limit: 3, lookbackDays: 7 }),
+  ]);
 
   let sent = 0;
   let skipped = 0;
 
   for (const user of users) {
     try {
-      // Personal mode: get portfolio ISINs
-      const positions = await prisma.portfolioPosition.findMany({
-        where: { userId: user.id, isin: { not: null } },
-        select: { isin: true },
+      const payload = await buildDigestForUser({
+        user: { id: user.id, email: user.email, firstName: user.firstName ?? user.name ?? null },
+        topBuys,
+        topSells,
       });
-      const portfolioIsins = positions.map((p) => p.isin!).filter(Boolean);
+      if (!payload) { skipped++; continue; }
 
-      let signals;
-      let mode: "general" | "personal";
-
-      if (portfolioIsins.length > 0) {
-        const personalRecos = await getRecommendations({
-          mode: "personal", limit: 5, lookbackDays: 2, portfolioIsins,
-        });
-        signals = (personalRecos.length > 0 ? personalRecos : generalRecos).map(recoToSignal);
-        mode = "personal";
+      const res = await sendDailyDigestEmail(payload);
+      if (res.delivered) {
+        await prisma.user.update({ where: { id: user.id }, data: { lastAlertAt: new Date() } });
+        sent++;
       } else {
-        signals = generalRecos.map(recoToSignal);
-        mode = "general";
+        skipped++;
       }
-
-      if (signals.length === 0) { skipped++; continue; }
-
-      await sendSignalAlertEmail(user.email, user.name ?? "", signals, mode);
-      await prisma.user.update({ where: { id: user.id }, data: { lastAlertAt: new Date() } });
-      sent++;
     } catch (e) {
       console.error(`[cron] alert for ${user.email}:`, e);
       skipped++;

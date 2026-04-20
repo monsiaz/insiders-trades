@@ -8,16 +8,22 @@ async function requireUser(req: NextRequest) {
   return session;
 }
 
-// GET: list all positions for current user
+// GET: list all positions for current user + cash balance
 export async function GET(req: NextRequest) {
   const session = await requireUser(req);
   if (!session) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
-  const positions = await prisma.portfolioPosition.findMany({
-    where: { userId: session.userId },
-    orderBy: { createdAt: "asc" },
-  });
-  return NextResponse.json({ positions });
+  const [positions, user] = await Promise.all([
+    prisma.portfolioPosition.findMany({
+      where: { userId: session.userId },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { portfolioCash: true },
+    }),
+  ]);
+  return NextResponse.json({ positions, portfolioCash: user?.portfolioCash ?? null });
 }
 
 // POST: create new position
@@ -26,7 +32,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
   const body = await req.json();
-  const { name, isin, quantity, buyingPrice, alertBelow, alertAbove, notes } = body;
+  const { name, isin, quantity, buyingPrice, alertBelow, alertAbove, notes, fromApp } = body;
 
   if (!name || !quantity || !buyingPrice) {
     return NextResponse.json({ error: "Champs requis manquants" }, { status: 400 });
@@ -45,6 +51,7 @@ export async function POST(req: NextRequest) {
       alertBelow: alertBelow ? Number(alertBelow) : null,
       alertAbove: alertAbove ? Number(alertAbove) : null,
       notes: notes?.trim() || null,
+      fromApp: fromApp === true,
     },
   });
   return NextResponse.json({ position: pos });

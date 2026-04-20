@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, memo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CompanyLogo } from "./CompanyLogo";
@@ -394,6 +394,12 @@ function CompanyCard({ company, q }: { company: CompanyRow; q: string }) {
   );
 }
 
+// Memoize: with 2000+ companies, filter changes shouldn't re-render unchanged rows
+const MemoCompanyCard = memo(
+  CompanyCard,
+  (prev, next) => prev.company.id === next.company.id && prev.q === next.q
+);
+
 // ── Active filters badge ────────────────────────────────────────────────────
 
 function ActiveCount({ n }: { n: number }) {
@@ -421,11 +427,28 @@ export function CompaniesClient({ companies, initialQ }: {
 
   // Filter state
   const [q, setQ]             = useState(initialQ ?? "");
+  const [dq, setDq]           = useState(initialQ ?? ""); // debounced q for filtering
   const [cap, setCap]         = useState<CapFilter>("all");
   const [activity, setActivity] = useState<ActivityFilter>("all");
   const [action, setAction]   = useState<ActionFilter>("all");
   const [sort, setSort]       = useState<SortKey>("activity");
   const [showFilters, setShowFilters] = useState(false);
+
+  // Progressive rendering — show first 120, load more on demand.
+  // Big win for initial render time when there are 2000+ companies.
+  const PAGE_SIZE = 120;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Debounce query so each keystroke doesn't re-filter 2000+ rows
+  useEffect(() => {
+    const t = setTimeout(() => setDq(q), 180);
+    return () => clearTimeout(t);
+  }, [q]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [dq, cap, activity, action, sort]);
 
   // Count active filters (non-default)
   const activeFilterCount = [
@@ -436,9 +459,9 @@ export function CompaniesClient({ companies, initialQ }: {
   const filtered = useMemo(() => {
     let rows = companies;
 
-    // Text search
-    if (q.trim()) {
-      const lq = q.trim().toLowerCase();
+    // Text search (debounced)
+    if (dq.trim()) {
+      const lq = dq.trim().toLowerCase();
       rows = rows.filter((c) => c.name.toLowerCase().includes(lq) || (c.yahooSymbol ?? "").toLowerCase().includes(lq));
     }
 
@@ -489,7 +512,7 @@ export function CompaniesClient({ companies, initialQ }: {
     });
 
     return rows;
-  }, [companies, q, cap, activity, action, sort]);
+  }, [companies, dq, cap, activity, action, sort]);
 
   function resetFilters() {
     setCap("all"); setActivity("all"); setAction("all");
@@ -681,11 +704,34 @@ export function CompaniesClient({ companies, initialQ }: {
           )}
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((company) => (
-            <CompanyCard key={company.id} company={company} q={q} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.slice(0, visibleCount).map((company) => (
+              <MemoCompanyCard key={company.id} company={company} q={dq} />
+            ))}
+          </div>
+          {visibleCount < filtered.length && (
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={() => setVisibleCount((n) => n + 120)}
+                className="btn btn-outline"
+                style={{ padding: "10px 22px", fontSize: "0.85rem" }}
+              >
+                Charger {Math.min(120, filtered.length - visibleCount)} société
+                {Math.min(120, filtered.length - visibleCount) > 1 ? "s" : ""} de plus
+                <span style={{
+                  marginLeft: "8px",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "0.72rem",
+                  color: "var(--tx-4)",
+                  letterSpacing: "0.04em",
+                }}>
+                  · {(filtered.length - visibleCount).toLocaleString("fr-FR")} restantes
+                </span>
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

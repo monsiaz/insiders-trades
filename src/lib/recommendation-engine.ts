@@ -13,6 +13,7 @@
  * Total: 100 pts max.
  */
 
+import { unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
 import { normalizeRole } from "./role-utils";
 
@@ -83,20 +84,28 @@ interface BucketStats {
 
 // ── Build historical lookup from BacktestResult ───────────────────────────────
 
-async function buildHistoricalLookup(): Promise<Map<string, BucketStats>> {
-  const rows = await prisma.backtestResult.findMany({
-    where: { priceAtTrade: { gt: 0 }, direction: "BUY" },
-    select: {
-      return90d: true,
-      return365d: true,
-      declaration: {
-        select: {
-          insiderFunction: true,
-          company: { select: { marketCap: true } },
+// Cached heavy query — revalidates every 30 min. Backtest data moves slowly.
+const getBacktestRows = unstable_cache(
+  async () =>
+    prisma.backtestResult.findMany({
+      where: { priceAtTrade: { gt: 0 }, direction: "BUY" },
+      select: {
+        return90d: true,
+        return365d: true,
+        declaration: {
+          select: {
+            insiderFunction: true,
+            company: { select: { marketCap: true } },
+          },
         },
       },
-    },
-  });
+    }),
+  ["reco-backtest-rows"],
+  { revalidate: 1800 }
+);
+
+async function buildHistoricalLookup(): Promise<Map<string, BucketStats>> {
+  const rows = await getBacktestRows();
 
   // Bucket by role+size
   const buckets = new Map<string, { r90: number[]; r365: number[] }>();
@@ -224,7 +233,24 @@ export interface RecoOptions {
   portfolioIsins?: string[];  // for personal mode: user's current holdings
 }
 
+// Cached wrapper for general mode (no user state) — revalidates every 10 min.
+// Declarations + backtest move slowly; caching eliminates 1–2s of latency per hit.
+export const getGeneralRecommendations = unstable_cache(
+  async (opts: { limit?: number; lookbackDays?: number }) =>
+    _computeRecommendations({ mode: "general", ...opts }),
+  ["reco-general"],
+  { revalidate: 600 }
+);
+
 export async function getRecommendations(opts: RecoOptions): Promise<RecoItem[]> {
+  // Fast path: general mode is user-agnostic → use the cached version
+  if (opts.mode === "general") {
+    return getGeneralRecommendations({ limit: opts.limit, lookbackDays: opts.lookbackDays });
+  }
+  return _computeRecommendations(opts);
+}
+
+async function _computeRecommendations(opts: RecoOptions): Promise<RecoItem[]> {
   const { mode, limit = 10, lookbackDays = 90, portfolioIsins = [] } = opts;
   const since = new Date(Date.now() - lookbackDays * 86400_000);
   const isBuy = mode === "general"; // general = BUY only

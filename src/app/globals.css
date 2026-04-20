@@ -1,7 +1,10 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "@fontsource/jetbrains-mono/400.css";
 @import "@fontsource/jetbrains-mono/500.css";
+
+/* Fonts are loaded via next/font/google in layout.tsx
+   (preloaded, self-hosted, non-blocking) — exposed as CSS variables:
+   --font-inter, --font-dm-serif */
 
 /* ── Banana Grotesk Pro 2 (kept for number display) ── */
 @font-face {
@@ -169,7 +172,7 @@ html {
 body {
   background: var(--bg-base);
   color: var(--tx-1);
-  font-family: "Inter", -apple-system, system-ui, sans-serif;
+  font-family: var(--font-inter), -apple-system, system-ui, sans-serif;
   font-size: 0.9375rem;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -181,21 +184,21 @@ body {
 
 /* Display headings — DM Serif for authority */
 h1, .heading-display {
-  font-family: "DM Serif Display", Georgia, serif;
+  font-family: var(--font-dm-serif), Georgia, serif;
   letter-spacing: -0.01em;
   font-weight: 400;
   font-style: normal;
 }
 
 h2, h3, h4, .heading-section, .heading-page {
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
   letter-spacing: -0.025em;
   font-weight: 700;
 }
 
 /* Financial numbers */
 .num, .data-value, .stat-value, .stat-number, .stat-value-lg {
-  font-family: "Banana Grotesk", "Inter", system-ui, sans-serif;
+  font-family: "Banana Grotesk", var(--font-inter), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "zero" 1;
 }
@@ -211,7 +214,7 @@ h2, h3, h4, .heading-section, .heading-page {
    BACKGROUND — Paper texture + subtle geometry
    ═══════════════════════════════════════════════════════════ */
 
-/* Very subtle paper grain */
+/* Very subtle paper grain (GPU-promoted, no scroll repaint) */
 body::before {
   content: "";
   position: fixed;
@@ -221,6 +224,8 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: 0.015;
   mix-blend-mode: overlay;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .dark body::before { opacity: 0.025; }
@@ -244,6 +249,9 @@ body::before {
     linear-gradient(0deg, rgba(184,149,90,0.025) 1px, transparent 1px);
   background-size: 100% 64px;
   mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+  /* Promote to own compositor layer — no repaint on scroll */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Light: clean, no pattern */
@@ -258,6 +266,7 @@ body::before {
   width: 60%;
   height: 60%;
   background: radial-gradient(ellipse, rgba(184,149,90,0.04) 0%, transparent 60%);
+  transform: translateZ(0);
 }
 
 .bg-orb-3 { display: none; } /* removed */
@@ -294,9 +303,13 @@ body::before {
   z-index: 200;
   height: 56px;
   background: var(--nav-bg);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
   border-bottom: 1px solid var(--border-med);
+  /* Promote to own layer + skip painting offscreen content — big scroll win */
+  will-change: transform;
+  transform: translateZ(0);
+  contain: layout paint;
 }
 
 .light .app-nav {
@@ -424,14 +437,13 @@ body::before {
   border: 1px solid var(--border-med);
   border-radius: 8px;
   box-shadow: var(--shadow-card);
-  transition: border-color 0.16s, box-shadow 0.16s, transform 0.16s;
+  /* Only border-color on hover — cheap paint */
+  transition: border-color 0.12s ease;
 }
 .card:hover {
-  border-color: var(--border-strong);
-  box-shadow: 0 4px 0 rgba(184,149,90,0.08), 0 8px 28px rgba(0,0,0,0.3);
+  border-color: var(--gold-bd);
 }
 .light .card { box-shadow: 0 1px 0 rgba(30,20,10,0.06), 0 4px 16px rgba(30,20,10,0.06); }
-.light .card:hover { box-shadow: 0 2px 0 rgba(184,149,90,0.10), 0 6px 20px rgba(30,20,10,0.10); }
 
 .card-raised {
   background: var(--bg-raised); border: 1px solid var(--border-med);
@@ -441,12 +453,10 @@ body::before {
 .card-interactive {
   background: var(--bg-surface); border: 1px solid var(--border-med);
   border-radius: 8px; box-shadow: var(--shadow-card);
-  transition: all 0.16s; cursor: pointer;
+  transition: border-color 0.12s ease; cursor: pointer;
 }
 .card-interactive:hover {
   border-color: var(--gold-bd);
-  box-shadow: 0 4px 0 rgba(184,149,90,0.10), 0 8px 24px rgba(0,0,0,0.25);
-  transform: translateY(-1px);
 }
 
 /* Gold accent left-border — fund style */
@@ -471,8 +481,8 @@ body::before {
 .card-kpi-violet  { border-top: 2px solid var(--c-violet); }
 
 /* Legacy compatibility */
-.glass-card        { background: var(--bg-surface); border: 1px solid var(--border-med); border-radius: 8px; box-shadow: var(--shadow-card); transition: border-color 0.15s, box-shadow 0.15s; }
-.glass-card:hover  { border-color: var(--border-strong); box-shadow: 0 6px 24px rgba(0,0,0,0.25); }
+.glass-card        { background: var(--bg-surface); border: 1px solid var(--border-med); border-radius: 8px; box-shadow: var(--shadow-card); transition: border-color 0.12s ease; }
+.glass-card:hover  { border-color: var(--gold-bd); }
 .glass-card-static { background: var(--bg-surface); border: 1px solid var(--border-med); border-radius: 8px; }
 
 /* ═══════════════════════════════════════════════════════════
@@ -480,7 +490,7 @@ body::before {
    ═══════════════════════════════════════════════════════════ */
 
 .heading-hero {
-  font-family: "DM Serif Display", Georgia, serif;
+  font-family: var(--font-dm-serif), Georgia, serif;
   font-size: clamp(2.5rem, 5.5vw, 5rem);
   font-weight: 400; font-style: normal;
   letter-spacing: -0.015em; line-height: 1.06;
@@ -488,33 +498,33 @@ body::before {
 }
 
 .heading-page {
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
   font-size: clamp(1.625rem, 2.8vw, 2.25rem);
   font-weight: 700; letter-spacing: -0.03em;
   color: var(--tx-1); line-height: 1.18;
 }
 
 .heading-section {
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
   font-size: 1.0625rem; font-weight: 700;
   letter-spacing: -0.02em; color: var(--tx-1);
 }
 
 /* Number display */
 .stat-value {
-  font-family: "Banana Grotesk", "Inter", system-ui, sans-serif;
+  font-family: "Banana Grotesk", var(--font-inter), system-ui, sans-serif;
   font-size: 2.25rem; font-weight: 700;
   letter-spacing: -0.045em; color: var(--tx-1); line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 .stat-value-lg {
-  font-family: "Banana Grotesk", "Inter", system-ui, sans-serif;
+  font-family: "Banana Grotesk", var(--font-inter), system-ui, sans-serif;
   font-size: clamp(2.75rem, 5vw, 4.25rem); font-weight: 700;
   letter-spacing: -0.05em; line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 .stat-number {
-  font-family: "Banana Grotesk", "Inter", system-ui, sans-serif;
+  font-family: "Banana Grotesk", var(--font-inter), system-ui, sans-serif;
   font-size: 1.875rem; font-weight: 700;
   letter-spacing: -0.04em; color: var(--tx-1);
   font-variant-numeric: tabular-nums;
@@ -809,10 +819,16 @@ input[type="search"], textarea, select {
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 ::selection { background: var(--gold-bg); color: var(--gold-2); }
 
-/* Smooth transitions (narrow scope for perf) */
-.btn, .card, .nav-link, .theme-toggle, .search-bar, .badge, .score-pill {
-  transition-property: background-color, border-color, color, opacity, transform, box-shadow;
+/* Smooth transitions — cheap properties only (perf-optimized) */
+.btn, .nav-link, .theme-toggle, .search-bar, .badge, .score-pill {
+  transition-property: background-color, border-color, color, opacity;
   transition-duration: 0.14s;
+  transition-timing-function: ease;
+}
+.card {
+  /* Card hover is frequent in grids — only transition border color (GPU-friendly) */
+  transition-property: border-color;
+  transition-duration: 0.12s;
   transition-timing-function: ease;
 }
 
@@ -828,19 +844,20 @@ input[type="search"], textarea, select {
   border-radius: 2px;                    /* deliberately small — tear-sheet feel */
   padding: 22px 24px 18px 28px;
   display: flex; flex-direction: column; gap: 18px;
-  transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+  /* Only transition border-color for hover — no transform/shadow (expensive) */
+  transition: border-color 0.15s ease;
   overflow: hidden;
   isolation: isolate;
+  /* Let browser skip rendering off-screen tear-sheets */
+  content-visibility: auto;
+  contain-intrinsic-size: 220px;
 }
 .light .tearsheet { box-shadow: 0 1px 0 rgba(30,20,10,0.04); }
 .dark  .tearsheet { box-shadow: 0 1px 0 rgba(184,149,90,0.03); }
 
 .tearsheet:hover {
-  border-color: var(--border-strong);
-  transform: translateY(-1px);
+  border-color: var(--gold-bd);
 }
-.light .tearsheet:hover { box-shadow: 0 2px 0 rgba(184,149,90,0.08), 0 8px 20px rgba(30,20,10,0.06); }
-.dark  .tearsheet:hover { box-shadow: 0 2px 0 rgba(184,149,90,0.06), 0 8px 28px rgba(0,0,0,0.3); }
 
 /* Left color stripe — signature accent */
 .tearsheet-stripe {
@@ -855,7 +872,7 @@ input[type="search"], textarea, select {
 .tearsheet-folio {
   position: absolute;
   top: 18px; right: 22px;
-  font-family: "DM Serif Display", Georgia, serif;
+  font-family: var(--font-dm-serif), Georgia, serif;
   font-size: 2.85rem;
   line-height: 0.9;
   color: var(--tx-4);
@@ -880,7 +897,7 @@ input[type="search"], textarea, select {
 }
 
 .tearsheet-company-name {
-  font-family: "DM Serif Display", Georgia, serif;
+  font-family: var(--font-dm-serif), Georgia, serif;
   font-size: 1.5rem;
   font-weight: 400;
   color: var(--tx-1);
@@ -893,7 +910,7 @@ input[type="search"], textarea, select {
 
 .tearsheet-action-tag {
   display: inline-flex; align-items: center; gap: 5px;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter), sans-serif;
   font-size: 0.62rem; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase;
   padding: 3px 8px;
@@ -911,7 +928,7 @@ input[type="search"], textarea, select {
 
 /* Insider line — editorial attribution */
 .tearsheet-insider {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter), sans-serif;
   font-size: 0.82rem;
   color: var(--tx-2);
   letter-spacing: 0.005em;
@@ -954,7 +971,7 @@ input[type="search"], textarea, select {
   position: relative; z-index: 1;
 }
 .tearsheet-score-num {
-  font-family: "Banana Grotesk", "Inter", system-ui, sans-serif;
+  font-family: "Banana Grotesk", var(--font-inter), system-ui, sans-serif;
   font-size: 2.1rem;
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -1006,13 +1023,13 @@ input[type="search"], textarea, select {
 .tearsheet-strip-cell:last-child  { border-right: none; padding-right: 0; }
 
 .tearsheet-strip-label {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter), sans-serif;
   font-size: 0.58rem; font-weight: 600;
   color: var(--tx-3);
   text-transform: uppercase; letter-spacing: 0.12em;
 }
 .tearsheet-strip-value {
-  font-family: "Banana Grotesk", "Inter", sans-serif;
+  font-family: "Banana Grotesk", var(--font-inter), sans-serif;
   font-size: 1.15rem; font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--tx-1);
@@ -1064,7 +1081,7 @@ input[type="search"], textarea, select {
 
 .tearsheet-foot-link {
   display: inline-flex; align-items: center; gap: 4px;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter), sans-serif;
   font-size: 0.7rem; font-weight: 600;
   color: var(--tx-2);
   text-decoration: none;

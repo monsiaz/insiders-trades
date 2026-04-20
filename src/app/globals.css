@@ -870,6 +870,44 @@ input[type="search"], textarea, select {
 ::selection { background: var(--gold-bg); color: var(--gold-2); }
 
 /* ═══════════════════════════════════════════════════════════
+   RECO TABS — minimal underline + count pills
+   ═══════════════════════════════════════════════════════════ */
+
+.reco-tab {
+  padding: 10px 0;
+  margin-right: 28px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.14s, border-color 0.14s;
+}
+.reco-tab:hover { color: var(--tx-1); }
+
+.reco-tab-count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.62rem;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  .reco-tab {
+    margin-right: 20px;
+    font-size: 0.78rem;
+  }
+  .reco-tab-count { font-size: 0.58rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════
    LOGO — theme-aware visibility
    Both light & dark variants render in DOM; CSS hides the wrong one.
    Prevents FOUC / JS-based flicker.

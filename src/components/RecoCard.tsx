@@ -161,14 +161,26 @@ export function RecoCard({ item, rank }: { item: RecoItem; rank: number }) {
       {/* Data strip */}
       <div className="tearsheet-strip">
         <div className="tearsheet-strip-cell">
-          <span className="tearsheet-strip-label">Retour estimé T+90</span>
-          <span className={`tearsheet-strip-value ${expectedRet >= 4 ? "pos" : expectedRet < 0 ? "neg" : ""}`}>
+          <span className="tearsheet-strip-label">
+            {isBuy ? "Retour estimé T+90" : "Dérive titre T+90"}
+          </span>
+          <span className={
+            // For BUY: positive return = good (green), negative = bad
+            // For SELL: negative return = good (seller avoided drop → green), positive = bad
+            isBuy
+              ? `tearsheet-strip-value ${expectedRet >= 4 ? "pos" : expectedRet < 0 ? "neg" : ""}`
+              : `tearsheet-strip-value ${expectedRet <= -2 ? "pos" : expectedRet > 0 ? "neg" : ""}`
+          }>
             {fmtPct(item.expectedReturn90d, 1)}
           </span>
-          <span className="tearsheet-strip-sub">moy. historique</span>
+          <span className="tearsheet-strip-sub">
+            {isBuy ? "moy. historique" : "moy. post-cession histo."}
+          </span>
         </div>
         <div className="tearsheet-strip-cell">
-          <span className="tearsheet-strip-label">Win rate</span>
+          <span className="tearsheet-strip-label">
+            {isBuy ? "Win rate" : "Taux de chute"}
+          </span>
           <span className={`tearsheet-strip-value ${winRate >= 60 ? "pos" : ""}`}>
             {item.historicalWinRate90d != null ? `${item.historicalWinRate90d.toFixed(0)}%` : "—"}
           </span>

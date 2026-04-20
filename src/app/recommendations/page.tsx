@@ -1,8 +1,9 @@
 /**
  * /recommendations — Page des recommandations actionnables
  *
- * Tab "Général"  : Top 10 signaux d'achat tous utilisateurs
- * Tab "Pour moi" : Top 10 personnalisés (+ ventes sur positions) pour users avec portfolio
+ * Tab "Achats"   : Top 10 signaux d'achat (tous utilisateurs)
+ * Tab "Ventes"   : Top 10 signaux de vente (tous utilisateurs)
+ * Tab "Pour moi" : Top personnalisés selon le portfolio de l'utilisateur
  */
 import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/auth";
@@ -17,13 +18,19 @@ const FREE_VISIBLE = 3; // number of reco cards visible to non-authenticated use
 export const revalidate = 600; // Revalidate every 10 min
 
 export const metadata = {
-  title: "Recommandations — InsiderTrades",
-  description: "Top 10 signaux d'achat basés sur les performances historiques et les transactions récentes des dirigeants AMF.",
+  title: "Recommandations — InsiderTrades Sigma",
+  description: "Top signaux d'achat et de vente basés sur les performances historiques et les transactions récentes des dirigeants AMF.",
 };
 
 async function getGeneralRecos(): Promise<RecoItem[]> {
   try {
     return await getRecommendations({ mode: "general", limit: 10, lookbackDays: 90 });
+  } catch { return []; }
+}
+
+async function getSellRecos(): Promise<RecoItem[]> {
+  try {
+    return await getRecommendations({ mode: "sells", limit: 10, lookbackDays: 90 });
   } catch { return []; }
 }
 
@@ -224,17 +231,22 @@ export default async function RecommendationsPage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const { tab } = await searchParams;
-  const activeTab = tab === "personal" ? "personal" : "general";
+  const activeTab: "general" | "sells" | "personal" =
+    tab === "personal" ? "personal"
+    : tab === "sells" ? "sells"
+    : "general";
 
   const user = await getCurrentUser();
   const isAuth = !!user;
 
-  const [generalRecosRaw, personalData] = await Promise.all([
+  const [generalRecosRaw, sellRecosRaw, personalData] = await Promise.all([
     getGeneralRecos(),
+    getSellRecos(),
     user ? getPersonalRecos(user.id) : Promise.resolve(null),
   ]);
 
   const generalRecos = maskRecos(generalRecosRaw, isAuth);
+  const sellRecos = maskRecos(sellRecosRaw, isAuth);
 
   const hasPortfolio = personalData && personalData.portfolioSize > 0;
 
@@ -269,71 +281,83 @@ export default async function RecommendationsPage({
         <p style={{
           fontSize: "0.92rem",
           color: "var(--tx-2)",
-          maxWidth: "640px",
+          maxWidth: "680px",
           lineHeight: 1.6,
           fontFamily: "var(--font-inter), sans-serif",
         }}>
-          Signaux d&apos;achat classés par score composite — signal AMF × backtest historique × récence × conviction.
-          Nous ne présentons que les dossiers avec un retour estimé supérieur à <strong style={{ color: "var(--tx-1)" }}>+4 % T+90</strong>.
-          {user && hasPortfolio && " Les alertes de vente sur vos positions figurent également."}
+          {activeTab === "sells" ? (
+            <>
+              Signaux de <strong style={{ color: "var(--tx-1)" }}>vente</strong> : dirigeants qui cèdent leurs actions
+              sur des profils où le titre a historiquement{" "}
+              <strong style={{ color: "var(--signal-neg)" }}>baissé</strong> dans les 90 jours suivants.
+              Filtrage strict : retour historique T+90 ≤ -2% ou score ≥ 55.
+            </>
+          ) : (
+            <>
+              Signaux d&apos;achat classés par score composite — signal AMF × backtest historique × récence × conviction.
+              Nous ne présentons que les dossiers avec un retour estimé supérieur à{" "}
+              <strong style={{ color: "var(--tx-1)" }}>+4 % T+90</strong>.
+              {user && hasPortfolio && " Les alertes de vente sur vos positions figurent également."}
+            </>
+          )}
         </p>
       </div>
 
       {/* ── Tabs — minimal underline ── */}
-      <div className="flex gap-0 mb-8" style={{ borderBottom: "1px solid var(--border-med)" }}>
+      <div className="flex gap-0 mb-8 overflow-x-auto" style={{ borderBottom: "1px solid var(--border-med)" }}>
         <Link
           href="/recommendations"
+          className="reco-tab"
           style={{
-            padding: "10px 0",
-            marginRight: "32px",
-            fontSize: "0.82rem",
-            fontWeight: 600,
             color: activeTab === "general" ? "var(--tx-1)" : "var(--tx-3)",
-            borderBottom: activeTab === "general" ? "2px solid var(--gold)" : "2px solid transparent",
-            marginBottom: "-1px",
-            letterSpacing: "0.01em",
-            textDecoration: "none",
-            transition: "color 0.14s",
+            borderBottomColor: activeTab === "general" ? "var(--signal-pos)" : "transparent",
           }}>
-          Top général
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: "var(--signal-pos)" }}>
+            <path d="M7 14l5-5 5 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Achats
+          {generalRecos.length > 0 && (
+            <span className="reco-tab-count">
+              {generalRecos.length.toString().padStart(2, "0")}
+            </span>
+          )}
+        </Link>
+        <Link
+          href="/recommendations?tab=sells"
+          className="reco-tab"
+          style={{
+            color: activeTab === "sells" ? "var(--tx-1)" : "var(--tx-3)",
+            borderBottomColor: activeTab === "sells" ? "var(--signal-neg)" : "transparent",
+          }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: "var(--signal-neg)" }}>
+            <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Ventes
+          {sellRecos.length > 0 && (
+            <span className="reco-tab-count" style={{ color: "var(--signal-neg)" }}>
+              {sellRecos.length.toString().padStart(2, "0")}
+            </span>
+          )}
         </Link>
         {user ? (
           <Link
             href="/recommendations?tab=personal"
+            className="reco-tab"
             style={{
-              padding: "10px 0",
-              fontSize: "0.82rem",
-              fontWeight: 600,
               color: activeTab === "personal" ? "var(--tx-1)" : "var(--tx-3)",
-              borderBottom: activeTab === "personal" ? "2px solid var(--gold)" : "2px solid transparent",
-              marginBottom: "-1px",
-              letterSpacing: "0.01em",
-              textDecoration: "none",
-              display: "inline-flex", alignItems: "center", gap: "8px",
+              borderBottomColor: activeTab === "personal" ? "var(--gold)" : "transparent",
             }}>
             Pour moi
             {personalData && personalData.recos.length > 0 && (
-              <span style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: "0.62rem",
-                color: "var(--gold)",
-                letterSpacing: "0.06em",
-              }}>
-                ({personalData.recos.length.toString().padStart(2, "0")})
+              <span className="reco-tab-count">
+                {personalData.recos.length.toString().padStart(2, "0")}
               </span>
             )}
           </Link>
         ) : (
           <Link href="/auth/login?next=/recommendations?tab=personal"
-            style={{
-              padding: "10px 0",
-              fontSize: "0.82rem",
-              fontWeight: 500,
-              color: "var(--tx-4)",
-              letterSpacing: "0.01em",
-              textDecoration: "none",
-              display: "inline-flex", alignItems: "center", gap: "6px",
-            }}>
+            className="reco-tab"
+            style={{ color: "var(--tx-4)" }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
             Pour moi
           </Link>
@@ -375,6 +399,57 @@ export default async function RecommendationsPage({
               {isAuth && generalRecos.length > FREE_VISIBLE && (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
                   {generalRecos.slice(FREE_VISIBLE).map((item, i) => (
+                    <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {/* ── Sells tab ── */}
+      {activeTab === "sells" && (
+        <>
+          <SectionHeader
+            title="Top signaux de vente"
+            sub="Cessions de dirigeants sur des profils historiquement baissiers à T+90"
+            count={sellRecos.length}
+          />
+          {sellRecos.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="mx-auto mb-5 flex items-center justify-center w-14 h-14 rounded-2xl"
+                style={{ background: "var(--signal-neg-bg)", border: "1px solid var(--signal-neg-bd)" }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: "var(--signal-neg)" }}>
+                  <path d="M12 4v16M6 14l6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <p className="text-lg font-semibold" style={{ color: "var(--tx-1)" }}>
+                Aucun signal de vente actionnable
+              </p>
+              <p className="text-sm mt-2" style={{ color: "var(--tx-3)", maxWidth: "420px", margin: "8px auto 0" }}>
+                Les cessions récentes ne répondent pas aux critères de conviction ou aux patterns historiquement baissiers.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-4">
+                {sellRecos.slice(0, FREE_VISIBLE).map((item, i) => (
+                  <RecoCard key={item.declarationId} item={item} rank={i + 1} />
+                ))}
+              </div>
+              {!isAuth && sellRecos.length > FREE_VISIBLE && (
+                <FreemiumGate feature={`les ${sellRecos.length - FREE_VISIBLE} autres signaux de vente avec sociétés, dirigeants et retours historiques`}>
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                    {sellRecos.slice(FREE_VISIBLE).map((item, i) => (
+                      <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
+                    ))}
+                  </div>
+                </FreemiumGate>
+              )}
+              {isAuth && sellRecos.length > FREE_VISIBLE && (
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                  {sellRecos.slice(FREE_VISIBLE).map((item, i) => (
                     <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
                   ))}
                 </div>

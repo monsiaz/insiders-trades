@@ -84,8 +84,8 @@ interface BucketStats {
 
 // ── Build historical lookup from BacktestResult ───────────────────────────────
 
-// Cached heavy query — revalidates every 30 min. Backtest data moves slowly.
-const getBacktestRows = unstable_cache(
+// Cached heavy queries — revalidate every 30 min. Backtest moves slowly.
+const getBuyBacktestRows = unstable_cache(
   async () =>
     prisma.backtestResult.findMany({
       where: { priceAtTrade: { gt: 0 }, direction: "BUY" },
@@ -100,12 +100,33 @@ const getBacktestRows = unstable_cache(
         },
       },
     }),
-  ["reco-backtest-rows"],
+  ["reco-backtest-rows-buy"],
   { revalidate: 1800 }
 );
 
-async function buildHistoricalLookup(): Promise<Map<string, BucketStats>> {
-  const rows = await getBacktestRows();
+const getSellBacktestRows = unstable_cache(
+  async () =>
+    prisma.backtestResult.findMany({
+      where: { priceAtTrade: { gt: 0 }, direction: "SELL" },
+      select: {
+        return90d: true,
+        return365d: true,
+        declaration: {
+          select: {
+            insiderFunction: true,
+            company: { select: { marketCap: true } },
+          },
+        },
+      },
+    }),
+  ["reco-backtest-rows-sell"],
+  { revalidate: 1800 }
+);
+
+type Direction = "BUY" | "SELL";
+
+async function buildHistoricalLookup(direction: Direction = "BUY"): Promise<Map<string, BucketStats>> {
+  const rows = direction === "SELL" ? await getSellBacktestRows() : await getBuyBacktestRows();
 
   // Bucket by role+size
   const buckets = new Map<string, { r90: number[]; r365: number[] }>();
@@ -126,10 +147,21 @@ async function buildHistoricalLookup(): Promise<Map<string, BucketStats>> {
 
   const result = new Map<string, BucketStats>();
   for (const [key, { r90, r365 }] of buckets) {
-    const wr = r90.length > 0 ? r90.filter((v) => v > 0).length / r90.length : null;
+    // winRate definition depends on direction:
+    //  BUY  → "win" = stock went UP (return > 0)
+    //  SELL → "win" = stock went DOWN (seller avoided drop, return < 0)
+    const wins = direction === "SELL"
+      ? r90.filter((v) => v < 0).length
+      : r90.filter((v) => v > 0).length;
+    const wr = r90.length > 0 ? wins / r90.length : null;
     const avgR90 = r90.length > 0 ? r90.reduce((a, b) => a + b, 0) / r90.length : null;
     const avgR365 = r365.length > 0 ? r365.reduce((a, b) => a + b, 0) / r365.length : null;
-    result.set(key, { winRate90d: wr ? wr * 100 : null, avgReturn90d: avgR90, avgReturn365d: avgR365, count: r90.length });
+    result.set(key, {
+      winRate90d: wr != null ? wr * 100 : null,
+      avgReturn90d: avgR90,
+      avgReturn365d: avgR365,
+      count: r90.length,
+    });
   }
   return result;
 }
@@ -146,7 +178,8 @@ function scoreDeclaration(
     insiderFunction: string | null;
     company: { marketCap: bigint | null };
   },
-  hist: Map<string, BucketStats>
+  hist: Map<string, BucketStats>,
+  direction: Direction = "BUY",
 ): {
   recoScore: number;
   scoreBreakdown: RecoItem["scoreBreakdown"];
@@ -157,22 +190,29 @@ function scoreDeclaration(
 } {
   const role = roleLabelForReco(decl.insiderFunction);
   const size = sizeLabelForReco(decl.company.marketCap);
+  const fallback = direction === "SELL"
+    ? { winRate90d: 48, avgReturn90d: -2, avgReturn365d: -3, count: 0 }
+    : { winRate90d: 55, avgReturn90d:  4, avgReturn365d:  8, count: 0 };
   const bucket =
     hist.get(`${role}::${size}`) ??
     hist.get(role) ??
     hist.get("overall") ??
-    { winRate90d: 55, avgReturn90d: 4, avgReturn365d: 8, count: 0 };
+    fallback;
 
-  // [30pts] Signal score
+  // [30pts] Signal score (same for buys & sells)
   const signalPts = ((decl.signalScore ?? 30) / 100) * 30;
 
-  // [25pts] Historical win rate (normalised to 0–25, ref: 50%=12.5, 80%=25)
-  const wr = bucket.winRate90d ?? 55;
+  // [25pts] Historical win rate — buckets already compute "win" direction-aware
+  const wr = bucket.winRate90d ?? 50;
   const winRatePts = Math.min(Math.max((wr - 30) / 50, 0), 1) * 25;
 
-  // [20pts] Expected return T+90 (ref: 0%=0, 20%=20)
-  const avgR = bucket.avgReturn90d ?? 4;
-  const returnPts = Math.min(Math.max(avgR / 20, 0), 1) * 20;
+  // [20pts] Expected return T+90
+  //  BUY  → higher positive return = better signal (ref: 20% → 20pts)
+  //  SELL → more negative return = better signal (ref: -15% → 20pts)
+  const avgR = bucket.avgReturn90d ?? (direction === "SELL" ? -2 : 4);
+  const returnPts = direction === "SELL"
+    ? Math.min(Math.max(-avgR / 15, 0), 1) * 20
+    : Math.min(Math.max( avgR / 20, 0), 1) * 20;
 
   // [15pts] Recency — half-life 21 days
   const daysSince = (Date.now() - decl.pubDate.getTime()) / 86400_000;
@@ -293,25 +333,33 @@ function buildBadges(decl: {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export interface RecoOptions {
-  mode: "general" | "personal";
+  mode: "general" | "sells" | "personal";
   limit?: number;
   lookbackDays?: number;
   portfolioIsins?: string[];  // for personal mode: user's current holdings
 }
 
-// Cached wrapper for general mode (no user state) — revalidates every 10 min.
-// Declarations + backtest move slowly; caching eliminates 1–2s of latency per hit.
+// Cached wrappers — revalidate every 10 min. Both general modes are user-agnostic.
 export const getGeneralRecommendations = unstable_cache(
   async (opts: { limit?: number; lookbackDays?: number }) =>
     _computeRecommendations({ mode: "general", ...opts }),
-  ["reco-general-v2"], // v2: composite signals (momentum / value / quality / …)
+  ["reco-general-v3"], // v3: sells support, sell-specific backtest
+  { revalidate: 600 }
+);
+
+export const getSellRecommendations = unstable_cache(
+  async (opts: { limit?: number; lookbackDays?: number }) =>
+    _computeRecommendations({ mode: "sells", ...opts }),
+  ["reco-sells-v1"],
   { revalidate: 600 }
 );
 
 export async function getRecommendations(opts: RecoOptions): Promise<RecoItem[]> {
-  // Fast path: general mode is user-agnostic → use the cached version
   if (opts.mode === "general") {
     return getGeneralRecommendations({ limit: opts.limit, lookbackDays: opts.lookbackDays });
+  }
+  if (opts.mode === "sells") {
+    return getSellRecommendations({ limit: opts.limit, lookbackDays: opts.lookbackDays });
   }
   return _computeRecommendations(opts);
 }
@@ -319,28 +367,39 @@ export async function getRecommendations(opts: RecoOptions): Promise<RecoItem[]>
 async function _computeRecommendations(opts: RecoOptions): Promise<RecoItem[]> {
   const { mode, limit = 10, lookbackDays = 90, portfolioIsins = [] } = opts;
   const since = new Date(Date.now() - lookbackDays * 86400_000);
-  const isBuy = mode === "general"; // general = BUY only
+
+  // MIN signalScore for each mode
+  const minScore = mode === "sells" ? 40 : 35;
 
   const whereBase = {
     type: "DIRIGEANTS" as const,
     pdfParsed: true,
-    signalScore: { gte: 35 },
+    signalScore: { gte: minScore },
     pubDate: { gte: since },
   };
 
-  // For personal mode (user with portfolio): include SELL on their holdings + all BUYs
+  let where;
+  if (mode === "general") {
+    // BUY only
+    where = { ...whereBase, transactionNature: { contains: "Acquisition", mode: "insensitive" as const } };
+  } else if (mode === "sells") {
+    // SELL only
+    where = { ...whereBase, transactionNature: { contains: "Cession", mode: "insensitive" as const } };
+  } else {
+    // Personal: all BUYs + SELLs on portfolio
+    where = {
+      ...whereBase,
+      OR: [
+        { transactionNature: { contains: "Acquisition", mode: "insensitive" as const } },
+        ...(portfolioIsins.length > 0
+          ? [{ transactionNature: { contains: "Cession", mode: "insensitive" as const }, isin: { in: portfolioIsins } }]
+          : []),
+      ],
+    };
+  }
+
   const declarations = await prisma.declaration.findMany({
-    where: isBuy
-      ? { ...whereBase, transactionNature: { contains: "Acquisition", mode: "insensitive" as const } }
-      : {
-          ...whereBase,
-          OR: [
-            { transactionNature: { contains: "Acquisition", mode: "insensitive" as const } },
-            ...(portfolioIsins.length > 0
-              ? [{ transactionNature: { contains: "Cession", mode: "insensitive" as const }, isin: { in: portfolioIsins } }]
-              : []),
-          ],
-        },
+    where,
     orderBy: { pubDate: "desc" },
     take: limit * 12, // over-fetch, we'll rank + filter (weak returns) and trim
     select: {
@@ -367,7 +426,13 @@ async function _computeRecommendations(opts: RecoOptions): Promise<RecoItem[]> {
 
   if (declarations.length === 0) return [];
 
-  const hist = await buildHistoricalLookup();
+  // Load both histories in parallel (personal mode needs both)
+  const [buyHist, sellHist] = await Promise.all([
+    buildHistoricalLookup("BUY"),
+    mode === "sells" || mode === "personal"
+      ? buildHistoricalLookup("SELL")
+      : Promise.resolve(null),
+  ]);
 
   const scored: RecoItem[] = declarations.map((decl) => {
     const co = decl.company;
@@ -376,6 +441,7 @@ async function _computeRecommendations(opts: RecoOptions): Promise<RecoItem[]> {
     const role = roleLabelForReco(decl.insiderFunction);
     const size = sizeLabelForReco(co.marketCap);
 
+    const hist = isSell ? (sellHist ?? buyHist) : buyHist;
     const scoring = scoreDeclaration(
       {
         signalScore: decl.signalScore,
@@ -386,12 +452,15 @@ async function _computeRecommendations(opts: RecoOptions): Promise<RecoItem[]> {
         insiderFunction: decl.insiderFunction,
         company: { marketCap: co.marketCap },
       },
-      hist
+      hist,
+      isSell ? "SELL" : "BUY",
     );
 
-    // Sell signals get a recency-only boost; win rate is inverted (price drop = success)
-    // We slightly discount sell scores to surface buys first in mixed lists.
-    const finalScore = action === "SELL" ? scoring.recoScore * 0.85 : scoring.recoScore;
+    // Pure sells tab keeps the full score. Personal mode still discounts sells
+    // a bit to surface buy opportunities first in a mixed feed.
+    const finalScore = (action === "SELL" && mode === "personal")
+      ? scoring.recoScore * 0.85
+      : scoring.recoScore;
 
     return {
       declarationId: decl.id,
@@ -458,22 +527,32 @@ async function _computeRecommendations(opts: RecoOptions): Promise<RecoItem[]> {
     };
   });
 
-  // Minimum expected return filter — we don't surface recos under 4% T+90
-  // SELL signals bypass this (they're warnings, not performance picks)
-  const MIN_EXPECTED_RETURN = 4;
+  const MIN_BUY_RETURN  =  4;   // BUY: expected T+90 return >= +4%
+  const MAX_SELL_RETURN = -2;   // SELL: historical T+90 <= -2% (stock dropped after sale)
 
-  // Sort by score desc, filter weak returns, then take top N (dedup by company — keep best per company)
+  // Sort by score desc, filter weak signals, dedupe by company, take top N
   const seen = new Set<string>();
   return scored
     .sort((a, b) => b.recoScore - a.recoScore)
     .filter((r) => {
       if (seen.has(r.company.slug)) return false;
       seen.add(r.company.slug);
-      // SELL is always kept (they're sell-warnings, not buy-recos)
-      if (r.action === "SELL") return true;
-      // BUY must have a credible expected return
-      if (r.expectedReturn90d == null) return false;
-      if (r.expectedReturn90d < MIN_EXPECTED_RETURN) return false;
+
+      if (r.action === "BUY") {
+        if (r.expectedReturn90d == null) return false;
+        if (r.expectedReturn90d < MIN_BUY_RETURN) return false;
+        return true;
+      }
+      // SELL branch
+      if (mode === "sells") {
+        // Strict: historical data must show the stock typically fell (<=-2%)
+        // OR the declaration itself is very strong (score >= 55 without history)
+        if (r.expectedReturn90d != null) {
+          return r.expectedReturn90d <= MAX_SELL_RETURN;
+        }
+        return (r.signalScore ?? 0) >= 55;
+      }
+      // SELL in personal mode: always keep (user wants to see any sell on their positions)
       return true;
     })
     .slice(0, limit);

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { DeclarationCard } from "@/components/DeclarationCard";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // Revalidate every 5 min
 
 interface Props {
   params: Promise<{ slug: string }>;

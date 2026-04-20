@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { getBacktestBase, applyBacktestMasking } from "@/lib/backtest-compute";
 import BacktestDashboard from "@/components/BacktestDashboard";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // Backtest changes rarely, cache 1h
 
 async function getBacktestMeta() {
   try {

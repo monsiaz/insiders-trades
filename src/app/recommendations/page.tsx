@@ -14,8 +14,7 @@ import Link from "next/link";
 
 const FREE_VISIBLE = 3; // number of reco cards visible to non-authenticated users
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 600; // Revalidate every 10 min
 
 export const metadata = {
   title: "Recommandations — InsiderTrades",

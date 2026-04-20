@@ -10,7 +10,7 @@ import { CompanyBacktestWidget } from "@/components/CompanyBacktestWidget";
 import { DeclarationType } from "@prisma/client";
 import { CompanyLogo } from "@/components/CompanyLogo";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // Revalidate every 5 min
 
 interface Props {
   params: Promise<{ slug: string }>;

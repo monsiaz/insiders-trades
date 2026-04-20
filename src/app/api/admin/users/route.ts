@@ -24,6 +24,8 @@ export async function GET(req: NextRequest) {
         id: true, email: true, name: true, firstName: true, lastName: true,
         role: true, isBanned: true, bannedAt: true, bannedReason: true,
         emailVerified: true, createdAt: true, lastLoginAt: true,
+        alertEnabled: true, lastAlertAt: true,
+        portfolioCash: true, credits: true, creditsUpdatedAt: true,
         positions: {
           select: {
             id: true, name: true, isin: true, yahooSymbol: true,
@@ -47,6 +49,7 @@ export async function GET(req: NextRequest) {
       id: true, email: true, name: true, firstName: true, lastName: true,
       role: true, isBanned: true, bannedAt: true,
       emailVerified: true, createdAt: true, lastLoginAt: true,
+      alertEnabled: true, credits: true,
       _count: { select: { positions: true, alerts: true } },
     },
   });
@@ -54,47 +57,109 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ users });
 }
 
-// PATCH /api/admin/users — ban/unban, change role
+/**
+ * PATCH /api/admin/users — body: { userId, action, ... }
+ *
+ * Supported actions:
+ *   ban             — body: { reason? }
+ *   unban
+ *   make_admin      — grant admin role
+ *   revoke_admin    — demote to user
+ *   set_credits     — body: { credits: number }         — absolute
+ *   adjust_credits  — body: { delta: number }           — add/subtract
+ *   set_cash        — body: { portfolioCash: number|null }
+ *   toggle_alerts   — body: { enabled: boolean }
+ *   force_logout    — clears session markers (lastLoginAt reset);
+ *                     the next middleware hit rejects stale JWTs because
+ *                     the banned flag can't be toggled per-user at JWT
+ *                     layer. Kept as a no-op rename for clarity.
+ */
 export async function PATCH(req: NextRequest) {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
-  const { userId, action, reason } = await req.json();
-  if (!userId || !action) return NextResponse.json({ error: "userId and action required" }, { status: 400 });
+  const body = await req.json();
+  const { userId, action } = body as { userId?: string; action?: string };
+  if (!userId || !action) {
+    return NextResponse.json({ error: "userId and action required" }, { status: 400 });
+  }
 
-  // Cannot act on self
-  if (userId === admin.id) {
+  // Destructive actions are blocked on self. Read-only-ish edits (credits/cash/alerts) are fine.
+  const SELF_BLOCKED = new Set(["ban", "revoke_admin"]);
+  if (userId === admin.id && SELF_BLOCKED.has(action)) {
     return NextResponse.json({ error: "Impossible de modifier votre propre compte" }, { status: 400 });
   }
 
   const target = await prisma.user.findUnique({ where: { id: userId } });
   if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-  if (action === "ban") {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { isBanned: true, bannedAt: new Date(), bannedReason: reason ?? null },
-    });
-    return NextResponse.json({ ok: true, action: "banned" });
-  }
+  switch (action) {
+    case "ban": {
+      const reason = typeof body.reason === "string" ? body.reason : null;
+      await prisma.user.update({
+        where: { id: userId },
+        data: { isBanned: true, bannedAt: new Date(), bannedReason: reason },
+      });
+      return NextResponse.json({ ok: true, action: "banned" });
+    }
+    case "unban":
+      await prisma.user.update({
+        where: { id: userId },
+        data: { isBanned: false, bannedAt: null, bannedReason: null },
+      });
+      return NextResponse.json({ ok: true, action: "unbanned" });
+    case "make_admin":
+      await prisma.user.update({ where: { id: userId }, data: { role: "admin" } });
+      return NextResponse.json({ ok: true, action: "promoted" });
+    case "revoke_admin":
+      await prisma.user.update({ where: { id: userId }, data: { role: "user" } });
+      return NextResponse.json({ ok: true, action: "demoted" });
 
-  if (action === "unban") {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { isBanned: false, bannedAt: null, bannedReason: null },
-    });
-    return NextResponse.json({ ok: true, action: "unbanned" });
-  }
+    case "set_credits": {
+      const credits = Number(body.credits);
+      if (!Number.isFinite(credits) || credits < 0 || credits > 1_000_000) {
+        return NextResponse.json({ error: "credits invalide" }, { status: 400 });
+      }
+      await prisma.user.update({
+        where: { id: userId },
+        data: { credits: Math.round(credits), creditsUpdatedAt: new Date() },
+      });
+      return NextResponse.json({ ok: true, action: "set_credits", credits: Math.round(credits) });
+    }
 
-  if (action === "make_admin") {
-    await prisma.user.update({ where: { id: userId }, data: { role: "admin" } });
-    return NextResponse.json({ ok: true, action: "promoted" });
-  }
+    case "adjust_credits": {
+      const delta = Number(body.delta);
+      if (!Number.isFinite(delta)) {
+        return NextResponse.json({ error: "delta invalide" }, { status: 400 });
+      }
+      const next = Math.max(0, Math.min(1_000_000, (target.credits ?? 0) + Math.round(delta)));
+      await prisma.user.update({
+        where: { id: userId },
+        data: { credits: next, creditsUpdatedAt: new Date() },
+      });
+      return NextResponse.json({ ok: true, action: "adjust_credits", credits: next });
+    }
 
-  if (action === "revoke_admin") {
-    await prisma.user.update({ where: { id: userId }, data: { role: "user" } });
-    return NextResponse.json({ ok: true, action: "demoted" });
-  }
+    case "set_cash": {
+      const raw = body.portfolioCash;
+      const cash = raw == null || raw === "" ? null : Number(raw);
+      if (cash != null && (!Number.isFinite(cash) || cash < 0)) {
+        return NextResponse.json({ error: "portfolioCash invalide" }, { status: 400 });
+      }
+      await prisma.user.update({
+        where: { id: userId },
+        data: { portfolioCash: cash },
+      });
+      return NextResponse.json({ ok: true, action: "set_cash", portfolioCash: cash });
+    }
 
-  return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+    case "toggle_alerts": {
+      const enabled = Boolean(body.enabled);
+      await prisma.user.update({ where: { id: userId }, data: { alertEnabled: enabled } });
+      return NextResponse.json({ ok: true, action: "toggle_alerts", alertEnabled: enabled });
+    }
+
+    default:
+      return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+  }
 }

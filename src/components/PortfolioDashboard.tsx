@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import Papa from "papaparse";
 import { BarChart2, Bell } from "lucide-react";
+import { PortfolioPerformance } from "./PortfolioPerformance";
 
 interface Position {
   id: string;
@@ -261,12 +262,9 @@ export function PortfolioDashboard({ user }: { user: User }) {
         </div>
       )}
 
-      {/* KPI strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-        <KpiTile label="Valeur totale" value={fmtEur(totalValue)} sub={`investi ${fmtEur(totalInvested)}`} accent="indigo" />
-        <KpiTile label="P&L total" value={fmtEur(totalPnl)} sub={fmtPct(totalPnlPct)} accent={totalPnl >= 0 ? "emerald" : "rose"} />
-        <KpiTile label="En hausse" value={String(gainers)} sub={`${losers} en baisse`} accent="violet" />
-        <KpiTile label="Positions suivies" value={String(positions.length)} sub={`${priced.length} avec cours`} accent="cyan" />
+      {/* Performance chart + KPI strip */}
+      <div className="mb-8">
+        <PortfolioPerformance positions={positions} />
       </div>
 
       {/* Tabs */}

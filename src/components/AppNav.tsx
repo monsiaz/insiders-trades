@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogoMark } from "./Logo";
+import { LogoMark, LogoWordmark } from "./Logo";
 import { ThemeToggle } from "./ThemeProvider";
 import { NavUser } from "./NavUser";
 import { NavSearch } from "./NavSearch";
@@ -104,19 +104,13 @@ export function AppNav() {
       <header className="app-nav" ref={menuRef}>
         <div className="nav-inner">
 
-          {/* Logo */}
-          <Link href="/" className="nav-logo" aria-label="InsiderTrades accueil">
-            <LogoMark size={30} />
-            <span style={{
-              marginLeft: "9px",
-              fontFamily: "'Banana Grotesk', 'Inter', system-ui, sans-serif",
-              fontWeight: 700,
-              fontSize: "0.9375rem",
-              letterSpacing: "-0.03em",
-              color: "var(--tx-1)",
-              whiteSpace: "nowrap",
-            }}>
-              InsiderTrades
+          {/* Logo — full wordmark on desktop, mark-only on mobile */}
+          <Link href="/" className="nav-logo" aria-label="InsiderTrades Sigma accueil">
+            <span className="nav-logo-desktop">
+              <LogoWordmark height={28} />
+            </span>
+            <span className="nav-logo-mobile">
+              <LogoMark size={30} />
             </span>
           </Link>
 

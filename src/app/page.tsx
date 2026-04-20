@@ -152,27 +152,29 @@ export default async function HomePage() {
     <div className="content-wrapper">
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
-      <section className="mb-20 animate-fade-in" style={{ position: "relative" }}>
+      <section className="mb-16 sm:mb-20 animate-fade-in" style={{ position: "relative" }}>
         <div className="flex items-start gap-8 xl:gap-16">
 
           {/* Left column */}
           <div style={{ flex: "1 1 0", minWidth: 0 }}>
             {/* Eyebrow tag */}
-            <div className="hero-tag mb-7">
+            <div className="hero-tag mb-6 sm:mb-7">
               <span className="live-dot" />
               Données AMF · Temps réel · Règlement MAR
             </div>
 
             {/* Main headline — Banana Grotesk, très grand */}
             <h1 style={{
-              fontFamily: "'Banana Grotesk', 'Inter', system-ui, sans-serif",
-              fontSize: "clamp(2.8rem, 6.5vw, 5.75rem)",
+              fontFamily: "'Banana Grotesk', var(--font-inter), system-ui, sans-serif",
+              fontSize: "clamp(2.25rem, 6.5vw, 5.75rem)",
               fontWeight: 700,
               letterSpacing: "-0.046em",
-              lineHeight: 1.01,
+              lineHeight: 1.02,
               color: "var(--tx-1)",
-              marginBottom: "1.25rem",
+              marginBottom: "1rem",
               maxWidth: "660px",
+              overflowWrap: "break-word",
+              hyphens: "auto",
             }}>
               Transactions<br/>
               <span style={{
@@ -188,32 +190,32 @@ export default async function HomePage() {
             </h1>
 
             <p style={{
-              fontFamily: "'Inter', system-ui, sans-serif",
-              fontSize: "1.0625rem",
+              fontFamily: "var(--font-inter), system-ui, sans-serif",
+              fontSize: "clamp(0.95rem, 2.4vw, 1.0625rem)",
               color: "var(--tx-2)",
               maxWidth: "500px",
-              lineHeight: 1.7,
-              marginBottom: "2.25rem",
+              lineHeight: 1.65,
+              marginBottom: "1.75rem",
               fontWeight: 400,
             }}>
               Suivez chaque déclaration AMF, détectez les signaux d&apos;accumulation et analysez les patterns historiques des insiders français.
             </p>
 
             {/* CTA row */}
-            <div className="flex flex-wrap gap-3 mb-10">
-              <Link href="/companies" className="btn btn-cta-gradient" style={{ padding: "11px 24px", fontSize: "0.9375rem" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <div className="hero-cta-row mb-10">
+              <Link href="/companies" className="btn btn-cta-gradient hero-cta">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M3 3h18v4H3zM3 10h11v4H3zM3 17h7v4H3z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 Explorer les sociétés
               </Link>
-              <Link href="/recommendations" className="btn btn-glass" style={{ padding: "11px 24px", fontSize: "0.9375rem" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <Link href="/recommendations" className="btn btn-glass hero-cta">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 Top signaux
               </Link>
-              <Link href="/backtest" className="btn btn-outline" style={{ padding: "11px 24px", fontSize: "0.9375rem" }}>
+              <Link href="/backtest" className="btn btn-outline hero-cta">
                 Backtesting →
               </Link>
             </div>

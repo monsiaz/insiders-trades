@@ -38,7 +38,7 @@ function sizeLabelForReco(mcap: bigint | number | null | undefined): string {
 export interface RecoItem {
   declarationId: string;
   action: "BUY" | "SELL";
-  company: { name: string; slug: string; yahooSymbol: string | null };
+  company: { name: string; slug: string; yahooSymbol: string | null; logoUrl: string | null };
   insider: { name: string | null; function: string | null; role: string };
   totalAmount: number | null;
   pctOfMarketCap: number | null;
@@ -260,7 +260,7 @@ export async function getRecommendations(opts: RecoOptions): Promise<RecoItem[]>
       signalScore: true, isCluster: true, isin: true,
       company: {
         select: {
-          name: true, slug: true, yahooSymbol: true,
+          name: true, slug: true, yahooSymbol: true, logoUrl: true,
           marketCap: true, analystReco: true, targetMean: true, currentPrice: true,
         },
       },
@@ -302,6 +302,7 @@ export async function getRecommendations(opts: RecoOptions): Promise<RecoItem[]>
         name: co.name,
         slug: co.slug,
         yahooSymbol: co.yahooSymbol,
+        logoUrl: co.logoUrl ?? null,
       },
       insider: {
         name: decl.insiderName,

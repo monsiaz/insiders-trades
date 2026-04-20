@@ -29,8 +29,22 @@ export const metadata: Metadata = {
   keywords: ["insider trading", "AMF", "déclarations dirigeants", "transactions initiés", "signal financier"],
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
     ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  manifest: "/site.webmanifest",
+  openGraph: {
+    title: "InsiderTrades · Intelligence des transactions dirigeants",
+    description: "Suivez les déclarations AMF des dirigeants français. Signaux d'accumulation + backtesting historique.",
+    type: "website",
+    locale: "fr_FR",
+    siteName: "InsiderTrades",
+    images: [{ url: "/logo-mark.png", width: 512, height: 247, alt: "InsiderTrades" }],
   },
 };
 

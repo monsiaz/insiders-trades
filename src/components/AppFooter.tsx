@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LogoMark } from "./Logo";
+import { LogoWordmark } from "./Logo";
 
 const NAV_LINKS = [
   { href: "/", label: "Accueil" },
@@ -27,8 +27,7 @@ export function AppFooter() {
               className="app-footer-logo"
               aria-label="InsiderTrades accueil"
             >
-              <LogoMark size={28} />
-              <span>InsiderTrades</span>
+              <LogoWordmark height={46} />
             </Link>
             <p className="app-footer-tagline">
               Surveillance des déclarations de transactions de dirigeants publiées

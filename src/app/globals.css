@@ -326,6 +326,16 @@ body::before {
   display: flex; align-items: center;
   flex-shrink: 0; margin-right: 8px;
   text-decoration: none;
+  transition: opacity 0.14s;
+}
+.nav-logo:hover { opacity: 0.85; }
+
+.nav-logo-desktop { display: inline-flex; }
+.nav-logo-mobile  { display: none; }
+
+@media (max-width: 880px) {
+  .nav-logo-desktop { display: none; }
+  .nav-logo-mobile  { display: inline-flex; }
 }
 
 .nav-links { display: flex; align-items: center; gap: 2px; flex: 1; }
@@ -852,6 +862,34 @@ input[type="search"], textarea, select {
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 ::selection { background: var(--gold-bg); color: var(--gold-2); }
 
+/* ═══════════════════════════════════════════════════════════
+   LOGO — theme-aware visibility
+   Both light & dark variants render in DOM; CSS hides the wrong one.
+   Prevents FOUC / JS-based flicker.
+   ═══════════════════════════════════════════════════════════ */
+
+.logo-mark > .logo-mark-dark,
+.logo-wordmark > .logo-wordmark-dark {
+  display: none;
+}
+.logo-mark > .logo-mark-light,
+.logo-wordmark > .logo-wordmark-light {
+  display: block;
+}
+.dark .logo-mark > .logo-mark-light,
+.dark .logo-wordmark > .logo-wordmark-light {
+  display: none;
+}
+.dark .logo-mark > .logo-mark-dark,
+.dark .logo-wordmark > .logo-wordmark-dark {
+  display: block;
+}
+.logo-mark > img,
+.logo-wordmark > img {
+  position: absolute;
+  inset: 0;
+}
+
 /* Smooth transitions — cheap properties only (perf-optimized) */
 .btn, .nav-link, .theme-toggle, .search-bar, .badge, .score-pill {
   transition-property: background-color, border-color, color, opacity;
@@ -1289,20 +1327,13 @@ input[type="search"], textarea, select {
 }
 
 .app-footer-logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+  display: inline-block;
   text-decoration: none;
   color: var(--tx-1);
   transition: opacity 0.14s;
+  max-width: 200px;
 }
 .app-footer-logo:hover { opacity: 0.8; }
-.app-footer-logo > span {
-  font-family: "Banana Grotesk", var(--font-inter), sans-serif;
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: -0.03em;
-}
 
 .app-footer-tagline {
   font-size: 0.82rem;

@@ -3,6 +3,7 @@ import { HomeLive } from "@/components/HomeLive";
 import { HomeBacktestWidget } from "@/components/HomeBacktestWidget";
 import { HeroAnimated } from "@/components/HeroAnimated";
 import { HowItWorksAnimations } from "@/components/HowItWorksAnimations";
+import { CompanyAvatar } from "@/components/CompanyBadge";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -40,7 +41,7 @@ async function getHighScoreSignals() {
         id: true, pubDate: true, transactionDate: true, insiderName: true,
         insiderFunction: true, totalAmount: true, signalScore: true,
         pctOfMarketCap: true, isin: true,
-        company: { select: { name: true, slug: true } },
+        company: { select: { name: true, slug: true, logoUrl: true } },
       },
     })).map((s) => ({
       ...s,
@@ -85,7 +86,7 @@ async function getInitialData() {
         instrumentType: true, isin: true, unitPrice: true, volume: true,
         totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
         pdfParsed: true, signalScore: true, pctOfMarketCap: true, pctOfInsiderFlow: true,
-        company: { select: { name: true, slug: true } },
+        company: { select: { name: true, slug: true, logoUrl: true } },
         insider: { select: { name: true, slug: true } },
       },
     }),
@@ -632,21 +633,8 @@ function SignalCard({ sig }: { sig: Signal }) {
       style={{ textDecoration: "none", padding: "16px 18px", borderLeft: `3px solid ${avatarTx}`, borderRadius: "0 16px 16px 0" }}>
 
       <div className="flex items-start justify-between gap-2 mb-3">
-        {/* Avatar */}
-        <div style={{
-          width: "36px", height: "36px",
-          borderRadius: "9px",
-          background: avatarBg,
-          border: `1px solid ${avatarBd}`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0,
-          fontFamily: "'Banana Grotesk', 'Inter', system-ui",
-          fontWeight: 700,
-          fontSize: "0.9rem",
-          color: avatarTx,
-        }}>
-          {sig.company.name.charAt(0)}
-        </div>
+        {/* Logo */}
+        <CompanyAvatar name={sig.company.name} logoUrl={(sig.company as { logoUrl?: string | null }).logoUrl} size="md" />
 
         {/* Score badge */}
         <div className={`score-pill ${scoreClass}`} style={{ fontFamily: "'Banana Grotesk', 'Inter', system-ui" }}>

@@ -51,7 +51,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
           instrumentType: true, isin: true, unitPrice: true, volume: true,
           totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
           pdfParsed: true, signalScore: true, pctOfMarketCap: true, pctOfInsiderFlow: true,
-          company: { select: { name: true, slug: true } },
+          company: { select: { name: true, slug: true, logoUrl: true } },
           insider: { select: { name: true, slug: true } },
         },
       }),

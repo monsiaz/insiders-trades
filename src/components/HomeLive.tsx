@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { DeclarationCard } from "./DeclarationCard";
+import { CompanyAvatar } from "./CompanyBadge";
 import { FileText, Building2, User, TrendingUp, TrendingDown } from "lucide-react";
 
 // ── Data freshness bar ─────────────────────────────────────────────────────
@@ -146,7 +147,7 @@ interface TopCompany {
   companyId: string;
   count: number;
   totalAmount: number | null;
-  company: { name: string; slug: string; marketCap: number | null } | null;
+  company: { name: string; slug: string; marketCap: number | null; logoUrl?: string | null } | null;
 }
 
 interface TopInsider {
@@ -269,6 +270,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
                   className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors group"
                 >
                   <span className="text-xs font-mono text-slate-600 w-5 text-right shrink-0">{i + 1}</span>
+                  {row.company && <CompanyAvatar name={row.company.name} logoUrl={row.company.logoUrl} size="sm" />}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-sm font-medium text-slate-200 truncate group-hover:text-white transition-colors">

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { DeclarationType } from "@prisma/client";
+import { CompanyAvatar } from "@/components/CompanyBadge";
 
 interface DeclarationCardProps {
   declaration: {
@@ -12,7 +13,7 @@ interface DeclarationCardProps {
     pubDate: Date;
     link: string;
     description: string;
-    company: { name: string; slug: string };
+    company: { name: string; slug: string; logoUrl?: string | null };
     insider?: { name: string; slug: string } | null;
     insiderName?: string | null;
     insiderFunction?: string | null;
@@ -129,10 +130,12 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
             {showCompany && (
               <Link
                 href={`/company/${declaration.company.slug}`}
-                className="text-sm font-semibold transition-colors"
-                style={{ color: "var(--tx-1)" }}
+                style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px" }}
               >
-                {declaration.company.name}
+                <CompanyAvatar name={declaration.company.name} logoUrl={declaration.company.logoUrl} size="sm" />
+                <span className="text-sm font-semibold transition-colors" style={{ color: "var(--tx-1)" }}>
+                  {declaration.company.name}
+                </span>
               </Link>
             )}
 

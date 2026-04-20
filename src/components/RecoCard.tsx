@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { RecoItem } from "@/lib/recommendation-engine";
+import { CompanyAvatar } from "@/components/CompanyBadge";
 
 function fmt(n: number | null | undefined, d = 1): string {
   if (n == null) return "—";
@@ -71,12 +72,9 @@ export function RecoCard({ item, rank }: { item: RecoItem; rank: number }) {
 
       {/* Header row */}
       <div className="flex items-start gap-3">
-        {/* Rank + company avatar */}
+        {/* Rank + company logo */}
         <div className="flex flex-col items-center gap-1 flex-shrink-0">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold"
-            style={{ background: "var(--c-indigo-bg)", border: "1px solid var(--c-indigo-bd)", color: "var(--c-indigo-2)" }}>
-            {item.company.name.charAt(0)}
-          </div>
+          <CompanyAvatar name={item.company.name} logoUrl={item.company.logoUrl} size="md" />
           <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--tx-4)" }}>#{rank}</div>
         </div>
 

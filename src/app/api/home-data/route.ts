@@ -48,7 +48,7 @@ export async function GET() {
         instrumentType: true, isin: true, unitPrice: true, volume: true,
         totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
         pdfParsed: true, signalScore: true, pctOfMarketCap: true, pctOfInsiderFlow: true,
-        company: { select: { name: true, slug: true } },
+        company: { select: { name: true, slug: true, logoUrl: true } },
         insider: { select: { name: true, slug: true } },
       },
     }),
@@ -74,7 +74,7 @@ export async function GET() {
   const companyIds = topCompaniesRaw.map((r) => r.companyId);
   const companyDetails = await prisma.company.findMany({
     where: { id: { in: companyIds } },
-    select: { id: true, name: true, slug: true, marketCap: true },
+    select: { id: true, name: true, slug: true, marketCap: true, logoUrl: true },
   });
   const companyMap = new Map(companyDetails.map((c) => [c.id, c]));
 
@@ -85,7 +85,7 @@ export async function GET() {
       count: r._count.id,
       totalAmount: r._sum.totalAmount,
       company: co
-        ? { name: co.name, slug: co.slug, marketCap: co.marketCap ? Number(co.marketCap) : null }
+        ? { name: co.name, slug: co.slug, marketCap: co.marketCap ? Number(co.marketCap) : null, logoUrl: co.logoUrl ?? null }
         : null,
     };
   });

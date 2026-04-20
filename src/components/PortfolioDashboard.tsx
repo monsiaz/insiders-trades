@@ -23,9 +23,11 @@ interface Position {
   alertBelow: number | null;
   alertAbove: number | null;
   notes: string | null;
+  fromApp: boolean;
 }
 
 interface User { id: string; email: string; name: string | null }
+interface PortfolioSummary { portfolioCash: number | null }
 
 const COLORS = ["#6366f1", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#f43f5e", "#3b82f6", "#a855f7", "#14b8a6", "#84cc16"];
 
@@ -60,6 +62,7 @@ const EMPTY_FORM: FormState = { name: "", isin: "", quantity: "", buyingPrice: "
 
 export function PortfolioDashboard({ user }: { user: User }) {
   const [positions, setPositions] = useState<Position[]>([]);
+  const [portfolioCash, setPortfolioCash] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState<"positions" | "add" | "import">("positions");
@@ -76,6 +79,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
     const res = await fetch("/api/portfolio/positions");
     const data = await res.json();
     setPositions(data.positions ?? []);
+    setPortfolioCash(data.portfolioCash ?? null);
     setLoading(false);
   }
 
@@ -262,6 +266,57 @@ export function PortfolioDashboard({ user }: { user: User }) {
         </div>
       )}
 
+      {/* Broker summary card */}
+      {(portfolioCash != null || priced.length > 0) && (
+        <div className="mb-6 card" style={{
+          background: "linear-gradient(135deg, var(--bg-raised) 0%, var(--bg-surface) 100%)",
+          borderColor: "var(--border-med)",
+        }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 0, borderRadius: "14px", overflow: "hidden" }}>
+            {[
+              {
+                label: "Total Portefeuille (titres + espèces)",
+                value: fmtEur(totalValue + (portfolioCash ?? 0)),
+                color: "var(--tx-1)", bold: true,
+              },
+              {
+                label: portfolioCash != null ? `Solde Espèces disponible ${new Date().toLocaleDateString("fr-FR")}` : "Espèces",
+                value: portfolioCash != null ? fmtEur(portfolioCash) : "—",
+                color: "var(--tx-2)", bold: false,
+              },
+              {
+                label: "Évaluation titres",
+                value: fmtEur(totalValue),
+                color: "var(--tx-1)", bold: false,
+              },
+              {
+                label: "Montant +/- values latentes",
+                value: `${totalPnl >= 0 ? "+" : ""}${fmtEur(totalPnl)} (${totalPnlPct >= 0 ? "+" : ""}${totalPnlPct.toFixed(2)} %)`,
+                color: totalPnl >= 0 ? "var(--c-emerald)" : "var(--c-crimson)", bold: true,
+              },
+            ].map((row, i) => (
+              <div key={i} style={{
+                padding: "14px 20px",
+                borderBottom: i < 3 ? "1px solid var(--border)" : "none",
+                display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px",
+              }}>
+                <span style={{ fontSize: "0.84rem", color: "var(--tx-2)", flex: 1 }}>{row.label}</span>
+                <span style={{
+                  fontSize: row.bold ? "0.95rem" : "0.88rem",
+                  fontWeight: row.bold ? 700 : 600,
+                  color: row.color,
+                  fontFamily: "'Banana Grotesk', 'JetBrains Mono', monospace",
+                  letterSpacing: "-0.02em",
+                  flexShrink: 0,
+                }}>
+                  {row.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Performance chart + KPI strip */}
       <div className="mb-8">
         <PortfolioPerformance positions={positions} />
@@ -314,7 +369,23 @@ export function PortfolioDashboard({ user }: { user: User }) {
                           return (
                             <tr key={pos.id} className={`hover:bg-white/3 transition-colors ${alertTriggered ? "bg-amber-500/5" : ""}`}>
                               <td className="px-4 py-3">
-                                <div className="font-medium text-[var(--tx-1)] text-sm">{pos.name}</div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-[var(--tx-1)] text-sm">{pos.name}</span>
+                                  {pos.fromApp && (
+                                    <span style={{
+                                      display: "inline-flex", alignItems: "center", gap: "3px",
+                                      padding: "1px 6px", borderRadius: "4px",
+                                      fontSize: "0.58rem", fontWeight: 800, letterSpacing: "0.05em",
+                                      background: "var(--c-emerald-bg)", border: "1px solid var(--c-emerald-bd)",
+                                      color: "var(--c-emerald)", flexShrink: 0,
+                                    }}>
+                                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
+                                      </svg>
+                                      APP
+                                    </span>
+                                  )}
+                                </div>
                                 {pos.isin && <div className="text-[11px] text-[var(--tx-3)] font-mono">{pos.isin}</div>}
                                 {pos.yahooSymbol && <div className="text-[11px] text-indigo-500">{pos.yahooSymbol}</div>}
                               </td>

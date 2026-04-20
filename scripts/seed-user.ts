@@ -1,15 +1,27 @@
 /**
  * scripts/seed-user.ts
  * Creates the initial admin user and imports their PEA positions.
- * Run: npx tsx scripts/seed-user.ts
+ *
+ * The password is NEVER committed. Pass it via CLI or env:
+ *   npx tsx scripts/seed-user.ts "<password>"
+ *   ADMIN_PASSWORD="<password>" npx tsx scripts/seed-user.ts
  */
 
 import { prisma } from "../src/lib/prisma";
 import bcrypt from "bcryptjs";
 
 const EMAIL = "simon.azoulay.pro@gmail.com";
-const PASSWORD = "Achille64200!!";
+const PASSWORD = (process.argv[2] || process.env.ADMIN_PASSWORD || "").trim();
 const NAME = "Simon";
+
+if (!PASSWORD || PASSWORD.length < 8) {
+  console.error(
+    "❌  Password required (>= 8 chars). Usage:\n" +
+      '    npx tsx scripts/seed-user.ts "<password>"\n' +
+      '    ADMIN_PASSWORD="<password>" npx tsx scripts/seed-user.ts'
+  );
+  process.exit(1);
+}
 
 // Positions from the exported CSV (converted to proper number format)
 const POSITIONS = [
@@ -74,10 +86,9 @@ async function main() {
   const total = POSITIONS.reduce((s, p) => s + p.quantity * p.buyingPrice, 0);
   console.log(`\n  Total investi : ${total.toFixed(0)}€`);
 
-  console.log("\n✅ Done! Login credentials:");
-  console.log(`  Email    : ${EMAIL}`);
-  console.log(`  Password : ${PASSWORD}`);
+  console.log("\n✅ Done! Login email:", EMAIL);
   console.log(`  URL      : https://insiders-trades-sigma.vercel.app/auth/login`);
+  console.log("  (password was set from your input — not printed for safety)");
 
   await prisma.$disconnect();
 }

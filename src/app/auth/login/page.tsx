@@ -8,7 +8,7 @@ import { Suspense } from "react";
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") ?? "/portfolio";
+  const next = params.get("next") ?? "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -50,10 +50,27 @@ function LoginForm() {
                 <circle cx="20" cy="10" r="1.4" fill="white"/>
               </svg>
             </div>
-            <span className="text-xl font-bold tracking-tight" style={{ color: "var(--tx-1)" }}>InsiderTrades</span>
+            <span className="text-xl font-bold tracking-tight" style={{ color: "var(--tx-1)" }}>Insiders Trades Sigma</span>
           </div>
-          <h1 className="text-2xl font-bold mb-1 mt-4" style={{ color: "var(--tx-1)" }}>Connexion</h1>
-          <p className="text-sm" style={{ color: "var(--tx-3)" }}>Accédez à votre portfolio</p>
+          <div
+            className="inline-flex items-center gap-2 mb-3 mt-4 px-3 py-1 rounded-full"
+            style={{
+              background: "var(--gold-bg)",
+              border: "1px solid var(--gold-bd)",
+              color: "var(--gold)",
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "0.62rem",
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+            }}
+          >
+            Accès beta
+          </div>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--tx-1)" }}>Connexion</h1>
+          <p className="text-sm" style={{ color: "var(--tx-3)" }}>
+            Phase bêta — accès sur invitation uniquement.
+          </p>
         </div>
 
         {/* Card */}
@@ -98,12 +115,9 @@ function LoginForm() {
           </form>
         </div>
 
-        <p className="text-center text-sm mt-4" style={{ color: "var(--tx-3)" }}>
-          Pas encore de compte ?{" "}
-          <Link href="/auth/register" className="font-medium transition-colors"
-            style={{ color: "var(--c-indigo-2)" }}>
-            Créer un compte
-          </Link>
+        <p className="text-center text-xs mt-4" style={{ color: "var(--tx-4)", lineHeight: 1.6 }}>
+          L&apos;inscription est fermée pendant la phase beta.<br />
+          Pour une demande d&apos;accès, contactez l&apos;administrateur.
         </p>
       </div>
     </div>

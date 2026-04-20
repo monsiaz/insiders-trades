@@ -3,9 +3,26 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? "insiders-trades-secret-change-in-production"
-);
+function resolveJwtSecret(): Uint8Array {
+  const fromEnv = process.env.JWT_SECRET;
+  // In production we REFUSE to fall back to a hardcoded secret —
+  // that would let anyone forge a session cookie.
+  if (!fromEnv) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "[auth] JWT_SECRET env var is required in production. Refusing to sign/verify with a hardcoded fallback."
+      );
+    }
+    // Dev-only fallback (obviously not a real secret)
+    return new TextEncoder().encode("dev-only-fallback-never-use-in-prod");
+  }
+  if (fromEnv.length < 32) {
+    throw new Error("[auth] JWT_SECRET must be at least 32 characters");
+  }
+  return new TextEncoder().encode(fromEnv);
+}
+
+const JWT_SECRET = resolveJwtSecret();
 const COOKIE_NAME = "it_session";
 const SESSION_DURATION = 60 * 60 * 24 * 30; // 30 days
 

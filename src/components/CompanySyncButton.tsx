@@ -21,7 +21,7 @@ export function CompanySyncButton({ companyId }: { companyId: string }) {
       const data = await res.json();
 
       if (data.success) {
-        setResult(`✓ +${data.added}`);
+        setResult(`+${data.added}`);
         router.refresh();
       } else {
         setResult("Erreur");

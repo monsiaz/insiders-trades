@@ -102,27 +102,58 @@ function parsePrice(raw: string | undefined): number | undefined {
   return isNaN(val) ? undefined : val;
 }
 
+/** Earliest plausible AMF transaction date (AMF BDIF starts ~2003) */
+const MIN_DATE = new Date("2003-01-01");
+/** Latest plausible date = today + 18 months (for future-dated instruments) */
+const MAX_DATE = new Date(Date.now() + 18 * 30 * 24 * 60 * 60 * 1000);
+
+function isPlausibleDate(d: Date): boolean {
+  return d >= MIN_DATE && d <= MAX_DATE;
+}
+
 function parseDate(raw: string | undefined): Date | undefined {
   if (!raw) return undefined;
   const months: Record<string, number> = {
     janvier: 1, février: 2, mars: 3, avril: 4, mai: 5, juin: 6,
     juillet: 7, août: 8, septembre: 9, octobre: 10, novembre: 11, décembre: 12,
   };
-  // "07 mai 2024"
-  const mFr = raw.match(/(\d{1,2})\s+([a-zéûôê]+)\s+(\d{4})/i);
+
+  // "07 mai 2024" or "7 mai 24" (French long form, 2 or 4 digit year)
+  const mFr = raw.match(/(\d{1,2})\s+([a-zéûôê]+)\s+(\d{2,4})/i);
   if (mFr) {
     const day = parseInt(mFr[1]);
     const month = months[mFr[2].toLowerCase()];
-    const year = parseInt(mFr[3]);
-    if (month) return new Date(Date.UTC(year, month - 1, day));
+    let year = parseInt(mFr[3]);
+    if (mFr[3].length === 2) year += year <= 50 ? 2000 : 1900;
+    if (month) {
+      const d = new Date(Date.UTC(year, month - 1, day));
+      if (isPlausibleDate(d)) return d;
+    }
   }
-  // "2024-05-07" or "07/05/2024"
+
+  // "2024-05-07" (ISO)
   const mIso = raw.match(/(\d{4})-(\d{2})-(\d{2})/);
-  if (mIso) return new Date(Date.UTC(+mIso[1], +mIso[2] - 1, +mIso[3]));
-  const mSlash = raw.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if (mSlash) return new Date(Date.UTC(+mSlash[3], +mSlash[2] - 1, +mSlash[1]));
-  const iso = new Date(raw);
-  if (!isNaN(iso.getTime())) return iso;
+  if (mIso) {
+    const d = new Date(Date.UTC(+mIso[1], +mIso[2] - 1, +mIso[3]));
+    if (isPlausibleDate(d)) return d;
+  }
+
+  // "07/05/2024" (DD/MM/YYYY)
+  const mSlash4 = raw.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (mSlash4) {
+    const d = new Date(Date.UTC(+mSlash4[3], +mSlash4[2] - 1, +mSlash4[1]));
+    if (isPlausibleDate(d)) return d;
+  }
+
+  // "07/05/24" (DD/MM/YY — 2-digit year, common in older AMF PDFs)
+  const mSlash2 = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/);
+  if (mSlash2) {
+    const yr = +mSlash2[3];
+    const year = yr <= 50 ? 2000 + yr : 1900 + yr;
+    const d = new Date(Date.UTC(year, +mSlash2[2] - 1, +mSlash2[1]));
+    if (isPlausibleDate(d)) return d;
+  }
+
   return undefined;
 }
 

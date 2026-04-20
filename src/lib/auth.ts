@@ -75,10 +75,13 @@ export async function getSession(): Promise<SessionPayload | null> {
 export async function getCurrentUser() {
   const session = await getSession();
   if (!session) return null;
-  return prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, email: true, name: true, role: true, emailVerified: true },
+    select: { id: true, email: true, name: true, firstName: true, lastName: true, role: true, emailVerified: true, isBanned: true },
   });
+  // Revoked users are treated as logged out
+  if (!user || user.isBanned) return null;
+  return user;
 }
 
 // ── Token generation ─────────────────────────────────────────────────────────

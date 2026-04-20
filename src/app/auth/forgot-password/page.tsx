@@ -30,7 +30,9 @@ export default function ForgotPasswordPage() {
         <div className="glass-card rounded-2xl p-6">
           {sent ? (
             <div className="text-center py-4">
-              <div className="text-4xl mb-3">📬</div>
+              <div className="mx-auto mb-4 flex items-center justify-center w-12 h-12 rounded-2xl" style={{ background: "var(--c-emerald-bg)", border: "1px solid var(--c-emerald-bd)" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ color: "var(--c-emerald)" }}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="22,6 12,13 2,6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
               <p className="text-slate-300 text-sm">Si un compte existe pour <strong className="text-white">{email}</strong>, vous recevrez un email avec un lien de réinitialisation.</p>
             </div>
           ) : (

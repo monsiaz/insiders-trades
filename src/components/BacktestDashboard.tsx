@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -52,10 +52,13 @@ interface GenderStats extends GroupStats {
   label: string;
 }
 
+interface CoverageHorizon { count: number; }
+
 interface StatsData {
   total: number;
   totalBuys: number;
   totalSells: number;
+  isAuthenticated: boolean;
   overall: GroupStats;
   overallBuys: GroupStats;
   sellStats: SellStats;
@@ -92,6 +95,17 @@ interface StatsData {
     pctOfMarketCap: number | null;
   }>;
   insights: Array<{ icon: string; title: string; text: string; highlight: string }>;
+  coverageByHorizon: {
+    totalEligible: number;
+    totalWithPrice: number;
+    "30d": CoverageHorizon;
+    "60d": CoverageHorizon;
+    "90d": CoverageHorizon;
+    "160d": CoverageHorizon;
+    "365d": CoverageHorizon;
+    "730d": CoverageHorizon;
+  };
+  lastComputedAt: string | null;
 }
 
 // ── Formatters ─────────────────────────────────────────────────────────────
@@ -167,6 +181,116 @@ function WinBadge({ w }: { w: number | null }) {
     <span className="text-xs font-semibold" style={{ color }}>
       {w.toFixed(0)}%
     </span>
+  );
+}
+
+// ── InfoTip — hover tooltip with smart positioning ────────────────────────
+
+function InfoTip({ text, wide }: { text: string; wide?: boolean }) {
+  const [show, setShow] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  return (
+    <span
+      ref={ref}
+      className="relative inline-flex items-center cursor-help"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <span
+        className="inline-flex items-center justify-center rounded-full text-[9px] font-bold leading-none ml-1"
+        style={{
+          width: 14, height: 14,
+          background: "var(--bg-raised)",
+          border: "1px solid var(--border-med)",
+          color: "var(--tx-4)",
+        }}
+      >
+        ?
+      </span>
+      {show && (
+        <div
+          className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 p-2.5 rounded-xl text-xs leading-relaxed pointer-events-none"
+          style={{
+            width: wide ? 240 : 190,
+            background: "var(--bg-elevated)",
+            border: "1px solid var(--border-med)",
+            color: "var(--tx-2)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+          }}
+        >
+          {text}
+          <div
+            className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent"
+            style={{ borderTopColor: "var(--border-med)" }}
+          />
+        </div>
+      )}
+    </span>
+  );
+}
+
+// ── Coverage mini-bar ─────────────────────────────────────────────────────
+
+function CoverageBar({
+  coverage,
+  horizon,
+  totalBuys,
+}: {
+  coverage: StatsData["coverageByHorizon"] | undefined;
+  horizon: Horizon;
+  totalBuys: number;
+}) {
+  if (!coverage) return null;
+  const hData = coverage[horizon] as CoverageHorizon | undefined;
+  if (!hData) return null;
+
+  const withPricePct = coverage.totalWithPrice > 0
+    ? Math.round((coverage.totalWithPrice / coverage.totalEligible) * 100)
+    : 0;
+  const horizonPct = totalBuys > 0
+    ? Math.round((hData.count / totalBuys) * 100)
+    : 0;
+
+  return (
+    <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center gap-1.5">
+        <span className="text-[11px] font-medium" style={{ color: "var(--tx-4)" }}>
+          Couverture prix :
+        </span>
+        <span className="text-[11px] font-bold" style={{ color: withPricePct >= 90 ? "var(--c-mint)" : withPricePct >= 70 ? "var(--c-amber)" : "var(--c-red)" }}>
+          {withPricePct}%
+        </span>
+        <span className="text-[10px]" style={{ color: "var(--tx-4)" }}>
+          ({coverage.totalWithPrice.toLocaleString("fr")}/{coverage.totalEligible.toLocaleString("fr")} déclarations)
+        </span>
+        <InfoTip
+          text="% de déclarations AMF pour lesquelles Yahoo Finance a fourni un cours historique. Les 3% manquants sont des sociétés délistées, obligataires (ISIN) ou trop récentes."
+          wide
+        />
+      </div>
+      <div className="flex items-center gap-1.5">
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ width: 80, background: "var(--bg-raised)" }}>
+          <div
+            className="h-full rounded-full"
+            style={{
+              width: `${horizonPct}%`,
+              background: horizonPct >= 80 ? "var(--c-mint)" : horizonPct >= 60 ? "var(--c-amber)" : "var(--c-red)",
+              opacity: 0.85,
+            }}
+          />
+        </div>
+        <span className="text-[11px] font-bold" style={{ color: "var(--tx-3)" }}>
+          {horizonPct}%
+        </span>
+        <span className="text-[10px]" style={{ color: "var(--tx-4)" }}>
+          ont atteint l'horizon {horizon === "730d" ? "T+2ans" : `T+${horizon}`}
+        </span>
+        <InfoTip
+          text={`Pour l'horizon ${horizon === "730d" ? "T+2ans" : `T+${horizon}`}, seuls les trades suffisamment anciens ont des données de cours. Les transactions récentes réduisent ce chiffre, c'est normal.`}
+          wide
+        />
+      </div>
+    </div>
   );
 }
 
@@ -347,14 +471,29 @@ function SignalsTable({ combos }: { combos: SignalCombo[] }) {
             <tr className="border-b border-soft">
               <th className="text-left pb-2 text-xs text-muted font-medium w-8">#</th>
               <th className="text-left pb-2 text-xs text-muted font-medium">Signal</th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">Trades</th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">
+                Trades
+                <InfoTip text="Nombre de trades historiques dans ce groupe. Minimum 5 requis pour afficher le signal." />
+              </th>
               <th className="text-center pb-2 text-xs text-muted font-medium">{horizonLabel}</th>
               <th className="text-center pb-2 text-xs text-muted font-medium">T+365</th>
               <th className="text-center pb-2 text-xs text-muted font-medium">T+2ans</th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">Win%/90j</th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">Win%/1an</th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">Sharpe 90j</th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">Sharpe 1an</th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">
+                Win%/90j
+                <InfoTip text="% de trades avec un cours en hausse à T+90. >60% = fort signal. Un hasard pur donnerait ~50%." />
+              </th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">
+                Win%/1an
+                <InfoTip text="% de trades avec un cours en hausse à T+365." />
+              </th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">
+                Sharpe 90j
+                <InfoTip text="Rendement moyen T+90 divisé par l'écart-type. Mesure la régularité du signal. >0.5 = bon, >1 = excellent. Un Sharpe élevé avec peu de trades peut être du bruit." wide />
+              </th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">
+                Sharpe 1an
+                <InfoTip text="Rendement moyen T+365 divisé par l'écart-type sur 1 an." />
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -523,17 +662,21 @@ function TopTradesTable({ trades }: { trades: StatsData["topTrades"] }) {
 // ── KPI card ───────────────────────────────────────────────────────────────
 
 function KpiCard({
-  label, value, sub, accent, border,
+  label, value, sub, accent, border, tooltip,
 }: {
   label: string;
   value: string;
   sub?: string;
   accent?: boolean;
   border?: "indigo" | "red" | "mint" | "amber";
+  tooltip?: string;
 }) {
   return (
     <div className={`card p-4 flex flex-col gap-1${border ? ` kpi-card-${border}` : ""}`}>
-      <div className="text-xs text-muted font-medium uppercase tracking-wide">{label}</div>
+      <div className="flex items-center text-xs text-muted font-medium uppercase tracking-wide gap-0.5">
+        {label}
+        {tooltip && <InfoTip text={tooltip} wide />}
+      </div>
       <div className={`text-2xl font-bold font-mono ${accent ? "text-mint" : "text-primary"}`}>{value}</div>
       {sub && <div className="text-xs text-secondary">{sub}</div>}
     </div>
@@ -550,21 +693,82 @@ const ROLE_COLORS: Record<string, string> = {
   "Autre": "#64748b",
 };
 
+// ── Freemium lock overlay ──────────────────────────────────────────────────
+
+function FreemiumLock({ feature = "cet onglet", children }: { feature?: string; children: React.ReactNode }) {
+  return (
+    <div style={{ position: "relative", minHeight: "280px" }}>
+      {/* Blurred background preview */}
+      <div style={{ filter: "blur(6px)", pointerEvents: "none", userSelect: "none", WebkitUserSelect: "none", opacity: 0.7, maxHeight: "320px", overflow: "hidden" }}>
+        {children}
+      </div>
+      {/* Lock CTA */}
+      <div style={{
+        position: "absolute", inset: 0,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        background: "linear-gradient(to bottom, transparent 0%, var(--bg-base) 55%)",
+        zIndex: 10,
+      }}>
+        <div style={{
+          background: "var(--bg-card)", border: "1px solid var(--border-med)", borderRadius: "16px",
+          padding: "24px 32px", maxWidth: "360px", textAlign: "center", boxShadow: "var(--shadow-lg)",
+        }}>
+          <div style={{
+            width: "40px", height: "40px", borderRadius: "10px", margin: "0 auto 12px",
+            background: "linear-gradient(135deg, var(--c-indigo), var(--c-violet))",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="11" width="18" height="11" rx="2" stroke="white" strokeWidth="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <h3 style={{ fontFamily: "'Banana Grotesk', 'Inter', system-ui", fontSize: "1rem", fontWeight: 700, color: "var(--tx-1)", marginBottom: "6px", letterSpacing: "-0.02em" }}>
+            Accès membres uniquement
+          </h3>
+          <p style={{ fontSize: "0.82rem", color: "var(--tx-3)", lineHeight: 1.5, marginBottom: "16px" }}>
+            Créez un compte gratuit pour accéder à {feature} : historique complet, noms des entreprises et performances détaillées.
+          </p>
+          <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+            <a href="/auth/register" style={{
+              padding: "8px 18px", borderRadius: "9px", fontWeight: 700, fontSize: "0.84rem",
+              background: "linear-gradient(135deg, var(--c-indigo), var(--c-violet))",
+              color: "white", textDecoration: "none", boxShadow: "0 4px 14px rgba(91,92,246,0.4)",
+            }}>
+              Compte gratuit
+            </a>
+            <a href="/auth/login" style={{
+              padding: "8px 14px", borderRadius: "9px", fontWeight: 600, fontSize: "0.84rem",
+              background: "var(--bg-sub)", border: "1px solid var(--border-med)",
+              color: "var(--tx-2)", textDecoration: "none",
+            }}>
+              Connexion
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────
 
 type Tab = "overview" | "signals" | "behaviors" | "trades" | "sells" | "evolution";
 
-export default function BacktestDashboard() {
-  const [data, setData] = useState<StatsData | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function BacktestDashboard({ initialData }: { initialData?: StatsData }) {
+  const [data, setData] = useState<StatsData | null>(initialData ?? null);
+  const [loading, setLoading] = useState(!initialData);
   const [tab, setTab] = useState<Tab>("overview");
   const [groupHorizon, setGroupHorizon] = useState<Horizon>("90d");
 
   useEffect(() => {
+    // If initialData was provided by SSR, skip the client-side fetch
+    if (initialData) return;
     fetch("/api/backtest/stats")
       .then((r) => r.json())
       .then(setData)
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) {
@@ -586,12 +790,26 @@ export default function BacktestDashboard() {
   }
 
   const g = data.overallBuys ?? data.overall; // KPIs show buy-only stats
-  const tabs: { key: Tab; label: string }[] = [
+
+  // Dynamic KPI values: respond to the groupHorizon picker
+  const kpiReturn = getReturn(g, groupHorizon);
+  const kpiWinRate = groupHorizon === "30d"  ? g.winRate90d   // no dedicated 30d win rate — fallback
+    : groupHorizon === "60d"  ? g.winRate90d
+    : groupHorizon === "90d"  ? g.winRate90d
+    : groupHorizon === "160d" ? g.winRate90d
+    : groupHorizon === "365d" ? g.winRate365d
+    : g.winRate365d; // 730d
+  const kpiMedianReturn = groupHorizon === "90d" ? g.medianReturn90d : groupHorizon === "365d" ? g.medianReturn365d : null;
+  const kpiHorizonLabel = HORIZONS.find((h) => h.key === groupHorizon)?.label ?? groupHorizon;
+
+  const isAuth = data.isAuthenticated;
+
+  const tabs: { key: Tab; label: string; locked?: boolean }[] = [
     { key: "overview",  label: "Vue d'ensemble" },
-    { key: "signals",   label: "Signaux" },
+    { key: "signals",   label: "Signaux",     locked: !isAuth },
     { key: "behaviors", label: "Comportements" },
-    { key: "trades",    label: "Top trades" },
-    { key: "sells",     label: `Ventes (${data.totalSells ?? 0})` },
+    { key: "trades",    label: "Top trades",  locked: !isAuth },
+    { key: "sells",     label: `Ventes (${data.totalSells ?? 0})`, locked: !isAuth },
     { key: "evolution", label: "Par année" },
   ];
 
@@ -600,14 +818,99 @@ export default function BacktestDashboard() {
   return (
     <div className="space-y-6">
 
-      {/* ─ KPI strip ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        <KpiCard label="Achats backtestés"  value={(data.totalBuys ?? data.total).toLocaleString("fr")}       border="indigo" />
-        <KpiCard label="Ventes backtestées" value={(data.totalSells ?? 0).toLocaleString("fr")}               border="red"    sub="signal baissier" />
-        <KpiCard label="Retour achat T+90"  value={fmt(g.avgReturn90d)}  accent={(g.avgReturn90d ?? 0) > 0}   border="mint" />
-        <KpiCard label="Retour achat T+365" value={fmt(g.avgReturn365d)} accent={(g.avgReturn365d ?? 0) > 0}  border="mint" />
-        <KpiCard label="Win rate T+90"      value={g.winRate90d  != null ? `${g.winRate90d.toFixed(0)}%`  : "—"} border="mint" />
-        <KpiCard label="Win rate T+1an"     value={g.winRate365d != null ? `${g.winRate365d.toFixed(0)}%` : "—"} border="mint" />
+      {/* ─ Header with freshness indicator ────────────────────────────── */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "var(--c-mint)" }} />
+          <span className="text-xs font-semibold" style={{ color: "var(--tx-3)" }}>
+            Backtest sur données réelles AMF
+          </span>
+          <InfoTip text="Les résultats sont calculés à partir des cours historiques Yahoo Finance sur 20 ans. Le calcul incrémental tourne quotidiennement en production." wide />
+        </div>
+        {data.lastComputedAt && (
+          <span className="text-[11px] px-2.5 py-1 rounded-lg" style={{ background: "var(--bg-raised)", color: "var(--tx-4)", border: "1px solid var(--border)" }}>
+            Dernière mise à jour : {new Date(data.lastComputedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+          </span>
+        )}
+      </div>
+
+      {/* ─ KPI strip — values update with the horizon picker ─────────── */}
+      <div className="space-y-3">
+        {/* Horizon picker + coverage */}
+        <div className="flex items-center gap-2 flex-wrap justify-between">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--tx-4)" }}>Horizon :</span>
+            {HORIZONS.map((h) => {
+              const hCov = data.coverageByHorizon?.[h.key] as CoverageHorizon | undefined;
+              const hPct = hCov && (data.totalBuys ?? data.total) > 0
+                ? Math.round((hCov.count / (data.totalBuys ?? data.total)) * 100)
+                : null;
+              return (
+                <button key={h.key}
+                  onClick={() => setGroupHorizon(h.key)}
+                  className="flex flex-col items-center px-2.5 py-1 rounded-lg text-xs font-semibold transition-all gap-0.5"
+                  style={groupHorizon === h.key
+                    ? { background: "var(--c-indigo-bg)", border: "1px solid var(--c-indigo-bd)", color: "var(--c-indigo-2)" }
+                    : { background: "transparent", border: "1px solid var(--border)", color: "var(--tx-3)" }}>
+                  <span>{h.label}</span>
+                  {hPct != null && (
+                    <span style={{ fontSize: "0.58rem", fontWeight: 700, opacity: 0.75, color: hPct >= 80 ? "var(--c-mint)" : hPct >= 60 ? "var(--c-amber)" : "var(--c-red)" }}>
+                      {hPct}%
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <CoverageBar coverage={data.coverageByHorizon} horizon={groupHorizon} totalBuys={data.totalBuys ?? data.total} />
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <KpiCard
+            label="Achats backtestés"
+            value={(data.totalBuys ?? data.total).toLocaleString("fr")}
+            border="indigo"
+            sub="déclarations AMF"
+            tooltip="Nombre total d'achats d'initiés ayant un cours de référence Yahoo Finance valide. Seuls les achats (acquisitions) sont inclus dans l'analyse de signal."
+          />
+          <KpiCard
+            label="Ventes backtestées"
+            value={(data.totalSells ?? 0).toLocaleString("fr")}
+            border="red"
+            sub="signal baissier"
+            tooltip="Nombre de cessions d'initiés backtestées. Une vente est un signal baissier : l'insider anticipe une baisse. L'onglet 'Ventes' analyse leur précision."
+          />
+          <KpiCard
+            label={`Retour moyen ${kpiHorizonLabel}`}
+            value={fmt(kpiReturn)}
+            accent={(kpiReturn ?? 0) > 0}
+            border="mint"
+            sub="achats dirigeants"
+            tooltip={`Rendement moyen des achats d'initiés mesuré ${kpiHorizonLabel} après la date de transaction. Base : tous les achats avec données de cours disponibles pour cet horizon.`}
+          />
+          <KpiCard
+            label={`Médiane ${kpiHorizonLabel}`}
+            value={fmt(kpiMedianReturn)}
+            accent={(kpiMedianReturn ?? 0) > 0}
+            border="mint"
+            sub="50% des trades"
+            tooltip="La médiane est plus robuste que la moyenne : 50% des trades ont eu un retour inférieur à cette valeur. Un écart important entre moyenne et médiane indique des outliers."
+          />
+          <KpiCard
+            label={`Win rate ${kpiHorizonLabel}`}
+            value={kpiWinRate != null ? `${kpiWinRate.toFixed(0)}%` : "—"}
+            border="mint"
+            sub="trades positifs"
+            tooltip="Pourcentage de trades où le cours était en hausse à l'horizon choisi. Un win rate >55% est significatif (le marché fait environ 50% sur longue période)."
+          />
+          <KpiCard
+            label="Sharpe T+90"
+            value={g.sharpe90d != null ? g.sharpe90d.toFixed(2) : "—"}
+            border="amber"
+            sub="ratio risque/retour"
+            tooltip="Ratio de Sharpe = rendement moyen / écart-type des retours. Mesure la régularité du signal. >0.5 = bon, >1.0 = excellent, <0 = signal erratique."
+          />
+        </div>
       </div>
 
       {/* ─ Insights ───────────────────────────────────────────────────── */}
@@ -651,7 +954,15 @@ export default function BacktestDashboard() {
                   : "border-transparent text-muted hover:text-secondary"
               }`}
             >
-              {t.label}
+              {t.locked ? (
+                <span className="flex items-center gap-1.5">
+                  {t.label}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.6 }}>
+                    <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="2"/>
+                    <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </span>
+              ) : t.label}
             </button>
           ))}
         </div>
@@ -662,54 +973,59 @@ export default function BacktestDashboard() {
       {/* ═══════════════════════════════════════════════════════════════ */}
       {tab === "overview" && (
         <div className="space-y-6">
-          {/* Horizon picker */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted">Horizon affiché :</span>
-            {HORIZONS.map((h) => (
-              <button
-                key={h.key}
-                onClick={() => setGroupHorizon(h.key)}
-                className={`px-2.5 py-1 rounded text-xs font-mono transition-all ${
-                  groupHorizon === h.key
-                    ? "bg-indigo text-white"
-                    : "bg-surface border border-soft text-muted hover:text-primary"
-                }`}
-              >
-                {h.label}
-              </button>
-            ))}
-          </div>
+          {/* Horizon picker is now above the KPI strip — hidden here */}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="card p-4">
-              <h3 className="text-sm font-semibold text-primary mb-4">Par rôle de l&apos;insider — {HORIZON_LABEL}</h3>
+              <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
+                Par rôle de l&apos;insider · {HORIZON_LABEL}
+                <InfoTip text="PDG/DG = Président-Directeur Général. CFO/DAF = Directeur Financier. CA/Board = membre du Conseil d'Administration. Les CFO ont historiquement les signaux les plus forts." wide />
+              </h3>
               <GroupChart data={data.byRole} horizon={groupHorizon} height={200} />
             </div>
             <div className="card p-4">
-              <h3 className="text-sm font-semibold text-primary mb-4">Par taille de société — {HORIZON_LABEL}</h3>
+              <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
+                Par taille de société · {HORIZON_LABEL}
+                <InfoTip text="Micro <50M€ · Small <300M€ · Mid <2Md€ · Large <10Md€ · Mega >10Md€. Les small/mid-cap offrent plus d'alpha car moins suivies par les analystes." wide />
+              </h3>
               <GroupChart data={data.bySize} horizon={groupHorizon} height={200} />
             </div>
             <div className="card p-4">
-              <h3 className="text-sm font-semibold text-primary mb-4">Par score de signal — {HORIZON_LABEL}</h3>
+              <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
+                Par score de signal · {HORIZON_LABEL}
+                <InfoTip text="Score composite 0-100 intégrant : rôle insider, montant, % market cap, cluster, DCA, fonction. Un score ≥65 est considéré comme un signal fort." wide />
+              </h3>
               <GroupChart data={data.byScore} horizon={groupHorizon} height={200} />
             </div>
             <div className="card p-4">
-              <h3 className="text-sm font-semibold text-primary mb-4">Par montant de la transaction — {HORIZON_LABEL}</h3>
+              <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
+                Par montant de la transaction · {HORIZON_LABEL}
+                <InfoTip text="Montant total de l'acquisition. Les gros montants (>200k€) révèlent une conviction forte de l'insider, particulièrement significatifs en small/micro-cap." wide />
+              </h3>
               <GroupChart data={data.byAmount} horizon={groupHorizon} height={200} />
             </div>
             <div className="card p-4">
-              <h3 className="text-sm font-semibold text-primary mb-4">Saisonnalité — {HORIZON_LABEL}</h3>
+              <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
+                Saisonnalité · {HORIZON_LABEL}
+                <InfoTip text="Répartition des retours par saison. Avr-Mai coïncide avec la publication des résultats annuels : les insiders achètent après avoir confirmé les chiffres en interne." wide />
+              </h3>
               <GroupChart data={data.bySeason} horizon={groupHorizon} height={180} />
             </div>
             <div className="card p-4">
-              <h3 className="text-sm font-semibold text-primary mb-4">% de la capitalisation — {HORIZON_LABEL}</h3>
+              <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
+                % de la capitalisation · {HORIZON_LABEL}
+                <InfoTip text="Montant / market cap de la société. Un achat >0.5% de la capitalisation par un dirigeant est un signal de conviction forte. >2% est exceptionnel." wide />
+              </h3>
               <GroupChart data={data.byMcapPct} horizon={groupHorizon} height={180} />
             </div>
           </div>
 
           {/* Scatter: score vs return */}
           <div className="card p-4">
-            <h3 className="text-sm font-semibold text-primary mb-4">Score de signal vs retour T+90 (par insider)</h3>
+            <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
+              Score de signal vs retour T+90 (par insider)
+              <InfoTip text="Chaque point = un trade historique. L'axe Y = retour 90j après l'achat. Un nuage orienté vers le haut-droite confirme la corrélation score → performance." wide />
+            </h3>
             <ResponsiveContainer width="100%" height={280}>
               <ScatterChart margin={{ top: 4, right: 20, bottom: 4, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -753,17 +1069,26 @@ export default function BacktestDashboard() {
       {/* TAB: Signaux                                                   */}
       {/* ═══════════════════════════════════════════════════════════════ */}
       {tab === "signals" && (
-        <div className="card p-4 md:p-6">
-          <div className="flex items-start justify-between mb-5">
-            <div>
-              <h3 className="text-base font-semibold text-primary">Classement des signaux</h3>
-              <p className="text-xs text-muted mt-1">
-                {data.signalCombos.length} combinaisons analysées sur {data.total} transactions historiques · triées par Sharpe (régularité du signal)
-              </p>
+        !isAuth ? (
+          <FreemiumLock feature="le classement complet des signaux (23 combinaisons)">
+            <div className="card p-4 md:p-6">
+              <h3 className="text-base font-semibold text-primary mb-4">Classement des signaux</h3>
+              <SignalsTable combos={data.signalCombos.slice(0, 8)} />
             </div>
+          </FreemiumLock>
+        ) : (
+          <div className="card p-4 md:p-6">
+            <div className="flex items-start justify-between mb-5">
+              <div>
+                <h3 className="text-base font-semibold text-primary">Classement des signaux</h3>
+                <p className="text-xs text-muted mt-1">
+                  {data.signalCombos.length} combinaisons analysées sur {data.total} transactions historiques · triées par Sharpe (régularité du signal)
+                </p>
+              </div>
+            </div>
+            <SignalsTable combos={data.signalCombos} />
           </div>
-          <SignalsTable combos={data.signalCombos} />
-        </div>
+        )
       )}
 
       {/* ═══════════════════════════════════════════════════════════════ */}
@@ -771,6 +1096,7 @@ export default function BacktestDashboard() {
       {/* ═══════════════════════════════════════════════════════════════ */}
       {tab === "behaviors" && (
         <div className="space-y-6">
+          {/* Horizon picker synced with global */}
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted">Horizon :</span>
             {HORIZONS.map((h) => (
@@ -790,34 +1116,46 @@ export default function BacktestDashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="card p-4">
-              <h3 className="text-sm font-semibold text-primary mb-4">Patterns comportementaux — {HORIZON_LABEL}</h3>
+              <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
+                Patterns comportementaux · {HORIZON_LABEL}
+                <InfoTip text="DCA = achat répété (≥2 fois en 12 mois). Cluster = 2+ insiders distincts achètent dans les 30 jours. Cascade = 4+ insiders. Premier achat = jamais acheté auparavant." wide />
+              </h3>
               <GroupChart data={data.byBehavior} horizon={groupHorizon} height={240} />
             </div>
 
             <div className="card p-4">
-              <h3 className="text-sm font-semibold text-primary mb-4">Profondeur du cluster — {HORIZON_LABEL}</h3>
+              <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
+                Profondeur du cluster · {HORIZON_LABEL}
+                <InfoTip text="Nombre d'insiders distincts ayant acheté la même société dans les 30 jours. Plus il y en a, plus le signal de conviction collective est fort." wide />
+              </h3>
               <GroupChart data={data.byClusterDepth} horizon={groupHorizon} height={200} />
             </div>
           </div>
 
           {/* Behavior detail table */}
           <div className="card p-4">
-            <h3 className="text-sm font-semibold text-primary mb-4">Détail par comportement — tous horizons</h3>
+            <h3 className="text-sm font-semibold text-primary mb-4">Détail par comportement · tous horizons</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-soft">
                     <th className="text-left pb-2 text-xs text-muted font-medium">Comportement</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">N</th>
+                    <th className="text-center pb-2 text-xs text-muted font-medium">
+                      N <InfoTip text="Nombre de trades dans ce groupe." />
+                    </th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">T+30</th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">T+60</th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">T+90</th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">T+160</th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">T+365</th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">T+2ans</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">Win/90j</th>
+                    <th className="text-center pb-2 text-xs text-muted font-medium">
+                      Win/90j <InfoTip text="% trades positifs à T+90." />
+                    </th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">Win/1an</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">Sharpe</th>
+                    <th className="text-center pb-2 text-xs text-muted font-medium">
+                      Sharpe <InfoTip text="Rendement moyen T+90 / écart-type. Mesure la constance du signal." wide />
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -909,21 +1247,40 @@ export default function BacktestDashboard() {
       {/* TAB: Top trades                                                 */}
       {/* ═══════════════════════════════════════════════════════════════ */}
       {tab === "trades" && (
-        <div className="card p-4 md:p-6">
-          <div className="mb-4">
-            <h3 className="text-base font-semibold text-primary">Top 30 trades historiques</h3>
-            <p className="text-xs text-muted mt-1">
-              Les meilleures transactions d&apos;initiés classées par retour sur investissement
-            </p>
+        !isAuth ? (
+          <FreemiumLock feature="les 30 meilleures transactions avec noms des entreprises">
+            <div className="card p-4 md:p-6">
+              <h3 className="text-base font-semibold text-primary mb-2">Top 30 trades historiques</h3>
+              <TopTradesTable trades={data.topTrades} />
+            </div>
+          </FreemiumLock>
+        ) : (
+          <div className="card p-4 md:p-6">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-primary">Top 30 trades historiques</h3>
+              <p className="text-xs text-muted mt-1">
+                Les meilleures transactions d&apos;initiés classées par retour sur investissement
+              </p>
+            </div>
+            <TopTradesTable trades={data.topTrades} />
           </div>
-          <TopTradesTable trades={data.topTrades} />
-        </div>
+        )
       )}
 
       {/* ═══════════════════════════════════════════════════════════════ */}
       {/* TAB: Ventes / Signal baissier                                  */}
       {/* ═══════════════════════════════════════════════════════════════ */}
       {tab === "sells" && data.sellStats && (
+        !isAuth ? (
+          <FreemiumLock feature="l'analyse détaillée des signaux de vente par rôle et entreprise">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-2">
+              <KpiCard label="Ventes analysées" value={data.sellStats.count.toLocaleString("fr")} />
+              <KpiCard label="Précision T+90" value={data.sellStats.accuracy90d != null ? `${data.sellStats.accuracy90d.toFixed(0)}%` : "—"} accent={(data.sellStats.accuracy90d ?? 0) > 50} />
+              <KpiCard label="Précision T+365" value={data.sellStats.accuracy365d != null ? `${data.sellStats.accuracy365d.toFixed(0)}%` : "—"} accent={(data.sellStats.accuracy365d ?? 0) > 50} />
+              <KpiCard label="Retour T+90" value={data.sellStats.avgReturn90d != null ? `${data.sellStats.avgReturn90d > 0 ? "+" : ""}${data.sellStats.avgReturn90d.toFixed(1)}%` : "—"} />
+            </div>
+          </FreemiumLock>
+        ) : (
         <div className="space-y-6">
 
           {/* Sell KPI strip */}
@@ -1043,6 +1400,7 @@ export default function BacktestDashboard() {
             </div>
           </div>
         </div>
+        )
       )}
 
       {/* ═══════════════════════════════════════════════════════════════ */}
@@ -1050,7 +1408,7 @@ export default function BacktestDashboard() {
       {/* ═══════════════════════════════════════════════════════════════ */}
       {tab === "evolution" && (
         <div className="space-y-6">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-muted">Horizon :</span>
             {HORIZONS.map((h) => (
               <button
@@ -1065,53 +1423,111 @@ export default function BacktestDashboard() {
                 {h.label}
               </button>
             ))}
+            <InfoTip
+              text="Les années affichées correspondent à la date de transaction effective (corrigée des erreurs PDF). Seules les années 2006–aujourd'hui avec au moins 2 trades sont affichées."
+              wide
+            />
           </div>
 
-          <div className="card p-4">
-            <h3 className="text-sm font-semibold text-primary mb-4">Retour moyen par année de transaction — {HORIZON_LABEL}</h3>
-            <GroupChart data={data.byYear} horizon={groupHorizon} height={260} />
-          </div>
+          {/* Filter to plausible AMF years: 2006 → current year */}
+          {(() => {
+            const currentYear = new Date().getFullYear();
+            const validYears = Object.entries(data.byYear).filter(([y, s]) => {
+              const yr = Number(y);
+              return yr >= 2006 && yr <= currentYear && s.count >= 2;
+            });
+            const anomalousCnt = Object.entries(data.byYear).filter(([y]) => {
+              const yr = Number(y);
+              return yr < 2006 || yr > currentYear;
+            }).reduce((acc, [, s]) => acc + s.count, 0);
 
-          {/* Year detail table */}
-          <div className="card p-4">
-            <h3 className="text-sm font-semibold text-primary mb-4">Détail année par année — tous horizons</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-soft">
-                    <th className="text-left pb-2 text-xs text-muted font-medium">Année</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">Trades</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">T+30</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">T+60</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">T+90</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">T+160</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">T+365</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">T+2ans</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">Win%</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">Sharpe</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(data.byYear)
-                    .sort(([a], [b]) => Number(b) - Number(a))
-                    .map(([year, stats]) => (
-                      <tr key={year} className="border-b border-soft/50 hover:bg-surface/50 transition-colors">
-                        <td className="py-2 font-bold font-mono text-primary">{year}</td>
-                        <td className="py-2 text-center text-xs font-mono text-secondary">{stats.count}</td>
-                        <td className="py-2 text-center"><ReturnPill v={stats.avgReturn30d} /></td>
-                        <td className="py-2 text-center"><ReturnPill v={stats.avgReturn60d} /></td>
-                        <td className="py-2 text-center"><ReturnPill v={stats.avgReturn90d} /></td>
-                        <td className="py-2 text-center"><ReturnPill v={stats.avgReturn160d} /></td>
-                        <td className="py-2 text-center"><ReturnPill v={stats.avgReturn365d} /></td>
-                        <td className="py-2 text-center"><ReturnPill v={stats.avgReturn730d} /></td>
-                        <td className="py-2 text-center"><WinBadge w={stats.winRate90d} /></td>
-                        <td className="py-2 text-center"><SharpeBadge s={stats.sharpe90d} /></td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+            return (
+              <>
+                {anomalousCnt > 0 && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
+                    style={{ background: "var(--c-amber-bg)", border: "1px solid var(--c-amber-bd)", color: "var(--c-amber)" }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span>
+                      <strong>{anomalousCnt} trades</strong> avec une date de transaction aberrante (erreurs de parsing PDF) ont été exclus de cet onglet.
+                      Ils sont correctement inclus dans les calculs de performance, seul l'affichage "par année" les masque.
+                    </span>
+                  </div>
+                )}
+
+                <div className="card p-4">
+                  <h3 className="text-sm font-semibold text-primary mb-4">
+                    Retour moyen par année de transaction · {HORIZON_LABEL}
+                  </h3>
+                  <GroupChart
+                    data={Object.fromEntries(validYears)}
+                    horizon={groupHorizon}
+                    height={260}
+                  />
+                </div>
+
+                <div className="card p-4">
+                  <h3 className="text-sm font-semibold text-primary mb-4">Détail année par année · tous horizons</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm table-zebra">
+                      <thead>
+                        <tr className="border-b border-soft">
+                          <th className="text-left pb-2 text-xs text-muted font-medium">Année</th>
+                          <th className="text-center pb-2 text-xs text-muted font-medium">Trades</th>
+                          <th className="text-center pb-2 text-xs text-muted font-medium">T+30</th>
+                          <th className="text-center pb-2 text-xs text-muted font-medium">T+60</th>
+                          <th className="text-center pb-2 text-xs text-muted font-medium">T+90</th>
+                          <th className="text-center pb-2 text-xs text-muted font-medium">T+160</th>
+                          <th className="text-center pb-2 text-xs text-muted font-medium">T+365</th>
+                          <th className="text-center pb-2 text-xs text-muted font-medium">T+2ans</th>
+                          <th className="text-center pb-2 text-xs text-muted font-medium">
+                            Win% <InfoTip text="% trades positifs à T+90." />
+                          </th>
+                          <th className="text-center pb-2 text-xs text-muted font-medium">
+                            Sharpe <InfoTip text="Rendement T+90 / écart-type." />
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {validYears
+                          .sort(([a], [b]) => Number(b) - Number(a))
+                          .map(([year, stats]) => {
+                            const isCurrentYear = Number(year) === currentYear;
+                            return (
+                              <tr key={year} className={`border-b border-soft/50 hover:bg-surface/50 transition-colors ${isCurrentYear ? "font-semibold" : ""}`}>
+                                <td className="py-2 font-bold font-mono text-primary flex items-center gap-1.5">
+                                  {year}
+                                  {isCurrentYear && (
+                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                                      style={{ background: "var(--c-mint-bg)", color: "var(--c-mint)", border: "1px solid var(--c-mint-bd)" }}>
+                                      en cours
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="py-2 text-center text-xs font-mono text-secondary">{stats.count.toLocaleString("fr")}</td>
+                                <td className="py-2 text-center"><ReturnPill v={stats.avgReturn30d} /></td>
+                                <td className="py-2 text-center"><ReturnPill v={stats.avgReturn60d} /></td>
+                                <td className="py-2 text-center"><ReturnPill v={stats.avgReturn90d} /></td>
+                                <td className="py-2 text-center"><ReturnPill v={stats.avgReturn160d} /></td>
+                                <td className="py-2 text-center"><ReturnPill v={stats.avgReturn365d} /></td>
+                                <td className="py-2 text-center"><ReturnPill v={stats.avgReturn730d} /></td>
+                                <td className="py-2 text-center"><WinBadge w={stats.winRate90d} /></td>
+                                <td className="py-2 text-center"><SharpeBadge s={stats.sharpe90d} /></td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-xs text-muted mt-3">
+                    Années 2006–{currentYear} · {validYears.length} années avec ≥2 trades affichées.
+                    {anomalousCnt > 0 && ` · ${anomalousCnt} trades exclus (dates aberrantes).`}
+                  </p>
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
     </div>

@@ -50,6 +50,8 @@ model Company {
   // ── Misc ───────────────────────────────────────────────────────────────
   marketCapAt  DateTime? // kept for compat
   yahooSymbol  String?   // cached Yahoo Finance symbol
+  logoUrl      String?   // self-hosted logo (Vercel Blob CDN)
+  logoSource   String?   // clearbit | google_favicon | scraped | openai | manual
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -165,17 +167,41 @@ enum DeclarationType {
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
-  name          String?
+  name          String?   // display name (legacy / fallback)
+  firstName     String?   // prénom
+  lastName      String?   // nom de famille
   password      String
   emailVerified DateTime?
   verifyToken   String?   @unique
   resetToken    String?   @unique
   resetTokenExp DateTime?
-  role          String    @default("user")
+  role          String    @default("user")   // "user" | "admin"
+  isBanned      Boolean   @default(false)    // admin can revoke access
+  bannedAt      DateTime?
+  bannedReason  String?
+  alertEnabled  Boolean   @default(true)
+  lastAlertAt   DateTime?
+  lastLoginAt   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   positions PortfolioPosition[]
+  alerts    UserAlert[]
+}
+
+model UserAlert {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  declarationId String?  // linked declaration if applicable
+  type          String   // "GENERAL_SIGNAL" | "PORTFOLIO_MATCH" | "CLUSTER"
+  title         String
+  message       String
+  sentAt        DateTime @default(now())
+  readAt        DateTime?
+
+  @@index([userId])
+  @@index([declarationId])
 }
 
 model PortfolioPosition {

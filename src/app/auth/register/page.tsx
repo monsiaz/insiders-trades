@@ -3,25 +3,53 @@
 import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { LogoMark } from "@/components/Logo";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({
+    firstName: "", lastName: "", email: "", password: "", confirm: "",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
 
-  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const strength = (() => {
+    const p = form.password;
+    if (!p) return 0;
+    let s = 0;
+    if (p.length >= 8) s++;
+    if (p.length >= 12) s++;
+    if (/[A-Z]/.test(p)) s++;
+    if (/[0-9]/.test(p)) s++;
+    if (/[^a-zA-Z0-9]/.test(p)) s++;
+    return s;
+  })();
+
+  const strengthLabel = ["", "Faible", "Moyen", "Bon", "Fort", "Excellent"][strength];
+  const strengthColor = ["", "var(--c-crimson)", "var(--c-amber)", "var(--c-amber)", "var(--c-emerald)", "var(--c-emerald)"][strength];
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
+    if (!form.firstName.trim()) { setError("Le prénom est requis"); return; }
+    if (!form.lastName.trim()) { setError("Le nom est requis"); return; }
     if (form.password !== form.confirm) { setError("Les mots de passe ne correspondent pas"); return; }
+    if (form.password.length < 8) { setError("Mot de passe trop court (8 caractères minimum)"); return; }
     setLoading(true);
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, password: form.password, name: form.name }),
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          firstName: form.firstName,
+          lastName: form.lastName,
+        }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Erreur"); return; }
@@ -33,64 +61,226 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: "var(--bg-base)" }}>
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="inline-flex flex-col items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-              style={{ background: "var(--c-indigo)", boxShadow: "0 4px 20px rgba(91,92,246,0.35)" }}>
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                <path d="M6 27 L14 27" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeOpacity="0.5"/>
-                <path d="M14 27 L20 10 L26 27" stroke="white" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M26 27 L34 27" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeOpacity="0.5"/>
-                <circle cx="20" cy="10" r="3" fill="#00C896"/>
-                <circle cx="20" cy="10" r="1.4" fill="white"/>
-              </svg>
-            </div>
-            <span className="text-xl font-bold tracking-tight" style={{ color: "var(--tx-1)" }}>InsiderTrades</span>
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "24px 16px",
+      background: "var(--bg-base)",
+    }}>
+      <div style={{ width: "100%", maxWidth: "420px" }}>
+
+        {/* Logo + header */}
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
+            <LogoMark size={48} />
           </div>
-          <h1 className="text-2xl font-bold mb-1 mt-4" style={{ color: "var(--tx-1)" }}>Créer un compte</h1>
-          <p className="text-sm" style={{ color: "var(--tx-3)" }}>Suivez vos positions et recevez des alertes</p>
+          <h1 style={{
+            fontFamily: "'Banana Grotesk', 'Inter', system-ui, sans-serif",
+            fontSize: "1.75rem",
+            fontWeight: 700,
+            letterSpacing: "-0.035em",
+            color: "var(--tx-1)",
+            marginBottom: "6px",
+          }}>
+            Créer un compte
+          </h1>
+          <p style={{ fontFamily: "'Inter', system-ui", fontSize: "0.875rem", color: "var(--tx-3)" }}>
+            Accédez aux signaux, recommandations et alertes
+          </p>
         </div>
 
-        <div className="glass-card rounded-2xl p-6" style={{ boxShadow: "var(--shadow-md)" }}>
-          <form onSubmit={onSubmit} className="space-y-4">
+        {/* Card */}
+        <div className="card" style={{ padding: "28px 28px 24px" }}>
+          <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
             {error && (
-              <div className="rounded-xl px-4 py-3 text-sm"
-                style={{ background: "var(--c-red-bg)", border: "1px solid var(--c-red-bd)", color: "var(--c-red)" }}>
+              <div style={{
+                borderRadius: "10px",
+                padding: "10px 14px",
+                fontSize: "0.84rem",
+                fontFamily: "'Inter', system-ui",
+                background: "var(--c-crimson-bg)",
+                border: "1px solid var(--c-crimson-bd)",
+                color: "var(--c-crimson)",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
                 {error}
               </div>
             )}
-            {[
-              { label: "Nom (optionnel)", key: "name", type: "text", auto: "name", placeholder: "Votre prénom" },
-              { label: "Email", key: "email", type: "email", auto: "email", placeholder: "vous@exemple.com" },
-              { label: "Mot de passe", key: "password", type: "password", auto: "new-password", placeholder: "8 caractères minimum" },
-              { label: "Confirmer le mot de passe", key: "confirm", type: "password", auto: "new-password", placeholder: "••••••••" },
-            ].map(({ label, key, type, auto, placeholder }) => (
-              <div key={key}>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: "var(--tx-2)" }}>{label}</label>
-                <input type={type} value={form[key as keyof typeof form]} onChange={set(key)}
-                  autoComplete={auto} required={key !== "name"}
-                  className="w-full rounded-xl px-4 py-2.5 text-sm"
-                  placeholder={placeholder} />
+
+            {/* Prénom + Nom côte à côte */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <FieldGroup label="Prénom" required>
+                <input
+                  type="text"
+                  value={form.firstName}
+                  onChange={set("firstName")}
+                  autoComplete="given-name"
+                  required
+                  placeholder="Marie"
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: "10px" }}
+                />
+              </FieldGroup>
+              <FieldGroup label="Nom" required>
+                <input
+                  type="text"
+                  value={form.lastName}
+                  onChange={set("lastName")}
+                  autoComplete="family-name"
+                  required
+                  placeholder="Dupont"
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: "10px" }}
+                />
+              </FieldGroup>
+            </div>
+
+            <FieldGroup label="Adresse email" required>
+              <input
+                type="email"
+                value={form.email}
+                onChange={set("email")}
+                autoComplete="email"
+                required
+                placeholder="vous@exemple.com"
+                style={{ width: "100%", padding: "9px 12px", borderRadius: "10px" }}
+              />
+            </FieldGroup>
+
+            <FieldGroup label="Mot de passe" required>
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showPwd ? "text" : "password"}
+                  value={form.password}
+                  onChange={set("password")}
+                  autoComplete="new-password"
+                  required
+                  placeholder="8 caractères minimum"
+                  style={{ width: "100%", padding: "9px 40px 9px 12px", borderRadius: "10px" }}
+                />
+                <button type="button" onClick={() => setShowPwd(v => !v)} style={{
+                  position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)",
+                  background: "none", border: "none", cursor: "pointer", color: "var(--tx-3)", padding: "2px",
+                }}>
+                  {showPwd
+                    ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                    : <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/></svg>
+                  }
+                </button>
               </div>
-            ))}
-            <button type="submit" disabled={loading}
-              className="btn btn-primary w-full py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50">
-              {loading ? "Création…" : "Créer mon compte"}
+              {/* Password strength bar */}
+              {form.password && (
+                <div style={{ marginTop: "6px" }}>
+                  <div style={{ display: "flex", gap: "3px", marginBottom: "4px" }}>
+                    {[1,2,3,4,5].map(i => (
+                      <div key={i} style={{
+                        flex: 1, height: "3px", borderRadius: "2px",
+                        background: i <= strength ? strengthColor : "var(--border-med)",
+                        transition: "background 0.2s",
+                      }} />
+                    ))}
+                  </div>
+                  <p style={{ fontSize: "0.72rem", color: strengthColor, fontFamily: "'Inter', system-ui", fontWeight: 500 }}>
+                    {strengthLabel}
+                  </p>
+                </div>
+              )}
+            </FieldGroup>
+
+            <FieldGroup label="Confirmer le mot de passe" required>
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showPwd ? "text" : "password"}
+                  value={form.confirm}
+                  onChange={set("confirm")}
+                  autoComplete="new-password"
+                  required
+                  placeholder="••••••••"
+                  style={{ width: "100%", padding: "9px 40px 9px 12px", borderRadius: "10px" }}
+                />
+                {form.confirm && (
+                  <span style={{
+                    position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)",
+                    color: form.password === form.confirm ? "var(--c-emerald)" : "var(--c-crimson)",
+                    fontSize: "0.85rem",
+                  }}>
+                    {form.password === form.confirm ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    ) : (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+                    )}
+                  </span>
+                )}
+              </div>
+            </FieldGroup>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-cta-gradient"
+              style={{ width: "100%", padding: "11px", fontSize: "0.9375rem", marginTop: "4px" }}
+            >
+              {loading ? (
+                <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ animation: "spin 1s linear infinite" }}>
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/>
+                    <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+                  </svg>
+                  Création…
+                </span>
+              ) : "Créer mon compte"}
             </button>
+
+            {/* Legal note */}
+            <p style={{
+              fontSize: "0.72rem",
+              color: "var(--tx-4)",
+              textAlign: "center",
+              fontFamily: "'Inter', system-ui",
+              lineHeight: 1.5,
+            }}>
+              En créant un compte, vous acceptez les conditions d&apos;utilisation et la politique de confidentialité.
+            </p>
           </form>
         </div>
 
-        <p className="text-center text-sm mt-4" style={{ color: "var(--tx-3)" }}>
+        <p style={{
+          textAlign: "center",
+          fontSize: "0.875rem",
+          color: "var(--tx-3)",
+          marginTop: "20px",
+          fontFamily: "'Inter', system-ui",
+        }}>
           Déjà un compte ?{" "}
-          <Link href="/auth/login" className="font-medium transition-colors"
-            style={{ color: "var(--c-indigo-2)" }}>
+          <Link href="/auth/login" style={{ color: "var(--c-indigo-2)", fontWeight: 600 }}>
             Se connecter
           </Link>
         </p>
+
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
+    </div>
+  );
+}
+
+function FieldGroup({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <div>
+      <label style={{
+        display: "block",
+        fontSize: "0.78rem",
+        fontWeight: 600,
+        fontFamily: "'Inter', system-ui",
+        color: "var(--tx-2)",
+        marginBottom: "6px",
+      }}>
+        {label}{required && <span style={{ color: "var(--c-crimson)", marginLeft: "2px" }}>*</span>}
+      </label>
+      {children}
     </div>
   );
 }

@@ -46,9 +46,9 @@ export function CompanyBacktestWidget({ companyId }: { companyId: string }) {
 
   if (loading) {
     return (
-      <div className="glass-card-static rounded-2xl p-5 animate-pulse">
-        <div className="h-4 bg-white/10 rounded w-48 mb-3" />
-        <div className="h-16 bg-white/5 rounded" />
+      <div className="card p-5" style={{ animation: "pulse 1.5s ease-in-out infinite" }}>
+        <div style={{ height: "14px", background: "var(--bg-raised)", borderRadius: "6px", width: "180px", marginBottom: "10px" }} />
+        <div style={{ height: "60px", background: "var(--bg-raised)", borderRadius: "8px" }} />
       </div>
     );
   }
@@ -64,45 +64,53 @@ export function CompanyBacktestWidget({ companyId }: { companyId: string }) {
     }));
 
   return (
-    <div className="glass-card-static rounded-2xl p-5 border border-indigo-500/10 bg-gradient-to-br from-indigo-500/5 to-transparent">
-      <div className="flex items-center justify-between mb-4">
+    <div className="card p-5">
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
         <div>
-          <h3 className="text-sm font-semibold text-white">Historique de performance</h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {data.count} achat{data.count > 1 ? "s" : ""} tracé{data.count > 1 ? "s" : ""} sur {new Set(data.points.map((p) => p.date.slice(0, 4))).size} an{new Set(data.points.map((p) => p.date.slice(0, 4))).size > 1 ? "s" : ""}
+          <h3 style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--tx-1)", margin: 0 }}>Historique de performance</h3>
+          <p style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "3px" }}>
+            {data.count} achat{data.count > 1 ? "s" : ""} tracé{data.count > 1 ? "s" : ""} · {new Set(data.points.map((p) => p.date.slice(0, 4))).size} ans de données
           </p>
         </div>
-        <Link href="/backtest" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+        <Link href="/backtest" style={{ fontSize: "0.75rem", color: "var(--c-indigo-2)", textDecoration: "none" }}>
           Backtesting →
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
         <div>
-          <div className={`text-lg font-bold tabular-nums ${data.avg90d != null && data.avg90d >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+          <div style={{
+            fontFamily: "'Banana Grotesk', monospace",
+            fontSize: "1.2rem", fontWeight: 700, letterSpacing: "-0.03em",
+            color: data.avg90d != null && data.avg90d >= 0 ? "var(--c-emerald)" : "var(--c-crimson)",
+          }}>
             {fmt(data.avg90d)}
           </div>
-          <div className="text-xs text-slate-500">Rendement moyen T+90</div>
+          <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "2px" }}>Rendement moyen T+90</div>
         </div>
         <div>
-          <div className="text-lg font-bold text-violet-400 tabular-nums">
+          <div style={{
+            fontFamily: "'Banana Grotesk', monospace",
+            fontSize: "1.2rem", fontWeight: 700, letterSpacing: "-0.03em",
+            color: "var(--c-indigo-2)",
+          }}>
             {data.winRate90d != null ? `${data.winRate90d.toFixed(0)}%` : "—"}
           </div>
-          <div className="text-xs text-slate-500">Taux de réussite</div>
+          <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "2px" }}>Taux de réussite</div>
         </div>
       </div>
 
       {chartData.length >= 3 && (
         <ResponsiveContainer width="100%" height={120}>
           <LineChart data={chartData} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="date" tick={{ fill: "#64748b", fontSize: 10 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "#64748b", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v > 0 ? "+" : ""}${v.toFixed(0)}%`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis dataKey="date" tick={{ fill: "var(--tx-4)", fontSize: 10 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: "var(--tx-4)", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v > 0 ? "+" : ""}${v.toFixed(0)}%`} />
             <Tooltip
-              contentStyle={{ background: "#0a0a1f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#f1f5f9", fontSize: 11 }}
+              contentStyle={{ background: "var(--bg-surface)", border: "1px solid var(--border-med)", borderRadius: 10, color: "var(--tx-1)", fontSize: 11 }}
               formatter={(v) => { const n = Number(v); return [`${n >= 0 ? "+" : ""}${n.toFixed(1)}%`, "T+90"]; }}
             />
-            <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" />
+            <ReferenceLine y={0} stroke="var(--border-strong)" />
             <Line
               type="monotone"
               dataKey="return90d"

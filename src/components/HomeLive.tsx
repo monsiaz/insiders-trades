@@ -5,6 +5,166 @@ import Link from "next/link";
 import { DeclarationCard } from "./DeclarationCard";
 import { FileText, Building2, User, TrendingUp, TrendingDown } from "lucide-react";
 
+// ── Data freshness bar ─────────────────────────────────────────────────────
+
+function DataFreshnessBar({
+  lastAmfDate,
+  todayCount,
+  loading,
+  onRefresh,
+}: {
+  lastAmfDate: string | null;
+  todayCount: number;
+  loading: boolean;
+  onRefresh: () => void;
+}) {
+  const [now, setNow] = useState(() => new Date());
+
+  // Tick every 30s to keep countdown live
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Next sync = next full hour (cron: 0 * * * *)
+  const nextSync = new Date(now);
+  nextSync.setHours(now.getHours() + 1, 0, 0, 0);
+  const msUntilSync = nextSync.getTime() - now.getTime();
+  const minUntilSync = Math.ceil(msUntilSync / 60_000);
+
+  // Freshness status
+  let freshnessColor = "var(--c-emerald)";
+  let freshnessLabel = "À jour";
+  let freshnessAge = "";
+
+  if (lastAmfDate) {
+    const ageMs = now.getTime() - new Date(lastAmfDate).getTime();
+    const ageH = ageMs / 3_600_000;
+    const ageD = ageMs / 86_400_000;
+
+    if (ageH < 4) {
+      freshnessColor = "var(--c-emerald)";
+      freshnessLabel = "À jour";
+    } else if (ageD < 1.5) {
+      freshnessColor = "var(--c-amber)";
+      freshnessLabel = "Récent";
+    } else if (ageD < 3.5) {
+      // Weekend gap is normal
+      freshnessColor = "var(--c-amber)";
+      freshnessLabel = "Week-end";
+    } else {
+      freshnessColor = "var(--c-crimson)";
+      freshnessLabel = "Ancien";
+    }
+
+    const d = new Date(lastAmfDate);
+    const isToday = d.toDateString() === now.toDateString();
+    const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+    const isYesterday = d.toDateString() === yesterday.toDateString();
+
+    if (isToday) {
+      freshnessAge = `aujourd'hui à ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+    } else if (isYesterday) {
+      freshnessAge = `hier à ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+    } else {
+      freshnessAge = d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }) +
+        ` à ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+    }
+  }
+
+  return (
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      flexWrap: "wrap",
+      gap: "10px",
+      padding: "10px 16px",
+      borderRadius: "12px",
+      background: "var(--bg-raised)",
+      border: "1px solid var(--border)",
+      marginBottom: "20px",
+      fontSize: "0.78rem",
+      fontFamily: "'Inter', system-ui",
+    }}>
+      {/* Left: data status */}
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+        {/* Freshness dot + label */}
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <span style={{
+            width: "7px", height: "7px", borderRadius: "50%",
+            background: freshnessColor,
+            boxShadow: `0 0 6px ${freshnessColor}`,
+            flexShrink: 0,
+            animation: loading ? "none" : "pulse-dot 2.5s ease-in-out infinite",
+          }} />
+          <span style={{ fontWeight: 700, color: freshnessColor }}>{freshnessLabel}</span>
+        </div>
+
+        {/* Separator */}
+        <span style={{ color: "var(--border-strong)", fontSize: "0.7rem" }}>·</span>
+
+        {/* Last data timestamp */}
+        {lastAmfDate ? (
+          <span style={{ color: "var(--tx-3)" }}>
+            Dernière donnée AMF :{" "}
+            <span style={{ color: "var(--tx-2)", fontWeight: 500 }}>{freshnessAge}</span>
+          </span>
+        ) : (
+          <span style={{ color: "var(--tx-4)" }}>Aucune donnée</span>
+        )}
+
+        {/* Today count */}
+        {todayCount > 0 && (
+          <>
+            <span style={{ color: "var(--border-strong)", fontSize: "0.7rem" }}>·</span>
+            <span style={{ color: "var(--c-emerald)", fontWeight: 600 }}>
+              +{todayCount} aujourd'hui
+            </span>
+          </>
+        )}
+      </div>
+
+      {/* Right: next sync + refresh button */}
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <span style={{ color: "var(--tx-4)" }}>
+          Prochain refresh :{" "}
+          <span style={{ color: "var(--tx-3)", fontWeight: 500 }}>
+            {minUntilSync <= 1 ? "moins d'1 min" : `dans ${minUntilSync} min`}
+          </span>
+        </span>
+        <button
+          onClick={onRefresh}
+          disabled={loading}
+          title="Forcer un rafraîchissement"
+          style={{
+            display: "flex", alignItems: "center", gap: "5px",
+            padding: "4px 10px", borderRadius: "7px",
+            border: "1px solid var(--border-med)",
+            background: "var(--bg-hover)",
+            color: loading ? "var(--tx-4)" : "var(--tx-2)",
+            cursor: loading ? "not-allowed" : "pointer",
+            fontFamily: "'Inter', system-ui",
+            fontSize: "0.75rem",
+            fontWeight: 500,
+            transition: "all 0.15s",
+          }}
+        >
+          <svg
+            width="11" height="11" viewBox="0 0 24 24" fill="none"
+            style={{ animation: loading ? "spin 1s linear infinite" : "none" }}
+          >
+            <path d="M23 4v6h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M1 20v-6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          {loading ? "Sync…" : "Actualiser"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 interface Stats {
@@ -35,6 +195,8 @@ type Declaration = any;
 
 interface HomeData {
   stats: Stats;
+  lastAmfDate: string | null;
+  todayCount: number;
   recentDeclarations: Declaration[];
   topCompanies: TopCompany[];
   topInsiders: TopInsider[];
@@ -100,10 +262,18 @@ export function HomeLive({ initial }: { initial: HomeData }) {
     };
   }, [refresh]);
 
-  const { stats, recentDeclarations, topCompanies, topInsiders } = data;
+  const { stats, lastAmfDate, todayCount, recentDeclarations, topCompanies, topInsiders } = data;
 
   return (
     <>
+      {/* Data freshness bar */}
+      <DataFreshnessBar
+        lastAmfDate={lastAmfDate}
+        todayCount={todayCount}
+        loading={loading}
+        onRefresh={refresh}
+      />
+
       {/* Stats grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-14 animate-fade-in-delay">
         <StatTile label="Déclarations" value={stats.totalDeclarations.toLocaleString("fr-FR")} icon={<FileText size={15} strokeWidth={1.8} />} accent="indigo" />
@@ -200,26 +370,12 @@ export function HomeLive({ initial }: { initial: HomeData }) {
             <h2 className="text-xl font-semibold text-white tracking-tight">
               Dernières transactions
             </h2>
-            <div className="flex items-center gap-3">
-              {/* Live indicator */}
-              <button
-                onClick={refresh}
-                disabled={loading}
-                className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors disabled:opacity-50"
-                title="Rafraîchir"
-              >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${loading ? "bg-amber-400 animate-pulse" : "bg-emerald-500 animate-pulse"}`}
-                />
-                {loading ? "Actualisation…" : `Actualisé ${timeAgo(lastRefresh)}`}
-              </button>
-              <Link
-                href="/companies"
-                className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
-              >
-                Toutes les sociétés →
-              </Link>
-            </div>
+            <Link
+              href="/companies"
+              className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
+            >
+              Toutes les sociétés →
+            </Link>
           </div>
           <div className="space-y-2">
             {recentDeclarations.map((decl: Declaration) => (

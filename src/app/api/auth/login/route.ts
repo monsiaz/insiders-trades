@@ -20,6 +20,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email ou mot de passe incorrect" }, { status: 401 });
     }
 
+    if (user.isBanned) {
+      return NextResponse.json({ error: "Accès révoqué. Contactez le support." }, { status: 403 });
+    }
+
+    // Update lastLoginAt
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+
     const token = await createSession({ userId: user.id, email: user.email, name: user.name, role: user.role });
     await setSessionCookie(token);
 

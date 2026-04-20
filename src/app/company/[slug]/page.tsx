@@ -8,6 +8,7 @@ import { StockChart } from "@/components/StockChart";
 import { CompanyFinancials } from "@/components/CompanyFinancials";
 import { CompanyBacktestWidget } from "@/components/CompanyBacktestWidget";
 import { DeclarationType } from "@prisma/client";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 export const dynamic = "force-dynamic";
 
@@ -121,10 +122,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
       <div className="glass-card-static rounded-3xl p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold flex-shrink-0"
-              style={{ background: "var(--c-indigo-bg)", border: "1px solid var(--c-indigo-bd)", color: "var(--c-indigo-2)" }}>
-              {company.name.charAt(0)}
-            </div>
+            <CompanyLogo name={company.name} logoUrl={company.logoUrl} size={56} />
             <div>
               <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--tx-1)" }}>{company.name}</h1>
               <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -167,19 +165,19 @@ export default async function CompanyPage({ params, searchParams }: Props) {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <MiniStat label="Déclarations DD" value={(typeMap["DIRIGEANTS"] || 0).toLocaleString("fr-FR")} accent="indigo" />
-        <MiniStat label="Seuils" value={(typeMap["SEUILS"] || 0).toLocaleString("fr-FR")} accent="sky" />
+        <MiniStat label="Déclarations DD" value={(typeMap["DIRIGEANTS"] || 0).toLocaleString("fr-FR")} />
+        <MiniStat label="Seuils" value={(typeMap["SEUILS"] || 0).toLocaleString("fr-FR")} />
         <MiniStat
           label="Volume achat"
           value={formatAmount(buyTotal._sum.totalAmount)}
           sub={`${buyTotal._count} opér.`}
-          accent="emerald"
+          sentiment="positive"
         />
         <MiniStat
           label="Volume vente"
           value={formatAmount(sellTotal._sum.totalAmount)}
           sub={`${sellTotal._count} opér.`}
-          accent="rose"
+          sentiment="negative"
         />
       </div>
 
@@ -318,25 +316,28 @@ function MiniStat({
   label,
   value,
   sub,
-  accent,
+  sentiment,
 }: {
   label: string;
   value: string;
   sub?: string;
-  accent: "indigo" | "sky" | "emerald" | "rose";
+  sentiment?: "positive" | "negative";
 }) {
-  const borderMap: Record<string, string> = {
-    indigo: "var(--c-indigo)",
-    sky:    "var(--c-indigo-2)",
-    emerald: "var(--c-mint)",
-    rose:   "var(--c-red)",
-  };
+  const valueColor = sentiment === "positive" ? "var(--c-emerald)"
+    : sentiment === "negative" ? "var(--c-crimson)"
+    : "var(--tx-1)";
+
   return (
-    <div className="glass-card-static rounded-2xl p-4"
-      style={{ borderTop: `3px solid ${borderMap[accent]}` }}>
-      <div className="text-xl font-bold tracking-tight" style={{ color: "var(--tx-1)" }}>{value}</div>
-      {sub && <div className="text-xs mt-0.5" style={{ color: "var(--tx-3)" }}>{sub}</div>}
-      <div className="text-xs mt-1" style={{ color: "var(--tx-3)" }}>{label}</div>
+    <div className="card p-4">
+      <div style={{
+        fontFamily: "'Banana Grotesk', 'Inter', monospace",
+        fontSize: "1.2rem", fontWeight: 700, letterSpacing: "-0.03em",
+        color: valueColor, lineHeight: 1.2,
+      }}>
+        {value}
+      </div>
+      {sub && <div style={{ fontSize: "0.7rem", color: "var(--tx-4)", marginTop: "2px" }}>{sub}</div>}
+      <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "5px", fontWeight: 500 }}>{label}</div>
     </div>
   );
 }

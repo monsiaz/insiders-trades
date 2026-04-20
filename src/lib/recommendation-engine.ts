@@ -1,0 +1,354 @@
+/**
+ * Recommendation Engine — InsiderTrades
+ *
+ * Scores recent BUY (and optionally SELL) insider declarations to produce
+ * actionable top-N recommendations. The composite score blends:
+ *
+ *   [30pts] Signal score         — existing pipeline score (0-100)
+ *   [25pts] Historical win rate  — from BacktestResult for the same role+size bucket
+ *   [20pts] Expected return T+90 — avg return from backtest for the bucket
+ *   [15pts] Recency              — exponential decay from pubDate (half-life 21d)
+ *   [10pts] Conviction bonus     — cluster / cascade / high % of market cap
+ *
+ * Total: 100 pts max.
+ */
+
+import { prisma } from "./prisma";
+import { normalizeRole } from "./role-utils";
+
+// ── Helpers (mirrored from backtest stats route) ──────────────────────────────
+
+export function roleLabelForReco(fn: string | null): string {
+  return normalizeRole(fn);
+}
+
+function sizeLabelForReco(mcap: bigint | number | null | undefined): string {
+  if (mcap == null) return "Unknown";
+  const mc = Number(mcap);
+  if (!mc) return "Unknown";
+  if (mc < 50_000_000)    return "Micro";
+  if (mc < 300_000_000)   return "Small";
+  if (mc < 2_000_000_000) return "Mid";
+  if (mc < 10_000_000_000) return "Large";
+  return "Mega";
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+export interface RecoItem {
+  declarationId: string;
+  action: "BUY" | "SELL";
+  company: { name: string; slug: string; yahooSymbol: string | null };
+  insider: { name: string | null; function: string | null; role: string };
+  totalAmount: number | null;
+  pctOfMarketCap: number | null;
+  signalScore: number | null;
+  pubDate: string;
+  transactionDate: string | null;
+  isin: string | null;
+  isCluster: boolean;
+  amfLink: string;
+
+  // Scoring
+  recoScore: number;           // 0–100
+  scoreBreakdown: {
+    signalPts:    number;
+    winRatePts:   number;
+    returnPts:    number;
+    recencyPts:   number;
+    convictionPts: number;
+  };
+  expectedReturn90d: number | null;   // from backtest bucket
+  historicalWinRate90d: number | null;
+  historicalAvgReturn365d: number | null;
+  sampleSize: number;                 // how many historical trades underpinned the stats
+
+  // Company context
+  marketCap: number | null;
+  size: string;
+  analystReco: string | null;
+  targetMean: number | null;
+  currentPrice: number | null;
+
+  // Badges surfaced in the UI
+  badges: string[];
+}
+
+interface BucketStats {
+  winRate90d: number | null;
+  avgReturn90d: number | null;
+  avgReturn365d: number | null;
+  count: number;
+}
+
+// ── Build historical lookup from BacktestResult ───────────────────────────────
+
+async function buildHistoricalLookup(): Promise<Map<string, BucketStats>> {
+  const rows = await prisma.backtestResult.findMany({
+    where: { priceAtTrade: { gt: 0 }, direction: "BUY" },
+    select: {
+      return90d: true,
+      return365d: true,
+      declaration: {
+        select: {
+          insiderFunction: true,
+          company: { select: { marketCap: true } },
+        },
+      },
+    },
+  });
+
+  // Bucket by role+size
+  const buckets = new Map<string, { r90: number[]; r365: number[] }>();
+  const addTo = (key: string, r90: number | null, r365: number | null) => {
+    if (!buckets.has(key)) buckets.set(key, { r90: [], r365: [] });
+    const b = buckets.get(key)!;
+    if (r90 != null) b.r90.push(r90);
+    if (r365 != null) b.r365.push(r365);
+  };
+
+  for (const row of rows) {
+    const role = roleLabelForReco(row.declaration.insiderFunction);
+    const size = sizeLabelForReco(row.declaration.company.marketCap);
+    addTo(`${role}::${size}`, row.return90d, row.return365d);
+    addTo(role, row.return90d, row.return365d);           // role-only fallback
+    addTo("overall", row.return90d, row.return365d);      // global fallback
+  }
+
+  const result = new Map<string, BucketStats>();
+  for (const [key, { r90, r365 }] of buckets) {
+    const wr = r90.length > 0 ? r90.filter((v) => v > 0).length / r90.length : null;
+    const avgR90 = r90.length > 0 ? r90.reduce((a, b) => a + b, 0) / r90.length : null;
+    const avgR365 = r365.length > 0 ? r365.reduce((a, b) => a + b, 0) / r365.length : null;
+    result.set(key, { winRate90d: wr ? wr * 100 : null, avgReturn90d: avgR90, avgReturn365d: avgR365, count: r90.length });
+  }
+  return result;
+}
+
+// ── Core scoring function ─────────────────────────────────────────────────────
+
+function scoreDeclaration(
+  decl: {
+    signalScore: number | null;
+    isCluster: boolean;
+    pctOfMarketCap: number | null;
+    pubDate: Date;
+    totalAmount: number | null;
+    insiderFunction: string | null;
+    company: { marketCap: bigint | null };
+  },
+  hist: Map<string, BucketStats>
+): {
+  recoScore: number;
+  scoreBreakdown: RecoItem["scoreBreakdown"];
+  expectedReturn90d: number | null;
+  historicalWinRate90d: number | null;
+  historicalAvgReturn365d: number | null;
+  sampleSize: number;
+} {
+  const role = roleLabelForReco(decl.insiderFunction);
+  const size = sizeLabelForReco(decl.company.marketCap);
+  const bucket =
+    hist.get(`${role}::${size}`) ??
+    hist.get(role) ??
+    hist.get("overall") ??
+    { winRate90d: 55, avgReturn90d: 4, avgReturn365d: 8, count: 0 };
+
+  // [30pts] Signal score
+  const signalPts = ((decl.signalScore ?? 30) / 100) * 30;
+
+  // [25pts] Historical win rate (normalised to 0–25, ref: 50%=12.5, 80%=25)
+  const wr = bucket.winRate90d ?? 55;
+  const winRatePts = Math.min(Math.max((wr - 30) / 50, 0), 1) * 25;
+
+  // [20pts] Expected return T+90 (ref: 0%=0, 20%=20)
+  const avgR = bucket.avgReturn90d ?? 4;
+  const returnPts = Math.min(Math.max(avgR / 20, 0), 1) * 20;
+
+  // [15pts] Recency — half-life 21 days
+  const daysSince = (Date.now() - decl.pubDate.getTime()) / 86400_000;
+  const recencyPts = Math.exp((-daysSince * Math.LN2) / 21) * 15;
+
+  // [10pts] Conviction: cluster > high mcap% > large amount
+  let convictionPts = 0;
+  if (decl.isCluster)                         convictionPts = 10;
+  else if ((decl.pctOfMarketCap ?? 0) >= 2)   convictionPts = 9;
+  else if ((decl.pctOfMarketCap ?? 0) >= 0.5) convictionPts = 6;
+  else if ((decl.totalAmount ?? 0) >= 500_000) convictionPts = 4;
+  else if ((decl.totalAmount ?? 0) >= 100_000) convictionPts = 2;
+
+  const total = signalPts + winRatePts + returnPts + recencyPts + convictionPts;
+  return {
+    recoScore: Math.min(total, 100),
+    scoreBreakdown: { signalPts, winRatePts, returnPts, recencyPts, convictionPts },
+    expectedReturn90d: bucket.avgReturn90d,
+    historicalWinRate90d: bucket.winRate90d,
+    historicalAvgReturn365d: bucket.avgReturn365d,
+    sampleSize: bucket.count,
+  };
+}
+
+// ── Badge builder ─────────────────────────────────────────────────────────────
+
+function buildBadges(decl: {
+  isCluster: boolean;
+  signalScore: number | null;
+  pctOfMarketCap: number | null;
+  totalAmount: number | null;
+  insiderFunction: string | null;
+  company: { marketCap: bigint | null };
+}): string[] {
+  const badges: string[] = [];
+  const role = roleLabelForReco(decl.insiderFunction);
+  const size = sizeLabelForReco(decl.company.marketCap);
+
+  if (decl.isCluster)                         badges.push("Cluster");
+  if ((decl.signalScore ?? 0) >= 80)          badges.push("Score ≥80");
+  else if ((decl.signalScore ?? 0) >= 65)     badges.push("Score ≥65");
+  if (role === "PDG/DG")                      badges.push("PDG/DG");
+  else if (role === "CFO/DAF")                badges.push("CFO/DAF");
+  if ((decl.pctOfMarketCap ?? 0) >= 2)        badges.push(">2% mcap");
+  else if ((decl.pctOfMarketCap ?? 0) >= 0.5) badges.push(">0.5% mcap");
+  if ((decl.totalAmount ?? 0) >= 1_000_000)   badges.push(">1M€");
+  else if ((decl.totalAmount ?? 0) >= 200_000) badges.push(">200k€");
+  if (size === "Small" || size === "Micro")   badges.push(size + "-cap");
+  return badges.slice(0, 4); // max 4 badges
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
+
+export interface RecoOptions {
+  mode: "general" | "personal";
+  limit?: number;
+  lookbackDays?: number;
+  portfolioIsins?: string[];  // for personal mode: user's current holdings
+}
+
+export async function getRecommendations(opts: RecoOptions): Promise<RecoItem[]> {
+  const { mode, limit = 10, lookbackDays = 90, portfolioIsins = [] } = opts;
+  const since = new Date(Date.now() - lookbackDays * 86400_000);
+  const isBuy = mode === "general"; // general = BUY only
+
+  const whereBase = {
+    type: "DIRIGEANTS" as const,
+    pdfParsed: true,
+    signalScore: { gte: 35 },
+    pubDate: { gte: since },
+  };
+
+  // For personal mode (user with portfolio): include SELL on their holdings + all BUYs
+  const declarations = await prisma.declaration.findMany({
+    where: isBuy
+      ? { ...whereBase, transactionNature: { contains: "Acquisition", mode: "insensitive" as const } }
+      : {
+          ...whereBase,
+          OR: [
+            { transactionNature: { contains: "Acquisition", mode: "insensitive" as const } },
+            ...(portfolioIsins.length > 0
+              ? [{ transactionNature: { contains: "Cession", mode: "insensitive" as const }, isin: { in: portfolioIsins } }]
+              : []),
+          ],
+        },
+    orderBy: { pubDate: "desc" },
+    take: limit * 6, // over-fetch, we'll rank and trim
+    select: {
+      id: true, amfId: true, link: true,
+      pubDate: true, transactionDate: true,
+      transactionNature: true,
+      insiderName: true, insiderFunction: true,
+      totalAmount: true, pctOfMarketCap: true,
+      signalScore: true, isCluster: true, isin: true,
+      company: {
+        select: {
+          name: true, slug: true, yahooSymbol: true,
+          marketCap: true, analystReco: true, targetMean: true, currentPrice: true,
+        },
+      },
+    },
+  });
+
+  if (declarations.length === 0) return [];
+
+  const hist = await buildHistoricalLookup();
+
+  const scored: RecoItem[] = declarations.map((decl) => {
+    const co = decl.company;
+    const isSell = (decl.transactionNature ?? "").toLowerCase().includes("cession");
+    const action: "BUY" | "SELL" = isSell ? "SELL" : "BUY";
+    const role = roleLabelForReco(decl.insiderFunction);
+    const size = sizeLabelForReco(co.marketCap);
+
+    const scoring = scoreDeclaration(
+      {
+        signalScore: decl.signalScore,
+        isCluster: decl.isCluster,
+        pctOfMarketCap: decl.pctOfMarketCap,
+        pubDate: decl.pubDate,
+        totalAmount: decl.totalAmount ? Number(decl.totalAmount) : null,
+        insiderFunction: decl.insiderFunction,
+        company: { marketCap: co.marketCap },
+      },
+      hist
+    );
+
+    // Sell signals get a recency-only boost; win rate is inverted (price drop = success)
+    // We slightly discount sell scores to surface buys first in mixed lists.
+    const finalScore = action === "SELL" ? scoring.recoScore * 0.85 : scoring.recoScore;
+
+    return {
+      declarationId: decl.id,
+      action,
+      company: {
+        name: co.name,
+        slug: co.slug,
+        yahooSymbol: co.yahooSymbol,
+      },
+      insider: {
+        name: decl.insiderName,
+        function: decl.insiderFunction,
+        role,
+      },
+      totalAmount: decl.totalAmount ? Number(decl.totalAmount) : null,
+      pctOfMarketCap: decl.pctOfMarketCap,
+      signalScore: decl.signalScore,
+      pubDate: decl.pubDate.toISOString(),
+      transactionDate: decl.transactionDate?.toISOString() ?? null,
+      isin: decl.isin,
+      isCluster: decl.isCluster,
+      amfLink: decl.link,
+
+      recoScore: finalScore,
+      scoreBreakdown: scoring.scoreBreakdown,
+      expectedReturn90d: scoring.expectedReturn90d,
+      historicalWinRate90d: scoring.historicalWinRate90d,
+      historicalAvgReturn365d: scoring.historicalAvgReturn365d,
+      sampleSize: scoring.sampleSize,
+
+      marketCap: co.marketCap ? Number(co.marketCap) : null,
+      size,
+      analystReco: co.analystReco,
+      targetMean: co.targetMean,
+      currentPrice: co.currentPrice,
+
+      badges: buildBadges({
+        isCluster: decl.isCluster,
+        signalScore: decl.signalScore,
+        pctOfMarketCap: decl.pctOfMarketCap,
+        totalAmount: decl.totalAmount ? Number(decl.totalAmount) : null,
+        insiderFunction: decl.insiderFunction,
+        company: { marketCap: co.marketCap },
+      }),
+    };
+  });
+
+  // Sort by score desc, then take top N (deduplicate by company — keep best per company)
+  const seen = new Set<string>();
+  return scored
+    .sort((a, b) => b.recoScore - a.recoScore)
+    .filter((r) => {
+      if (seen.has(r.company.slug)) return false;
+      seen.add(r.company.slug);
+      return true;
+    })
+    .slice(0, limit);
+}

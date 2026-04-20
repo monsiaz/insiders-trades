@@ -205,7 +205,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
   if (loading) {
     return (
       <div className="glass-card rounded-2xl p-6 h-64 flex items-center justify-center">
-        <div className="flex items-center gap-3 text-slate-500">
+        <div className="flex items-center gap-3 text-[var(--tx-3)]">
           <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -219,7 +219,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
   if (error || !data) {
     return (
       <div className="glass-card rounded-2xl p-5 h-20 flex items-center justify-center">
-        <p className="text-slate-600 text-sm">Cours non disponible pour cette société</p>
+        <p className="text-[var(--tx-3)] text-sm">Cours non disponible pour cette société</p>
       </div>
     );
   }

@@ -255,8 +255,8 @@ export function HomeLive({ initial }: { initial: HomeData }) {
         <section className="glass-card-static rounded-2xl p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-base font-semibold text-white tracking-tight">Sociétés les + actives</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Volume déclaré, 90 derniers jours</p>
+              <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">Sociétés les + actives</h2>
+              <p className="text-xs text-[var(--tx-3)] mt-0.5">Volume déclaré, 90 derniers jours</p>
             </div>
             <Link href="/companies" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
               Voir tout →
@@ -269,18 +269,18 @@ export function HomeLive({ initial }: { initial: HomeData }) {
                   href={row.company ? `/company/${row.company.slug}` : "#"}
                   className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors group"
                 >
-                  <span className="text-xs font-mono text-slate-600 w-5 text-right shrink-0">{i + 1}</span>
+                  <span className="text-xs font-mono text-[var(--tx-3)] w-5 text-right shrink-0">{i + 1}</span>
                   {row.company && <CompanyAvatar name={row.company.name} logoUrl={row.company.logoUrl} size="sm" />}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-sm font-medium text-slate-200 truncate group-hover:text-white transition-colors">
+                      <span className="text-sm font-medium text-[var(--tx-1)] truncate group-hover:text-[var(--c-indigo-2)] transition-colors">
                         {row.company?.name ?? "—"}
                       </span>
                       {row.company?.marketCap && (
-                        <span className="text-[10px] text-slate-600 shrink-0">{fmtMcap(row.company.marketCap)}</span>
+                        <span className="text-[10px] text-[var(--tx-3)] shrink-0">{fmtMcap(row.company.marketCap)}</span>
                       )}
                     </div>
-                    <div className="text-[11px] text-slate-600 mt-0.5">
+                    <div className="text-[11px] text-[var(--tx-3)] mt-0.5">
                       {row.count} transaction{row.count > 1 ? "s" : ""}
                     </div>
                   </div>
@@ -297,8 +297,8 @@ export function HomeLive({ initial }: { initial: HomeData }) {
         <section className="glass-card-static rounded-2xl p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-base font-semibold text-white tracking-tight">Dirigeants les + actifs</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Volume total déclaré, tous temps</p>
+              <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">Dirigeants les + actifs</h2>
+              <p className="text-xs text-[var(--tx-3)] mt-0.5">Volume total déclaré, tous temps</p>
             </div>
             <Link href="/insiders" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
               Voir tout →
@@ -311,12 +311,12 @@ export function HomeLive({ initial }: { initial: HomeData }) {
                   href={row.insider ? `/insider/${row.insider.slug}` : "#"}
                   className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors group"
                 >
-                  <span className="text-xs font-mono text-slate-600 w-5 text-right shrink-0">{i + 1}</span>
+                  <span className="text-xs font-mono text-[var(--tx-3)] w-5 text-right shrink-0">{i + 1}</span>
                   <div className="flex-1 min-w-0">
-                    <span className="text-sm font-medium text-slate-200 truncate group-hover:text-white transition-colors block">
+                    <span className="text-sm font-medium text-[var(--tx-1)] truncate group-hover:text-[var(--c-indigo-2)] transition-colors block">
                       {row.insiderName}
                     </span>
-                    <div className="text-[11px] text-slate-600 mt-0.5">
+                    <div className="text-[11px] text-[var(--tx-3)] mt-0.5">
                       {row.count} transaction{row.count > 1 ? "s" : ""}
                     </div>
                   </div>
@@ -334,7 +334,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
       {recentDeclarations.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-white tracking-tight">
+            <h2 className="text-xl font-semibold text-[var(--tx-1)] tracking-tight">
               Dernières transactions
             </h2>
             <Link
@@ -381,7 +381,7 @@ function StatTile({
     <div className={`glass-card-static rounded-2xl p-4 bg-gradient-to-br ${accentMap[accent]} flex flex-col gap-2 ${className}`}>
       <span className="opacity-60">{icon}</span>
       <div className="stat-number">{value}</div>
-      <div className="text-xs text-slate-500 font-medium">{label}</div>
+      <div className="text-xs text-[var(--tx-3)] font-medium">{label}</div>
     </div>
   );
 }

@@ -52,18 +52,18 @@ export default function AddCompanyPage() {
 
   return (
     <div className="max-w-2xl mx-auto content-wrapper">
-      <Link href="/companies" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-300 transition-colors mb-6">
+      <Link href="/companies" className="inline-flex items-center gap-1.5 text-sm text-[var(--tx-3)] hover:text-[var(--tx-2)] transition-colors mb-6">
         ← Retour aux sociétés
       </Link>
       <h1 className="text-3xl font-bold text-gradient tracking-tight mb-2">Ajouter une société</h1>
-      <p className="text-slate-500 mb-8">
+      <p className="text-[var(--tx-3)] mb-8">
         Entrez le jeton AMF pour commencer à suivre ses déclarations.
       </p>
 
       <div className="glass-card-static rounded-3xl p-6 mb-4">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">
+            <label className="block text-sm font-semibold text-[var(--tx-2)] mb-2">
               Jeton AMF <span className="text-rose-400">*</span>
             </label>
             <input
@@ -74,7 +74,7 @@ export default function AddCompanyPage() {
               required
               className="glass-input w-full px-4 py-2.5 rounded-xl font-mono text-sm"
             />
-            <p className="text-xs text-slate-600 mt-1.5">
+            <p className="text-xs text-[var(--tx-3)] mt-1.5">
               Trouvez le jeton sur{" "}
               <a href="https://bdif.amf-france.org" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300">
                 bdif.amf-france.org
@@ -84,8 +84,8 @@ export default function AddCompanyPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">
-              Description <span className="text-slate-600 font-normal">(optionnel)</span>
+            <label className="block text-sm font-semibold text-[var(--tx-2)] mb-2">
+              Description <span className="text-[var(--tx-3)] font-normal">(optionnel)</span>
             </label>
             <textarea
               value={form.description}
@@ -98,7 +98,7 @@ export default function AddCompanyPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">ISIN <span className="text-slate-600 font-normal">(optionnel)</span></label>
+              <label className="block text-sm font-semibold text-[var(--tx-2)] mb-2">ISIN <span className="text-[var(--tx-3)] font-normal">(optionnel)</span></label>
               <input
                 type="text"
                 value={form.isin}
@@ -108,7 +108,7 @@ export default function AddCompanyPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">Marché <span className="text-slate-600 font-normal">(optionnel)</span></label>
+              <label className="block text-sm font-semibold text-[var(--tx-2)] mb-2">Marché <span className="text-[var(--tx-3)] font-normal">(optionnel)</span></label>
               <input
                 type="text"
                 value={form.market}
@@ -149,10 +149,10 @@ export default function AddCompanyPage() {
       </div>
 
       <div className="glass-card-static rounded-2xl p-4">
-        <p className="text-xs font-semibold text-slate-500 mb-2">Exemple</p>
+        <p className="text-xs font-semibold text-[var(--tx-3)] mb-2">Exemple</p>
         <div className="flex justify-between text-sm">
-          <span className="text-slate-400">NANOBIOTIX</span>
-          <code className="text-slate-300 font-mono">RS00005380</code>
+          <span className="text-[var(--tx-2)]">NANOBIOTIX</span>
+          <code className="text-[var(--tx-2)] font-mono">RS00005380</code>
         </div>
       </div>
     </div>

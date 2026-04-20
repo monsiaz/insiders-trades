@@ -41,7 +41,7 @@ function getTradeStyle(nature?: string | null) {
   if (n.includes("acquisition")) return { label: "Achat", icon: "▲", cls: "badge-buy", amountCls: "text-emerald-400" };
   if (n.includes("exercice") || n.includes("option")) return { label: "Options", icon: "◇", cls: "bg-amber-400/10 border border-amber-400/20 text-amber-400", amountCls: "text-amber-400" };
   if (n.includes("attribution")) return { label: "Attribution", icon: "◆", cls: "bg-violet-400/10 border border-violet-400/20 text-violet-400", amountCls: "text-violet-400" };
-  return { label: nature, icon: "●", cls: "badge-neutral", amountCls: "text-slate-300" };
+  return { label: nature, icon: "●", cls: "badge-neutral", amountCls: "text-[var(--tx-2)]" };
 }
 
 function fmt(amount: number | null | undefined, currency?: string | null): string {
@@ -160,17 +160,17 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
           {hasDetail && (declaration.totalAmount || declaration.volume) && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2.5">
               {declaration.totalAmount && (
-                <span className={`text-base font-bold tabular-nums ${trade?.amountCls ?? "text-slate-200"}`}>
+                <span className={`text-base font-bold tabular-nums ${trade?.amountCls ?? "text-[var(--tx-1)]"}`}>
                   {fmt(declaration.totalAmount, declaration.currency)}
                 </span>
               )}
               {declaration.volume && (
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-[var(--tx-3)]">
                   {new Intl.NumberFormat("fr-FR").format(declaration.volume)} titres
                 </span>
               )}
               {declaration.unitPrice && (
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-[var(--tx-3)]">
                   @{" "}
                   {new Intl.NumberFormat("fr-FR", {
                     style: "currency",
@@ -192,7 +192,7 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
               )}
               {/* % of insider's own flow */}
               {pctFlow != null && pctFlow > 0 && (
-                <span className="text-[11px] text-slate-500 tabular-nums">
+                <span className="text-[11px] text-[var(--tx-3)] tabular-nums">
                   {pctFlow.toFixed(1)}% de son flux
                 </span>
               )}

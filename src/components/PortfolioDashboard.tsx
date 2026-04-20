@@ -43,7 +43,7 @@ function fmtEur(n: number | null | undefined, d = 0): string {
 }
 
 function PnlBadge({ pct }: { pct: number | null }) {
-  if (pct == null) return <span className="text-slate-500 text-xs">—</span>;
+  if (pct == null) return <span className="text-[var(--tx-3)] text-xs">—</span>;
   const isPos = pct >= 0;
   return (
     <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold tabular-nums ${isPos ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
@@ -229,8 +229,8 @@ export function PortfolioDashboard({ user }: { user: User }) {
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
             Portfolio PEA · {user.name ?? user.email}
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Mon <span className="text-gradient-indigo">Portfolio</span></h1>
-          <p className="text-slate-400 text-sm mt-1">{positions.length} position{positions.length !== 1 ? "s" : ""} · Mis à jour {priced.length > 0 ? "récemment" : "—"}</p>
+          <h1 className="text-3xl font-bold text-[var(--tx-1)] tracking-tight">Mon <span className="text-gradient-indigo">Portfolio</span></h1>
+          <p className="text-[var(--tx-2)] text-sm mt-1">{positions.length} position{positions.length !== 1 ? "s" : ""} · Mis à jour {priced.length > 0 ? "récemment" : "—"}</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={refreshPrices} disabled={refreshing}
@@ -271,7 +271,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
       <div className="flex gap-1 mb-6 p-1 glass-card-static rounded-xl w-fit">
         {tabs.map((t) => (
           <button key={t.id} onClick={() => { if (t.id !== "add" || !editId) setEditId(null); setTab(t.id); if (t.id !== "add") setForm(EMPTY_FORM); }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.id ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/25" : "text-slate-400 hover:text-white"}`}>
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.id ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/25" : "text-[var(--tx-2)] hover:text-white"}`}>
             {t.label}
           </button>
         ))}
@@ -283,9 +283,9 @@ export function PortfolioDashboard({ user }: { user: User }) {
           {positions.length === 0 ? (
             <div className="glass-card rounded-2xl p-12 text-center">
               <div className="flex justify-center mb-3 opacity-30"><BarChart2 size={40} strokeWidth={1.2} /></div>
-              <p className="text-slate-400 mb-4">Aucune position. Ajoutez des titres ou importez un CSV.</p>
+              <p className="text-[var(--tx-2)] mb-4">Aucune position. Ajoutez des titres ou importez un CSV.</p>
               <div className="flex justify-center gap-3">
-                <button onClick={() => setTab("add")} className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-semibold">+ Ajouter manuellement</button>
+                <button onClick={() => setTab("add")} className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold">+ Ajouter manuellement</button>
                 <button onClick={() => setTab("import")} className="px-4 py-2 rounded-xl btn-glass text-sm">Importer CSV</button>
               </div>
             </div>
@@ -297,7 +297,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm min-w-[580px]">
                       <thead>
-                        <tr className="text-left text-xs text-slate-500 border-b border-white/8">
+                        <tr className="text-left text-xs text-[var(--tx-3)] border-b border-white/8">
                           <th className="p-4 font-medium">Titre</th>
                           <th className="p-4 font-medium text-right">Qté</th>
                           <th className="p-4 font-medium text-right">PRU</th>
@@ -314,34 +314,34 @@ export function PortfolioDashboard({ user }: { user: User }) {
                           return (
                             <tr key={pos.id} className={`hover:bg-white/3 transition-colors ${alertTriggered ? "bg-amber-500/5" : ""}`}>
                               <td className="px-4 py-3">
-                                <div className="font-medium text-slate-200 text-sm">{pos.name}</div>
-                                {pos.isin && <div className="text-[11px] text-slate-600 font-mono">{pos.isin}</div>}
+                                <div className="font-medium text-[var(--tx-1)] text-sm">{pos.name}</div>
+                                {pos.isin && <div className="text-[11px] text-[var(--tx-3)] font-mono">{pos.isin}</div>}
                                 {pos.yahooSymbol && <div className="text-[11px] text-indigo-500">{pos.yahooSymbol}</div>}
                               </td>
-                              <td className="px-4 py-3 text-right tabular-nums text-slate-300 text-xs">{fmt(pos.quantity, 2)}</td>
-                              <td className="px-4 py-3 text-right tabular-nums text-slate-400 text-xs">{fmtEur(pos.buyingPrice, 2)}</td>
+                              <td className="px-4 py-3 text-right tabular-nums text-[var(--tx-2)] text-xs">{fmt(pos.quantity, 2)}</td>
+                              <td className="px-4 py-3 text-right tabular-nums text-[var(--tx-2)] text-xs">{fmtEur(pos.buyingPrice, 2)}</td>
                               <td className="px-4 py-3 text-right tabular-nums text-xs">
                                 {pos.currentPrice != null ? (
-                                  <span className="text-white">{fmtEur(pos.currentPrice, 2)}</span>
-                                ) : <span className="text-slate-600">—</span>}
+                                  <span className="text-[var(--tx-1)]">{fmtEur(pos.currentPrice, 2)}</span>
+                                ) : <span className="text-[var(--tx-3)]">—</span>}
                               </td>
-                              <td className="px-4 py-3 text-right tabular-nums text-xs text-slate-300">
+                              <td className="px-4 py-3 text-right tabular-nums text-xs text-[var(--tx-2)]">
                                 {fmtEur(pos.currentValue ?? pos.totalInvested)}
                               </td>
                               <td className="px-4 py-3 text-right">
                                 <PnlBadge pct={pos.pnlPct} />
-                                {pos.pnl != null && <div className="text-[11px] tabular-nums text-slate-600 mt-0.5">{fmtEur(pos.pnl)}</div>}
+                                {pos.pnl != null && <div className="text-[11px] tabular-nums text-[var(--tx-3)] mt-0.5">{fmtEur(pos.pnl)}</div>}
                               </td>
                               <td className="px-4 py-3 text-center">
                                 {alertTriggered ? <Bell size={13} className="text-amber-400" /> :
-                                  (pos.alertBelow || pos.alertAbove) ? <Bell size={13} className="text-slate-600" /> : null}
+                                  (pos.alertBelow || pos.alertAbove) ? <Bell size={13} className="text-[var(--tx-3)]" /> : null}
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex gap-1">
-                                  <button onClick={() => startEdit(pos)} className="p-1 rounded text-slate-600 hover:text-indigo-400 transition-colors">
+                                  <button onClick={() => startEdit(pos)} className="p-1 rounded text-[var(--tx-3)] hover:text-indigo-400 transition-colors">
                                     <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                                   </button>
-                                  <button onClick={() => deletePosition(pos.id)} className="p-1 rounded text-slate-600 hover:text-rose-400 transition-colors">
+                                  <button onClick={() => deletePosition(pos.id)} className="p-1 rounded text-[var(--tx-3)] hover:text-rose-400 transition-colors">
                                     <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                                   </button>
                                 </div>
@@ -356,7 +356,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
 
                 {/* Pie chart */}
                 <div className="glass-card rounded-2xl p-6">
-                  <h3 className="text-sm font-semibold text-white mb-4">Répartition du portefeuille</h3>
+                  <h3 className="text-sm font-semibold text-[var(--tx-1)] mb-4">Répartition du portefeuille</h3>
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={2} dataKey="value">
@@ -371,9 +371,9 @@ export function PortfolioDashboard({ user }: { user: User }) {
                       <div key={i} className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color }} />
-                          <span className="text-slate-400 truncate max-w-[110px]">{d.name}</span>
+                          <span className="text-[var(--tx-2)] truncate max-w-[110px]">{d.name}</span>
                         </div>
-                        <span className="text-slate-300 tabular-nums">{totalValue > 0 ? ((d.value / totalValue) * 100).toFixed(1) : 0}%</span>
+                        <span className="text-[var(--tx-2)] tabular-nums">{totalValue > 0 ? ((d.value / totalValue) * 100).toFixed(1) : 0}%</span>
                       </div>
                     ))}
                   </div>
@@ -391,61 +391,61 @@ export function PortfolioDashboard({ user }: { user: User }) {
       {tab === "add" && (
         <div className="max-w-lg animate-fade-in">
           <div className="glass-card rounded-2xl p-6">
-            <h2 className="text-base font-semibold text-white mb-5">{editId ? "Modifier la position" : "Ajouter une position"}</h2>
+            <h2 className="text-base font-semibold text-[var(--tx-1)] mb-5">{editId ? "Modifier la position" : "Ajouter une position"}</h2>
             <form onSubmit={submitPosition} className="space-y-4">
               {formError && <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3 text-sm text-rose-400">{formError}</div>}
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Nom du titre *</label>
+                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Nom du titre *</label>
                   <input type="text" required value={form.name} onChange={setF("name")}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 transition-all"
+                    className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                     placeholder="ex: NANOBIOTIX" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">ISIN (optionnel)</label>
+                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">ISIN (optionnel)</label>
                   <input type="text" value={form.isin} onChange={setF("isin")}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 transition-all"
+                    className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                     placeholder="FR0011341205" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Quantité *</label>
+                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Quantité *</label>
                   <input type="text" required value={form.quantity} onChange={setF("quantity")}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 transition-all"
+                    className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                     placeholder="114" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">PRU (prix moyen d'achat) *</label>
+                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">PRU (prix moyen d'achat) *</label>
                   <input type="text" required value={form.buyingPrice} onChange={setF("buyingPrice")}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 transition-all"
+                    className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                     placeholder="3.54" />
                 </div>
               </div>
               <div className="border-t border-white/8 pt-4">
-                <p className="text-xs text-slate-500 mb-3">Alertes de cours (optionnel)</p>
+                <p className="text-xs text-[var(--tx-3)] mb-3">Alertes de cours (optionnel)</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-1.5">Alerte si cours ≤ €</label>
+                    <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Alerte si cours ≤ €</label>
                     <input type="text" value={form.alertBelow} onChange={setF("alertBelow")}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 transition-all"
+                      className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500/50 transition-all"
                       placeholder="20.00" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-400 mb-1.5">Alerte si cours ≥ €</label>
+                    <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Alerte si cours ≥ €</label>
                     <input type="text" value={form.alertAbove} onChange={setF("alertAbove")}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 transition-all"
+                      className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500/50 transition-all"
                       placeholder="50.00" />
                   </div>
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">Notes (optionnel)</label>
+                <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Notes (optionnel)</label>
                 <textarea value={form.notes} onChange={setF("notes") as (e: React.ChangeEvent<HTMLTextAreaElement>) => void} rows={2}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 transition-all resize-none"
+                  className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all resize-none"
                   placeholder="Raison d'investissement, objectif…" />
               </div>
               <div className="flex gap-3 pt-1">
                 <button type="submit" disabled={formLoading}
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
                   {formLoading ? "Enregistrement…" : editId ? "Mettre à jour" : "Ajouter la position"}
                 </button>
                 <button type="button" onClick={cancelEdit}
@@ -461,8 +461,8 @@ export function PortfolioDashboard({ user }: { user: User }) {
         <div className="max-w-2xl animate-fade-in space-y-6">
           {/* Model CSV */}
           <div className="glass-card-static rounded-2xl p-6 border border-indigo-500/10">
-            <h2 className="text-sm font-semibold text-white mb-1">Format CSV attendu</h2>
-            <p className="text-xs text-slate-500 mb-3">Séparateur : <code className="text-indigo-400">;</code> · Encodage : UTF-8 · Décimales : virgule</p>
+            <h2 className="text-sm font-semibold text-[var(--tx-1)] mb-1">Format CSV attendu</h2>
+            <p className="text-xs text-[var(--tx-3)] mb-3">Séparateur : <code className="text-indigo-400">;</code> · Encodage : UTF-8 · Décimales : virgule</p>
             <div className="bg-black/30 rounded-xl p-3 overflow-x-auto">
               <code className="text-xs text-emerald-400 whitespace-nowrap">
                 name;isin;quantity;buyingPrice<br/>
@@ -470,9 +470,9 @@ export function PortfolioDashboard({ user }: { user: User }) {
                 WAGA ENERGY;FR0012532810;66;17,40
               </code>
             </div>
-            <p className="text-xs text-slate-600 mt-2">
+            <p className="text-xs text-[var(--tx-3)] mt-2">
               Compatible avec les exports courtiers Boursorama, BNP, Société Générale, etc.
-              Les colonnes <code className="text-slate-400">lastPrice</code>, <code className="text-slate-400">amount</code>, etc. sont ignorées.
+              Les colonnes <code className="text-[var(--tx-2)]">lastPrice</code>, <code className="text-[var(--tx-2)]">amount</code>, etc. sont ignorées.
             </p>
             <a href="#" onClick={(e) => {
               e.preventDefault();
@@ -487,38 +487,38 @@ export function PortfolioDashboard({ user }: { user: User }) {
 
           {/* File picker */}
           <div className="glass-card rounded-2xl p-6">
-            <h2 className="text-sm font-semibold text-white mb-4">Importer votre fichier</h2>
+            <h2 className="text-sm font-semibold text-[var(--tx-1)] mb-4">Importer votre fichier</h2>
             <div
               onClick={() => fileRef.current?.click()}
-              className="border-2 border-dashed border-white/10 hover:border-indigo-500/40 rounded-xl p-8 text-center cursor-pointer transition-all"
+              className="border-2 border-dashed border-[var(--border-med)] hover:border-indigo-500/40 rounded-xl p-8 text-center cursor-pointer transition-all"
             >
               <div className="mx-auto mb-3 flex items-center justify-center w-12 h-12 rounded-xl" style={{ background: "var(--bg-active)", border: "1px solid var(--border-med)" }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ color: "var(--tx-3)" }}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="18" x2="12" y2="12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><line x1="9" y1="15" x2="15" y2="15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
               </div>
-              <p className="text-sm text-slate-400">Cliquez pour choisir un fichier CSV</p>
-              <p className="text-xs text-slate-600 mt-1">ou glissez-déposez ici</p>
+              <p className="text-sm text-[var(--tx-2)]">Cliquez pour choisir un fichier CSV</p>
+              <p className="text-xs text-[var(--tx-3)] mt-1">ou glissez-déposez ici</p>
               <input ref={fileRef} type="file" accept=".csv,.txt" onChange={handleCsvFile} className="hidden" />
             </div>
 
             {importStatus && (
-              <div className={`mt-3 px-4 py-2.5 rounded-xl text-sm ${importStatus.includes("erreurs") || importStatus === "" ? "bg-white/5 text-slate-400" : "bg-emerald-500/10 text-emerald-400"}`}>
+              <div className={`mt-3 px-4 py-2.5 rounded-xl text-sm ${importStatus.includes("erreurs") || importStatus === "" ? "bg-[var(--bg-raised)] text-[var(--tx-2)]" : "bg-emerald-500/10 text-emerald-400"}`}>
                 {importStatus}
               </div>
             )}
 
             {importRows.length > 0 && (
               <div className="mt-4">
-                <div className="text-xs text-slate-500 mb-2">Aperçu ({importRows.length} lignes)</div>
+                <div className="text-xs text-[var(--tx-3)] mb-2">Aperçu ({importRows.length} lignes)</div>
                 <div className="overflow-x-auto bg-black/20 rounded-xl p-3 max-h-40 overflow-y-auto">
                   <table className="w-full text-xs">
-                    <thead><tr className="text-slate-600">{Object.keys(importRows[0]).map((k) => <th key={k} className="text-left pr-3 pb-1">{k}</th>)}</tr></thead>
+                    <thead><tr className="text-[var(--tx-3)]">{Object.keys(importRows[0]).map((k) => <th key={k} className="text-left pr-3 pb-1">{k}</th>)}</tr></thead>
                     <tbody>{importRows.slice(0, 5).map((row, i) => (
-                      <tr key={i}>{Object.values(row).map((v, j) => <td key={j} className="text-slate-400 pr-3 py-0.5 truncate max-w-[100px]">{v}</td>)}</tr>
+                      <tr key={i}>{Object.values(row).map((v, j) => <td key={j} className="text-[var(--tx-2)] pr-3 py-0.5 truncate max-w-[100px]">{v}</td>)}</tr>
                     ))}</tbody>
                   </table>
                 </div>
                 <button onClick={submitImport} disabled={importLoading}
-                  className="mt-3 w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
+                  className="mt-3 w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
                   {importLoading ? "Import en cours…" : `Importer ${importRows.length} positions`}
                 </button>
               </div>
@@ -565,8 +565,8 @@ function InsiderMatchSection({ positions }: { positions: Position[] }) {
     <div className="glass-card-static rounded-2xl p-6 border border-violet-500/10">
       <div className="flex items-center gap-2 mb-4">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: "var(--c-violet)", flexShrink: 0 }}><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-        <h3 className="text-sm font-semibold text-white">Trades AMF sur vos positions</h3>
-        <span className="text-xs text-slate-500">dirigeants ayant récemment acheté vos titres</span>
+        <h3 className="text-sm font-semibold text-[var(--tx-1)]">Trades AMF sur vos positions</h3>
+        <span className="text-xs text-[var(--tx-3)]">dirigeants ayant récemment acheté vos titres</span>
       </div>
       <div className="space-y-4">
         {matches.map((m) => (
@@ -576,13 +576,13 @@ function InsiderMatchSection({ positions }: { positions: Position[] }) {
               {m.declarations.slice(0, 3).map((d, i) => (
                 <div key={i} className="flex items-center justify-between text-xs py-1.5 border-b border-white/5 last:border-0">
                   <div>
-                    <span className="text-slate-300">{d.insiderName ?? "—"}</span>
-                    <span className="text-slate-600 ml-2">{d.insiderFunction?.slice(0, 30)}</span>
+                    <span className="text-[var(--tx-2)]">{d.insiderName ?? "—"}</span>
+                    <span className="text-[var(--tx-3)] ml-2">{d.insiderFunction?.slice(0, 30)}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    {d.transactionDate && <span className="text-slate-600">{new Date(d.transactionDate).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>}
-                    {d.totalAmount && <span className="text-slate-400">{d.totalAmount >= 1e6 ? `${(d.totalAmount / 1e6).toFixed(1)}M€` : `${(d.totalAmount / 1e3).toFixed(0)}k€`}</span>}
-                    {d.signalScore != null && <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${d.signalScore >= 65 ? "bg-emerald-500/15 text-emerald-400" : "bg-white/5 text-slate-400"}`}>{Math.round(d.signalScore)}</span>}
+                    {d.transactionDate && <span className="text-[var(--tx-3)]">{new Date(d.transactionDate).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>}
+                    {d.totalAmount && <span className="text-[var(--tx-2)]">{d.totalAmount >= 1e6 ? `${(d.totalAmount / 1e6).toFixed(1)}M€` : `${(d.totalAmount / 1e3).toFixed(0)}k€`}</span>}
+                    {d.signalScore != null && <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${d.signalScore >= 65 ? "bg-emerald-500/15 text-emerald-400" : "bg-[var(--bg-raised)] text-[var(--tx-2)]"}`}>{Math.round(d.signalScore)}</span>}
                     <Link href={`/company/${d.company.slug}`} className="text-indigo-400 hover:text-indigo-300 transition-colors">→</Link>
                   </div>
                 </div>
@@ -605,9 +605,9 @@ function KpiTile({ label, value, sub, accent = "indigo" }: { label: string; valu
   };
   return (
     <div className={`glass-card-static rounded-2xl p-4 bg-gradient-to-br ${map[accent] ?? map.indigo} flex flex-col gap-1`}>
-      <div className="text-xl font-bold text-white tracking-tight">{value}</div>
-      <div className="text-xs text-slate-500 font-medium">{label}</div>
-      {sub && <div className="text-xs text-slate-600">{sub}</div>}
+      <div className="text-xl font-bold text-[var(--tx-1)] tracking-tight">{value}</div>
+      <div className="text-xs text-[var(--tx-3)] font-medium">{label}</div>
+      {sub && <div className="text-xs text-[var(--tx-3)]">{sub}</div>}
     </div>
   );
 }

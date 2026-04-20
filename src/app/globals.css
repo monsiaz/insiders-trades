@@ -134,8 +134,8 @@
 
   --tx-1: #0A0C10;   /* near-black ink */
   --tx-2: #3D3428;   /* warm dark */
-  --tx-3: #7A6E5E;   /* warm mid */
-  --tx-4: #AA9E8E;   /* warm light */
+  --tx-3: #6B5D4E;   /* warm mid (bumped from #7A6E5E for AA on cream) */
+  --tx-4: #948776;   /* warm light (bumped from #AA9E8E for 4.5:1 on cream) */
 
   --shadow-sm: 0 1px 2px rgba(30,20,10,0.08), 0 1px 0 rgba(30,20,10,0.04);
   --shadow-md: 0 4px 16px rgba(30,20,10,0.10), 0 2px 4px rgba(30,20,10,0.06);
@@ -868,6 +868,45 @@ input[type="search"], textarea, select {
 /* Focus / Selection */
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 ::selection { background: var(--gold-bg); color: var(--gold-2); }
+
+/* ═══════════════════════════════════════════════════════════
+   THEME-AWARE COLOR UTILITIES
+   Use these instead of Tailwind's neon colors (text-emerald-400 etc.)
+   so light-mode contrast stays correct.
+   ═══════════════════════════════════════════════════════════ */
+
+.tx-pos     { color: var(--signal-pos); }
+.tx-neg     { color: var(--signal-neg); }
+.tx-brand   { color: var(--c-indigo-2); }
+.tx-gold    { color: var(--gold); }
+.tx-violet  { color: var(--c-violet); }
+.tx-1       { color: var(--tx-1); }
+.tx-2       { color: var(--tx-2); }
+.tx-3       { color: var(--tx-3); }
+.tx-4       { color: var(--tx-4); }
+
+/* Legacy aliases used in BacktestDashboard (kept for compat) */
+.text-primary   { color: var(--tx-1); }
+.text-secondary { color: var(--tx-2); }
+.text-muted     { color: var(--tx-3); }
+.text-tertiary  { color: var(--tx-4); }
+
+.hover-tx-1:hover     { color: var(--tx-1); }
+.hover-tx-brand:hover { color: var(--c-indigo-2); }
+.hover-tx-pos:hover   { color: var(--signal-pos); }
+.hover-tx-neg:hover   { color: var(--signal-neg); }
+
+.bg-pos-soft    { background: var(--signal-pos-bg); }
+.bg-neg-soft    { background: var(--signal-neg-bg); }
+.bg-brand-soft  { background: var(--c-indigo-bg); }
+.bg-gold-soft   { background: var(--gold-bg); }
+.bg-violet-soft { background: var(--c-violet-bg); }
+
+.bd-pos    { border-color: var(--signal-pos-bd); }
+.bd-neg    { border-color: var(--signal-neg-bd); }
+.bd-brand  { border-color: var(--c-indigo-bd); }
+.bd-gold   { border-color: var(--gold-bd); }
+.bd-violet { border-color: var(--c-violet-bd); }
 
 /* ═══════════════════════════════════════════════════════════
    RECO TABS — minimal underline + count pills

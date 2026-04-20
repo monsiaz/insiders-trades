@@ -36,11 +36,11 @@ export function EnrichButton({ companyId }: { companyId: string }) {
 
   return (
     <div className="flex items-center gap-2">
-      {result && <span className="text-xs text-emerald-400">{result}</span>}
+      {result && <span className="text-xs tx-pos">{result}</span>}
       <button
         onClick={handleEnrich}
         disabled={loading}
-        className="px-3 py-2 rounded-lg bg-violet-900/40 hover:bg-violet-900/60 disabled:opacity-50 disabled:cursor-not-allowed text-violet-300 hover:text-violet-100 text-sm transition-colors flex items-center gap-1.5 border border-violet-800/50"
+        className="px-3 py-2 rounded-lg bg-violet-900/40 hover:bg-violet-900/60 disabled:opacity-50 disabled:cursor-not-allowed tx-violet hover:tx-violet text-sm transition-colors flex items-center gap-1.5 border border-violet-800/50"
         title="Charger les détails des trades (nom, montant, prix)"
       >
         {loading ? (

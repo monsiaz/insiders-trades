@@ -71,7 +71,7 @@ export default async function InsiderPage({ params, searchParams }: Props) {
       {/* Hero */}
       <div className="glass-card-static rounded-3xl p-6 mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border border-violet-500/25 flex items-center justify-center text-xl font-bold text-violet-300">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border border-violet-500/25 flex items-center justify-center text-xl font-bold tx-violet">
             {initials}
           </div>
           <div>
@@ -102,11 +102,11 @@ export default async function InsiderPage({ params, searchParams }: Props) {
           <div className="text-xs text-[var(--tx-3)] mt-1">Société{insider.companies.length > 1 ? "s" : ""}</div>
         </div>
         <div className="glass-card-static rounded-2xl p-4 bg-gradient-to-br from-emerald-500/8 to-transparent border-emerald-500/12">
-          <div className="text-xl font-bold text-emerald-400">{fmt(buyAgg._sum.totalAmount)}</div>
+          <div className="text-xl font-bold tx-pos">{fmt(buyAgg._sum.totalAmount)}</div>
           <div className="text-xs text-[var(--tx-3)] mt-1">▲ Achats ({buyAgg._count} opér.)</div>
         </div>
         <div className="glass-card-static rounded-2xl p-4 bg-gradient-to-br from-rose-500/8 to-transparent border-rose-500/12">
-          <div className="text-xl font-bold text-rose-400">{fmt(sellAgg._sum.totalAmount)}</div>
+          <div className="text-xl font-bold tx-neg">{fmt(sellAgg._sum.totalAmount)}</div>
           <div className="text-xs text-[var(--tx-3)] mt-1">▼ Ventes ({sellAgg._count} opér.)</div>
         </div>
       </div>

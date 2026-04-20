@@ -261,12 +261,12 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
             {buyTrades.length > 0 && (
               <div className="hidden sm:flex items-center gap-1.5 ml-2">
                 {totalBuy > 0 && (
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/15 text-emerald-400">
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-pos-soft border bd-pos tx-pos">
                     ▲ {fmtAmount(totalBuy, currency)}
                   </span>
                 )}
                 {totalSell > 0 && (
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/15 text-rose-400">
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neg-soft border bd-neg tx-neg">
                     ▼ {fmtAmount(totalSell, currency)}
                   </span>
                 )}

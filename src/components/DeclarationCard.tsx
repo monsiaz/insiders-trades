@@ -37,10 +37,10 @@ interface DeclarationCardProps {
 function getTradeStyle(nature?: string | null) {
   if (!nature) return null;
   const n = nature.toLowerCase();
-  if (n.includes("cession")) return { label: "Vente", icon: "▼", cls: "badge-sell", amountCls: "text-rose-400" };
-  if (n.includes("acquisition")) return { label: "Achat", icon: "▲", cls: "badge-buy", amountCls: "text-emerald-400" };
-  if (n.includes("exercice") || n.includes("option")) return { label: "Options", icon: "◇", cls: "bg-amber-400/10 border border-amber-400/20 text-amber-400", amountCls: "text-amber-400" };
-  if (n.includes("attribution")) return { label: "Attribution", icon: "◆", cls: "bg-violet-400/10 border border-violet-400/20 text-violet-400", amountCls: "text-violet-400" };
+  if (n.includes("cession")) return { label: "Vente", icon: "▼", cls: "badge-sell", amountCls: "tx-neg" };
+  if (n.includes("acquisition")) return { label: "Achat", icon: "▲", cls: "badge-buy", amountCls: "tx-pos" };
+  if (n.includes("exercice") || n.includes("option")) return { label: "Options", icon: "◇", cls: "bg-gold-soft border bd-gold tx-gold", amountCls: "tx-gold" };
+  if (n.includes("attribution")) return { label: "Attribution", icon: "◆", cls: "bg-violet-soft border bd-violet tx-violet", amountCls: "tx-violet" };
   return { label: nature, icon: "●", cls: "badge-neutral", amountCls: "text-[var(--tx-2)]" };
 }
 
@@ -61,12 +61,12 @@ function fmtDate(d: Date): string {
 // Signal score → visual indicator (more prominent)
 function SignalBadge({ score }: { score: number }) {
   if (score >= 70) return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-400/15 border border-emerald-400/30 text-emerald-300 shadow-sm shadow-emerald-400/10">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-pos-soft border bd-pos tx-pos shadow-sm shadow-emerald-400/10">
 Score fort · {score}
     </span>
   );
   if (score >= 45) return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-400/12 border border-amber-400/25 text-amber-300">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gold-soft border bd-gold tx-gold">
       <span>◆</span>Signal · {score}
     </span>
   );
@@ -182,7 +182,7 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
               )}
               {/* % of market cap */}
               {pctMcap != null && pctMcap > 0 && (
-                <span className="text-[11px] font-semibold text-amber-400/80 bg-amber-400/8 border border-amber-400/15 px-2 py-0.5 rounded-lg tabular-nums">
+                <span className="text-[11px] font-semibold tx-gold/80 bg-gold-soft border bd-gold px-2 py-0.5 rounded-lg tabular-nums">
                   {pctMcap < 0.01
                     ? `${pctMcap.toFixed(4)}% mcap`
                     : pctMcap < 0.1

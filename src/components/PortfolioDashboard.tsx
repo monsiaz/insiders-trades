@@ -48,7 +48,7 @@ function PnlBadge({ pct }: { pct: number | null }) {
   if (pct == null) return <span className="text-[var(--tx-3)] text-xs">—</span>;
   const isPos = pct >= 0;
   return (
-    <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold tabular-nums ${isPos ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
+    <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold tabular-nums ${isPos ? "bg-pos-soft tx-pos" : "bg-neg-soft tx-neg"}`}>
       {isPos ? "▲" : "▼"} {Math.abs(pct).toFixed(2)}%
     </span>
   );
@@ -229,7 +229,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
       {/* Header */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 animate-fade-in">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card-static text-indigo-400 text-xs font-semibold mb-4 border-indigo-500/15">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card-static tx-brand text-xs font-semibold mb-4 bd-brand">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
             Portfolio PEA · {user.name ?? user.email}
           </div>
@@ -251,13 +251,13 @@ export function PortfolioDashboard({ user }: { user: User }) {
       {alerts.length > 0 && (
         <div className="mb-6 bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-amber-400 text-sm font-semibold">{alerts.length} alerte{alerts.length > 1 ? "s" : ""} déclenchée{alerts.length > 1 ? "s" : ""}</span>
+            <span className="tx-gold text-sm font-semibold">{alerts.length} alerte{alerts.length > 1 ? "s" : ""} déclenchée{alerts.length > 1 ? "s" : ""}</span>
           </div>
           <div className="space-y-1">
             {alerts.map((p) => {
               const below = p.alertBelow != null && p.currentPrice != null && p.currentPrice <= p.alertBelow;
               return (
-                <div key={p.id} className="text-sm text-amber-300/80">
+                <div key={p.id} className="text-sm tx-gold/80">
                   <strong>{p.name}</strong> : {below ? `cours ${fmtEur(p.currentPrice)} ≤ alerte basse ${fmtEur(p.alertBelow)}` : `cours ${fmtEur(p.currentPrice)} ≥ alerte haute ${fmtEur(p.alertAbove)}`}
                 </div>
               );
@@ -326,7 +326,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
       <div className="flex gap-1 mb-6 p-1 glass-card-static rounded-xl w-fit">
         {tabs.map((t) => (
           <button key={t.id} onClick={() => { if (t.id !== "add" || !editId) setEditId(null); setTab(t.id); if (t.id !== "add") setForm(EMPTY_FORM); }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.id ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/25" : "text-[var(--tx-2)] hover:text-white"}`}>
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.id ? "bg-brand-soft tx-brand border bd-brand" : "text-[var(--tx-2)] hover-tx-1"}`}>
             {t.label}
           </button>
         ))}
@@ -387,7 +387,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
                                   )}
                                 </div>
                                 {pos.isin && <div className="text-[11px] text-[var(--tx-3)] font-mono">{pos.isin}</div>}
-                                {pos.yahooSymbol && <div className="text-[11px] text-indigo-500">{pos.yahooSymbol}</div>}
+                                {pos.yahooSymbol && <div className="text-[11px] tx-brand">{pos.yahooSymbol}</div>}
                               </td>
                               <td className="px-4 py-3 text-right tabular-nums text-[var(--tx-2)] text-xs">{fmt(pos.quantity, 2)}</td>
                               <td className="px-4 py-3 text-right tabular-nums text-[var(--tx-2)] text-xs">{fmtEur(pos.buyingPrice, 2)}</td>
@@ -404,15 +404,15 @@ export function PortfolioDashboard({ user }: { user: User }) {
                                 {pos.pnl != null && <div className="text-[11px] tabular-nums text-[var(--tx-3)] mt-0.5">{fmtEur(pos.pnl)}</div>}
                               </td>
                               <td className="px-4 py-3 text-center">
-                                {alertTriggered ? <Bell size={13} className="text-amber-400" /> :
+                                {alertTriggered ? <Bell size={13} className="tx-gold" /> :
                                   (pos.alertBelow || pos.alertAbove) ? <Bell size={13} className="text-[var(--tx-3)]" /> : null}
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex gap-1">
-                                  <button onClick={() => startEdit(pos)} className="p-1 rounded text-[var(--tx-3)] hover:text-indigo-400 transition-colors">
+                                  <button onClick={() => startEdit(pos)} className="p-1 rounded text-[var(--tx-3)] hover:tx-brand transition-colors">
                                     <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                                   </button>
-                                  <button onClick={() => deletePosition(pos.id)} className="p-1 rounded text-[var(--tx-3)] hover:text-rose-400 transition-colors">
+                                  <button onClick={() => deletePosition(pos.id)} className="p-1 rounded text-[var(--tx-3)] hover:tx-neg transition-colors">
                                     <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                                   </button>
                                 </div>
@@ -464,7 +464,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
           <div className="glass-card rounded-2xl p-6">
             <h2 className="text-base font-semibold text-[var(--tx-1)] mb-5">{editId ? "Modifier la position" : "Ajouter une position"}</h2>
             <form onSubmit={submitPosition} className="space-y-4">
-              {formError && <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3 text-sm text-rose-400">{formError}</div>}
+              {formError && <div className="bg-neg-soft border bd-neg rounded-xl px-4 py-3 text-sm tx-neg">{formError}</div>}
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
                   <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Nom du titre *</label>
@@ -533,9 +533,9 @@ export function PortfolioDashboard({ user }: { user: User }) {
           {/* Model CSV */}
           <div className="glass-card-static rounded-2xl p-6 border border-indigo-500/10">
             <h2 className="text-sm font-semibold text-[var(--tx-1)] mb-1">Format CSV attendu</h2>
-            <p className="text-xs text-[var(--tx-3)] mb-3">Séparateur : <code className="text-indigo-400">;</code> · Encodage : UTF-8 · Décimales : virgule</p>
+            <p className="text-xs text-[var(--tx-3)] mb-3">Séparateur : <code className="tx-brand">;</code> · Encodage : UTF-8 · Décimales : virgule</p>
             <div className="bg-black/30 rounded-xl p-3 overflow-x-auto">
-              <code className="text-xs text-emerald-400 whitespace-nowrap">
+              <code className="text-xs tx-pos whitespace-nowrap">
                 name;isin;quantity;buyingPrice<br/>
                 NANOBIOTIX;FR0011341205;114;3,54<br/>
                 WAGA ENERGY;FR0012532810;66;17,40
@@ -551,7 +551,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
               const blob = new Blob([csv], { type: "text/csv" });
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a"); a.href = url; a.download = "modele-portfolio.csv"; a.click();
-            }} className="inline-block mt-2 text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+            }} className="inline-block mt-2 text-xs tx-brand hover:tx-brand transition-colors">
               ↓ Télécharger le modèle CSV
             </a>
           </div>
@@ -572,7 +572,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
             </div>
 
             {importStatus && (
-              <div className={`mt-3 px-4 py-2.5 rounded-xl text-sm ${importStatus.includes("erreurs") || importStatus === "" ? "bg-[var(--bg-raised)] text-[var(--tx-2)]" : "bg-emerald-500/10 text-emerald-400"}`}>
+              <div className={`mt-3 px-4 py-2.5 rounded-xl text-sm ${importStatus.includes("erreurs") || importStatus === "" ? "bg-[var(--bg-raised)] text-[var(--tx-2)]" : "bg-pos-soft tx-pos"}`}>
                 {importStatus}
               </div>
             )}
@@ -642,7 +642,7 @@ function InsiderMatchSection({ positions }: { positions: Position[] }) {
       <div className="space-y-4">
         {matches.map((m) => (
           <div key={m.positionName}>
-            <div className="text-xs font-semibold text-indigo-400 mb-2">{m.positionName}</div>
+            <div className="text-xs font-semibold tx-brand mb-2">{m.positionName}</div>
             <div className="space-y-2">
               {m.declarations.slice(0, 3).map((d, i) => (
                 <div key={i} className="flex items-center justify-between text-xs py-1.5 border-b border-white/5 last:border-0">
@@ -653,8 +653,8 @@ function InsiderMatchSection({ positions }: { positions: Position[] }) {
                   <div className="flex items-center gap-3">
                     {d.transactionDate && <span className="text-[var(--tx-3)]">{new Date(d.transactionDate).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>}
                     {d.totalAmount && <span className="text-[var(--tx-2)]">{d.totalAmount >= 1e6 ? `${(d.totalAmount / 1e6).toFixed(1)}M€` : `${(d.totalAmount / 1e3).toFixed(0)}k€`}</span>}
-                    {d.signalScore != null && <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${d.signalScore >= 65 ? "bg-emerald-500/15 text-emerald-400" : "bg-[var(--bg-raised)] text-[var(--tx-2)]"}`}>{Math.round(d.signalScore)}</span>}
-                    <Link href={`/company/${d.company.slug}`} className="text-indigo-400 hover:text-indigo-300 transition-colors">→</Link>
+                    {d.signalScore != null && <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${d.signalScore >= 65 ? "bg-pos-soft tx-pos" : "bg-[var(--bg-raised)] text-[var(--tx-2)]"}`}>{Math.round(d.signalScore)}</span>}
+                    <Link href={`/company/${d.company.slug}`} className="tx-brand hover:tx-brand transition-colors">→</Link>
                   </div>
                 </div>
               ))}
@@ -668,10 +668,10 @@ function InsiderMatchSection({ positions }: { positions: Position[] }) {
 
 function KpiTile({ label, value, sub, accent = "indigo" }: { label: string; value: string; sub?: string; accent?: string }) {
   const map: Record<string, string> = {
-    indigo: "from-indigo-500/10 to-indigo-500/5 border-indigo-500/15",
+    indigo: "from-indigo-500/10 to-indigo-500/5 bd-brand",
     violet: "from-violet-500/10 to-violet-500/5 border-violet-500/15",
-    emerald: "from-emerald-500/10 to-emerald-500/5 border-emerald-500/15",
-    rose: "from-rose-500/10 to-rose-500/5 border-rose-500/15",
+    emerald: "from-emerald-500/10 to-emerald-500/5 bd-pos",
+    rose: "from-rose-500/10 to-rose-500/5 bd-neg",
     cyan: "from-cyan-500/10 to-cyan-500/5 border-cyan-500/15",
   };
   return (

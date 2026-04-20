@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
           )}
         </div>
         <p className="text-center text-sm text-[var(--tx-3)] mt-4">
-          <Link href="/auth/login" className="text-indigo-400 hover:text-indigo-300 transition-colors">← Retour à la connexion</Link>
+          <Link href="/auth/login" className="tx-brand hover:tx-brand transition-colors">← Retour à la connexion</Link>
         </p>
       </div>
     </div>

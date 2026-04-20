@@ -41,12 +41,12 @@ export function SyncButton() {
   return (
     <div className="flex items-center gap-2">
       {result && (
-        <span className="text-xs text-emerald-400">{result}</span>
+        <span className="text-xs tx-pos">{result}</span>
       )}
       <button
         onClick={handleSync}
         disabled={loading}
-        className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 hover:text-white text-sm font-medium transition-colors flex items-center gap-2"
+        className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 hover-tx-1 text-sm font-medium transition-colors flex items-center gap-2"
       >
         {loading ? (
           <>

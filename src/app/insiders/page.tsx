@@ -43,7 +43,11 @@ export default async function InsidersPage() {
     companies: i.companies.map((c) => c.company.name),
     lastDecl: i.declarations[0]
       ? {
-          pubDate: i.declarations[0].pubDate.toISOString(),
+          // unstable_cache serializes Date → string, so normalize defensively
+          pubDate:
+            i.declarations[0].pubDate instanceof Date
+              ? i.declarations[0].pubDate.toISOString()
+              : String(i.declarations[0].pubDate),
           totalAmount: i.declarations[0].totalAmount
             ? Number(i.declarations[0].totalAmount)
             : null,

@@ -135,40 +135,68 @@ export default function AdminDashboard() {
 
 function Header() {
   return (
-    <div style={{ marginBottom: "24px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-        <div
-          style={{
-            width: "32px", height: "32px", borderRadius: "8px",
-            background: "var(--corporate)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-              stroke="#fff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+    <div
+      style={{
+        marginBottom: "24px",
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "space-between",
+        gap: "16px",
+        flexWrap: "wrap",
+      }}
+    >
+      <div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+          <div
+            style={{
+              width: "32px", height: "32px", borderRadius: "8px",
+              background: "var(--corporate)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                stroke="#fff"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <h1
+            style={{
+              fontSize: "1.5rem",
+              fontWeight: 700,
+              color: "var(--tx-1)",
+              fontFamily: "'Banana Grotesk', 'Inter', system-ui",
+              letterSpacing: "-0.03em",
+            }}
+          >
+            Administration
+          </h1>
         </div>
-        <h1
-          style={{
-            fontSize: "1.5rem",
-            fontWeight: 700,
-            color: "var(--tx-1)",
-            fontFamily: "'Banana Grotesk', 'Inter', system-ui",
-            letterSpacing: "-0.03em",
-          }}
-        >
-          Administration
-        </h1>
+        <p style={{ fontSize: "0.875rem", color: "var(--tx-3)" }}>
+          Gestion des utilisateurs, crédits, droits et tâches planifiées.
+        </p>
       </div>
-      <p style={{ fontSize: "0.875rem", color: "var(--tx-3)" }}>
-        Gestion des utilisateurs, crédits, droits et tâches planifiées.
-      </p>
+      <a
+        href="/admin/tech"
+        style={{
+          textDecoration: "none",
+          padding: "8px 14px",
+          border: "1px solid var(--gold-bd)",
+          background: "var(--gold-bg)",
+          color: "var(--gold)",
+          borderRadius: "3px",
+          fontFamily: "var(--font-inter), sans-serif",
+          fontSize: "0.78rem",
+          fontWeight: 600,
+          letterSpacing: "0.02em",
+        }}
+      >
+        Doc technique ↗
+      </a>
     </div>
   );
 }

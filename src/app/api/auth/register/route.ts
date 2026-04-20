@@ -5,6 +5,13 @@ import { sendVerificationEmail } from "@/lib/email";
 
 const ADMIN_EMAIL = "simon.azoulay.pro@gmail.com";
 
+/**
+ * Email allow-list for the beta. Only these addresses can register.
+ * Any other attempt is rejected with the same generic message to avoid
+ * leaking which emails are on the list.
+ */
+const BETA_ALLOWED_EMAILS = new Set<string>([ADMIN_EMAIL]);
+
 export async function POST(req: NextRequest) {
   try {
     const { email, password, firstName, lastName, name } = await req.json();
@@ -21,6 +28,17 @@ export async function POST(req: NextRequest) {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+
+    // Beta lockdown: non-allowed emails cannot create accounts.
+    if (!BETA_ALLOWED_EMAILS.has(normalizedEmail)) {
+      return NextResponse.json(
+        {
+          error:
+            "Inscription fermée pendant la phase beta. Demandez un accès à l'administrateur.",
+        },
+        { status: 403 }
+      );
+    }
 
     const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existing) {

@@ -1,12 +1,20 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogoMark } from "@/components/Logo";
 
 export default function RegisterPage() {
   const router = useRouter();
+
+  // Beta: public registration is closed. Route anyone hitting /auth/register
+  // to /auth/login with a notice. Kept as a client redirect (vs middleware)
+  // so the error is still visible if future beta ends and we unseal.
+  useEffect(() => {
+    router.replace("/auth/login?beta=closed");
+  }, [router]);
+
   const [form, setForm] = useState({
     firstName: "", lastName: "", email: "", password: "", confirm: "",
   });

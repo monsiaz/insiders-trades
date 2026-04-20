@@ -4,66 +4,187 @@
  *  - pctOfMarketCap:   totalAmount / company.marketCap * 100
  *  - pctOfInsiderFlow: totalAmount / SUM(all trades by same insider on same company) * 100
  *  - insiderCumNet:    cumulative buy-sell by this insider on this company up to this trade
- *  - isCluster:        ≥2 distinct insiders traded the same company within 5 calendar days
+ *  - isCluster:        ≥2 distinct insiders traded the same company within 30 days
  *  - signalScore:      composite 0-100 score
+ *
+ * ──────────── Budget ─────────────  total ≤ 100 pts
+ *  28 pts  — % of market cap          (size of trade relative to company)
+ *  16 pts  — % of insider own flow    (is this their biggest trade?)
+ *  12 pts  — insider function         (CEO > Director > Admin)
+ *   8 pts  — cluster strength         (multiple insiders within 30d)
+ *   4 pts  — directional conviction   (net buyer on this stock)
+ *  12 pts  — fundamentals             (analyst consensus + P/E + leverage)
+ *  20 pts  — composite signals        (momentum + value + quality + …)
  */
 
 import { prisma } from "./prisma";
 import { roleFunctionScore } from "./role-utils";
 
 // ────────────────────────────────────────────────────────────────────────────
-// Score weights  (total budget: 100 pts)
+// Core scoring helpers
 // ────────────────────────────────────────────────────────────────────────────
-//  35 pts — % of market cap        (size of trade relative to company)
-//  20 pts — % of insider own flow  (is this their biggest trade?)
-//  15 pts — insider function       (CEO > Director > Admin)
-//  10 pts — cluster                (multiple insiders same week)
-//   5 pts — directional conviction (net buyer on this stock)
-//  15 pts — company fundamentals   (analyst consensus + PE + leverage)
 
 function functionScore(fn: string | null): number {
-  return roleFunctionScore(fn);
+  // roleFunctionScore returns 0–15; rescale to 0–12
+  return Math.round((roleFunctionScore(fn) / 15) * 12);
 }
 
 function pctMcapScore(pct: number): number {
-  // 0.001% → 2pt, 0.01% → 8pt, 0.1% → 20pt, 0.5% → 30pt, 1%+ → 35pt
+  // 0.001% → 1pt, 0.01% → 6pt, 0.1% → 16pt, 0.5% → 24pt, 1%+ → 28pt
   if (pct <= 0) return 0;
-  const s = Math.min(35, Math.log10(pct + 0.001) * 12 + 28);
+  const s = Math.min(28, Math.log10(pct + 0.001) * 9.5 + 22);
   return Math.max(0, Math.round(s));
 }
 
 function pctFlowScore(pct: number): number {
   if (pct <= 0) return 0;
-  const s = Math.min(20, (pct / 100) * 24);
+  const s = Math.min(16, (pct / 100) * 19);
   return Math.max(0, Math.round(s));
 }
 
-/** Analyst + valuation bonus (0–15 pts) */
+/** Analyst + valuation + leverage fundamentals (0–12 pts, can go -4) */
 function fundamentalsScore(
   analystScore: number | null,   // 1=strong buy → 5=strong sell
   trailingPE: number | null,
   debtToEquity: number | null,
 ): number {
   let pts = 0;
-  // Analyst consensus (0–8 pts)
   if (analystScore != null) {
-    // 1.0 → 8, 1.5 → 7, 2.0 → 5, 2.5 → 3, 3.0 → 0, >3 → negative
-    pts += Math.max(-4, Math.round((3.5 - analystScore) * 3));
+    // 1.0 → 6, 1.5 → 5, 2.0 → 4, 2.5 → 2, 3.0 → 0, >3 → negative
+    pts += Math.max(-4, Math.round((3.5 - analystScore) * 2.2));
   }
-  // Valuation: low PE = potential upside (0–4 pts)
   if (trailingPE != null && trailingPE > 0 && trailingPE < 100) {
-    if (trailingPE < 10) pts += 4;
-    else if (trailingPE < 15) pts += 3;
-    else if (trailingPE < 20) pts += 2;
-    else if (trailingPE < 30) pts += 1;
+    if (trailingPE < 10) pts += 3;
+    else if (trailingPE < 15) pts += 2;
+    else if (trailingPE < 20) pts += 1;
   }
-  // Leverage: low D/E = safer (0–3 pts)
   if (debtToEquity != null) {
     if (debtToEquity < 30) pts += 3;
     else if (debtToEquity < 80) pts += 2;
     else if (debtToEquity < 150) pts += 1;
   }
-  return Math.min(15, Math.max(-4, pts));
+  return Math.min(12, Math.max(-4, pts));
+}
+
+/** Cluster strength bonus (0–8 pts): ≥4 → 8, 3 → 6, 2 → 4 */
+function clusterStrengthScore(nearbyInsiderCount: number): number {
+  if (nearbyInsiderCount >= 4) return 8;
+  if (nearbyInsiderCount >= 3) return 6;
+  if (nearbyInsiderCount >= 2) return 4;
+  return 0;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Composite signals (extended — 20 pts budget)
+// Each emits a boolean flag + a small point value, and the UI shows the flag.
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface CompositeInputs {
+  currentPrice:   number | null;
+  fiftyTwoWeekHigh: number | null;
+  fiftyTwoWeekLow:  number | null;
+  twoHundredDayAverage: number | null;
+  fiftyDayAverage:     number | null;
+  targetMean:    number | null;
+  targetHigh:    number | null;
+  targetLow:     number | null;
+  numAnalysts:   number | null;
+  analystScore:  number | null;  // 1=strong buy
+  trailingPE:    number | null;
+  forwardPE:     number | null;
+  priceToBook:   number | null;
+  profitMargin:  number | null;  // decimal (0.12 = 12%)
+  returnOnEquity: number | null; // decimal
+  returnOnAssets: number | null; // decimal
+  debtToEquity:  number | null;
+  freeCashFlow:  bigint | number | null;
+  heldByInstitutions: number | null; // decimal
+  heldByInsiders:     number | null; // decimal
+  shortRatio:    number | null;
+}
+
+export interface CompositeResult {
+  points: number;    // 0–20
+  flags: string[];   // machine-readable flag names
+}
+
+/** Compute the 20-pt composite bonus from Yahoo data. */
+export function computeComposite(i: CompositeInputs): CompositeResult {
+  const flags: string[] = [];
+  let pts = 0;
+
+  // ── 1. Momentum (position in 52w range) — up to 3 pts + flag
+  //    NB: "contrarian near 52w low" flag when insider buys a falling stock
+  if (i.currentPrice && i.fiftyTwoWeekHigh && i.fiftyTwoWeekLow
+      && i.fiftyTwoWeekHigh > i.fiftyTwoWeekLow) {
+    const range = i.fiftyTwoWeekHigh - i.fiftyTwoWeekLow;
+    const pos = (i.currentPrice - i.fiftyTwoWeekLow) / range; // 0 (low) → 1 (high)
+    if (pos <= 0.2) { pts += 3; flags.push("near-52w-low"); }        // contrarian buy
+    else if (pos >= 0.85) { pts += 1; flags.push("near-52w-high"); } // momentum but weak signal on its own
+  }
+
+  // ── 2. Price vs 200-day MA (long-term trend) — up to 2 pts + flag
+  if (i.currentPrice && i.twoHundredDayAverage && i.twoHundredDayAverage > 0) {
+    const r = i.currentPrice / i.twoHundredDayAverage;
+    if (r >= 1.05) { pts += 2; flags.push("above-ma200"); }
+    else if (r <= 0.85) { pts += 1; flags.push("oversold"); } // price 15%+ below MA200 + insider buy = strong
+  }
+
+  // ── 3. Analyst upside to target price — up to 3 pts + flag
+  if (i.currentPrice && i.targetMean && i.numAnalysts && i.numAnalysts >= 3) {
+    const upside = (i.targetMean - i.currentPrice) / i.currentPrice;
+    if (upside >= 0.25) { pts += 3; flags.push("upside-25pct"); }
+    else if (upside >= 0.15) { pts += 2; flags.push("upside-15pct"); }
+    else if (upside >= 0.05) { pts += 1; }
+  }
+
+  // ── 4. Analyst consensus Strong Buy — up to 2 pts + flag
+  if (i.analystScore != null && i.numAnalysts && i.numAnalysts >= 3) {
+    if (i.analystScore <= 1.75) { pts += 2; flags.push("analyst-strong-buy"); }
+    else if (i.analystScore <= 2.25) { pts += 1; flags.push("analyst-buy"); }
+  }
+
+  // ── 5. Value combo (low P/E + low P/B + positive FCF) — up to 2 pts + flag
+  const fcf = typeof i.freeCashFlow === "bigint" ? Number(i.freeCashFlow) : i.freeCashFlow;
+  const lowPE = i.trailingPE != null && i.trailingPE > 0 && i.trailingPE < 15;
+  const lowPB = i.priceToBook != null && i.priceToBook > 0 && i.priceToBook < 2;
+  const posFCF = fcf != null && fcf > 0;
+  if (lowPE && lowPB && posFCF) { pts += 2; flags.push("value-combo"); }
+  else if (lowPE && posFCF) { pts += 1; flags.push("value"); }
+
+  // ── 6. Quality combo (high ROE + high margin + low debt) — up to 3 pts + flag
+  const hiROE = i.returnOnEquity != null && i.returnOnEquity >= 0.15;      // ≥15%
+  const hiMargin = i.profitMargin != null && i.profitMargin >= 0.10;       // ≥10%
+  const loDebt = i.debtToEquity != null && i.debtToEquity < 80;
+  if (hiROE && hiMargin && loDebt) { pts += 3; flags.push("quality-combo"); }
+  else if (hiROE && hiMargin) { pts += 2; flags.push("quality"); }
+  else if (hiROE) { pts += 1; }
+
+  // ── 7. Smart money (institutional ownership) — up to 1 pt + flag
+  if (i.heldByInstitutions != null && i.heldByInstitutions >= 0.5) {
+    pts += 1;
+    flags.push("institutional-majority");
+  }
+
+  // ── 8. Insider alignment (insiders already hold material stake) — up to 2 pts + flag
+  //    Ownership is a strong signal that the insider has skin in the game
+  if (i.heldByInsiders != null && i.heldByInsiders >= 0.2) {
+    pts += 2;
+    flags.push("insider-owned-high");
+  } else if (i.heldByInsiders != null && i.heldByInsiders >= 0.05) {
+    pts += 1;
+    flags.push("insider-owned");
+  }
+
+  // ── 9. Short-squeeze setup — up to 2 pts + flag
+  if (i.shortRatio != null && i.shortRatio >= 5) {
+    pts += 2;
+    flags.push("short-squeeze");
+  } else if (i.shortRatio != null && i.shortRatio >= 3) {
+    pts += 1;
+  }
+
+  return { points: Math.min(20, pts), flags };
 }
 
 function computeScore(
@@ -76,23 +197,17 @@ function computeScore(
   trailingPE?: number | null,
   debtToEquity?: number | null,
   nearbyInsiderCount?: number,
+  compositePoints?: number,
 ): number {
   let score = 0;
   score += pctMcapScore(pctOfMarketCap ?? 0);
   score += pctFlowScore(pctOfInsiderFlow ?? 0);
   score += functionScore(insiderFunction);
-  // Use clusterStrength instead of flat +10 for cluster
   score += clusterStrengthScore(nearbyInsiderCount ?? (isCluster ? 2 : 0));
-  if ((insiderCumNet ?? 0) > 0) score += 5;
+  if ((insiderCumNet ?? 0) > 0) score += 4;
   score += fundamentalsScore(analystScore ?? null, trailingPE ?? null, debtToEquity ?? null);
+  score += compositePoints ?? 0;
   return Math.min(100, Math.max(0, score));
-}
-
-/** Cluster strength bonus (0–10 pts): ≥3 distinct insiders → 10, 2 → 5 */
-function clusterStrengthScore(nearbyInsiderCount: number): number {
-  if (nearbyInsiderCount >= 3) return 10;
-  if (nearbyInsiderCount >= 2) return 5;
-  return 0;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -133,7 +248,20 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
         totalAmount: true,
         transactionDate: true,
         pubDate: true,
-        company: { select: { marketCap: true, analystScore: true, trailingPE: true, debtToEquity: true } },
+        company: {
+          select: {
+            marketCap: true,
+            currentPrice: true,
+            fiftyTwoWeekHigh: true, fiftyTwoWeekLow: true,
+            fiftyDayAverage: true, twoHundredDayAverage: true,
+            targetMean: true, targetHigh: true, targetLow: true, numAnalysts: true,
+            analystScore: true,
+            trailingPE: true, forwardPE: true, priceToBook: true,
+            profitMargin: true, returnOnEquity: true, returnOnAssets: true,
+            debtToEquity: true, freeCashFlow: true,
+            heldByInstitutions: true, heldByInsiders: true, shortRatio: true,
+          },
+        },
       },
     });
 
@@ -220,6 +348,31 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
       const nearbyInsiderCount = nearbyInsiders.size;
       const isCluster = nearbyInsiderCount >= 2;
 
+      // ── Composite signals (momentum + value + quality + …) ────────────
+      const composite = computeComposite({
+        currentPrice: decl.company.currentPrice,
+        fiftyTwoWeekHigh: decl.company.fiftyTwoWeekHigh,
+        fiftyTwoWeekLow: decl.company.fiftyTwoWeekLow,
+        twoHundredDayAverage: decl.company.twoHundredDayAverage,
+        fiftyDayAverage: decl.company.fiftyDayAverage,
+        targetMean: decl.company.targetMean,
+        targetHigh: decl.company.targetHigh,
+        targetLow: decl.company.targetLow,
+        numAnalysts: decl.company.numAnalysts,
+        analystScore: decl.company.analystScore,
+        trailingPE: decl.company.trailingPE,
+        forwardPE: decl.company.forwardPE,
+        priceToBook: decl.company.priceToBook,
+        profitMargin: decl.company.profitMargin,
+        returnOnEquity: decl.company.returnOnEquity,
+        returnOnAssets: decl.company.returnOnAssets,
+        debtToEquity: decl.company.debtToEquity,
+        freeCashFlow: decl.company.freeCashFlow,
+        heldByInstitutions: decl.company.heldByInstitutions,
+        heldByInsiders: decl.company.heldByInsiders,
+        shortRatio: decl.company.shortRatio,
+      });
+
       const signalScore = computeScore(
         pctOfMarketCap,
         pctOfInsiderFlow,
@@ -230,6 +383,7 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
         decl.company.trailingPE,
         decl.company.debtToEquity,
         nearbyInsiderCount,
+        composite.points,
       );
 
       updates.push(

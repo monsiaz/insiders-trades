@@ -46,7 +46,14 @@ model Company {
   targetLow    Float?    // objectif cours bas
   numAnalysts  Int?      // nombre d'analystes
   currentPrice Float?    // dernier cours connu
+  priceAt      DateTime? // when currentPrice / technicals were last fetched
   analystAt    DateTime? // when analyst data was last fetched
+  // ── Technicals (Yahoo price meta) ──────────────────────────────────────
+  fiftyTwoWeekHigh     Float?  // plus haut sur 52 semaines
+  fiftyTwoWeekLow      Float?  // plus bas sur 52 semaines
+  fiftyDayAverage      Float?  // moyenne mobile 50 jours
+  twoHundredDayAverage Float?  // moyenne mobile 200 jours
+  dividendYield        Float?  // taux de dividende (0–1, ex 0.032 = 3.2%)
   // ── Misc ───────────────────────────────────────────────────────────────
   marketCapAt  DateTime? // kept for compat
   yahooSymbol  String?   // cached Yahoo Finance symbol

@@ -54,6 +54,7 @@ export interface CompanyFinancials {
   fiftyTwoWeekLow?: number;
   fiftyDayAverage?: number;
   twoHundredDayAverage?: number;
+  dividendYield?: number;
   // Meta
   fetchedAt: string;
   source: string[];
@@ -217,6 +218,7 @@ async function fetchQuoteSummary(
       if (sd.fiftyTwoWeekLow != null) out.fiftyTwoWeekLow ??= sd.fiftyTwoWeekLow as number;
       if (sd.fiftyDayAverage != null) out.fiftyDayAverage = sd.fiftyDayAverage as number;
       if (sd.twoHundredDayAverage != null) out.twoHundredDayAverage = sd.twoHundredDayAverage as number;
+      if (sd.dividendYield != null) out.dividendYield = sd.dividendYield as number;
     }
     return { ...out, source: ["quoteSummary"] };
   } catch {
@@ -402,6 +404,13 @@ export async function fetchAndStoreFinancials(
         targetLow: fin.targetLow,
         numAnalysts: fin.numAnalysts,
         analystAt: new Date(),
+        // Technicals (price meta)
+        fiftyTwoWeekHigh: fin.fiftyTwoWeekHigh,
+        fiftyTwoWeekLow: fin.fiftyTwoWeekLow,
+        fiftyDayAverage: fin.fiftyDayAverage,
+        twoHundredDayAverage: fin.twoHundredDayAverage,
+        dividendYield: fin.dividendYield,
+        priceAt: new Date(),
       },
     }).catch(() => { /* non-fatal */ });
   }

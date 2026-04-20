@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: "/recommendations", label: "Recommandations" },
   { href: "/backtest", label: "Backtest & Signaux" },
   { href: "/portfolio", label: "Mon portfolio" },
+  { href: "/methodologie", label: "Méthodologie" },
 ];
 
 export function AppFooter() {

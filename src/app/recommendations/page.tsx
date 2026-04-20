@@ -147,9 +147,9 @@ function MethodologyCard() {
       borderRadius: "2px",
       padding: "18px 24px 20px",
     }}>
-      <div className="flex items-baseline gap-3 mb-4">
+      <div className="flex items-baseline gap-3 mb-4 flex-wrap">
         <span style={{
-          fontFamily: "'DM Serif Display', Georgia, serif",
+          fontFamily: "var(--font-dm-serif), Georgia, serif",
           fontStyle: "italic",
           fontSize: "1.05rem",
           color: "var(--gold)",
@@ -166,6 +166,26 @@ function MethodologyCard() {
         }}>
           — Score composite / 100 pts
         </span>
+        <Link
+          href="/methodologie"
+          style={{
+            marginLeft: "auto",
+            fontFamily: "var(--font-inter), sans-serif",
+            fontSize: "0.72rem",
+            fontWeight: 600,
+            color: "var(--gold)",
+            textDecoration: "none",
+            letterSpacing: "0.02em",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
+          }}
+        >
+          Tout comprendre
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 17L17 7M17 7H8M17 7v9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </Link>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5" style={{ gap: 0 }}>
         {pts.map((p, i) => (

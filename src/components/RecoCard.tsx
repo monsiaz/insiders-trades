@@ -31,11 +31,18 @@ function fmtMcap(n: number | null): string | null {
 
 // Badge → accent class mapping
 function tagAccent(b: string): string {
+  // Primary trade badges
   if (b === "Cluster" || b === "PDG/DG") return "accent-indigo";
   if (b.startsWith("Score")) return "accent-pos";
   if (b === ">1M€" || b === "Mega-cap" || b === "Large-cap") return "accent-pos";
   if (b === ">2% mcap" || b === "CFO/DAF") return "accent-gold";
   if (b === ">0.5% mcap" || b === ">200k€") return "accent-gold";
+  // Composite (Yahoo fundamentals) badges
+  if (b === "Strong Buy" || b.startsWith("Upside")) return "accent-pos";
+  if (b === "Momentum" || b === "Qualité") return "accent-pos";
+  if (b === "Value" || b === "Près plus bas 52s") return "accent-gold";
+  if (b === "Institutionnels >50%" || b === "Dirigeants ≥20%") return "accent-indigo";
+  if (b === "Short squeeze") return "accent-neg";
   return "";
 }
 

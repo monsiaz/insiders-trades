@@ -1,352 +1,409 @@
 /**
- * fetch-logos.mjs — Fetch and self-host company logos
+ * fetch-logos.mjs — Fetch real company logos from Mac (local execution)
  *
- * Priority chain (fast → slow):
- *   1. Clearbit logo API (free, very reliable)
- *   2. Google Favicon HD (free, always returns something)
- *   3. OG image scraping from company website (Yahoo Finance page)
- *   4. OpenAI gpt-4o-search-preview web search (last resort)
+ * Strategy (NO Google Favicon):
+ *   1. Clearbit logo API  — domain variants (ticker.fr, ticker.com, name.fr, name.com…)
+ *   2. Website OG image   — scrape official site for og:image / header logo img
+ *   3. OpenAI gpt-4o-search-preview — web search for logo URL (last resort)
  *
- * Each valid logo is:
- *   - Downloaded as buffer
- *   - Uploaded to Vercel Blob (self-hosted CDN)
- *   - URL stored in Company.logoUrl
+ * Each found logo → uploaded to Vercel Blob → URL stored in Company.logoUrl
  *
  * Usage:
- *   node scripts/fetch-logos.mjs [--limit=N] [--concurrency=N] [--dry-run] [--reprocess]
+ *   node scripts/fetch-logos.mjs [--limit=N] [--concurrency=50] [--reprocess]
+ *   OPENAI_API_KEY=sk-... node scripts/fetch-logos.mjs
  */
 
 import { PrismaClient } from "@prisma/client";
 import { put } from "@vercel/blob";
 import { createRequire } from "module";
 import path from "path";
-import { writeFileSync, unlinkSync } from "fs";
-import os from "os";
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
 
-// Load env vars from .env.local
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
-try {
-  const dotenv = require("dotenv");
-  dotenv.config({ path: path.join(process.cwd(), ".env.local") });
-  dotenv.config({ path: path.join(process.cwd(), ".env") });
-} catch {}
+
+// ── Load env vars ────────────────────────────────────────────────────────────
+function loadEnv(filePath) {
+  try {
+    const lines = readFileSync(filePath, "utf8").split("\n");
+    for (const line of lines) {
+      const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
+      if (m && !process.env[m[1]]) {
+        let val = m[2].trim().replace(/^["']|["']$/g, "");
+        if (val) process.env[m[1]] = val;
+      }
+    }
+  } catch {}
+}
+
+// Load from multiple sources
+loadEnv(path.join(__dirname, "../.env.local"));
+loadEnv(path.join(__dirname, "../.env"));
+loadEnv("/Users/simonazoulay/SurfCampSenegal/.env");
+// Also try common locations
+[
+  "/Users/simonazoulay/.env",
+  path.join(process.env.HOME || "", ".openai"),
+].forEach(loadEnv);
 
 const args = process.argv.slice(2);
 const LIMIT       = parseInt(args.find(a => a.startsWith("--limit="))?.split("=")[1] ?? "9999");
-const CONCURRENCY = parseInt(args.find(a => a.startsWith("--concurrency="))?.split("=")[1] ?? "10");
+const CONCURRENCY = parseInt(args.find(a => a.startsWith("--concurrency="))?.split("=")[1] ?? "50");
+const REPROCESS   = args.includes("--reprocess");
 const DRY_RUN     = args.includes("--dry-run");
-const REPROCESS   = args.includes("--reprocess"); // re-fetch even if logoUrl exists
 
 const OPENAI_KEY = process.env.OPENAI_API_KEY ?? "";
 const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN ?? "";
 
+if (!OPENAI_KEY) {
+  console.warn("⚠️  OPENAI_API_KEY not found — OpenAI fallback will be skipped");
+} else {
+  console.log("✅ OpenAI key loaded:", OPENAI_KEY.slice(0, 8) + "...");
+}
 if (!BLOB_TOKEN && !DRY_RUN) {
-  console.error("❌ BLOB_READ_WRITE_TOKEN not found in env. Run: npx vercel env pull .env.local");
+  console.error("❌ BLOB_READ_WRITE_TOKEN not found");
   process.exit(1);
 }
 
+const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/124.0 Safari/537.36";
 const prisma = new PrismaClient({ log: ["error"] });
 
-const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/124.0 Safari/537.36";
+// ── Image fetch & validation ─────────────────────────────────────────────────
 
-// ── Image validation ─────────────────────────────────────────────────────────
-
-async function fetchImage(url, timeoutMs = 8000) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+async function fetchImage(url, ms = 7000) {
   try {
-    const res = await fetch(url, { headers: { "User-Agent": UA }, signal: ctrl.signal });
+    url = url.trim().replace(/[.,;!?)]+$/, "");
+    const res = await fetch(url, {
+      headers: { "User-Agent": UA, "Accept": "image/*,*/*;q=0.8" },
+      signal: AbortSignal.timeout(ms),
+      redirect: "follow",
+    });
     if (!res.ok) return null;
     const ct = res.headers.get("content-type") ?? "";
     if (ct.includes("text/html") || ct.includes("text/plain")) return null;
     const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.length < 100) return null;
-    return { buf, contentType: ct || "image/png" };
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(t);
-  }
+    if (buf.length < 300) return null;
+    return { buf, ct };
+  } catch { return null; }
 }
 
 function isValidImage(buf, ct) {
-  if (!buf || buf.length < 100) return false;
-  if (ct?.includes("svg")) return buf.length > 80; // SVG text — accept if non-trivial
-  // PNG magic: 89 50 4E 47
-  if (buf[0] === 0x89 && buf[1] === 0x50) return true;
-  // JPEG magic: FF D8 FF
-  if (buf[0] === 0xff && buf[1] === 0xd8) return true;
-  // WEBP: RIFF....WEBP
-  if (buf.slice(0, 4).toString() === "RIFF" && buf.slice(8, 12).toString() === "WEBP") return true;
-  // GIF
+  if (!buf || buf.length < 300) return false;
+  if (ct.includes("svg")) return buf.length > 100;
+  // Check magic bytes
+  if (buf[0] === 0x89 && buf[1] === 0x50) return true; // PNG
+  if (buf[0] === 0xff && buf[1] === 0xd8) return true; // JPEG
+  if (buf.slice(0, 4).toString() === "RIFF") return true; // WEBP
   if (buf.slice(0, 3).toString() === "GIF") return true;
-  // ICO
-  if (buf[0] === 0x00 && buf[1] === 0x00 && buf[2] === 0x01) return true;
-  // SVG/XML
-  const head = buf.slice(0, 30).toString("utf8").toLowerCase();
+  const head = buf.slice(0, 60).toString("utf8").toLowerCase();
   if (head.includes("<svg") || head.includes("<?xml")) return true;
   return false;
 }
 
-// ── Upload to Vercel Blob ────────────────────────────────────────────────────
+function isNotWiki(url) {
+  return !url.includes("wikipedia.org") && !url.includes("wikimedia.org") && !url.includes("google.com/s2/favicons");
+}
 
-async function uploadToBlob(company, buf, contentType) {
-  if (DRY_RUN) return `https://example.blob.vercel-storage.com/logos/${company.slug}.png`;
+// ── Domain variants ──────────────────────────────────────────────────────────
 
-  const ext = contentType.includes("svg") ? "svg"
-    : contentType.includes("webp") ? "webp"
-    : contentType.includes("gif") ? "gif"
-    : contentType.includes("jpeg") || contentType.includes("jpg") ? "jpg"
-    : "png";
+function buildDomains(name, yahooSymbol) {
+  const cleaned = name.toLowerCase()
+    .replace(/\s+(s\.a\.|s\.a\.s\.|s\.e\.|société anonyme|se\b|sa\b|sas\b|plc\b|nv\b|bv\b|inc\b|corp\b|ltd\b|group\b|groupe\b|holding\b|international\b|france\b|europe\b|et compagnie|& co\b)\.?\s*$/gi, "")
+    .trim();
 
-  const filename = `logos/${company.slug}.${ext}`;
-  const blob = await put(filename, buf, {
-    access: "public",
-    token: BLOB_TOKEN,
-    contentType,
-    addRandomSuffix: false,
+  const noSpace = cleaned.replace(/[\s\-&',\.\(\)]/g, "");
+  const dashed  = cleaned.replace(/[\s&',\.\(\)]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  const ticker  = yahooSymbol?.replace(/\.[A-Z]{1,3}$/, "").toLowerCase() ?? "";
+
+  const cands = new Set();
+  if (ticker && ticker.length >= 2) {
+    cands.add(`${ticker}.fr`);
+    cands.add(`${ticker}.com`);
+  }
+  for (const base of [noSpace, dashed]) {
+    if (base.length >= 2) {
+      cands.add(`${base}.fr`);
+      cands.add(`${base}.com`);
+      // Deaccented
+      const da = base.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      if (da !== base) { cands.add(`${da}.fr`); cands.add(`${da}.com`); }
+    }
+  }
+  // Extra: without common suffixes
+  const stripped = noSpace.replace(/groupe|group|sa|se|holding|france/g, "");
+  if (stripped.length >= 3 && stripped !== noSpace) {
+    cands.add(`${stripped}.fr`);
+    cands.add(`${stripped}.com`);
+  }
+  return [...cands].slice(0, 14);
+}
+
+// ── Strategy 1: Clearbit ─────────────────────────────────────────────────────
+
+async function tryClearbit(name, yahooSymbol) {
+  const domains = buildDomains(name, yahooSymbol);
+  for (const domain of domains) {
+    const url = `https://logo.clearbit.com/${domain}`;
+    const r = await fetchImage(url, 5000);
+    if (!r) continue;
+    // Clearbit returns 200 for valid logos
+    if (isValidImage(r.buf, r.ct)) {
+      return { ...r, source: "clearbit", sourceUrl: url };
+    }
+    // Clearbit 403 WAF: check magic bytes
+    if (r.buf.length > 100) {
+      const head = r.buf.slice(0, 4);
+      if (head[0] === 0x89 || head[0] === 0xff || r.buf.toString("utf8", 0, 5).includes("<svg")) {
+        return { ...r, source: "clearbit", sourceUrl: url };
+      }
+    }
+  }
+  return null;
+}
+
+// ── Strategy 2: OG image + header logo scraping ──────────────────────────────
+
+async function tryScrape(name, yahooSymbol) {
+  const domains = buildDomains(name, yahooSymbol).slice(0, 5);
+
+  for (const domain of domains) {
+    for (const scheme of [`https://${domain}`, `https://www.${domain}`]) {
+      try {
+        const res = await fetch(scheme, {
+          headers: { "User-Agent": UA, "Accept": "text/html", "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8" },
+          signal: AbortSignal.timeout(8000),
+          redirect: "follow",
+        });
+        if (!res.ok) continue;
+        const html = await res.text();
+        const base = new URL(res.url).origin;
+
+        const candidates = [];
+
+        // 1. OG image
+        const ogMatch = html.match(/<meta[^>]+(?:property|name)=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+          ?? html.match(/content=["']([^"']+)["'][^>]+(?:property|name)=["']og:image["']/i);
+        if (ogMatch?.[1]) candidates.push({ url: ogMatch[1], priority: 10 });
+
+        // Twitter image
+        const twMatch = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i);
+        if (twMatch?.[1]) candidates.push({ url: twMatch[1], priority: 9 });
+
+        // 2. Header/navbar logo imgs
+        const headerMatch = html.match(/<header[^>]*>([\s\S]{0,3000}?)<\/header>/i);
+        const navMatch    = html.match(/<nav[^>]*>([\s\S]{0,2000}?)<\/nav>/i);
+        for (const block of [headerMatch?.[1], navMatch?.[1]].filter(Boolean)) {
+          const imgRe = /<img[^>]+>/gi;
+          let m;
+          while ((m = imgRe.exec(block)) !== null) {
+            const tag = m[0];
+            const src = tag.match(/(?:src|data-src|data-lazy-src)=["']([^"']+)["']/i)?.[1];
+            const alt = tag.match(/alt=["']([^"']+)["']/i)?.[1] ?? "";
+            const cls = tag.match(/class=["']([^"']+)["']/i)?.[1] ?? "";
+            if (!src || src.startsWith("data:")) continue;
+            if (/favicon|16x16|32x32|apple-touch/i.test(src)) continue;
+            const prio = /logo|brand/i.test(src + alt + cls) ? 8 : 4;
+            candidates.push({ url: src, priority: prio });
+          }
+        }
+
+        // 3. Any img with logo in src/alt/class
+        const logoImgs = [...html.matchAll(/<img[^>]+>/gi)];
+        for (const [tag] of logoImgs) {
+          const src = tag.match(/(?:src|data-src)=["']([^"']+)["']/i)?.[1];
+          const alt = tag.match(/alt=["']([^"']+)["']/i)?.[1] ?? "";
+          const cls = tag.match(/class=["']([^"']+)["']/i)?.[1] ?? "";
+          if (!src || src.startsWith("data:")) continue;
+          if (/favicon|16x16|32x32|sprite|payment|social/i.test(src + cls)) continue;
+          if (/logo|brand/i.test(src + alt + cls)) {
+            candidates.push({ url: src, priority: 6 });
+          }
+        }
+
+        // Resolve URLs and test
+        const seen = new Set();
+        const sorted = candidates.sort((a, b) => b.priority - a.priority);
+        for (const { url: rawUrl } of sorted) {
+          let resolved;
+          try {
+            resolved = rawUrl.startsWith("http") ? rawUrl
+              : rawUrl.startsWith("//") ? "https:" + rawUrl
+              : base + (rawUrl.startsWith("/") ? "" : "/") + rawUrl;
+          } catch { continue; }
+          if (seen.has(resolved)) continue;
+          seen.add(resolved);
+          if (!isNotWiki(resolved)) continue;
+          const r = await fetchImage(resolved, 6000);
+          if (r && isValidImage(r.buf, r.ct)) {
+            return { ...r, source: "scraped", sourceUrl: resolved };
+          }
+        }
+      } catch { continue; }
+    }
+  }
+  return null;
+}
+
+// ── Strategy 3: OpenAI gpt-4o-search-preview ─────────────────────────────────
+
+async function tryOpenAI(name, yahooSymbol) {
+  if (!OPENAI_KEY) return null;
+  try {
+    const { default: OpenAI } = await import("openai");
+    const client = new OpenAI({ apiKey: OPENAI_KEY });
+
+    const prompt = `Trouve l'URL officielle du logo de la société française "${name}"${yahooSymbol ? ` (ticker Euronext: ${yahooSymbol})` : ""}.
+
+Cherche sur :
+- Le site officiel de l'entreprise
+- Clearbit : https://logo.clearbit.com/<domaine>
+- Brandfetch : https://cdn.brandfetch.io/<domaine>/icon
+- Wikipedia Commons
+- LinkedIn, Twitter/X page officielle
+
+RÈGLES STRICTES :
+- NE PAS retourner une URL Google Favicon (google.com/s2/favicons)
+- NE PAS retourner une URL Wikipedia (wikipedia.org ou wikimedia.org)
+- Retourner UNIQUEMENT l'URL directe de l'image (.png, .jpg, .svg, .webp)
+- Une seule URL, sans explication`;
+
+    const resp = await client.chat.completions.create({
+      model: "gpt-4o-search-preview",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 400,
+    });
+
+    const text = resp.choices[0]?.message?.content?.trim() ?? "";
+    // Extract all image URLs
+    const urls = [...text.matchAll(/https?:\/\/[^\s<>"']+\.(?:png|jpg|jpeg|svg|webp)(?:\?[^\s<>"']*)?/gi)]
+      .map(m => m[0])
+      .filter(u => isNotWiki(u));
+
+    for (const url of urls.slice(0, 5)) {
+      const r = await fetchImage(url, 8000);
+      if (r && isValidImage(r.buf, r.ct)) {
+        return { ...r, source: "openai", sourceUrl: url };
+      }
+    }
+
+    // Try Clearbit URL suggested by AI even if not an image extension
+    const clearbitMatch = text.match(/https:\/\/logo\.clearbit\.com\/[^\s<>"']+/i);
+    if (clearbitMatch) {
+      const r = await fetchImage(clearbitMatch[0], 5000);
+      if (r && isValidImage(r.buf, r.ct)) {
+        return { ...r, source: "openai_clearbit", sourceUrl: clearbitMatch[0] };
+      }
+    }
+  } catch (e) {
+    if (process.env.DEBUG) console.error("OpenAI error:", e.message?.slice(0, 80));
+  }
+  return null;
+}
+
+// ── Blob upload ──────────────────────────────────────────────────────────────
+
+async function uploadToBlob(slug, buf, ct) {
+  if (DRY_RUN) return `https://blob.vercel-storage.com/dry-run/${slug}`;
+  const ext = ct.includes("svg") ? "svg" : ct.includes("webp") ? "webp"
+    : ct.includes("gif") ? "gif" : ct.includes("jpg") || ct.includes("jpeg") ? "jpg" : "png";
+  const blob = await put(`logos/${slug}.${ext}`, buf, {
+    access: "public", token: BLOB_TOKEN, contentType: ct, addRandomSuffix: false,
   });
   return blob.url;
 }
 
-// ── Strategy 1: Clearbit ────────────────────────────────────────────────────
+// ── Process one company ──────────────────────────────────────────────────────
 
-function nameToDomainCandidates(company) {
-  // Clean company name → possible domains
-  const raw = company.name.toLowerCase()
-    .replace(/\s+(s\.a\.|s\.a\.s\.|s\.e\.|se|sa|sas|plc|nv|bv|inc|corp|ltd|group|groupe|holding|international|france|europe)\.?$/gi, "")
-    .trim();
-
-  const noSpaces  = raw.replace(/[\s\-&',\.]/g, "");
-  const dashed    = raw.replace(/[\s&',\.]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
-  const dotted    = raw.replace(/[\s&',\.]+/g, ".");
-
-  const tlds = [".fr", ".com"];
-  const candidates = [];
-  for (const base of [noSpaces, dashed, dotted]) {
-    for (const tld of tlds) {
-      candidates.push(`${base}${tld}`);
-    }
-  }
-  return candidates;
-}
-
-async function tryClearbit(company) {
-  const candidates = [
-    ...nameToDomainCandidates(company),
-    company.yahooSymbol ? `${company.yahooSymbol.replace(/\.[A-Z]+$/, "").toLowerCase()}.fr` : null,
-    company.yahooSymbol ? `${company.yahooSymbol.replace(/\.[A-Z]+$/, "").toLowerCase()}.com` : null,
-  ].filter(Boolean);
-
-  for (const domain of [...new Set(candidates)]) {
-    const url = `https://logo.clearbit.com/${domain}`;
-    const result = await fetchImage(url, 4000);
-    if (result && isValidImage(result.buf, result.contentType) && result.buf.length > 300) {
-      return { ...result, source: "clearbit", sourceUrl: url };
-    }
-  }
-  return null;
-}
-
-// ── Strategy 2: Google Favicon HD ───────────────────────────────────────────
-
-async function tryGoogleFavicon(company) {
-  const nameDomains = nameToDomainCandidates(company);
-  const domains = [
-    company.yahooSymbol ? `${company.yahooSymbol.replace(/\.[A-Z]+$/, "").toLowerCase()}.fr` : null,
-    company.yahooSymbol ? `${company.yahooSymbol.replace(/\.[A-Z]+$/, "").toLowerCase()}.com` : null,
-    ...nameDomains.slice(0, 3),
-  ].filter(Boolean);
-
-  for (const domain of [...new Set(domains)]) {
-    const url = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
-    const result = await fetchImage(url, 5000);
-    if (result && isValidImage(result.buf, result.contentType) && result.buf.length > 500) {
-      return { ...result, source: "google_favicon", sourceUrl: url };
-    }
-  }
-  return null;
-}
-
-// ── Strategy 3: Scrape Yahoo Finance for company website then OG image ───────
-
-async function tryYahooFinanceScrape(company) {
-  if (!company.yahooSymbol) return null;
-  try {
-    // Fetch company profile from Yahoo Finance
-    const profileUrl = `https://finance.yahoo.com/quote/${encodeURIComponent(company.yahooSymbol)}/`;
-    const res = await fetch(profileUrl, {
-      headers: {
-        "User-Agent": UA,
-        "Accept": "text/html",
-        "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8",
-      },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    const html = await res.text();
-
-    // Extract website from Yahoo Finance
-    const websiteMatch = html.match(/data-testid="website"[^>]*>([^<]+)/i)
-      || html.match(/"website"\s*:\s*"([^"]+)"/);
-    const website = websiteMatch?.[1];
-
-    if (website) {
-      // Try clearbit with real domain
-      const domain = website.replace(/https?:\/\/(www\.)?/, "").split("/")[0];
-      const clearbitUrl = `https://logo.clearbit.com/${domain}`;
-      const result = await fetchImage(clearbitUrl, 5000);
-      if (result && isValidImage(result.buf, result.contentType)) {
-        return { ...result, source: "clearbit_yahoo", sourceUrl: clearbitUrl };
-      }
-
-      // Try OG image from the website
-      const siteRes = await fetch(`https://${domain}`, {
-        headers: { "User-Agent": UA },
-        signal: AbortSignal.timeout(8000),
-      });
-      if (siteRes.ok) {
-        const siteHtml = await siteRes.text();
-        const ogMatch = siteHtml.match(/<meta[^>]+(?:property|name)="og:image"[^>]+content="([^"]+)"/i)
-          || siteHtml.match(/content="([^"]+)"[^>]+(?:property|name)="og:image"/i);
-        if (ogMatch?.[1]) {
-          const imgUrl = ogMatch[1].startsWith("http") ? ogMatch[1] : `https://${domain}${ogMatch[1]}`;
-          const result = await fetchImage(imgUrl, 6000);
-          if (result && isValidImage(result.buf, result.contentType)) {
-            return { ...result, source: "og_image", sourceUrl: imgUrl };
-          }
-        }
-      }
-    }
-  } catch {}
-  return null;
-}
-
-// ── Strategy 4: OpenAI web search ───────────────────────────────────────────
-
-async function tryOpenAI(company) {
-  if (!OPENAI_KEY) return null;
-
-  try {
-    const { default: OpenAI } = await import("openai").catch(() => ({ default: null }));
-    if (!OpenAI) return null;
-
-    const client = new OpenAI({ apiKey: OPENAI_KEY });
-
-    const response = await client.chat.completions.create({
-      model: "gpt-4o-search-preview",
-      messages: [
-        {
-          role: "user",
-          content: `Find the official logo image URL for "${company.name}", a French company listed on Euronext Paris (ticker: ${company.yahooSymbol ?? "unknown"}).
-
-Search on:
-- Official website of the company
-- Clearbit: https://logo.clearbit.com/<domain>
-- Google Favicon: https://www.google.com/s2/favicons?domain=<domain>&sz=128
-- LogosWorld, Brandfetch, Wikipedia
-
-Return ONLY the direct image URL (.png, .jpg, .svg, .webp). No explanation, just the URL.`
-        }
-      ],
-      max_tokens: 200,
-    });
-
-    const text = response.choices[0]?.message?.content ?? "";
-    const urlMatch = text.match(/https?:\/\/[^\s<>"]+\.(?:png|jpg|jpeg|svg|webp|gif)/i);
-    if (!urlMatch) return null;
-
-    const result = await fetchImage(urlMatch[0], 8000);
-    if (result && isValidImage(result.buf, result.contentType)) {
-      return { ...result, source: "openai", sourceUrl: urlMatch[0] };
-    }
-  } catch {}
-  return null;
-}
-
-// ── Main processing ──────────────────────────────────────────────────────────
-
-async function processCompany(company, stats) {
-  // Try strategies in order
+async function processCompany(co, stats) {
   const strategies = [
-    () => tryClearbit(company),
-    () => tryGoogleFavicon(company),
-    () => tryYahooFinanceScrape(company),
-    () => tryOpenAI(company),
+    () => tryClearbit(co.name, co.yahooSymbol),
+    () => tryScrape(co.name, co.yahooSymbol),
+    () => tryOpenAI(co.name, co.yahooSymbol),
   ];
 
   for (const strategy of strategies) {
     try {
-      const result = await strategy();
-      if (!result) continue;
-
-      const blobUrl = await uploadToBlob(company, result.buf, result.contentType);
-
+      const r = await strategy();
+      if (!r) continue;
+      const url = await uploadToBlob(co.slug, r.buf, r.ct);
       if (!DRY_RUN) {
         await prisma.company.update({
-          where: { id: company.id },
-          data: { logoUrl: blobUrl, logoSource: result.source },
+          where: { id: co.id },
+          data: { logoUrl: url, logoSource: r.source },
         });
       }
-
       stats.found++;
-      stats[result.source] = (stats[result.source] ?? 0) + 1;
-      return { success: true, source: result.source, url: blobUrl };
-    } catch (err) {
-      // Silent fail — try next strategy
-    }
+      stats[r.source] = (stats[r.source] ?? 0) + 1;
+      stats.samples.push({ name: co.name, source: r.source, url: r.sourceUrl });
+      return;
+    } catch {}
   }
-
   stats.notFound++;
-  return { success: false };
+  stats.failed.push(co.name);
 }
 
-// ── Entry point ──────────────────────────────────────────────────────────────
+// ── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
   console.log(`\n🖼️  fetch-logos.mjs — ${DRY_RUN ? "DRY RUN" : "LIVE"}`);
   console.log(`   concurrency=${CONCURRENCY}  limit=${LIMIT}  reprocess=${REPROCESS}\n`);
+  console.log(`   Strategies: Clearbit → Scrape OG → OpenAI (no Google Favicon)\n`);
 
-  const where = REPROCESS
-    ? {}
-    : { logoUrl: null };
-
+  const where = REPROCESS ? {} : { logoUrl: null };
   const companies = await prisma.company.findMany({
     where,
-    select: { id: true, name: true, slug: true, yahooSymbol: true, logoUrl: true },
+    select: { id: true, name: true, slug: true, yahooSymbol: true },
     orderBy: { declarations: { _count: "desc" } },
     take: LIMIT,
   });
 
-  console.log(`📊  ${companies.length} companies to process (${REPROCESS ? "all" : "missing logo only"})\n`);
-  if (companies.length === 0) { console.log("✅  All logos already fetched!"); await prisma.$disconnect(); return; }
+  console.log(`📊  ${companies.length} companies to process\n`);
+  if (companies.length === 0) { console.log("✅  Nothing to do!"); await prisma.$disconnect(); return; }
 
-  const stats = { found: 0, notFound: 0 };
+  const stats = { found: 0, notFound: 0, samples: [], failed: [] };
   let processed = 0;
 
-  // Process in batches
+  // Process in parallel batches
   for (let i = 0; i < companies.length; i += CONCURRENCY) {
     const batch = companies.slice(i, i + CONCURRENCY);
-    await Promise.all(batch.map((c) => processCompany(c, stats)));
+    await Promise.all(batch.map(co => processCompany(co, stats)));
     processed += batch.length;
     const pct = Math.round(processed / companies.length * 100);
-    process.stdout.write(`\r  Progress: ${processed}/${companies.length} (${pct}%)  found=${stats.found}  missing=${stats.notFound}  `);
-    if (i + CONCURRENCY < companies.length) await new Promise(r => setTimeout(r, 300));
+    const foundKeys = Object.entries(stats)
+      .filter(([k]) => !["found","notFound","samples","failed"].includes(k))
+      .map(([k,v]) => `${k}=${v}`).join("  ");
+    process.stdout.write(`\r  ${processed}/${companies.length} (${pct}%)  found=${stats.found}  missing=${stats.notFound}  [${foundKeys}]  `);
   }
 
   console.log("\n");
-  console.log("══════════════════════════════════════");
-  console.log("           LOGO FETCH REPORT");
-  console.log("══════════════════════════════════════");
-  console.log(`Total processed   : ${companies.length}`);
-  console.log(`✅ Found          : ${stats.found}`);
-  console.log(`❌ Not found      : ${stats.notFound}`);
+  console.log("════════════════════════════════════════════════════════");
+  console.log("                    LOGO REPORT");
+  console.log("════════════════════════════════════════════════════════");
+  console.log(`Total         : ${companies.length}`);
+  console.log(`✅ Found      : ${stats.found} (${Math.round(stats.found/companies.length*100)}%)`);
+  console.log(`❌ Not found  : ${stats.notFound}`);
   console.log(`\nBy source:`);
   for (const [k, v] of Object.entries(stats)) {
-    if (k === "found" || k === "notFound") continue;
-    console.log(`  ${k.padEnd(20)}: ${v}`);
+    if (["found","notFound","samples","failed"].includes(k)) continue;
+    console.log(`  ${k.padEnd(18)}: ${v}`);
   }
-  console.log("══════════════════════════════════════\n");
+  if (stats.samples.length > 0) {
+    console.log(`\n✅ Sample logos found:`);
+    stats.samples.slice(0, 20).forEach(s => console.log(`  ${s.name.padEnd(35)} [${s.source}] ${s.url.slice(0,60)}`));
+  }
+  if (stats.failed.length > 0) {
+    console.log(`\n❌ Not found (${stats.failed.length}):`);
+    stats.failed.slice(0, 30).forEach(n => console.log(`  ${n}`));
+  }
+  console.log("════════════════════════════════════════════════════════\n");
+
+  // Final DB stats
+  const [total, withLogo] = await Promise.all([
+    prisma.company.count(),
+    prisma.company.count({ where: { logoUrl: { not: null } } }),
+  ]);
+  console.log(`📊 DB coverage: ${withLogo}/${total} (${(withLogo/total*100).toFixed(1)}%)\n`);
 
   await prisma.$disconnect();
 }

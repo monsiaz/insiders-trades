@@ -250,7 +250,7 @@ export async function getRecommendations(opts: RecoOptions): Promise<RecoItem[]>
           ],
         },
     orderBy: { pubDate: "desc" },
-    take: limit * 6, // over-fetch, we'll rank and trim
+    take: limit * 12, // over-fetch, we'll rank + filter (weak returns) and trim
     select: {
       id: true, amfId: true, link: true,
       pubDate: true, transactionDate: true,
@@ -342,13 +342,22 @@ export async function getRecommendations(opts: RecoOptions): Promise<RecoItem[]>
     };
   });
 
-  // Sort by score desc, then take top N (deduplicate by company — keep best per company)
+  // Minimum expected return filter — we don't surface recos under 4% T+90
+  // SELL signals bypass this (they're warnings, not performance picks)
+  const MIN_EXPECTED_RETURN = 4;
+
+  // Sort by score desc, filter weak returns, then take top N (dedup by company — keep best per company)
   const seen = new Set<string>();
   return scored
     .sort((a, b) => b.recoScore - a.recoScore)
     .filter((r) => {
       if (seen.has(r.company.slug)) return false;
       seen.add(r.company.slug);
+      // SELL is always kept (they're sell-warnings, not buy-recos)
+      if (r.action === "SELL") return true;
+      // BUY must have a credible expected return
+      if (r.expectedReturn90d == null) return false;
+      if (r.expectedReturn90d < MIN_EXPECTED_RETURN) return false;
       return true;
     })
     .slice(0, limit);

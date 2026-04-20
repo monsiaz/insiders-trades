@@ -98,20 +98,32 @@ function AlertToggle({ alertEnabled }: { alertEnabled: boolean }) {
 
 function SectionHeader({ title, sub, count }: { title: string; sub: string; count?: number }) {
   return (
-    <div className="flex items-end justify-between gap-4 mb-6">
+    <div className="flex items-end justify-between gap-4 mb-6 pb-3" style={{ borderBottom: "1px solid var(--border-med)" }}>
       <div>
-        <div className="flex items-center gap-2.5">
-          <div style={{ width: "3px", height: "18px", background: "var(--c-indigo)", borderRadius: "2px", flexShrink: 0 }} />
-          <h2 style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--tx-1)", letterSpacing: "-0.025em", fontFamily: "'Banana Grotesk', 'Space Grotesk', sans-serif" }}>
+        <div className="flex items-baseline gap-3">
+          <h2 style={{
+            fontFamily: "'DM Serif Display', Georgia, serif",
+            fontSize: "1.35rem",
+            fontWeight: 400,
+            color: "var(--tx-1)",
+            letterSpacing: "-0.01em",
+          }}>
             {title}
-            {count != null && (
-              <span className="ml-2 text-sm font-semibold" style={{ color: "var(--tx-3)" }}>
-                {count} signaux
-              </span>
-            )}
           </h2>
+          {count != null && (
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "0.68rem",
+              color: "var(--gold)",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              fontWeight: 600,
+            }}>
+              — {count.toString().padStart(2, "0")} signaux
+            </span>
+          )}
         </div>
-        <p className="mt-1 text-sm" style={{ color: "var(--tx-3)", paddingLeft: "15px" }}>{sub}</p>
+        <p className="mt-1 text-sm" style={{ color: "var(--tx-3)", fontStyle: "italic", letterSpacing: "0.005em" }}>{sub}</p>
       </div>
     </div>
   );
@@ -121,29 +133,62 @@ function SectionHeader({ title, sub, count }: { title: string; sub: string; coun
 
 function MethodologyCard() {
   const pts = [
-    { label: "Score signal (0-30 pts)", desc: "Score propriétaire AMF + comportement insider" },
-    { label: "Win rate historique (0-25 pts)", desc: "% de trades gagnants pour ce type de signal" },
-    { label: "Retour attendu T+90 (0-20 pts)", desc: "Rendement moyen du backtest pour ce profil" },
-    { label: "Récence (0-15 pts)", desc: "Décroissance exponentielle depuis la publication (demi-vie 21j)" },
-    { label: "Conviction (0-10 pts)", desc: "Cluster d'insiders, % market cap, montant significatif" },
+    { label: "Signal AMF",    pts: "30", desc: "Score propriétaire + comportement insider" },
+    { label: "Win rate",      pts: "25", desc: "% trades gagnants pour ce profil" },
+    { label: "Retour T+90",   pts: "20", desc: "Rendement moyen historique" },
+    { label: "Récence",       pts: "15", desc: "Décroissance exp. · demi-vie 21j" },
+    { label: "Conviction",    pts: "10", desc: "Cluster · % mcap · taille ticket" },
   ];
   return (
-    <div className="card p-5 mb-8" style={{ borderTop: "3px solid var(--c-indigo)" }}>
-      <div className="flex items-center gap-2 mb-4">
-        <div className="w-6 h-6 rounded-lg flex items-center justify-center"
-          style={{ background: "var(--c-indigo-bg)", border: "1px solid var(--c-indigo-bd)" }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="var(--c-indigo-2)" strokeWidth="2"/>
-            <path d="M12 8v4l3 3" stroke="var(--c-indigo-2)" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </div>
-        <span className="text-sm font-bold" style={{ color: "var(--tx-1)" }}>Méthodologie du score (0–100)</span>
+    <div className="mb-8" style={{
+      background: "var(--bg-surface)",
+      border: "1px solid var(--border-med)",
+      borderLeft: "3px solid var(--gold)",
+      borderRadius: "2px",
+      padding: "18px 24px 20px",
+    }}>
+      <div className="flex items-baseline gap-3 mb-4">
+        <span style={{
+          fontFamily: "'DM Serif Display', Georgia, serif",
+          fontStyle: "italic",
+          fontSize: "1.05rem",
+          color: "var(--gold)",
+          letterSpacing: "-0.01em",
+        }}>
+          Méthodologie
+        </span>
+        <span style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: "0.64rem",
+          color: "var(--tx-3)",
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+        }}>
+          — Score composite / 100 pts
+        </span>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5" style={{ gap: 0 }}>
         {pts.map((p, i) => (
-          <div key={i} className="rounded-xl p-3" style={{ background: "var(--bg-raised)", border: "1px solid var(--border)" }}>
-            <div className="text-xs font-bold mb-1" style={{ color: "var(--c-indigo-2)" }}>{p.label}</div>
-            <div className="text-[11px]" style={{ color: "var(--tx-3)" }}>{p.desc}</div>
+          <div key={i} style={{
+            padding: "10px 14px",
+            borderRight: i < pts.length - 1 ? "1px solid var(--border)" : "none",
+          }}>
+            <div className="flex items-baseline gap-1.5 mb-1">
+              <span style={{
+                fontFamily: "'Banana Grotesk', sans-serif",
+                fontSize: "1.35rem", fontWeight: 700,
+                color: "var(--gold)",
+                letterSpacing: "-0.03em",
+                lineHeight: 1,
+              }}>{p.pts}</span>
+              <span style={{ fontSize: "0.62rem", color: "var(--tx-4)", letterSpacing: "0.06em" }}>PTS</span>
+            </div>
+            <div style={{
+              fontSize: "0.78rem", fontWeight: 600,
+              color: "var(--tx-1)", marginBottom: 2,
+              letterSpacing: "-0.005em",
+            }}>{p.label}</div>
+            <div style={{ fontSize: "0.68rem", color: "var(--tx-3)", lineHeight: 1.45 }}>{p.desc}</div>
           </div>
         ))}
       </div>
@@ -176,68 +221,113 @@ export default async function RecommendationsPage({
   return (
     <div className="content-wrapper">
 
-      {/* ── Page header ── */}
+      {/* ── Page header — editorial masthead ── */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full"
-            style={{ background: "var(--c-mint-bg)", border: "1px solid var(--c-mint-bd)" }}>
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--c-mint)" }} />
-            <span style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--c-mint)" }}>
-              Mis à jour quotidiennement
-            </span>
-          </div>
+        <div className="flex items-center gap-3 mb-4">
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "0.64rem",
+            fontWeight: 600,
+            color: "var(--gold)",
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+          }}>
+            № {new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
+          </span>
+          <span style={{ flex: 1, height: "1px", background: "var(--border-med)" }} />
+          <span className="inline-flex items-center gap-2" style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "0.62rem",
+            color: "var(--signal-pos)",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            fontWeight: 600,
+          }}>
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--signal-pos)" }} />
+            Live · mis à jour quotidiennement
+          </span>
         </div>
-        <h1 className="heading-hero mb-3">
-          Recommandations<br />
-          <span className="text-gradient-brand">actionnables</span>
+        <h1 style={{
+          fontFamily: "'DM Serif Display', Georgia, serif",
+          fontSize: "clamp(2.5rem, 5vw, 3.75rem)",
+          fontWeight: 400,
+          letterSpacing: "-0.015em",
+          lineHeight: 1.05,
+          color: "var(--tx-1)",
+          marginBottom: "14px",
+        }}>
+          Recommandations <span style={{ fontStyle: "italic", color: "var(--gold)" }}>actionnables</span>
         </h1>
-        <p className="text-sm" style={{ color: "var(--tx-2)", maxWidth: "560px", lineHeight: 1.65 }}>
-          Signaux d'achat classés par score composite (signal AMF × backtest historique × récence × conviction).
-          {user && hasPortfolio && " Les ventes sur vos positions sont aussi mises en avant."}
+        <p style={{
+          fontSize: "0.94rem",
+          color: "var(--tx-2)",
+          maxWidth: "640px",
+          lineHeight: 1.65,
+          fontFamily: "'Inter', sans-serif",
+        }}>
+          Signaux d'achat classés par score composite — signal AMF × backtest historique × récence × conviction.
+          Nous ne présentons que les dossiers avec un retour estimé supérieur à <strong style={{ color: "var(--tx-1)" }}>+4 % T+90</strong>.
+          {user && hasPortfolio && " Les alertes de vente sur vos positions figurent également."}
         </p>
       </div>
 
-      {/* ── Tabs ── */}
-      <div className="flex gap-1 mb-6" style={{ borderBottom: "1px solid var(--border-med)", paddingBottom: "0" }}>
+      {/* ── Tabs — minimal underline ── */}
+      <div className="flex gap-0 mb-8" style={{ borderBottom: "1px solid var(--border-med)" }}>
         <Link
           href="/recommendations"
-          className={`px-4 py-2.5 text-sm font-semibold transition-all rounded-t-lg -mb-px ${activeTab === "general" ? "border-b-2" : ""}`}
           style={{
-            color: activeTab === "general" ? "var(--c-indigo-2)" : "var(--tx-3)",
-            borderBottomColor: activeTab === "general" ? "var(--c-indigo-2)" : "transparent",
+            padding: "10px 0",
+            marginRight: "32px",
+            fontSize: "0.82rem",
+            fontWeight: 600,
+            color: activeTab === "general" ? "var(--tx-1)" : "var(--tx-3)",
+            borderBottom: activeTab === "general" ? "2px solid var(--gold)" : "2px solid transparent",
+            marginBottom: "-1px",
+            letterSpacing: "0.01em",
+            textDecoration: "none",
+            transition: "color 0.14s",
           }}>
-          <span className="flex items-center gap-1.5">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" stroke="currentColor" strokeWidth="2"/></svg>
-            Top 10 général
-          </span>
+          Top général
         </Link>
         {user ? (
           <Link
             href="/recommendations?tab=personal"
-            className={`px-4 py-2.5 text-sm font-semibold transition-all rounded-t-lg -mb-px ${activeTab === "personal" ? "border-b-2" : ""}`}
             style={{
-              color: activeTab === "personal" ? "var(--c-indigo-2)" : "var(--tx-3)",
-              borderBottomColor: activeTab === "personal" ? "var(--c-indigo-2)" : "transparent",
+              padding: "10px 0",
+              fontSize: "0.82rem",
+              fontWeight: 600,
+              color: activeTab === "personal" ? "var(--tx-1)" : "var(--tx-3)",
+              borderBottom: activeTab === "personal" ? "2px solid var(--gold)" : "2px solid transparent",
+              marginBottom: "-1px",
+              letterSpacing: "0.01em",
+              textDecoration: "none",
+              display: "inline-flex", alignItems: "center", gap: "8px",
             }}>
-            <span className="flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-              Pour moi
-            </span>
+            Pour moi
             {personalData && personalData.recos.length > 0 && (
-              <span className="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                style={{ background: "var(--c-indigo-bg)", color: "var(--c-indigo-2)" }}>
-                {personalData.recos.length}
+              <span style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "0.62rem",
+                color: "var(--gold)",
+                letterSpacing: "0.06em",
+              }}>
+                ({personalData.recos.length.toString().padStart(2, "0")})
               </span>
             )}
           </Link>
         ) : (
           <Link href="/auth/login?next=/recommendations?tab=personal"
-            className="px-4 py-2.5 text-sm font-semibold transition-all rounded-t-lg"
-            style={{ color: "var(--tx-4)" }}>
-            <span className="flex items-center gap-1.5">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-              Pour moi
-            </span>
+            style={{
+              padding: "10px 0",
+              fontSize: "0.82rem",
+              fontWeight: 500,
+              color: "var(--tx-4)",
+              letterSpacing: "0.01em",
+              textDecoration: "none",
+              display: "inline-flex", alignItems: "center", gap: "6px",
+            }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            Pour moi
           </Link>
         )}
       </div>
@@ -258,7 +348,7 @@ export default async function RecommendationsPage({
           ) : (
             <>
               {/* Free visible cards */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-4">
                 {generalRecos.slice(0, FREE_VISIBLE).map((item, i) => (
                   <RecoCard key={item.declarationId} item={item} rank={i + 1} />
                 ))}
@@ -266,7 +356,7 @@ export default async function RecommendationsPage({
               {/* Gated cards (only shown when not authenticated) */}
               {!isAuth && generalRecos.length > FREE_VISIBLE && (
                 <FreemiumGate feature="les 7 autres recommandations avec noms des entreprises, scores et retours estimés">
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
                     {generalRecos.slice(FREE_VISIBLE).map((item, i) => (
                       <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
                     ))}
@@ -275,7 +365,7 @@ export default async function RecommendationsPage({
               )}
               {/* If auth, show remaining cards normally */}
               {isAuth && generalRecos.length > FREE_VISIBLE && (
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
                   {generalRecos.slice(FREE_VISIBLE).map((item, i) => (
                     <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
                   ))}
@@ -335,7 +425,7 @@ export default async function RecommendationsPage({
               {(personalData?.recos ?? []).length === 0 ? (
                 <EmptyState mode="personal" />
               ) : (
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
                   {(personalData?.recos ?? []).map((item, i) => (
                     <RecoCard key={item.declarationId} item={item} rank={i + 1} />
                   ))}
@@ -368,7 +458,7 @@ export default async function RecommendationsPage({
                     sub="Des insiders vendent des sociétés que vous détenez en portefeuille"
                     count={personalData.recos.filter((r) => r.action === "SELL").length}
                   />
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-8">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-8">
                     {personalData.recos.filter((r) => r.action === "SELL").map((item, i) => (
                       <RecoCard key={item.declarationId} item={item} rank={i + 1} />
                     ))}
@@ -384,7 +474,7 @@ export default async function RecommendationsPage({
                     sub="Basés sur votre profil de portfolio et les performances historiques similaires"
                     count={personalData.recos.filter((r) => r.action === "BUY").length}
                   />
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
                     {personalData.recos.filter((r) => r.action === "BUY").map((item, i) => (
                       <RecoCard key={item.declarationId} item={item} rank={i + 1} />
                     ))}

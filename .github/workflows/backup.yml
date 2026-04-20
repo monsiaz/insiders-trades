@@ -1,0 +1,29 @@
+name: Auto-backup — Tag on main push
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  tag:
+    name: Create date-based backup tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create timestamped tag
+        run: |
+          DATE=$(date +'%Y-%m-%d')
+          SHA=$(git rev-parse --short HEAD)
+          TAG="backup/${DATE}-${SHA}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          git push origin "$TAG"
+          echo "Created tag: $TAG"

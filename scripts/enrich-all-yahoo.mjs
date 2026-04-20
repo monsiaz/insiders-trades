@@ -99,13 +99,31 @@ async function resolveSymbol(isin, name) {
 
 async function fetchChartMeta(symbol) {
   try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`;
-    const res = await fetch(url, { headers: { "User-Agent": ua() }, signal: AbortSignal.timeout(8000) });
+    // 1y range so we can compute MAs if needed, also gets 52w meta
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1y`;
+    const res = await fetch(url, { headers: { "User-Agent": ua() }, signal: AbortSignal.timeout(10000) });
     if (!res.ok) return null;
     const data = await res.json();
-    const meta = data?.chart?.result?.[0]?.meta;
+    const result = data?.chart?.result?.[0];
+    const meta = result?.meta;
     if (!meta?.regularMarketPrice) return null;
-    return { currentPrice: meta.regularMarketPrice, currency: meta.currency };
+
+    const out = {
+      currentPrice: meta.regularMarketPrice,
+      currency: meta.currency,
+      fiftyTwoWeekHigh: meta.fiftyTwoWeekHigh ?? null,
+      fiftyTwoWeekLow:  meta.fiftyTwoWeekLow  ?? null,
+    };
+
+    // Compute 50d / 200d moving averages from the 1-year daily series
+    const closes = result?.indicators?.quote?.[0]?.close;
+    if (Array.isArray(closes)) {
+      const clean = closes.filter((v) => typeof v === "number" && v > 0);
+      const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+      if (clean.length >= 200) out.twoHundredDayAverage = avg(clean.slice(-200));
+      if (clean.length >= 50)  out.fiftyDayAverage      = avg(clean.slice(-50));
+    }
+    return out;
   } catch { return null; }
 }
 
@@ -179,6 +197,11 @@ async function fetchQuoteSummary(symbol) {
     if (ks.sharesOutstanding) out.sharesOut ??= ks.sharesOutstanding;
     if (sd.trailingPE) out.trailingPE = sd.trailingPE;
     if (sd.marketCap) out.marketCap ??= sd.marketCap;
+    if (sd.fiftyTwoWeekHigh) out.fiftyTwoWeekHigh = sd.fiftyTwoWeekHigh;
+    if (sd.fiftyTwoWeekLow)  out.fiftyTwoWeekLow  = sd.fiftyTwoWeekLow;
+    if (sd.fiftyDayAverage)  out.fiftyDayAverage  = sd.fiftyDayAverage;
+    if (sd.twoHundredDayAverage) out.twoHundredDayAverage = sd.twoHundredDayAverage;
+    if (sd.dividendYield != null) out.dividendYield = sd.dividendYield;
     return out;
   } catch { return {}; }
 }
@@ -219,9 +242,16 @@ async function storeFinancials(companyId, symbol, data) {
       targetHigh:    safe(data.targetHigh),
       targetLow:     safe(data.targetLow),
       numAnalysts:   data.numAnalysts ? Math.round(data.numAnalysts) : undefined,
+      // Technicals
+      fiftyTwoWeekHigh:     safe(data.fiftyTwoWeekHigh),
+      fiftyTwoWeekLow:      safe(data.fiftyTwoWeekLow),
+      fiftyDayAverage:      safe(data.fiftyDayAverage),
+      twoHundredDayAverage: safe(data.twoHundredDayAverage),
+      dividendYield:        safe(data.dividendYield),
       financialsAt:  new Date(),
       analystAt:     new Date(),
       marketCapAt:   new Date(),
+      priceAt:       new Date(),
     },
   });
 }

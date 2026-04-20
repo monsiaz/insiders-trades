@@ -205,12 +205,32 @@ function buildBadges(decl: {
   pctOfMarketCap: number | null;
   totalAmount: number | null;
   insiderFunction: string | null;
-  company: { marketCap: bigint | null };
+  company: {
+    marketCap: bigint | null;
+    currentPrice: number | null;
+    fiftyTwoWeekHigh: number | null;
+    fiftyTwoWeekLow: number | null;
+    twoHundredDayAverage: number | null;
+    targetMean: number | null;
+    numAnalysts: number | null;
+    analystScore: number | null;
+    trailingPE: number | null;
+    priceToBook: number | null;
+    profitMargin: number | null;
+    returnOnEquity: number | null;
+    debtToEquity: number | null;
+    freeCashFlow: bigint | null;
+    heldByInstitutions: number | null;
+    heldByInsiders: number | null;
+    shortRatio: number | null;
+  };
 }): string[] {
   const badges: string[] = [];
   const role = roleLabelForReco(decl.insiderFunction);
   const size = sizeLabelForReco(decl.company.marketCap);
+  const c = decl.company;
 
+  // ── Primary signals (trade itself) ────────────────────────────
   if (decl.isCluster)                         badges.push("Cluster");
   if ((decl.signalScore ?? 0) >= 80)          badges.push("Score ≥80");
   else if ((decl.signalScore ?? 0) >= 65)     badges.push("Score ≥65");
@@ -221,7 +241,53 @@ function buildBadges(decl: {
   if ((decl.totalAmount ?? 0) >= 1_000_000)   badges.push(">1M€");
   else if ((decl.totalAmount ?? 0) >= 200_000) badges.push(">200k€");
   if (size === "Small" || size === "Micro")   badges.push(size + "-cap");
-  return badges.slice(0, 4); // max 4 badges
+
+  // ── Composite signals (Yahoo fundamentals) ────────────────────
+  // Upside to analyst target
+  if (c.currentPrice && c.targetMean && (c.numAnalysts ?? 0) >= 3) {
+    const upside = (c.targetMean - c.currentPrice) / c.currentPrice;
+    if (upside >= 0.25) badges.push("Upside ≥25%");
+    else if (upside >= 0.15) badges.push("Upside ≥15%");
+  }
+  // Analyst consensus
+  if (c.analystScore != null && (c.numAnalysts ?? 0) >= 3 && c.analystScore <= 1.75) {
+    badges.push("Strong Buy");
+  }
+  // 52-week position (contrarian near low, momentum near high)
+  if (c.currentPrice && c.fiftyTwoWeekHigh && c.fiftyTwoWeekLow
+      && c.fiftyTwoWeekHigh > c.fiftyTwoWeekLow) {
+    const pos = (c.currentPrice - c.fiftyTwoWeekLow) / (c.fiftyTwoWeekHigh - c.fiftyTwoWeekLow);
+    if (pos <= 0.2) badges.push("Près plus bas 52s");
+  }
+  // Above 200-day MA = momentum
+  if (c.currentPrice && c.twoHundredDayAverage && c.twoHundredDayAverage > 0
+      && c.currentPrice / c.twoHundredDayAverage >= 1.05) {
+    badges.push("Momentum");
+  }
+  // Quality combo
+  const hiROE = c.returnOnEquity != null && c.returnOnEquity >= 0.15;
+  const hiMargin = c.profitMargin != null && c.profitMargin >= 0.10;
+  const loDebt = c.debtToEquity != null && c.debtToEquity < 80;
+  if (hiROE && hiMargin && loDebt) badges.push("Qualité");
+  // Value combo
+  const lowPE = c.trailingPE != null && c.trailingPE > 0 && c.trailingPE < 15;
+  const lowPB = c.priceToBook != null && c.priceToBook > 0 && c.priceToBook < 2;
+  const posFCF = c.freeCashFlow != null && Number(c.freeCashFlow) > 0;
+  if (lowPE && lowPB && posFCF) badges.push("Value");
+  // Institutional majority
+  if (c.heldByInstitutions != null && c.heldByInstitutions >= 0.5) {
+    badges.push("Institutionnels >50%");
+  }
+  // Insider ownership material
+  if (c.heldByInsiders != null && c.heldByInsiders >= 0.2) {
+    badges.push("Dirigeants ≥20%");
+  }
+  // Short-squeeze potential
+  if (c.shortRatio != null && c.shortRatio >= 5) {
+    badges.push("Short squeeze");
+  }
+
+  return badges.slice(0, 6); // max 6 badges (3 primary + 3 composite)
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -238,7 +304,7 @@ export interface RecoOptions {
 export const getGeneralRecommendations = unstable_cache(
   async (opts: { limit?: number; lookbackDays?: number }) =>
     _computeRecommendations({ mode: "general", ...opts }),
-  ["reco-general"],
+  ["reco-general-v2"], // v2: composite signals (momentum / value / quality / …)
   { revalidate: 600 }
 );
 
@@ -288,6 +354,12 @@ async function _computeRecommendations(opts: RecoOptions): Promise<RecoItem[]> {
         select: {
           name: true, slug: true, yahooSymbol: true, logoUrl: true,
           marketCap: true, analystReco: true, targetMean: true, currentPrice: true,
+          // Composite-signal inputs
+          fiftyTwoWeekHigh: true, fiftyTwoWeekLow: true,
+          twoHundredDayAverage: true, numAnalysts: true, analystScore: true,
+          trailingPE: true, priceToBook: true, freeCashFlow: true,
+          profitMargin: true, returnOnEquity: true, debtToEquity: true,
+          heldByInstitutions: true, heldByInsiders: true, shortRatio: true,
         },
       },
     },
@@ -363,7 +435,25 @@ async function _computeRecommendations(opts: RecoOptions): Promise<RecoItem[]> {
         pctOfMarketCap: decl.pctOfMarketCap,
         totalAmount: decl.totalAmount ? Number(decl.totalAmount) : null,
         insiderFunction: decl.insiderFunction,
-        company: { marketCap: co.marketCap },
+        company: {
+          marketCap: co.marketCap,
+          currentPrice: co.currentPrice,
+          fiftyTwoWeekHigh: co.fiftyTwoWeekHigh,
+          fiftyTwoWeekLow: co.fiftyTwoWeekLow,
+          twoHundredDayAverage: co.twoHundredDayAverage,
+          targetMean: co.targetMean,
+          numAnalysts: co.numAnalysts,
+          analystScore: co.analystScore,
+          trailingPE: co.trailingPE,
+          priceToBook: co.priceToBook,
+          profitMargin: co.profitMargin,
+          returnOnEquity: co.returnOnEquity,
+          debtToEquity: co.debtToEquity,
+          freeCashFlow: co.freeCashFlow,
+          heldByInstitutions: co.heldByInstitutions,
+          heldByInsiders: co.heldByInsiders,
+          shortRatio: co.shortRatio,
+        },
       }),
     };
   });

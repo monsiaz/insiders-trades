@@ -25,7 +25,7 @@ export function SyncButton() {
           (sum: number, r: { added: number }) => sum + r.added,
           0
         );
-        setResult(`✓ ${total} nouvelles déclarations`);
+        setResult(`+${total} nouvelles déclarations`);
         router.refresh();
       } else {
         setResult("Erreur de synchronisation");

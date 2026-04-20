@@ -91,18 +91,28 @@ const CustomChartTooltip = ({ active, payload, label, tradeMap, currency }: any)
   const trade = tradeMap?.get(label) as TradeEvent | undefined;
 
   return (
-    <div className="px-3.5 py-2.5 rounded-xl border border-white/10 bg-[#0a0a1f]/95 backdrop-blur-xl shadow-2xl text-xs min-w-[160px]">
-      <p className="text-slate-500 mb-1">{formatXAxis(label)}</p>
-      <p className="text-white font-bold text-sm tabular-nums">
+    <div style={{
+      padding: "10px 14px", borderRadius: "12px",
+      border: "1px solid var(--border-med)",
+      background: "var(--bg-surface)",
+      boxShadow: "var(--shadow-md)",
+      fontSize: "11px", minWidth: "160px",
+    }}>
+      <p style={{ color: "var(--tx-3)", marginBottom: "4px" }}>{formatXAxis(label)}</p>
+      <p style={{ color: "var(--tx-1)", fontWeight: 700, fontSize: "13px", fontFamily: "monospace" }}>
         {new Intl.NumberFormat("fr-FR", { style: "currency", currency: currency || "EUR", minimumFractionDigits: 2 }).format(price)}
       </p>
       {trade && (
-        <div className={`mt-2 pt-2 border-t border-white/8 space-y-0.5 ${trade.type === "sell" ? "text-rose-400" : "text-emerald-400"}`}>
-          <div className="flex items-center gap-1.5 font-semibold">
-            <span className="text-[10px]">{trade.type === "sell" ? "▼ Vente" : "▲ Achat"}</span>
+        <div style={{
+          marginTop: "8px", paddingTop: "8px",
+          borderTop: "1px solid var(--border)",
+          color: trade.type === "sell" ? "var(--c-crimson)" : "var(--c-emerald)",
+        }}>
+          <div style={{ fontWeight: 700, fontSize: "10px", marginBottom: "2px" }}>
+            {trade.type === "sell" ? "▼ Vente" : "▲ Achat"}
           </div>
-          {trade.person && <p className="text-slate-300 font-medium">{trade.person}</p>}
-          {trade.amount && <p className="font-bold">{fmtAmount(trade.amount, currency)}</p>}
+          {trade.person && <p style={{ color: "var(--tx-2)", fontWeight: 500 }}>{trade.person}</p>}
+          {trade.amount && <p style={{ fontWeight: 700 }}>{fmtAmount(trade.amount, currency)}</p>}
         </div>
       )}
     </div>
@@ -233,17 +243,19 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
           <div className="flex items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-white tabular-nums">
+                <span style={{ fontSize: "1.5rem", fontWeight: 700, fontFamily: "'Banana Grotesk', monospace", color: "var(--tx-1)", letterSpacing: "-0.04em" }}>
                   {new Intl.NumberFormat("fr-FR", { style: "currency", currency, minimumFractionDigits: 2 }).format(data.latest)}
                 </span>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full border tabular-nums ${
-                  isPositive ? "text-emerald-400 bg-emerald-400/10 border-emerald-400/20"
-                             : "text-rose-400 bg-rose-400/10 border-rose-400/20"
-                }`}>
+                <span style={{
+                  fontSize: "0.72rem", fontWeight: 700, padding: "2px 8px", borderRadius: "20px",
+                  border: `1px solid ${isPositive ? "var(--c-emerald-bd)" : "var(--c-crimson-bd)"}`,
+                  background: isPositive ? "var(--c-emerald-bg)" : "var(--c-crimson-bg)",
+                  color: isPositive ? "var(--c-emerald)" : "var(--c-crimson)",
+                }}>
                   {isPositive ? "+" : ""}{data.change.toFixed(2)}%
                 </span>
               </div>
-              <p className="text-[11px] text-slate-600 mt-0.5">{data.symbol} · Euronext Paris</p>
+              <p style={{ fontSize: "11px", color: "var(--tx-4)", marginTop: "2px" }}>{data.symbol} · Euronext Paris</p>
             </div>
             {/* Mini stats pills */}
             {buyTrades.length > 0 && (
@@ -263,14 +275,19 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
           </div>
 
           {/* Range selector */}
-          <div className="flex items-center gap-0.5 p-1 rounded-xl bg-white/4 border border-white/8">
+          <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "3px", background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: "10px" }}>
             {RANGE_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => setRange(opt.value)}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
-                  range === opt.value ? "bg-white/12 text-white" : "text-slate-500 hover:text-slate-300"
-                }`}
+                style={{
+                  padding: "3px 10px", borderRadius: "7px",
+                  fontSize: "11px", fontWeight: 600,
+                  border: "none", cursor: "pointer",
+                  background: range === opt.value ? "var(--bg-active)" : "transparent",
+                  color: range === opt.value ? "var(--tx-1)" : "var(--tx-3)",
+                  transition: "all 0.12s",
+                }}
               >
                 {opt.label}
               </button>
@@ -288,11 +305,11 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
                   <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="2 5" stroke="rgba(255,255,255,0.03)" vertical={false} />
+              <CartesianGrid strokeDasharray="2 5" stroke="var(--border)" vertical={false} />
               <XAxis
                 dataKey="date"
                 tickFormatter={formatXAxis}
-                tick={{ fontSize: 10, fill: "#475569" }}
+                tick={{ fontSize: 10, fill: "var(--tx-4)" }}
                 axisLine={false}
                 tickLine={false}
                 interval="preserveStartEnd"
@@ -348,52 +365,62 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
 
         {/* Legend */}
         {normalizedTrades.length > 0 && (
-          <div className="flex items-center gap-4 mt-2 pt-3 border-t border-white/5">
-            <span className="text-[11px] text-slate-600">Transactions insiders sur la période :</span>
-            <div className="flex items-center gap-1">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-              <span className="text-[11px] text-slate-500">Achat</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "8px", paddingTop: "10px", borderTop: "1px solid var(--border)" }}>
+            <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>Transactions insiders sur la période :</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+              <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "var(--c-emerald)" }} />
+              <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>Achat</span>
             </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2.5 h-2.5 rounded-full bg-rose-400" />
-              <span className="text-[11px] text-slate-500">Vente</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+              <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "var(--c-crimson)" }} />
+              <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>Vente</span>
             </div>
-            <span className="text-[11px] text-slate-600">· taille = montant</span>
+            <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>· taille = montant</span>
           </div>
         )}
       </div>
 
       {/* Trades detail section */}
       {allTrades.length > 0 && (
-        <div className="glass-card rounded-2xl overflow-hidden">
+        <div className="card" style={{ overflow: "hidden" }}>
           {/* Toolbar */}
-          <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
-            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-white/4 border border-white/6">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", borderBottom: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "3px", background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: "9px" }}>
               {(["all", "buy", "sell"] as TradeFilter[]).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all ${
-                    filter === f
-                      ? f === "buy" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/20"
-                        : f === "sell" ? "bg-rose-500/20 text-rose-300 border border-rose-500/20"
-                        : "bg-white/10 text-white"
-                      : "text-slate-500 hover:text-slate-300"
-                  }`}
+                  style={{
+                    padding: "3px 10px", borderRadius: "6px",
+                    fontSize: "11px", fontWeight: 600,
+                    border: filter === f && f === "buy" ? "1px solid var(--c-emerald-bd)"
+                          : filter === f && f === "sell" ? "1px solid var(--c-crimson-bd)"
+                          : "1px solid transparent",
+                    background: filter === f && f === "buy" ? "var(--c-emerald-bg)"
+                              : filter === f && f === "sell" ? "var(--c-crimson-bg)"
+                              : filter === f ? "var(--bg-active)" : "transparent",
+                    color: filter === f && f === "buy" ? "var(--c-emerald)"
+                         : filter === f && f === "sell" ? "var(--c-crimson)"
+                         : filter === f ? "var(--tx-1)" : "var(--tx-3)",
+                    cursor: "pointer", transition: "all 0.12s",
+                  }}
                 >
                   {f === "all" ? `Tous (${allTrades.length})` : f === "buy" ? `▲ Achats (${buyTrades.length})` : `▼ Ventes (${sellTrades.length})`}
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-1">
-              <span className="text-[11px] text-slate-600 mr-1">Trier :</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <span style={{ fontSize: "11px", color: "var(--tx-4)", marginRight: "4px" }}>Trier :</span>
               {(["date", "amount"] as const).map((s) => (
                 <button
                   key={s}
                   onClick={() => setSortBy(s)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
-                    sortBy === s ? "bg-white/8 text-white" : "text-slate-500 hover:text-slate-300"
-                  }`}
+                  style={{
+                    padding: "3px 9px", borderRadius: "6px", fontSize: "11px", fontWeight: 500,
+                    background: sortBy === s ? "var(--bg-hover)" : "transparent",
+                    color: sortBy === s ? "var(--tx-1)" : "var(--tx-3)",
+                    border: "none", cursor: "pointer",
+                  }}
                 >
                   {s === "date" ? "Date" : "Montant"}
                 </button>
@@ -402,31 +429,36 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
           </div>
 
           {/* Trades list */}
-          <div className="divide-y divide-white/4 max-h-72 overflow-y-auto">
+          <div style={{ maxHeight: "288px", overflowY: "auto" }}>
             {filteredTrades.slice(0, 100).map((trade, i) => {
               const isBuy = trade.type !== "sell";
               return (
-                <div key={i} className="flex items-center gap-3 px-5 py-2.5 hover:bg-white/3 transition-colors">
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 20px", borderBottom: "1px solid var(--border)", transition: "background 0.1s" }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-hover)"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                >
                   {/* Type indicator */}
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold ${
-                    isBuy ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"
-                  }`}>
+                  <div style={{
+                    width: "22px", height: "22px", borderRadius: "50%",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0, fontSize: "9px", fontWeight: 700,
+                    background: isBuy ? "var(--c-emerald-bg)" : "var(--c-crimson-bg)",
+                    color: isBuy ? "var(--c-emerald)" : "var(--c-crimson)",
+                    border: `1px solid ${isBuy ? "var(--c-emerald-bd)" : "var(--c-crimson-bd)"}`,
+                  }}>
                     {isBuy ? "▲" : "▼"}
                   </div>
-
                   {/* Date */}
-                  <span className="text-[11px] text-slate-500 w-20 flex-shrink-0 tabular-nums">
+                  <span style={{ fontSize: "11px", color: "var(--tx-3)", width: "72px", flexShrink: 0, fontFamily: "monospace" }}>
                     {fmtDate(trade.date)}
                   </span>
-
                   {/* Person */}
-                  <span className="text-xs text-slate-300 flex-1 truncate font-medium">
+                  <span style={{ fontSize: "0.78rem", color: "var(--tx-2)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
                     {trade.person ?? "—"}
                   </span>
-
                   {/* Amount */}
                   {trade.amount && (
-                    <span className={`text-sm font-bold tabular-nums flex-shrink-0 ${isBuy ? "text-emerald-400" : "text-rose-400"}`}>
+                    <span style={{ fontSize: "0.84rem", fontWeight: 700, flexShrink: 0, fontFamily: "monospace", color: isBuy ? "var(--c-emerald)" : "var(--c-crimson)" }}>
                       {fmtAmount(trade.amount, currency)}
                     </span>
                   )}
@@ -434,34 +466,34 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
               );
             })}
             {filteredTrades.length === 0 && (
-              <div className="px-5 py-8 text-center text-slate-600 text-sm">
+              <div style={{ padding: "24px", textAlign: "center", color: "var(--tx-3)", fontSize: "0.84rem" }}>
                 Aucune transaction sur la période
               </div>
             )}
           </div>
 
           {/* Summary footer */}
-          <div className="flex items-center justify-between px-5 py-3 border-t border-white/5 bg-white/2">
-            <span className="text-[11px] text-slate-600">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", borderTop: "1px solid var(--border)", background: "var(--bg-raised)" }}>
+            <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>
               {filteredTrades.length} transaction{filteredTrades.length > 1 ? "s" : ""} sur la période
             </span>
-            <div className="flex items-center gap-4">
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               {totalBuy > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-slate-600">Achats</span>
-                  <span className="text-xs font-bold text-emerald-400">{fmtAmount(totalBuy, currency)}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "10px", color: "var(--tx-4)" }}>Achats</span>
+                  <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--c-emerald)", fontFamily: "monospace" }}>{fmtAmount(totalBuy, currency)}</span>
                 </div>
               )}
               {totalSell > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-slate-600">Ventes</span>
-                  <span className="text-xs font-bold text-rose-400">{fmtAmount(totalSell, currency)}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "10px", color: "var(--tx-4)" }}>Ventes</span>
+                  <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--c-crimson)", fontFamily: "monospace" }}>{fmtAmount(totalSell, currency)}</span>
                 </div>
               )}
               {totalBuy > 0 && totalSell > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-slate-600">Net</span>
-                  <span className={`text-xs font-bold tabular-nums ${totalBuy - totalSell >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "10px", color: "var(--tx-4)" }}>Net</span>
+                  <span style={{ fontSize: "0.78rem", fontWeight: 700, fontFamily: "monospace", color: totalBuy - totalSell >= 0 ? "var(--c-emerald)" : "var(--c-crimson)" }}>
                     {totalBuy - totalSell >= 0 ? "+" : ""}{fmtAmount(Math.abs(totalBuy - totalSell), currency)}
                   </span>
                 </div>

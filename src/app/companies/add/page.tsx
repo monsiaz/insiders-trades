@@ -149,7 +149,7 @@ export default function AddCompanyPage() {
       </div>
 
       <div className="glass-card-static rounded-2xl p-4">
-        <p className="text-xs font-semibold text-slate-500 mb-2">💡 Exemple</p>
+        <p className="text-xs font-semibold text-slate-500 mb-2">Exemple</p>
         <div className="flex justify-between text-sm">
           <span className="text-slate-400">NANOBIOTIX</span>
           <code className="text-slate-300 font-mono">RS00005380</code>

@@ -158,7 +158,7 @@ export function AppFooter() {
             © {new Date().getFullYear()} InsiderTrades · Données AMF publiques · Règlement MAR 596/2014
           </div>
           <div style={{ fontSize: "0.72rem", color: "var(--tx-4)" }}>
-            Usage informatif uniquement — non-conseil en investissement
+            Usage informatif uniquement · non-conseil en investissement
           </div>
         </div>
       </div>

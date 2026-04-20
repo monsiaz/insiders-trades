@@ -81,15 +81,47 @@ function parsePrice(raw) {
   return isNaN(val) ? undefined : val;
 }
 
+const MIN_PARSE_DATE = new Date("2003-01-01");
+const MAX_PARSE_DATE = new Date(Date.now() + 18 * 30 * 24 * 60 * 60 * 1000);
+
 function parseDate(raw) {
   if (!raw) return undefined;
-  const months = { janvier:1, février:2, mars:3, avril:4, mai:5, juin:6, juillet:7, août:8, septembre:9, octobre:10, novembre:11, décembre:12 };
-  const mFr = raw.match(/(\d{1,2})\s+([a-zéûôê]+)\s+(\d{4})/i);
-  if (mFr) { const month = months[mFr[2].toLowerCase()]; if (month) return new Date(Date.UTC(+mFr[1], month - 1, +mFr[3])); }
+  const months = {
+    janvier:1,"février":2,mars:3,avril:4,mai:5,juin:6,
+    juillet:7,"août":8,septembre:9,octobre:10,novembre:11,"décembre":12
+  };
+
+  // French form: "07 mai 2024" or "7 mai 24"
+  const mFr = raw.match(/(\d{1,2})\s+([a-zéûôê]+)\s+(\d{2,4})/i);
+  if (mFr) {
+    const month = months[mFr[2].toLowerCase()];
+    let year = parseInt(mFr[3]);
+    if (mFr[3].length === 2) year += year <= 50 ? 2000 : 1900;
+    if (month) {
+      const d = new Date(Date.UTC(parseInt(mFr[1]), month - 1, year));
+      if (d >= MIN_PARSE_DATE && d <= MAX_PARSE_DATE) return d;
+    }
+  }
+  // ISO
   const mIso = raw.match(/(\d{4})-(\d{2})-(\d{2})/);
-  if (mIso) return new Date(Date.UTC(+mIso[1], +mIso[2] - 1, +mIso[3]));
-  const mSlash = raw.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if (mSlash) return new Date(Date.UTC(+mSlash[3], +mSlash[2] - 1, +mSlash[1]));
+  if (mIso) {
+    const d = new Date(Date.UTC(+mIso[1], +mIso[2] - 1, +mIso[3]));
+    if (d >= MIN_PARSE_DATE && d <= MAX_PARSE_DATE) return d;
+  }
+  // DD/MM/YYYY
+  const mSlash4 = raw.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (mSlash4) {
+    const d = new Date(Date.UTC(+mSlash4[3], +mSlash4[2] - 1, +mSlash4[1]));
+    if (d >= MIN_PARSE_DATE && d <= MAX_PARSE_DATE) return d;
+  }
+  // DD/MM/YY (2-digit year)
+  const mSlash2 = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/);
+  if (mSlash2) {
+    const yr = +mSlash2[3];
+    const year = yr <= 50 ? 2000 + yr : 1900 + yr;
+    const d = new Date(Date.UTC(year, +mSlash2[2] - 1, +mSlash2[1]));
+    if (d >= MIN_PARSE_DATE && d <= MAX_PARSE_DATE) return d;
+  }
   return undefined;
 }
 

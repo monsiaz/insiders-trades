@@ -39,7 +39,7 @@ function getTradeStyle(nature?: string | null) {
   if (n.includes("cession")) return { label: "Vente", icon: "▼", cls: "badge-sell", amountCls: "text-rose-400" };
   if (n.includes("acquisition")) return { label: "Achat", icon: "▲", cls: "badge-buy", amountCls: "text-emerald-400" };
   if (n.includes("exercice") || n.includes("option")) return { label: "Options", icon: "◇", cls: "bg-amber-400/10 border border-amber-400/20 text-amber-400", amountCls: "text-amber-400" };
-  if (n.includes("attribution")) return { label: "Attribution", icon: "✦", cls: "bg-violet-400/10 border border-violet-400/20 text-violet-400", amountCls: "text-violet-400" };
+  if (n.includes("attribution")) return { label: "Attribution", icon: "◆", cls: "bg-violet-400/10 border border-violet-400/20 text-violet-400", amountCls: "text-violet-400" };
   return { label: nature, icon: "●", cls: "badge-neutral", amountCls: "text-slate-300" };
 }
 
@@ -202,7 +202,7 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
                   style={{ color: "var(--tx-3)", background: "var(--bg-raised)", border: "1px solid var(--border)" }}
                 >
                   {declaration.isin}
-                  <span className="text-[9px] opacity-50">{copied ? "✓" : "⎘"}</span>
+                  <span className="text-[9px] opacity-50">{copied ? "ok" : "⌘"}</span>
                 </button>
               )}
             </div>
@@ -218,8 +218,9 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
                 </span>
               )}
               {declaration.transactionVenue && (
-                <span className="text-[11px]" style={{ color: "var(--tx-3)" }}>
-                  📍 {declaration.transactionVenue}
+                <span className="text-[11px] flex items-center gap-1" style={{ color: "var(--tx-3)" }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2"/></svg>
+                  {declaration.transactionVenue}
                 </span>
               )}
             </div>

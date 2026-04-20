@@ -6,12 +6,17 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const since90d = new Date(Date.now() - 90 * 86400_000);
 
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
   const [
     totalDeclarations,
     totalCompanies,
     totalInsiders,
     totalBuys,
     totalSells,
+    lastDecl,
+    todayCount,
     recentDeclarations,
     topCompaniesRaw,
     topInsidersRaw,
@@ -24,6 +29,14 @@ export async function GET() {
     }),
     prisma.declaration.count({
       where: { type: "DIRIGEANTS", transactionNature: { contains: "Cession", mode: "insensitive" } },
+    }),
+    prisma.declaration.findFirst({
+      where: { type: "DIRIGEANTS" },
+      orderBy: { pubDate: "desc" },
+      select: { pubDate: true },
+    }),
+    prisma.declaration.count({
+      where: { type: "DIRIGEANTS", pubDate: { gte: todayStart } },
     }),
     prisma.declaration.findMany({
       where: { type: "DIRIGEANTS" },
@@ -95,6 +108,8 @@ export async function GET() {
   return NextResponse.json(
     {
       stats: { totalDeclarations, totalCompanies, totalInsiders, totalBuys, totalSells },
+      lastAmfDate: lastDecl?.pubDate.toISOString() ?? null,
+      todayCount,
       recentDeclarations: recentDeclarations.map((d) => ({
         ...d,
         pubDate: d.pubDate.toISOString(),

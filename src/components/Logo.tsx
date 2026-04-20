@@ -7,13 +7,11 @@ interface LogoProps {
 }
 
 /**
- * LogoMark v2 — InsiderTrades
+ * LogoMark v3 — InsiderTrades "Midnight Analyst"
  *
- * A bold, distinctive mark that reads at any size.
- * Concept: an EKG flatline that breaks violently upward — the insider signal.
- * Two weight lines (flat/active) + a spike + a mint peak dot.
- *
- * Grid: 40×40 on a 10px-radius indigo square.
+ * Concept: un graphique ligne stylisé avec une flèche upward asymétrique.
+ * Background deep navy, gradient indigo→emerald, ligne candlestick épurée.
+ * Lisible à 16px comme à 256px.
  */
 export function LogoMark({ size = 32 }: { size?: number }) {
   return (
@@ -25,40 +23,48 @@ export function LogoMark({ size = 32 }: { size?: number }) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      {/* Container */}
-      <rect width="40" height="40" rx="10" fill="#5B5CF6" />
+      <defs>
+        <linearGradient id="lm-bg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#0A1628"/>
+          <stop offset="100%" stopColor="#050C18"/>
+        </linearGradient>
+        <linearGradient id="lm-accent" x1="0" y1="40" x2="40" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#5B8AF6"/>
+          <stop offset="60%" stopColor="#7BA3FF"/>
+          <stop offset="100%" stopColor="#10B981"/>
+        </linearGradient>
+        <linearGradient id="lm-spike" x1="20" y1="28" x2="20" y2="6" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#5B8AF6" stopOpacity="0.7"/>
+          <stop offset="100%" stopColor="#10B981"/>
+        </linearGradient>
+      </defs>
 
-      {/* Flat line — before event */}
-      <path
-        d="M5 27 L14 27"
-        stroke="white"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeOpacity="0.45"
-      />
+      {/* Background rounded square */}
+      <rect width="40" height="40" rx="10" fill="url(#lm-bg)"/>
 
-      {/* The spike — insider event */}
-      <path
-        d="M14 27 L20 7 L26 27"
-        stroke="white"
-        strokeWidth="2.8"
+      {/* Border très subtil */}
+      <rect width="40" height="40" rx="10" stroke="url(#lm-accent)" strokeWidth="0.8" strokeOpacity="0.25" fill="none"/>
+
+      {/* Baseline chart line gauche — flat */}
+      <line x1="5" y1="28" x2="13" y2="28" stroke="white" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.25"/>
+
+      {/* Signal spike — le "insider event" */}
+      <polyline
+        points="13,28 17,18 20,8 23,18 27,28"
+        stroke="url(#lm-accent)"
+        strokeWidth="2.4"
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeOpacity="0.95"
+        fill="none"
       />
 
-      {/* Flat line — after event (slightly elevated: signal confirmed) */}
-      <path
-        d="M26 27 L35 27"
-        stroke="white"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeOpacity="0.45"
-      />
+      {/* Right flat — légèrement remonté (signal bullish) */}
+      <line x1="27" y1="28" x2="35" y2="24" stroke="url(#lm-accent)" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.6"/>
 
-      {/* Peak dot — mint signal */}
-      <circle cx="20" cy="7" r="3.5" fill="#00C896" />
-      <circle cx="20" cy="7" r="1.6" fill="white" />
+      {/* Peak dot — emerald */}
+      <circle cx="20" cy="8" r="3.2" fill="#050C18"/>
+      <circle cx="20" cy="8" r="3.2" stroke="#10B981" strokeWidth="1.8"/>
+      <circle cx="20" cy="8" r="1.4" fill="#10B981"/>
     </svg>
   );
 }
@@ -72,7 +78,7 @@ export function Logo({ size = 32, showText = true, className = "" }: LogoProps) 
           <span
             style={{
               fontSize: size * 0.44,
-              fontFamily: "'Banana Grotesk', 'Space Grotesk', system-ui, sans-serif",
+              fontFamily: "'Banana Grotesk', 'Inter', system-ui, sans-serif",
               fontWeight: 700,
               letterSpacing: "-0.03em",
               color: "var(--tx-1)",
@@ -84,7 +90,7 @@ export function Logo({ size = 32, showText = true, className = "" }: LogoProps) 
           <span
             style={{
               fontSize: size * 0.24,
-              fontFamily: "'Banana Grotesk', 'Space Grotesk', system-ui, sans-serif",
+              fontFamily: "'Inter', system-ui, sans-serif",
               fontWeight: 600,
               letterSpacing: "0.09em",
               textTransform: "uppercase" as const,
@@ -108,10 +114,10 @@ export function LogoLockup({ className = "" }: { className?: string }) {
       <div className="flex flex-col leading-none">
         <span
           style={{
-            fontFamily: "'Banana Grotesk', 'Space Grotesk', system-ui, sans-serif",
+            fontFamily: "'Banana Grotesk', 'Inter', system-ui, sans-serif",
             fontSize: "1.375rem",
             fontWeight: 700,
-            letterSpacing: "-0.035em",
+            letterSpacing: "-0.04em",
             color: "var(--tx-1)",
             lineHeight: 1,
           }}
@@ -120,10 +126,10 @@ export function LogoLockup({ className = "" }: { className?: string }) {
         </span>
         <span
           style={{
-            fontFamily: "'Banana Grotesk', 'Space Grotesk', system-ui, sans-serif",
-            fontSize: "0.625rem",
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontSize: "0.6rem",
             fontWeight: 600,
-            letterSpacing: "0.1em",
+            letterSpacing: "0.12em",
             textTransform: "uppercase" as const,
             color: "var(--tx-3)",
             marginTop: "4px",

@@ -158,7 +158,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
       skipEmptyLines: true,
       complete: (res) => {
         setImportRows(res.data as Record<string, string>[]);
-        setImportStatus(`${res.data.length} lignes détectées — prêt à importer`);
+        setImportStatus(`${res.data.length} lignes détectées, prêt à importer`);
       },
     });
   }
@@ -173,7 +173,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
       body: JSON.stringify({ rows: importRows }),
     });
     const data = await res.json();
-    setImportStatus(`✓ ${data.imported} positions importées${data.errors?.length ? ` · ${data.errors.length} erreurs` : ""}`);
+    setImportStatus(`${data.imported} positions importées${data.errors?.length ? ` · ${data.errors.length} erreurs` : ""}`);
     setImportRows([]);
     setImportLoading(false);
     await fetchPositions();
@@ -206,7 +206,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
 
   const tabs = [
     { id: "positions", label: `Positions (${positions.length})` },
-    { id: "add", label: editId ? "✏️ Modifier" : "+ Ajouter" },
+    { id: "add", label: editId ? "Modifier" : "+ Ajouter" },
     { id: "import", label: "Importer CSV" },
   ] as const;
 
@@ -253,7 +253,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
               const below = p.alertBelow != null && p.currentPrice != null && p.currentPrice <= p.alertBelow;
               return (
                 <div key={p.id} className="text-sm text-amber-300/80">
-                  <strong>{p.name}</strong> — {below ? `cours ${fmtEur(p.currentPrice)} ≤ alerte basse ${fmtEur(p.alertBelow)}` : `cours ${fmtEur(p.currentPrice)} ≥ alerte haute ${fmtEur(p.alertAbove)}`}
+                  <strong>{p.name}</strong> : {below ? `cours ${fmtEur(p.currentPrice)} ≤ alerte basse ${fmtEur(p.alertBelow)}` : `cours ${fmtEur(p.currentPrice)} ≥ alerte haute ${fmtEur(p.alertAbove)}`}
                 </div>
               );
             })}
@@ -494,14 +494,16 @@ export function PortfolioDashboard({ user }: { user: User }) {
               onClick={() => fileRef.current?.click()}
               className="border-2 border-dashed border-white/10 hover:border-indigo-500/40 rounded-xl p-8 text-center cursor-pointer transition-all"
             >
-              <div className="text-3xl mb-2">📄</div>
+              <div className="mx-auto mb-3 flex items-center justify-center w-12 h-12 rounded-xl" style={{ background: "var(--bg-active)", border: "1px solid var(--border-med)" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ color: "var(--tx-3)" }}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="18" x2="12" y2="12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><line x1="9" y1="15" x2="15" y2="15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+              </div>
               <p className="text-sm text-slate-400">Cliquez pour choisir un fichier CSV</p>
               <p className="text-xs text-slate-600 mt-1">ou glissez-déposez ici</p>
               <input ref={fileRef} type="file" accept=".csv,.txt" onChange={handleCsvFile} className="hidden" />
             </div>
 
             {importStatus && (
-              <div className={`mt-3 px-4 py-2.5 rounded-xl text-sm ${importStatus.startsWith("✓") ? "bg-emerald-500/10 text-emerald-400" : "bg-white/5 text-slate-400"}`}>
+              <div className={`mt-3 px-4 py-2.5 rounded-xl text-sm ${importStatus.includes("erreurs") || importStatus === "" ? "bg-white/5 text-slate-400" : "bg-emerald-500/10 text-emerald-400"}`}>
                 {importStatus}
               </div>
             )}
@@ -564,9 +566,9 @@ function InsiderMatchSection({ positions }: { positions: Position[] }) {
   return (
     <div className="glass-card-static rounded-2xl p-6 border border-violet-500/10">
       <div className="flex items-center gap-2 mb-4">
-        <span className="text-violet-400 text-sm">🔍</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: "var(--c-violet)", flexShrink: 0 }}><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
         <h3 className="text-sm font-semibold text-white">Trades AMF sur vos positions</h3>
-        <span className="text-xs text-slate-500">— dirigeants ayant récemment acheté vos titres</span>
+        <span className="text-xs text-slate-500">dirigeants ayant récemment acheté vos titres</span>
       </div>
       <div className="space-y-4">
         {matches.map((m) => (

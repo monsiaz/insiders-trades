@@ -224,35 +224,96 @@ async function fetchQuoteSummary(
   }
 }
 
-// ── Symbol resolver (reused from signals.ts logic) ────────────────────────
+// ── Symbol resolver ────────────────────────────────────────────────────────
 
-async function resolveSymbol(isin: string | null, name: string | null): Promise<string | null> {
-  const suffix =
-    isin?.startsWith("FR") || isin?.startsWith("LU") ? ".PA" :
-    isin?.startsWith("NL") ? ".AS" :
-    isin?.startsWith("DE") ? ".DE" :
-    isin?.startsWith("GB") ? ".L" :
-    isin?.startsWith("IT") ? ".MI" :
-    isin?.startsWith("ES") ? ".MC" : ".PA";
+/** Remove French legal suffixes from company name to improve search accuracy */
+function cleanName(name: string): string {
+  return name
+    .replace(/\bS\.?A\.?S\.?\b|\bS\.?A\.?\b|\bS\.?E\.?\b|\bS\.?C\.?A\.?\b|\bS\.?N\.?C\.?\b/gi, "")
+    .replace(/\bGROUPE\b/gi, "")
+    .replace(/\bSOCIETE\b|\bSOCIÉTÉ\b/gi, "")
+    .replace(/\bFRANCE\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-  const queries = [isin, name, name?.split(" ").slice(0, 2).join(" ")].filter(Boolean) as string[];
+/** Determine the preferred exchange suffix from ISIN country code */
+function preferredSuffix(isin: string | null): string {
+  if (!isin) return ".PA";
+  if (isin.startsWith("FR") || isin.startsWith("LU")) return ".PA";
+  if (isin.startsWith("NL")) return ".AS";
+  if (isin.startsWith("BE")) return ".BR";
+  if (isin.startsWith("DE")) return ".DE";
+  if (isin.startsWith("GB")) return ".L";
+  if (isin.startsWith("IT")) return ".MI";
+  if (isin.startsWith("ES")) return ".MC";
+  if (isin.startsWith("CH")) return ".SW";
+  if (isin.startsWith("PT")) return ".LS";
+  return ".PA";
+}
+
+/** European exchange suffixes — only accept these for European ISINs to avoid false positives */
+const EUROPEAN_SUFFIXES = [".PA", ".AS", ".BR", ".DE", ".L", ".MI", ".MC", ".SW", ".LS", ".ST", ".CO", ".OL", ".HE", ".WA", ".PR", ".EPA"];
+
+async function searchYahoo(q: string, suffix: string, strictEuropean = false): Promise<string | null> {
+  const UA = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
+  ][Math.floor(Math.random() * 3)];
+  try {
+    const url = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=8&newsCount=0&lang=fr&region=FR`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": UA, Accept: "application/json" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const quotes: Array<{ symbol?: string; quoteType?: string; exchange?: string }> = data?.quotes ?? [];
+    const equities = quotes.filter((q) => q.quoteType === "EQUITY" && q.symbol);
+
+    if (strictEuropean) {
+      // For European ISINs (FR, NL, DE, etc.), only accept European exchange symbols
+      return (
+        equities.find((q) => q.symbol?.endsWith(suffix))?.symbol ??
+        equities.find((q) => EUROPEAN_SUFFIXES.some(s => q.symbol?.endsWith(s)))?.symbol ??
+        null
+      );
+    }
+    // Default: prefer suffix match > .PA > other European exchanges
+    return (
+      equities.find((q) => q.symbol?.endsWith(suffix))?.symbol ??
+      equities.find((q) => q.symbol?.endsWith(".PA"))?.symbol ??
+      equities.find((q) => EUROPEAN_SUFFIXES.some(s => q.symbol?.endsWith(s)))?.symbol ??
+      null
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function resolveSymbol(isin: string | null, name: string | null): Promise<string | null> {
+  const suffix = preferredSuffix(isin);
+  // European ISINs (FR, NL, DE, BE, GB, IT, ES, CH, PT, LU) → strict European-only matching
+  const strictEuropean = !!(isin && /^(FR|NL|DE|BE|GB|IT|ES|CH|PT|LU|SE|DK|NO|FI|PL|AT|IE)/.test(isin));
+
+  // Build a set of queries from most to least specific
+  const queries: string[] = [];
+  if (isin) queries.push(isin);                          // ISIN is most precise
+  if (name) {
+    queries.push(name);                                  // Full name
+    const clean = cleanName(name);
+    if (clean && clean !== name) queries.push(clean);   // Cleaned name
+    const firstWord = clean.split(" ")[0];
+    if (firstWord && firstWord.length > 3) queries.push(firstWord); // First word
+    const twoWords = clean.split(" ").slice(0, 2).join(" ");
+    if (twoWords !== clean && twoWords !== firstWord) queries.push(twoWords); // First 2 words
+  }
+
   for (const q of queries) {
-    try {
-      const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=6&lang=fr&region=FR`;
-      const res = await fetch(url, {
-        headers: { "User-Agent": "Mozilla/5.0" },
-        signal: AbortSignal.timeout(6000),
-      });
-      if (!res.ok) continue;
-      const data = await res.json();
-      const quotes: Array<{ symbol?: string; quoteType?: string }> = data?.quotes ?? [];
-      const equities = quotes.filter((q) => q.quoteType === "EQUITY" && q.symbol);
-      const match =
-        equities.find((q) => q.symbol?.endsWith(suffix)) ??
-        equities.find((q) => q.symbol?.endsWith(".PA")) ??
-        equities[0];
-      if (match?.symbol) return match.symbol;
-    } catch { /* continue */ }
+    const sym = await searchYahoo(q, suffix, strictEuropean);
+    if (sym) return sym;
+    await new Promise((r) => setTimeout(r, 150)); // gentle rate limiting
   }
   return null;
 }
@@ -369,10 +430,10 @@ export async function resolveAndCache(
  */
 export async function enrichCompanyFinancials(limit = 60) {
   const cutoff = new Date(Date.now() - 7 * 86400_000);
+  // Include companies without ISIN — we'll try to find them by name
   const companies = await prisma.company.findMany({
     where: {
       OR: [{ financialsAt: null }, { financialsAt: { lt: cutoff } }],
-      isin: { not: null },
     },
     take: limit,
     orderBy: { financialsAt: "asc" },

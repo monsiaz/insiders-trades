@@ -58,6 +58,16 @@ const NAV = [
       </svg>
     ),
   },
+  {
+    href: "/recommendations",
+    label: "Recommandations",
+    badge: "TOP",
+    icon: (
+      <svg className="sidebar-icon" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
 ];
 
 export function AppSidebar() {
@@ -71,24 +81,25 @@ export function AppSidebar() {
           <div className="flex items-center gap-3 px-3 py-1">
             <LogoMark size={36} />
             <div className="sidebar-label">
-              <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: "0.9rem", letterSpacing: "-0.02em", color: "var(--tx-1)" }}>InsiderTrades</div>
-              <div style={{ fontSize: "0.6rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--tx-3)", fontWeight: 600 }}>AMF · France</div>
+              <div style={{ fontFamily: "'Banana Grotesk', 'Inter', system-ui, sans-serif", fontWeight: 700, fontSize: "0.875rem", letterSpacing: "-0.025em", color: "var(--tx-1)" }}>InsiderTrades</div>
+              <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: "0.58rem", letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--tx-3)", fontWeight: 600 }}>AMF · France</div>
             </div>
           </div>
         </Link>
         {/* Brand tagline — slides in below logo when sidebar expands */}
         <div className="sidebar-brand-text px-3 pb-1">
           <div style={{
-            fontFamily: "Space Grotesk, sans-serif",
-            fontSize: "0.62rem",
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontSize: "0.60rem",
             fontWeight: 600,
-            letterSpacing: "0.06em",
+            letterSpacing: "0.07em",
             textTransform: "uppercase",
             color: "var(--c-indigo-2)",
             paddingLeft: "8px",
             borderLeft: "2px solid var(--c-indigo)",
+            opacity: 0.75,
           }}>
-            Transactions · Signaux · Backtest
+            Signaux · Backtest · AMF
           </div>
         </div>
       </div>
@@ -100,7 +111,19 @@ export function AppSidebar() {
           return (
             <Link key={item.href} href={item.href} className={`sidebar-link ${active ? "active" : ""}`}>
               {item.icon}
-              <span className="sidebar-label">{item.label}</span>
+              <span className="sidebar-label flex items-center gap-1.5">
+                {item.label}
+                {"badge" in item && item.badge && (
+                  <span style={{
+                    fontSize: "0.55rem", fontWeight: 800, letterSpacing: "0.06em",
+                    padding: "1px 5px", borderRadius: "4px",
+                    background: "var(--c-mint-bg)", color: "var(--c-mint)",
+                    border: "1px solid var(--c-mint-bd)", lineHeight: 1.4,
+                  }}>
+                    {item.badge}
+                  </span>
+                )}
+              </span>
             </Link>
           );
         })}
@@ -136,13 +159,13 @@ export function AppTopBar() {
       {/* Mobile: logo */}
       <Link href="/" className="topbar-logo-mobile flex items-center gap-2 flex-shrink-0 md:hidden">
         <LogoMark size={28} />
-        <span style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 700, fontSize: "0.9rem", letterSpacing: "-0.02em", color: "var(--tx-1)" }}>InsiderTrades</span>
+        <span style={{ fontFamily: "'Banana Grotesk', 'Inter', system-ui, sans-serif", fontWeight: 700, fontSize: "0.875rem", letterSpacing: "-0.025em", color: "var(--tx-1)" }}>InsiderTrades</span>
       </Link>
 
       {/* Page title — with brand accent dot */}
       <div className="hidden md:flex items-center gap-2">
         <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--c-indigo)", flexShrink: 0, display: "inline-block" }} />
-        <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--tx-2)", letterSpacing: "-0.01em" }}>
+        <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: "0.875rem", fontWeight: 500, color: "var(--tx-2)", letterSpacing: "0" }}>
           {currentNav?.label ?? "InsiderTrades"}
         </span>
       </div>

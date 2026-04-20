@@ -8,6 +8,8 @@ import { syncLatest } from "@/lib/sync-latest";
 import { enrichCompanyFinancials } from "@/lib/financials";
 import { scoreDeclarations } from "@/lib/signals";
 import { gptGenderForUnknownInsiders } from "@/lib/gender-gpt";
+import { getRecommendations } from "@/lib/recommendation-engine";
+import { sendSignalAlertEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { fetchDeclarationDetail } from "@/lib/amf-detail";
 
@@ -41,11 +43,15 @@ export async function GET(req: NextRequest) {
     );
 
     // 6. GPT-4o gender classification for insiders still unknown after local heuristics
-    //    (capped at 200 to stay well within Vercel's 5-min timeout)
     const genderResult = await gptGenderForUnknownInsiders({
       maxInsiders: 200,
       apiKey: process.env.OPENAI_API_KEY,
     }).catch((e) => { console.error("[cron] gender-gpt:", e); return { resolved: 0, skipped: 0, errors: 1 }; });
+
+    // 7. Send signal alert emails to opted-in users
+    const alertResult = await dispatchAlertEmails().catch(
+      (e) => { console.error("[cron] alerts:", e); return { sent: 0, skipped: 0 }; }
+    );
 
     return NextResponse.json({
       success: true,
@@ -54,6 +60,7 @@ export async function GET(req: NextRequest) {
       reparsed,
       backtest: backtestResult,
       genderGpt: genderResult,
+      alerts: alertResult,
     });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
@@ -233,4 +240,93 @@ async function reparseIncomplete(limit: number): Promise<{ improved: number; err
   }
 
   return { improved, errors };
+}
+
+// ── Step 7: dispatch alert emails ─────────────────────────────────────────────
+
+async function dispatchAlertEmails(): Promise<{ sent: number; skipped: number }> {
+  // Only send once per day per user (check lastAlertAt)
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const users = await prisma.user.findMany({
+    where: {
+      alertEnabled: true,
+      emailVerified: { not: null },
+      OR: [
+        { lastAlertAt: null },
+        { lastAlertAt: { lt: todayStart } },
+      ],
+    },
+    select: { id: true, email: true, name: true },
+  });
+
+  if (users.length === 0) return { sent: 0, skipped: 0 };
+
+  // Fetch general top signals once (shared baseline)
+  const generalRecos = await getRecommendations({ mode: "general", limit: 5, lookbackDays: 2 });
+  if (generalRecos.length === 0) return { sent: 0, skipped: users.length };
+
+  function recoToSignal(r: (typeof generalRecos)[0]) {
+    const fmtAmt = (n: number | null) => {
+      if (!n) return "—";
+      if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M€`;
+      if (n >= 1e3) return `${(n / 1e3).toFixed(0)}k€`;
+      return `${n.toFixed(0)}€`;
+    };
+    return {
+      company: r.company.name,
+      insider: r.insider.name ?? "Dirigeant",
+      role: r.insider.role,
+      action: r.action,
+      amount: fmtAmt(r.totalAmount),
+      score: r.recoScore,
+      expectedReturn: r.expectedReturn90d != null ? `${r.expectedReturn90d >= 0 ? "+" : ""}${r.expectedReturn90d.toFixed(1)}%` : "—",
+      winRate: r.historicalWinRate90d != null ? `${r.historicalWinRate90d.toFixed(0)}%` : "—",
+      badges: r.badges,
+      pubDate: r.pubDate,
+      companySlug: r.company.slug,
+    };
+  }
+
+  let sent = 0;
+  let skipped = 0;
+
+  for (const user of users) {
+    try {
+      // Personal mode: get portfolio ISINs
+      const positions = await prisma.portfolioPosition.findMany({
+        where: { userId: user.id, isin: { not: null } },
+        select: { isin: true },
+      });
+      const portfolioIsins = positions.map((p) => p.isin!).filter(Boolean);
+
+      let signals;
+      let mode: "general" | "personal";
+
+      if (portfolioIsins.length > 0) {
+        const personalRecos = await getRecommendations({
+          mode: "personal", limit: 5, lookbackDays: 2, portfolioIsins,
+        });
+        signals = (personalRecos.length > 0 ? personalRecos : generalRecos).map(recoToSignal);
+        mode = "personal";
+      } else {
+        signals = generalRecos.map(recoToSignal);
+        mode = "general";
+      }
+
+      if (signals.length === 0) { skipped++; continue; }
+
+      await sendSignalAlertEmail(user.email, user.name ?? "", signals, mode);
+      await prisma.user.update({ where: { id: user.id }, data: { lastAlertAt: new Date() } });
+      sent++;
+    } catch (e) {
+      console.error(`[cron] alert for ${user.email}:`, e);
+      skipped++;
+    }
+    // Rate limit: 1 email per 500ms
+    await new Promise((r) => setTimeout(r, 500));
+  }
+
+  return { sent, skipped };
 }

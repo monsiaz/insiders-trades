@@ -72,6 +72,14 @@ export function NavUser() {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
             Mon portfolio
           </Link>
+          {user.role === "admin" && (
+            <Link href="/admin" onClick={() => setOpen(false)}
+              style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 16px", fontSize: "0.85rem", color: "var(--c-indigo-2)", textDecoration: "none" }}
+              className="hover:bg-[var(--bg-hover)] transition-colors">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <span style={{ fontWeight: 700 }}>Administration</span>
+            </Link>
+          )}
           <button onClick={logout}
             style={{ width: "100%", display: "flex", alignItems: "center", gap: "10px", padding: "9px 16px", fontSize: "0.85rem", color: "var(--c-red-2)", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" }}
             className="hover:bg-[var(--bg-hover)] transition-colors">

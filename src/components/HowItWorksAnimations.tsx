@@ -1,584 +1,437 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-
-// ── Theme palette — resolved per-frame from DOM ───────────────────────────────
-
-function getPalette(isDark: boolean) {
-  return isDark ? {
-    bg:       "#05101F",
-    bgSurface:"#0A1628",
-    bgRaised: "#0F1E36",
-    grid:     "rgba(91,138,246,0.06)",
-    border:   "rgba(91,138,246,0.14)",
-    tx1:      "#E8F0FE",
-    tx2:      "#8BA6CC",
-    tx3:      "#4D6A8A",
-    indigo:   "#5B8AF6",
-    indigo2:  "#7BA3FF",
-    emerald:  "#10B981",
-    emerald2: "#34D399",
-    crimson:  "#F43F5E",
-    amber:    "#F59E0B",
-    violet:   "#A78BFA",
-  } : {
-    bg:       "#EDF1F7",
-    bgSurface:"#FFFFFF",
-    bgRaised: "#F0F4FB",
-    grid:     "rgba(59,106,212,0.07)",
-    border:   "rgba(59,106,212,0.15)",
-    tx1:      "#0A1628",
-    tx2:      "#3B5A80",
-    tx3:      "#7A9ABF",
-    indigo:   "#3B6AD4",
-    indigo2:  "#5B8AF6",
-    emerald:  "#059669",
-    emerald2: "#10B981",
-    crimson:  "#DC2626",
-    amber:    "#D97706",
-    violet:   "#7C3AED",
-  };
-}
-
-function isDarkMode() {
-  if (typeof document === "undefined") return true;
-  return !document.documentElement.classList.contains("light");
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function easeInOut(t: number) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
-function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
-function clamp(v: number, lo: number, hi: number) { return Math.max(lo, Math.min(hi, v)); }
-
-function hexAlpha(hex: string, a: number) {
-  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  return `rgba(${r},${g},${b},${a})`;
-}
-
-// ── STEP 1 — Collecte AMF ────────────────────────────────────────────────────
-
-function useDraw1(ref: React.RefObject<HTMLCanvasElement | null>) {
-  useEffect(() => {
-    const canvas = ref.current; if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    const W = canvas.width, H = canvas.height;
-    let frame = 0, raf = 0;
-
-    const LANES = [H*0.28, H*0.48, H*0.68];
-    const particles: { x:number; lane:number; speed:number; size:number; color:string }[] = [];
-    for (let i = 0; i < 22; i++) particles.push({
-      x: Math.random()*W, lane: Math.floor(Math.random()*3),
-      speed: 0.6+Math.random()*1.4, size: 1.8+Math.random()*2.4,
-      color: Math.random() > 0.35 ? "indigo" : "emerald",
-    });
-
-    const rows = [
-      { label: "SCHNEIDER ELEC.", val: "4 200 000 €", ok: true  },
-      { label: "LVMH SA",         val: "12 500 000 €", ok: true  },
-      { label: "TOTALENERGIES SE",val: "834 000 €",    ok: true  },
-      { label: "HERMÈS INTL",     val: "2 100 000 €",  ok: true  },
-      { label: "SOCIÉTÉ GÉNÉRALE",val: "890 000 €",    ok: false },
-    ];
-
-    function draw() {
-      const P = getPalette(isDarkMode());
-      ctx.clearRect(0,0,W,H);
-
-      // Background gradient
-      const grd = ctx.createLinearGradient(0,0,W,H);
-      grd.addColorStop(0, P.bg);
-      grd.addColorStop(1, P.bgSurface);
-      ctx.fillStyle = grd;
-      ctx.fillRect(0,0,W,H);
-
-      // Grid lines
-      ctx.strokeStyle = P.grid;
-      ctx.lineWidth = 0.5;
-      for (let x=0; x<W; x+=30) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
-      for (let y=0; y<H; y+=30) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-
-      // Lane tracks
-      LANES.forEach((y, li) => {
-        const g2 = ctx.createLinearGradient(0,0,W,0);
-        g2.addColorStop(0, "transparent");
-        g2.addColorStop(0.5, hexAlpha(P.indigo, 0.08+li*0.02));
-        g2.addColorStop(1, "transparent");
-        ctx.strokeStyle = g2; ctx.lineWidth = 1;
-        ctx.setLineDash([3, 9]);
-        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
-        ctx.setLineDash([]);
-      });
-
-      // Moving particles
-      particles.forEach(p => {
-        const col = p.color === "indigo" ? P.indigo : P.emerald;
-        const y = LANES[p.lane];
-        p.x += p.speed; if (p.x > W+8) p.x = -8;
-        // Glow
-        const gd = ctx.createRadialGradient(p.x,y,0,p.x,y,p.size*5);
-        gd.addColorStop(0, hexAlpha(col, 0.5));
-        gd.addColorStop(1, "transparent");
-        ctx.fillStyle = gd; ctx.beginPath(); ctx.arc(p.x,y,p.size*5,0,Math.PI*2); ctx.fill();
-        // Core dot
-        ctx.fillStyle = col; ctx.beginPath(); ctx.arc(p.x,y,p.size,0,Math.PI*2); ctx.fill();
-      });
-
-      // Scanner beam
-      const bx = (Math.sin(frame*0.014)*0.5+0.5)*W*0.35;
-      const bg2 = ctx.createLinearGradient(bx-22,0,bx+22,0);
-      bg2.addColorStop(0,"transparent"); bg2.addColorStop(0.5,hexAlpha(P.indigo,0.12)); bg2.addColorStop(1,"transparent");
-      ctx.fillStyle=bg2; ctx.fillRect(bx-22,0,44,H);
-
-      // Data table (right side)
-      const tx = W*0.44; const rowH = (H-30)/rows.length;
-      const visN = Math.min(rows.length, Math.floor(frame/45)+1);
-
-      // Table header
-      ctx.font = "bold 7px 'JetBrains Mono', monospace";
-      ctx.fillStyle = P.tx3; ctx.textAlign = "left";
-      ctx.fillText("AMF · BDIF FEED", tx, 16);
-
-      rows.slice(0, visN).forEach((row, i) => {
-        const alpha = i === visN-1 ? clamp((frame%45)/20,0,1) : 1;
-        const y = 26 + i * rowH;
-        ctx.globalAlpha = alpha;
-        // Row bg
-        ctx.fillStyle = row.ok ? hexAlpha(P.emerald,0.08) : hexAlpha(P.indigo,0.06);
-        ctx.beginPath(); ctx.roundRect(tx-2, y-11, W-tx+2-6, rowH-3, 4); ctx.fill();
-        // Status dot
-        ctx.fillStyle = row.ok ? P.emerald : P.amber;
-        ctx.beginPath(); ctx.arc(tx+5, y-3, 3, 0, Math.PI*2); ctx.fill();
-        // Name
-        ctx.font = "7.5px 'Inter', sans-serif"; ctx.fillStyle = P.tx1; ctx.textAlign = "left";
-        ctx.fillText(row.label, tx+14, y-1);
-        // Amount
-        ctx.font = "bold 7.5px 'JetBrains Mono', monospace";
-        ctx.fillStyle = row.ok ? P.emerald2 : P.tx3; ctx.textAlign = "right";
-        ctx.fillText(row.val, W-8, y-1);
-        ctx.globalAlpha = 1;
-      });
-      ctx.textAlign = "left";
-
-      // Left label
-      ctx.font = "bold 8px 'Inter', sans-serif"; ctx.fillStyle = P.indigo2; ctx.textAlign = "center";
-      ctx.fillText("AMF", W*0.1, H-14); ctx.fillText("BDIF", W*0.1, H-4);
-      ctx.fillText("DB", W*0.91, H-14); ctx.fillText("↗", W*0.91, H-4);
-      ctx.textAlign = "left";
-
-      frame++; raf = requestAnimationFrame(draw);
-    }
-    raf = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(raf);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-}
-
-// ── STEP 2 — Scoring algorithmique ───────────────────────────────────────────
-
-function useDraw2(ref: React.RefObject<HTMLCanvasElement | null>) {
-  useEffect(() => {
-    const canvas = ref.current; if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    const W = canvas.width, H = canvas.height;
-    let frame = 0, raf = 0;
-    const CX = W*0.36, CY = H*0.5, R = Math.min(W,H)*0.33;
-
-    const CRITERIA = [
-      { label: "Montant / Mcap", pct:0.92, color:"emerald" },
-      { label: "Rôle dirigeant", pct:0.85, color:"indigo"  },
-      { label: "Backtest signal",pct:0.78, color:"violet"  },
-      { label: "Cluster",        pct:0.66, color:"amber"   },
-      { label: "Historique",     pct:0.73, color:"emerald2"},
-    ];
-
-    function draw() {
-      const P = getPalette(isDarkMode());
-      ctx.clearRect(0,0,W,H);
-      const grd = ctx.createLinearGradient(0,0,W,H);
-      grd.addColorStop(0, P.bg); grd.addColorStop(1, P.bgSurface);
-      ctx.fillStyle = grd; ctx.fillRect(0,0,W,H);
-
-      // Grid
-      ctx.strokeStyle = P.grid; ctx.lineWidth=0.5;
-      for (let x=0;x<W;x+=30){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-      for (let y=0;y<H;y+=30){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-
-      const CYCLE=360, t=(frame%CYCLE)/CYCLE;
-      const fillT = t<0.5 ? easeInOut(t*2) : easeInOut((1-t)*2);
-      const score = Math.round(lerp(0,87,fillT));
-      const sweep = (score/100)*Math.PI*1.65;
-      const start = Math.PI*0.67;
-
-      // Concentric rings
-      [1,0.7,0.45].forEach((s,i)=>{
-        ctx.strokeStyle = hexAlpha(P.indigo, 0.07+i*0.02);
-        ctx.lineWidth=1;
-        ctx.beginPath(); ctx.arc(CX,CY,R*s,0,Math.PI*2); ctx.stroke();
-      });
-
-      // Outer pulse
-      const pulse = Math.sin(frame*0.04)*0.5+0.5;
-      const pg = ctx.createRadialGradient(CX,CY,R*0.8,CX,CY,R*1.2);
-      pg.addColorStop(0,hexAlpha(P.indigo,0.13*pulse)); pg.addColorStop(1,"transparent");
-      ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(CX,CY,R*1.2,0,Math.PI*2); ctx.fill();
-
-      // Arc track
-      ctx.strokeStyle=hexAlpha(P.indigo,isDarkMode()?0.14:0.12); ctx.lineWidth=11; ctx.lineCap="round";
-      ctx.beginPath(); ctx.arc(CX,CY,R*0.82,start,start+Math.PI*1.65); ctx.stroke();
-
-      // Filled arc
-      if (score>0) {
-        const ag = ctx.createLinearGradient(CX-R,CY,CX+R,CY);
-        ag.addColorStop(0,P.indigo); ag.addColorStop(0.55,P.violet); ag.addColorStop(1,P.emerald);
-        // Glow
-        ctx.strokeStyle=hexAlpha(P.indigo,0.25); ctx.lineWidth=19; ctx.lineCap="round";
-        ctx.beginPath(); ctx.arc(CX,CY,R*0.82,start,start+sweep); ctx.stroke();
-        // Main arc
-        ctx.strokeStyle=ag; ctx.lineWidth=11; ctx.lineCap="round";
-        ctx.beginPath(); ctx.arc(CX,CY,R*0.82,start,start+sweep); ctx.stroke();
-      }
-
-      // Score number
-      ctx.textAlign="center"; ctx.textBaseline="middle";
-      ctx.font=`bold ${Math.round(R*0.56)}px 'JetBrains Mono', monospace`;
-      ctx.fillStyle=P.tx1; ctx.fillText(String(score),CX,CY-3);
-      ctx.font=`bold 8px 'Inter', sans-serif`;
-      ctx.fillStyle=P.indigo2; ctx.fillText("/ 100",CX,CY+R*0.3);
-      ctx.font="7px 'Inter', sans-serif";
-      ctx.fillStyle=P.tx3; ctx.fillText("CONVICTION",CX,CY-R*0.44);
-      ctx.textAlign="left"; ctx.textBaseline="alphabetic";
-
-      // Criteria bars
-      const bx=W*0.67, bW=W-bx-10;
-      const colMap: Record<string,string> = {
-        emerald:P.emerald, indigo:P.indigo, violet:P.violet, amber:P.amber, emerald2:P.emerald2
-      };
-      CRITERIA.forEach((c,i)=>{
-        const y=H*0.17+i*(H*0.148);
-        const col=colMap[c.color];
-        const filled=fillT*c.pct;
-        ctx.font="7.5px 'Inter', sans-serif"; ctx.fillStyle=P.tx2;
-        ctx.fillText(c.label,bx,y);
-        // Track
-        ctx.fillStyle=isDarkMode()?hexAlpha(P.indigo,0.1):hexAlpha(P.indigo,0.08);
-        ctx.beginPath(); ctx.roundRect(bx,y+4,bW,5,2); ctx.fill();
-        // Fill
-        ctx.fillStyle=col;
-        if (filled>0) { ctx.beginPath(); ctx.roundRect(bx,y+4,bW*filled,5,2); ctx.fill(); }
-        // Pct
-        ctx.font="bold 7.5px 'JetBrains Mono', monospace";
-        ctx.fillStyle=col; ctx.textAlign="right";
-        ctx.fillText(`${Math.round(c.pct*filled*100)}%`,W-7,y+1);
-        ctx.textAlign="left";
-      });
-
-      frame++; raf=requestAnimationFrame(draw);
-    }
-    raf=requestAnimationFrame(draw);
-    return ()=>cancelAnimationFrame(raf);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-}
-
-// ── STEP 3 — Backtest historique ─────────────────────────────────────────────
-
-function useDraw3(ref: React.RefObject<HTMLCanvasElement | null>) {
-  useEffect(() => {
-    const canvas = ref.current; if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    const W = canvas.width, H = canvas.height;
-    let frame = 0, raf = 0;
-
-    const curve = [0.50,0.52,0.56,0.54,0.59,0.57,0.63,0.60,0.67,0.64,0.71,0.68,0.75,0.72,0.80,0.77,0.84,0.81,0.88,0.85,0.92,0.89,0.95,0.93,0.98];
-    const tradeEvts: { xi:number; win:boolean }[] = [
-      {xi:2,win:true},{xi:5,win:false},{xi:8,win:true},{xi:11,win:true},
-      {xi:14,win:true},{xi:17,win:false},{xi:20,win:true},{xi:23,win:true},
-    ];
-    const pL=32,pR=16,pT=28,pB=36;
-    const plotW=W-pL-pR, plotH=H-pT-pB;
-    const xOf=(i:number)=>pL+(i/(curve.length-1))*plotW;
-    const yOf=(v:number)=>pT+(1-v)*plotH;
-    const CYCLE=280;
-
-    function draw() {
-      const P = getPalette(isDarkMode());
-      ctx.clearRect(0,0,W,H);
-      const grd=ctx.createLinearGradient(0,0,W,H);
-      grd.addColorStop(0,P.bg); grd.addColorStop(1,P.bgSurface);
-      ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
-
-      // Grid
-      ctx.strokeStyle=P.grid; ctx.lineWidth=0.5;
-      for(let x=pL;x<=W-pR;x+=plotW/4){ctx.beginPath();ctx.moveTo(x,pT);ctx.lineTo(x,H-pB);ctx.stroke();}
-      for(let y=pT;y<=H-pB;y+=plotH/3){ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(W-pR,y);ctx.stroke();}
-
-      // Y labels
-      ctx.font="7px 'JetBrains Mono', monospace";
-      ctx.fillStyle=P.tx3; ctx.textAlign="right";
-      ["+50%","+25%","0%"].forEach((l,i)=>ctx.fillText(l,pL-4,pT+i*plotH/3+3));
-      ctx.textAlign="left";
-
-      const t=(frame%CYCLE)/CYCLE;
-      const progress=Math.min(1,t<0.65?easeInOut(t/0.65):1);
-      const N=Math.floor(progress*(curve.length-1));
-      const frac=(progress*(curve.length-1))-N;
-
-      if(N>0){
-        // Area fill
-        const fgrd=ctx.createLinearGradient(0,pT,0,H-pB);
-        fgrd.addColorStop(0,hexAlpha(P.emerald,isDarkMode()?0.22:0.16));
-        fgrd.addColorStop(1,hexAlpha(P.emerald,0.02));
-        ctx.fillStyle=fgrd;
-        ctx.beginPath(); ctx.moveTo(xOf(0),yOf(curve[0]));
-        for(let i=1;i<=N;i++) ctx.lineTo(xOf(i),yOf(curve[i]));
-        const hx=N<curve.length-1?lerp(xOf(N),xOf(N+1),frac):xOf(N);
-        const hy=N<curve.length-1?lerp(yOf(curve[N]),yOf(curve[N+1]),frac):yOf(curve[N]);
-        ctx.lineTo(hx,H-pB); ctx.lineTo(xOf(0),H-pB); ctx.closePath(); ctx.fill();
-
-        // Line
-        ctx.strokeStyle=P.emerald; ctx.lineWidth=2.5; ctx.lineJoin="round"; ctx.lineCap="round";
-        ctx.shadowColor=P.emerald; ctx.shadowBlur=isDarkMode()?10:4;
-        ctx.beginPath(); ctx.moveTo(xOf(0),yOf(curve[0]));
-        for(let i=1;i<=N;i++) ctx.lineTo(xOf(i),yOf(curve[i]));
-        if(N<curve.length-1) ctx.lineTo(hx,hy);
-        ctx.stroke(); ctx.shadowBlur=0;
-
-        // Trade dots
-        tradeEvts.forEach(({xi,win})=>{
-          if(xi>N) return;
-          const alpha=xi<N?1:frac;
-          const x=xOf(xi),y=yOf(curve[xi]),col=win?P.emerald:P.crimson;
-          ctx.globalAlpha=alpha;
-          ctx.shadowColor=col; ctx.shadowBlur=isDarkMode()?14:6;
-          ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,5.5,0,Math.PI*2); ctx.fill();
-          ctx.fillStyle=isDarkMode()?"#fff":P.bgSurface;
-          ctx.beginPath(); ctx.arc(x,y,2.5,0,Math.PI*2); ctx.fill();
-          ctx.shadowBlur=0; ctx.globalAlpha=1;
-        });
-
-        // Cursor head
-        const pulse=Math.sin(frame*0.12)*0.5+0.5;
-        ctx.fillStyle=hexAlpha(P.emerald,0.18*pulse);
-        ctx.beginPath(); ctx.arc(hx,hy,13,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle=P.emerald; ctx.beginPath(); ctx.arc(hx,hy,4.5,0,Math.PI*2); ctx.fill();
-      }
-
-      // Stats
-      if(t>0.55){
-        const sa=clamp((t-0.55)/0.1,0,1);
-        ctx.globalAlpha=sa;
-        const wins=tradeEvts.filter(e=>e.xi<=N&&e.win).length;
-        const total=tradeEvts.filter(e=>e.xi<=N).length;
-        const perf=curve[Math.min(N,curve.length-1)];
-        ctx.font="bold 11px 'JetBrains Mono', monospace";
-        ctx.fillStyle=P.emerald; ctx.textAlign="right";
-        ctx.fillText(`${total>0?Math.round(wins/total*100):0}%`,W-pR,pT+16);
-        ctx.font="7px 'Inter', sans-serif"; ctx.fillStyle=P.tx3;
-        ctx.fillText("win rate",W-pR,pT+26);
-        ctx.font="bold 11px 'JetBrains Mono', monospace"; ctx.fillStyle=P.emerald2;
-        ctx.fillText(`+${Math.round((perf-0.5)*100)}%`,W-pR,pT+48);
-        ctx.font="7px 'Inter', sans-serif"; ctx.fillStyle=P.tx3;
-        ctx.fillText("retour T+90",W-pR,pT+58);
-        ctx.textAlign="left"; ctx.globalAlpha=1;
-      }
-
-      ctx.font="bold 7.5px 'Inter', sans-serif"; ctx.fillStyle=P.indigo2;
-      ctx.fillText("PERFORMANCE HISTORIQUE · T+90",pL,16);
-
-      frame++; raf=requestAnimationFrame(draw);
-    }
-    raf=requestAnimationFrame(draw);
-    return ()=>cancelAnimationFrame(raf);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-}
-
-// ── STEP 4 — Signal & Recommandation ─────────────────────────────────────────
-
-function useDraw4(ref: React.RefObject<HTMLCanvasElement | null>) {
-  useEffect(() => {
-    const canvas = ref.current; if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    const W = canvas.width, H = canvas.height;
-    let frame = 0, raf = 0;
-    const CYCLE=340;
-
-    const lines = [
-      { text:"SCHNEIDER ELECTRIC", size:13, bold:true,  color:"tx1",    delay:0.08 },
-      { text:"PDG · J.P. Tricoire",size:9,  bold:false, color:"tx2",    delay:0.18 },
-      { text:"4 200 000 €",         size:11, bold:true,  color:"emerald",delay:0.28 },
-    ];
-
-    function typewriter(s:string, p:number) { return s.slice(0,Math.floor(p*s.length)); }
-
-    function draw() {
-      const P = getPalette(isDarkMode());
-      const dark = isDarkMode();
-      const t=(frame%CYCLE)/CYCLE;
-      ctx.clearRect(0,0,W,H);
-
-      // Background
-      const grd=ctx.createLinearGradient(0,0,W,H);
-      grd.addColorStop(0,P.bg); grd.addColorStop(1,P.bgSurface);
-      ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
-
-      // Grid
-      ctx.strokeStyle=P.grid; ctx.lineWidth=0.5;
-      for(let x=0;x<W;x+=30){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-      for(let y=0;y<H;y+=30){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-
-      // Ambient emerald glow
-      const glow=Math.sin(frame*0.035)*0.5+0.5;
-      const rg=ctx.createRadialGradient(W*0.5,H*0.45,0,W*0.5,H*0.45,H*0.65);
-      rg.addColorStop(0,hexAlpha(P.emerald,dark?0.1*glow:0.06*glow));
-      rg.addColorStop(0.6,hexAlpha(P.indigo,dark?0.04:0.02));
-      rg.addColorStop(1,"transparent");
-      ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
-
-      // Card
-      const cx=W*0.5,cy=H*0.5,cw=W*0.84,ch=H*0.82;
-      const cx0=cx-cw/2,cy0=cy-ch/2;
-      const cardAlpha=clamp(t/0.08,0,1);
-      ctx.globalAlpha=cardAlpha;
-      // Card shadow (light mode only)
-      if(!dark){
-        ctx.shadowColor="rgba(15,30,60,0.12)"; ctx.shadowBlur=20; ctx.shadowOffsetY=4;
-      }
-      ctx.fillStyle=P.bgSurface;
-      ctx.beginPath(); ctx.roundRect(cx0,cy0,cw,ch,14); ctx.fill();
-      if(!dark) ctx.shadowBlur=0;
-      // Card border
-      ctx.strokeStyle=hexAlpha(P.indigo, dark?0.28+glow*0.15:0.2+glow*0.08);
-      ctx.lineWidth=1.5;
-      ctx.beginPath(); ctx.roundRect(cx0,cy0,cw,ch,14); ctx.stroke();
-      ctx.globalAlpha=1;
-
-      // "SIGNAL ACHAT FORT" badge
-      if(t>0.06){
-        const ba=clamp((t-0.06)/0.07,0,1);
-        ctx.globalAlpha=ba;
-        const bw=100,bh=18,bx=cx-bw/2,by=cy0+12;
-        ctx.fillStyle=P.emerald;
-        if(dark){ctx.shadowColor=P.emerald;ctx.shadowBlur=12;}
-        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,5); ctx.fill();
-        ctx.shadowBlur=0;
-        ctx.font="bold 7.5px 'Inter', sans-serif";
-        ctx.fillStyle=dark?"#000":"#fff"; ctx.textAlign="center";
-        ctx.fillText("▲  SIGNAL ACHAT FORT",cx,by+11.5);
-        ctx.textAlign="left"; ctx.globalAlpha=1;
-      }
-
-      // Text lines
-      lines.forEach(({text,size,bold,color,delay},i)=>{
-        if(t<delay) return;
-        const progress=clamp((t-delay)/0.16,0,1);
-        const displayed=typewriter(text,progress);
-        const y=cy0+50+i*26;
-        const alpha=progress;
-        const col=(P as Record<string,string>)[color]??P.tx1;
-        ctx.globalAlpha=alpha;
-        ctx.font=`${bold?"bold ":""}${size}px '${bold?"Banana Grotesk, ":""}Inter', sans-serif`;
-        ctx.fillStyle=col; ctx.textAlign="center";
-        ctx.fillText(displayed,cx,y);
-        if(progress>0&&progress<1&&frame%18<9){
-          const tw=ctx.measureText(displayed).width;
-          ctx.fillStyle=P.indigo2;
-          ctx.fillRect(cx+tw/2+1,y-size+1,1.5,size);
-        }
-        ctx.textAlign="left"; ctx.globalAlpha=1;
-      });
-
-      // Score bar
-      if(t>0.46){
-        const sp=clamp((t-0.46)/0.25,0,1);
-        const score=Math.round(easeInOut(sp)*87);
-        const barY=cy0+ch-58, barX=cx0+18, barW=cw-36;
-        ctx.globalAlpha=clamp((t-0.44)/0.08,0,1);
-
-        // Track
-        ctx.fillStyle=dark?hexAlpha(P.indigo,0.12):hexAlpha(P.indigo,0.1);
-        ctx.beginPath(); ctx.roundRect(barX,barY,barW,8,4); ctx.fill();
-        // Fill gradient
-        const bg2=ctx.createLinearGradient(barX,0,barX+barW,0);
-        bg2.addColorStop(0,P.indigo); bg2.addColorStop(0.55,P.violet); bg2.addColorStop(1,P.emerald);
-        if(dark){ctx.shadowColor=P.indigo;ctx.shadowBlur=8;}
-        ctx.fillStyle=bg2;
-        if(score>0){ctx.beginPath();ctx.roundRect(barX,barY,barW*score/100,8,4);ctx.fill();}
-        ctx.shadowBlur=0;
-
-        // Labels
-        ctx.font="bold 8px 'JetBrains Mono', monospace";
-        ctx.fillStyle=P.indigo2; ctx.textAlign="left";
-        ctx.fillText(`Score ${score}/100`,barX,barY-5);
-        ctx.fillStyle=P.emerald; ctx.textAlign="right";
-        ctx.fillText(`+21.4% attendu T+90`,barX+barW,barY-5);
-        ctx.textAlign="left"; ctx.globalAlpha=1;
-      }
-
-      // Pulsing rings
-      if(t>0.76){
-        const ra=clamp((t-0.76)/0.1,0,1)*(Math.sin(frame*0.07)*0.3+0.7);
-        const rr=H*0.31+Math.sin(frame*0.04)*4;
-        ctx.globalAlpha=ra*(dark?0.35:0.2);
-        ctx.strokeStyle=P.emerald; ctx.lineWidth=1.5;
-        ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2); ctx.stroke();
-        ctx.lineWidth=0.5;
-        ctx.beginPath(); ctx.arc(cx,cy,rr*1.14,0,Math.PI*2); ctx.stroke();
-        ctx.globalAlpha=1;
-      }
-
-      frame++; raf=requestAnimationFrame(draw);
-    }
-    raf=requestAnimationFrame(draw);
-    return ()=>cancelAnimationFrame(raf);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-}
-
-// ── Panel component ───────────────────────────────────────────────────────────
-
-function AnimPanel({ step, accentColor, pill, title, body, useAnim }: {
-  step: string; accentColor: string; pill: string;
-  title: string; body: string;
-  useAnim: (r: React.RefObject<HTMLCanvasElement | null>) => void;
-}) {
-  const ref = useRef<HTMLCanvasElement>(null);
-  useAnim(ref);
+import { useEffect, useRef, useState } from "react";
+
+// ── Pure CSS/SVG animations — no canvas, fully theme-aware via CSS vars ─────
+
+// ── Step 1: AMF Data Stream ──────────────────────────────────────────────────
+
+function AnimCollecte() {
+  const rows = [
+    { ticker: "SCHNEIDER ELEC.", amount: "4 200 000 €", ok: true,  delay: 0 },
+    { ticker: "LVMH SA",         amount: "12 500 000 €", ok: true,  delay: 0.4 },
+    { ticker: "TOTALENERGIES",   amount: "834 000 €",    ok: true,  delay: 0.8 },
+    { ticker: "HERMÈS INTL",     amount: "2 100 000 €",  ok: true,  delay: 1.2 },
+    { ticker: "SOC. GÉNÉRALE",   amount: "890 000 €",    ok: false, delay: 1.6 },
+  ];
 
   return (
-    <div className="card overflow-hidden" style={{ display:"flex", flexDirection:"column", minHeight:"360px" }}>
-      {/* Canvas — taller, no hardcoded dark bg */}
-      <div style={{ position:"relative", height:"220px", flexShrink:0, overflow:"hidden", borderRadius:"14px 14px 0 0" }}>
-        <canvas
-          ref={ref}
-          width={560}
-          height={220}
-          style={{ width:"100%", height:"100%", display:"block" }}
-        />
+    <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", padding: "20px 18px" }}>
+      {/* Animated background lines */}
+      <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.35 }} aria-hidden>
+        {[0.25, 0.45, 0.65, 0.82].map((y, i) => (
+          <line key={i} x1="0" y1={`${y * 100}%`} x2="100%" y2={`${y * 100}%`}
+            stroke="var(--c-indigo)" strokeWidth="0.5" strokeDasharray="4 10"
+            style={{ animation: `slide-line ${2.5 + i * 0.4}s linear infinite` }} />
+        ))}
+      </svg>
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px", position: "relative" }}>
+        <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "var(--c-emerald)", boxShadow: "0 0 8px var(--c-emerald)", flexShrink: 0, animation: "pulse-dot 2s ease-in-out infinite" }} />
+        <span style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--c-indigo-2)" }}>
+          AMF · BDIF FEED
+        </span>
+        <span style={{ marginLeft: "auto", fontSize: "0.62rem", color: "var(--tx-3)", fontFamily: "monospace" }}>LIVE</span>
       </div>
 
-      {/* Text content */}
-      <div style={{ padding:"18px 20px 22px", flex:1, display:"flex", flexDirection:"column" }}>
+      {/* Data rows */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "6px", position: "relative" }}>
+        {rows.map((row, i) => (
+          <div key={row.ticker} style={{
+            display: "flex", alignItems: "center", gap: "8px",
+            padding: "7px 10px", borderRadius: "8px",
+            background: row.ok ? "color-mix(in srgb, var(--c-emerald) 8%, var(--bg-raised))" : "color-mix(in srgb, var(--c-indigo) 8%, var(--bg-raised))",
+            border: `1px solid ${row.ok ? "var(--c-emerald-bd)" : "var(--border)"}`,
+            animation: `fade-in-row 0.4s ease both`,
+            animationDelay: `${row.delay}s`,
+          }}>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", flexShrink: 0, background: row.ok ? "var(--c-emerald)" : "var(--c-amber)" }} />
+            <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--tx-1)", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {row.ticker}
+            </span>
+            <span style={{ fontSize: "0.7rem", fontFamily: "monospace", fontWeight: 700, color: row.ok ? "var(--c-emerald)" : "var(--tx-3)", flexShrink: 0 }}>
+              {row.amount}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom labels */}
+      <div style={{ position: "absolute", bottom: "12px", left: "18px", right: "18px", display: "flex", justifyContent: "space-between" }}>
+        <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--tx-4)", letterSpacing: "0.06em" }}>AMF</span>
+        <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--tx-4)", letterSpacing: "0.06em" }}>BASE DE DONNÉES</span>
+      </div>
+
+      <style>{`
+        @keyframes slide-line { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -28; } }
+        @keyframes fade-in-row { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+      `}</style>
+    </div>
+  );
+}
+
+// ── Step 2: Scoring Gauge ────────────────────────────────────────────────────
+
+function AnimScoring() {
+  const [score, setScore] = useState(0);
+  const [bars, setBars] = useState([0, 0, 0, 0, 0]);
+  const target = 87;
+  const barTargets = [92, 85, 78, 65, 72];
+  const barLabels = ["Montant/Mcap", "Rôle dirigeant", "Backtest", "Cluster", "Historique"];
+  const barColors = ["var(--c-emerald)", "var(--c-indigo)", "var(--c-violet)", "var(--c-amber)", "var(--c-emerald)"];
+
+  useEffect(() => {
+    let frame = 0;
+    const total = 80;
+    const t = setInterval(() => {
+      frame++;
+      const p = Math.min(1, frame / total);
+      const eased = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      setScore(Math.round(eased * target));
+      setBars(barTargets.map(bt => Math.round(eased * bt)));
+      if (frame >= total) {
+        clearInterval(t);
+        setTimeout(() => { frame = 0; }, 1200);
+      }
+    }, 25);
+    return () => clearInterval(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const r = 52, cx = 72, cy = 72;
+  const circumference = 2 * Math.PI * r;
+  const filled = (score / 100) * circumference * 0.75;
+  const startAngle = 135;
+
+  return (
+    <div style={{ display: "flex", gap: "16px", alignItems: "center", padding: "18px 18px 10px", height: "100%" }}>
+      {/* Gauge */}
+      <div style={{ flexShrink: 0, position: "relative", width: "144px", height: "144px" }}>
+        <svg width="144" height="144" viewBox="0 0 144 144">
+          {/* Track */}
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--border-med)" strokeWidth="12" strokeLinecap="round"
+            strokeDasharray={`${circumference * 0.75} ${circumference * 0.25}`}
+            transform={`rotate(${startAngle} ${cx} ${cy})`} />
+          {/* Filled arc */}
+          <circle cx={cx} cy={cy} r={r} fill="none" strokeWidth="12" strokeLinecap="round"
+            style={{ stroke: "url(#gauge-grad)", transition: "stroke-dasharray 0.05s linear" }}
+            strokeDasharray={`${filled} ${circumference - filled}`}
+            transform={`rotate(${startAngle} ${cx} ${cy})`} />
+          {/* Glow */}
+          <circle cx={cx} cy={cy} r={r} fill="none" strokeWidth="20" strokeLinecap="round"
+            style={{ stroke: "var(--c-indigo)", opacity: 0.12, transition: "stroke-dasharray 0.05s linear" }}
+            strokeDasharray={`${filled} ${circumference - filled}`}
+            transform={`rotate(${startAngle} ${cx} ${cy})`} />
+          <defs>
+            <linearGradient id="gauge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="var(--c-indigo)" />
+              <stop offset="50%" stopColor="var(--c-violet)" />
+              <stop offset="100%" stopColor="var(--c-emerald)" />
+            </linearGradient>
+          </defs>
+        </svg>
+        {/* Score number */}
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: "8px" }}>
+          <span style={{ fontFamily: "'Banana Grotesk', monospace", fontSize: "2rem", fontWeight: 800, color: "var(--tx-1)", lineHeight: 1, letterSpacing: "-0.04em" }}>
+            {score}
+          </span>
+          <span style={{ fontSize: "0.62rem", color: "var(--c-indigo-2)", fontWeight: 700, letterSpacing: "0.06em" }}>/ 100</span>
+          <span style={{ fontSize: "0.58rem", color: "var(--tx-3)", marginTop: "2px", letterSpacing: "0.04em" }}>CONVICTION</span>
+        </div>
+      </div>
+
+      {/* Bars */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "9px" }}>
+        {barLabels.map((label, i) => (
+          <div key={label}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
+              <span style={{ fontSize: "0.68rem", color: "var(--tx-2)", fontWeight: 500 }}>{label}</span>
+              <span style={{ fontSize: "0.66rem", fontFamily: "monospace", fontWeight: 700, color: barColors[i] }}>{bars[i]}%</span>
+            </div>
+            <div style={{ height: "5px", borderRadius: "3px", background: "var(--border-med)", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${bars[i]}%`, background: barColors[i], borderRadius: "3px", transition: "width 0.05s linear" }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Step 3: Backtest Equity Curve ────────────────────────────────────────────
+
+function AnimBacktest() {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let p = 0;
+    const t = setInterval(() => {
+      p += 0.008;
+      if (p > 1.15) p = 0;
+      setProgress(Math.min(p, 1));
+    }, 30);
+    return () => clearInterval(t);
+  }, []);
+
+  const curve = [0.50,0.52,0.56,0.54,0.59,0.57,0.63,0.60,0.67,0.64,0.71,0.68,0.75,0.72,0.80,0.77,0.84,0.81,0.88,0.85,0.92,0.89,0.95,0.93,0.98];
+  const trades: { xi: number; win: boolean }[] = [
+    {xi:2,win:true},{xi:5,win:false},{xi:8,win:true},{xi:11,win:true},
+    {xi:14,win:true},{xi:17,win:false},{xi:20,win:true},{xi:23,win:true},
+  ];
+
+  const W = 280, H = 120, pL = 24, pR = 10, pT = 10, pB = 24;
+  const plotW = W - pL - pR, plotH = H - pT - pB;
+  const xOf = (i: number) => pL + (i / (curve.length - 1)) * plotW;
+  const yOf = (v: number) => pT + (1 - v) * plotH;
+
+  const N = Math.min(curve.length - 1, Math.floor(progress * (curve.length - 1)));
+  const frac = Math.min(1, (progress * (curve.length - 1)) - N);
+
+  const linePts = curve.slice(0, N + 1).map((v, i) => `${xOf(i)},${yOf(v)}`).join(" ");
+  const headX = N < curve.length - 1 ? xOf(N) + (xOf(N + 1) - xOf(N)) * frac : xOf(N);
+  const headY = N < curve.length - 1 ? yOf(curve[N]) + (yOf(curve[N + 1]) - yOf(curve[N])) * frac : yOf(curve[N]);
+
+  const wins = trades.filter(t => t.xi <= N && t.win).length;
+  const total = trades.filter(t => t.xi <= N).length;
+  const winRate = total > 0 ? Math.round(wins / total * 100) : 0;
+  const perf = curve[Math.min(N, curve.length - 1)];
+  const perfPct = `+${Math.round((perf - 0.5) * 100)}%`;
+
+  return (
+    <div style={{ padding: "16px 18px 10px", display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+        <span style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--c-indigo-2)" }}>
+          Performance · T+90
+        </span>
+        <div style={{ display: "flex", gap: "12px" }}>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: "0.8rem", fontWeight: 800, fontFamily: "monospace", color: "var(--c-emerald)" }}>{winRate}%</div>
+            <div style={{ fontSize: "0.58rem", color: "var(--tx-4)", letterSpacing: "0.04em" }}>win rate</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: "0.8rem", fontWeight: 800, fontFamily: "monospace", color: "var(--c-emerald-2)" }}>{perfPct}</div>
+            <div style={{ fontSize: "0.58rem", color: "var(--tx-4)", letterSpacing: "0.04em" }}>retour</div>
+          </div>
+        </div>
+      </div>
+
+      {/* SVG Chart */}
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style={{ flex: 1 }}>
+        <defs>
+          <linearGradient id="bg-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--c-emerald)" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="var(--c-emerald)" stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+
+        {/* Grid */}
+        {[0.25, 0.5, 0.75].map((y, i) => (
+          <line key={i} x1={pL} y1={pT + y * plotH} x2={W - pR} y2={pT + y * plotH}
+            stroke="var(--border)" strokeWidth="0.5" />
+        ))}
+        <line x1={pL} y1={pT + 0.5 * plotH} x2={W - pR} y2={pT + 0.5 * plotH}
+          stroke="var(--c-indigo)" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
+
+        {/* Area */}
+        {N > 0 && (
+          <polygon
+            points={`${xOf(0)},${H - pB} ${linePts} ${headX},${H - pB}`}
+            fill="url(#bg-fill)" />
+        )}
+
+        {/* Line */}
+        {N > 0 && (
+          <>
+            <polyline points={`${linePts} ${headX},${headY}`}
+              fill="none" stroke="var(--c-emerald)" strokeWidth="2.5"
+              strokeLinecap="round" strokeLinejoin="round"
+              style={{ filter: "drop-shadow(0 0 4px var(--c-emerald))" }} />
+            {/* Head dot */}
+            <circle cx={headX} cy={headY} r="5" fill="var(--c-emerald)" opacity="0.2" />
+            <circle cx={headX} cy={headY} r="3" fill="var(--c-emerald)" />
+          </>
+        )}
+
+        {/* Trade dots */}
+        {trades.map(({ xi, win }) => {
+          if (xi > N) return null;
+          const col = win ? "var(--c-emerald)" : "var(--c-crimson)";
+          return (
+            <g key={xi}>
+              <circle cx={xOf(xi)} cy={yOf(curve[xi])} r="5" fill={col} opacity="0.2" />
+              <circle cx={xOf(xi)} cy={yOf(curve[xi])} r="3" fill={col} />
+            </g>
+          );
+        })}
+
+        {/* Y labels */}
+        <text x={pL - 3} y={pT + 3} fill="var(--tx-4)" fontSize="7" textAnchor="end">+50%</text>
+        <text x={pL - 3} y={pT + plotH / 2 + 3} fill="var(--tx-4)" fontSize="7" textAnchor="end">0%</text>
+      </svg>
+
+      {/* Legend */}
+      <div style={{ display: "flex", gap: "14px", marginTop: "6px" }}>
+        {[{color:"var(--c-emerald)",label:"Gain"},{color:"var(--c-crimson)",label:"Perte"}].map(l => (
+          <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: l.color }} />
+            <span style={{ fontSize: "0.65rem", color: "var(--tx-3)" }}>{l.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Step 4: Signal Card ──────────────────────────────────────────────────────
+
+function AnimSignal() {
+  const [phase, setPhase] = useState(0);
+  const [scoreVal, setScoreVal] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setPhase(p => (p + 1) % 320), 30);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    if (phase < 140) {
+      setScoreVal(Math.round(Math.min(phase / 100, 1) * 87));
+    } else if (phase === 180) {
+      setScoreVal(0);
+    }
+  }, [phase]);
+
+  const show = (minPhase: number) => phase >= minPhase && phase < minPhase + 260;
+  const alpha = (minPhase: number) => Math.min(1, Math.max(0, (phase - minPhase) / 12));
+
+  return (
+    <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: "0", height: "100%", justifyContent: "center" }}>
+      {/* Badge */}
+      {show(5) && (
+        <div style={{ opacity: alpha(5), marginBottom: "12px" }}>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: "5px",
+            padding: "4px 12px", borderRadius: "20px",
+            background: "var(--c-emerald)", color: "#fff",
+            fontSize: "0.7rem", fontWeight: 800, letterSpacing: "0.06em",
+            boxShadow: "0 0 14px var(--c-emerald)",
+          }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            SIGNAL ACHAT FORT
+          </span>
+        </div>
+      )}
+
+      {/* Company */}
+      {show(20) && (
+        <div style={{ opacity: alpha(20), marginBottom: "4px" }}>
+          <div style={{ fontFamily: "'Banana Grotesk','Inter',sans-serif", fontSize: "1.05rem", fontWeight: 800, color: "var(--tx-1)", letterSpacing: "-0.025em" }}>
+            SCHNEIDER ELECTRIC
+          </div>
+          <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "1px" }}>PDG · J.P. Tricoire</div>
+        </div>
+      )}
+
+      {/* Amount */}
+      {show(45) && (
+        <div style={{ opacity: alpha(45), marginTop: "8px", marginBottom: "10px" }}>
+          <span style={{ fontFamily: "monospace", fontSize: "1.2rem", fontWeight: 700, color: "var(--c-emerald)", letterSpacing: "-0.02em" }}>
+            4 200 000 €
+          </span>
+          <span style={{ fontSize: "0.7rem", color: "var(--tx-3)", marginLeft: "6px" }}>déclaré</span>
+        </div>
+      )}
+
+      {/* Score bar */}
+      {show(60) && (
+        <div style={{ opacity: alpha(60) }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+            <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--tx-3)", letterSpacing: "0.06em" }}>SCORE CONVICTION</span>
+            <span style={{ fontSize: "0.72rem", fontWeight: 800, fontFamily: "monospace", color: "var(--c-indigo-2)" }}>{scoreVal}/100</span>
+          </div>
+          <div style={{ height: "8px", borderRadius: "4px", background: "var(--border-med)", overflow: "hidden" }}>
+            <div style={{
+              height: "100%", width: `${scoreVal}%`,
+              background: "linear-gradient(90deg, var(--c-indigo), var(--c-violet), var(--c-emerald))",
+              borderRadius: "4px",
+              transition: "width 0.04s linear",
+              boxShadow: "0 0 10px var(--c-indigo)",
+            }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "5px" }}>
+            <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--c-emerald)" }}>+21.4% attendu T+90</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Panel card ────────────────────────────────────────────────────────────────
+
+function AnimPanel({ step, accentColor, pill, title, body, children }: {
+  step: string; accentColor: string; pill: string;
+  title: string; body: string; children: React.ReactNode;
+}) {
+  return (
+    <div style={{
+      borderRadius: "18px",
+      border: "1px solid var(--border-med)",
+      overflow: "hidden",
+      display: "flex",
+      flexDirection: "column",
+      background: "var(--bg-surface)",
+      boxShadow: "var(--shadow-md)",
+      transition: "box-shadow 0.2s, border-color 0.2s",
+    }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = "var(--shadow-lg)")}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = "var(--shadow-md)")}
+    >
+      {/* Animation area */}
+      <div style={{
+        height: "200px",
+        flexShrink: 0,
+        background: `linear-gradient(135deg, var(--bg-raised) 0%, color-mix(in srgb, ${accentColor} 5%, var(--bg-surface)) 100%)`,
+        borderBottom: "1px solid var(--border)",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Subtle corner glow */}
         <div style={{
-          display:"inline-flex", alignItems:"center",
-          padding:"2px 10px", borderRadius:"20px", marginBottom:"10px",
-          fontSize:"0.61rem", fontWeight:700, letterSpacing:"0.08em",
-          background:`${accentColor}15`, border:`1px solid ${accentColor}30`,
-          color:accentColor, alignSelf:"flex-start",
+          position: "absolute", top: -30, right: -30,
+          width: "120px", height: "120px", borderRadius: "50%",
+          background: accentColor, opacity: 0.06, filter: "blur(32px)",
+          pointerEvents: "none",
+        }} />
+        {children}
+      </div>
+
+      {/* Text */}
+      <div style={{ padding: "18px 20px 22px", flex: 1, display: "flex", flexDirection: "column" }}>
+        <span style={{
+          display: "inline-flex", alignItems: "center",
+          padding: "2px 9px", borderRadius: "20px", marginBottom: "10px",
+          fontSize: "0.6rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase" as const,
+          background: `color-mix(in srgb, ${accentColor} 12%, transparent)`,
+          border: `1px solid color-mix(in srgb, ${accentColor} 30%, transparent)`,
+          color: accentColor, alignSelf: "flex-start",
         }}>
           {pill}
-        </div>
+        </span>
         <h3 style={{
-          fontFamily:"'Banana Grotesk','Inter',system-ui",
-          fontWeight:700, fontSize:"0.9375rem", letterSpacing:"-0.022em",
-          marginBottom:"7px", color:"var(--tx-1)", lineHeight:1.3,
+          fontFamily: "'Banana Grotesk','Inter',system-ui",
+          fontWeight: 700, fontSize: "0.9375rem", letterSpacing: "-0.022em",
+          marginBottom: "7px", color: "var(--tx-1)", lineHeight: 1.3,
         }}>
           {title}
         </h3>
         <p style={{
-          fontFamily:"'Inter',system-ui", fontSize:"0.8125rem",
-          color:"var(--tx-2)", lineHeight:1.65, margin:0, flex:1,
+          fontFamily: "'Inter',system-ui", fontSize: "0.8125rem",
+          color: "var(--tx-2)", lineHeight: 1.65, margin: 0,
         }}>
           {body}
         </p>
@@ -587,39 +440,42 @@ function AnimPanel({ step, accentColor, pill, title, body, useAnim }: {
   );
 }
 
-// ── Main export ───────────────────────────────────────────────────────────────
-
-const STEPS = [
-  {
-    step:"01", accentColor:"#5B8AF6", pill:"01 · Collecte",
-    title:"Déclarations AMF en temps réel",
-    body:"Chaque déclaration BDIF est récupérée, parsée et enrichie automatiquement chaque jour. Prix, capitalisation, rôle, montant exact.",
-    useAnim: useDraw1,
-  },
-  {
-    step:"02", accentColor:"#A78BFA", pill:"02 · Scoring",
-    title:"Score de conviction algorithmique",
-    body:"100 points composites : taille vs capitalisation, rôle du dirigeant, performances historiques de la catégorie, signaux cluster.",
-    useAnim: useDraw2,
-  },
-  {
-    step:"03", accentColor:"#10B981", pill:"03 · Backtest",
-    title:"Validation sur données historiques",
-    body:"Chaque pattern est backtesté sur 22 000+ transactions depuis 2021. Win rate, Sharpe, retour médian T+90 / T+365 vérifiés.",
-    useAnim: useDraw3,
-  },
-  {
-    step:"04", accentColor:"#F59E0B", pill:"04 · Signal",
-    title:"Recommandation actionnable",
-    body:"Les meilleurs signaux remontent en Top 10 quotidien. Score, retour attendu, historique du dirigeant — tout en un clic.",
-    useAnim: useDraw4,
-  },
-];
+// ── Main export ────────────────────────────────────────────────────────────────
 
 export function HowItWorksAnimations() {
   return (
-    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(270px,1fr))", gap:"16px" }}>
-      {STEPS.map(s => <AnimPanel key={s.step} {...s} />)}
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(270px, 1fr))", gap: "16px" }}>
+      <AnimPanel
+        step="01" accentColor="var(--c-indigo)" pill="01 · Collecte"
+        title="Déclarations AMF en temps réel"
+        body="Chaque déclaration BDIF est récupérée, parsée et enrichie automatiquement chaque jour. Prix, capitalisation, rôle, montant exact."
+      >
+        <AnimCollecte />
+      </AnimPanel>
+
+      <AnimPanel
+        step="02" accentColor="var(--c-violet)" pill="02 · Scoring"
+        title="Score de conviction algorithmique"
+        body="100 points composites : taille vs capitalisation, rôle du dirigeant, performances historiques de la catégorie, signaux cluster."
+      >
+        <AnimScoring />
+      </AnimPanel>
+
+      <AnimPanel
+        step="03" accentColor="var(--c-emerald)" pill="03 · Backtest"
+        title="Validation sur données historiques"
+        body="Chaque pattern est backtesté sur 22 000+ transactions depuis 2021. Win rate, Sharpe, retour médian T+90 / T+365 vérifiés."
+      >
+        <AnimBacktest />
+      </AnimPanel>
+
+      <AnimPanel
+        step="04" accentColor="var(--c-amber)" pill="04 · Signal"
+        title="Recommandation actionnable"
+        body="Les meilleurs signaux remontent en Top 10 quotidien. Score, retour attendu, historique du dirigeant — tout en un clic."
+      >
+        <AnimSignal />
+      </AnimPanel>
     </div>
   );
 }

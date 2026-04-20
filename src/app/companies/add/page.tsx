@@ -64,7 +64,7 @@ export default function AddCompanyPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-semibold text-[var(--tx-2)] mb-2">
-              Jeton AMF <span className="text-rose-400">*</span>
+              Jeton AMF <span className="tx-neg">*</span>
             </label>
             <input
               type="text"
@@ -76,7 +76,7 @@ export default function AddCompanyPage() {
             />
             <p className="text-xs text-[var(--tx-3)] mt-1.5">
               Trouvez le jeton sur{" "}
-              <a href="https://bdif.amf-france.org" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300">
+              <a href="https://bdif.amf-france.org" target="_blank" rel="noopener noreferrer" className="tx-brand hover:tx-brand">
                 bdif.amf-france.org
               </a>{" "}
               dans l&apos;URL du flux RSS.
@@ -120,7 +120,7 @@ export default function AddCompanyPage() {
           </div>
 
           {error && (
-            <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 px-4 py-3 text-sm text-rose-400">
+            <div className="rounded-xl bg-neg-soft border bd-neg px-4 py-3 text-sm tx-neg">
               {error}
             </div>
           )}

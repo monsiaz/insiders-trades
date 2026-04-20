@@ -1217,7 +1217,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
                       const g = data.byGender[key];
                       if (!g || g.count < 3) return null;
                       const label = key === "M" ? "Hommes" : key === "F" ? "Femmes" : "Non déterminé";
-                      const color = key === "F" ? "text-violet-400" : key === "M" ? "text-sky-400" : "text-muted";
+                      const color = key === "F" ? "tx-violet" : key === "M" ? "tx-brand" : "text-muted";
                       return (
                         <tr key={key} className="border-b border-soft/50 hover:bg-surface/50">
                           <td className={`py-3 font-semibold ${color}`}>{label}</td>
@@ -1339,12 +1339,12 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
                           <td className="py-2 font-medium text-primary">{role}</td>
                           <td className="py-2 text-center text-xs font-mono text-secondary">{stats.count}</td>
                           <td className="py-2 text-center">
-                            <span className={`text-xs font-mono font-semibold ${(stats.accuracy90d ?? 0) > 55 ? "text-rose-400" : "text-muted"}`}>
+                            <span className={`text-xs font-mono font-semibold ${(stats.accuracy90d ?? 0) > 55 ? "tx-neg" : "text-muted"}`}>
                               {stats.accuracy90d != null ? `${stats.accuracy90d.toFixed(0)}%` : "—"}
                             </span>
                           </td>
                           <td className="py-2 text-center">
-                            <span className={`text-xs font-mono font-semibold ${(stats.accuracy365d ?? 0) > 55 ? "text-rose-400" : "text-muted"}`}>
+                            <span className={`text-xs font-mono font-semibold ${(stats.accuracy365d ?? 0) > 55 ? "tx-neg" : "text-muted"}`}>
                               {stats.accuracy365d != null ? `${stats.accuracy365d.toFixed(0)}%` : "—"}
                             </span>
                           </td>

@@ -32,7 +32,7 @@ function ResetForm() {
   }
 
   if (!token) return (
-    <div className="text-center text-rose-400 py-8">Lien invalide. <Link href="/auth/forgot-password" className="text-indigo-400">Réessayer</Link></div>
+    <div className="text-center tx-neg py-8">Lien invalide. <Link href="/auth/forgot-password" className="tx-brand">Réessayer</Link></div>
   );
 
   return (
@@ -44,7 +44,7 @@ function ResetForm() {
         </div>
         <div className="glass-card rounded-2xl p-6">
           <form onSubmit={onSubmit} className="space-y-4">
-            {error && <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3 text-sm text-rose-400">{error}</div>}
+            {error && <div className="bg-neg-soft border bd-neg rounded-xl px-4 py-3 text-sm tx-neg">{error}</div>}
             <div>
               <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Nouveau mot de passe</label>
               <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}

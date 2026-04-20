@@ -37,12 +37,12 @@ export function CompanySyncButton({ companyId }: { companyId: string }) {
   return (
     <div className="flex items-center gap-2">
       {result && (
-        <span className="text-xs text-emerald-400">{result}</span>
+        <span className="text-xs tx-pos">{result}</span>
       )}
       <button
         onClick={handleSync}
         disabled={loading}
-        className="px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-400 hover:text-white text-sm transition-colors flex items-center gap-1.5"
+        className="px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-400 hover-tx-1 text-sm transition-colors flex items-center gap-1.5"
       >
         {loading ? (
           <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">

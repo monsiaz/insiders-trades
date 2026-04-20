@@ -258,7 +258,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
               <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">Sociétés les + actives</h2>
               <p className="text-xs text-[var(--tx-3)] mt-0.5">Volume déclaré, 90 derniers jours</p>
             </div>
-            <Link href="/companies" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
+            <Link href="/companies" className="text-xs tx-brand hover:tx-brand transition-colors font-medium">
               Voir tout →
             </Link>
           </div>
@@ -284,7 +284,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
                       {row.count} transaction{row.count > 1 ? "s" : ""}
                     </div>
                   </div>
-                  <span className="text-sm font-semibold text-emerald-400 tabular-nums shrink-0">
+                  <span className="text-sm font-semibold tx-pos tabular-nums shrink-0">
                     {fmtAmount(row.totalAmount)}
                   </span>
                 </Link>
@@ -300,7 +300,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
               <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">Dirigeants les + actifs</h2>
               <p className="text-xs text-[var(--tx-3)] mt-0.5">Volume total déclaré, tous temps</p>
             </div>
-            <Link href="/insiders" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
+            <Link href="/insiders" className="text-xs tx-brand hover:tx-brand transition-colors font-medium">
               Voir tout →
             </Link>
           </div>
@@ -320,7 +320,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
                       {row.count} transaction{row.count > 1 ? "s" : ""}
                     </div>
                   </div>
-                  <span className="text-sm font-semibold text-indigo-400 tabular-nums shrink-0">
+                  <span className="text-sm font-semibold tx-brand tabular-nums shrink-0">
                     {fmtAmount(row.totalAmount)}
                   </span>
                 </Link>
@@ -339,7 +339,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
             </h2>
             <Link
               href="/companies"
-              className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
+              className="text-sm tx-brand hover:tx-brand transition-colors font-medium"
             >
               Toutes les sociétés →
             </Link>
@@ -371,10 +371,10 @@ function StatTile({
   className?: string;
 }) {
   const accentMap = {
-    indigo: "from-indigo-500/10 to-indigo-500/5 border-indigo-500/15",
+    indigo: "from-indigo-500/10 to-indigo-500/5 bd-brand",
     violet: "from-violet-500/10 to-violet-500/5 border-violet-500/15",
-    emerald: "from-emerald-500/10 to-emerald-500/5 border-emerald-500/15",
-    rose: "from-rose-500/10 to-rose-500/5 border-rose-500/15",
+    emerald: "from-emerald-500/10 to-emerald-500/5 bd-pos",
+    rose: "from-rose-500/10 to-rose-500/5 bd-neg",
     slate: "from-slate-500/10 to-slate-500/5 border-slate-500/15",
   };
   return (

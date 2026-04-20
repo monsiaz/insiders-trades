@@ -304,51 +304,60 @@ def openai_search(name, website=''):
 
 # ── Upload to Vercel Blob ─────────────────────────────────────────────────────
 
-def upload_blob(slug, content, content_type):
-    if args.dry_run:
-        return f'https://blob.vercel-storage.com/dry/{slug}'
-    ext = 'svg' if 'svg' in content_type else \
-          'webp' if 'webp' in content_type else \
-          'jpg' if 'jpg' in content_type or 'jpeg' in content_type else 'png'
-    url = f'https://blob.vercel.com/logos/{slug}.{ext}'
-    # Use vercel blob REST API
-    import urllib.request
-    req = urllib.request.Request(
-        url,
-        data=content,
-        headers={
-            'Authorization': f'Bearer {BLOB_TOKEN}',
-            'Content-Type': content_type or 'image/png',
-            'x-add-random-suffix': 'false',
-            'x-allow-overwrite': 'true',
-        },
-        method='PUT'
-    )
-    try:
-        resp = urllib.request.urlopen(req, timeout=15)
-        result = json.loads(resp.read())
-        return result.get('url', url)
-    except Exception as e:
-        # Fallback: use @vercel/blob via node
-        return _upload_via_node(slug, content, content_type)
+def clean_slug_for_filename(name):
+    """Generate clean filename from company name — no AMF number suffix."""
+    clean = re.sub(
+        r'\s+(s\.a\.|s\.a\.s\.|s\.e\.|société anonyme|se\b|sa\b|sas\b|plc\b|nv\b|bv\b|inc\b|'
+        r'corp\b|ltd\b|s\.p\.a\.|s\.b\.|group\b|groupe\b|holding\b)\.?\s*$',
+        '', name, flags=re.IGNORECASE
+    ).strip()
+    slug = re.sub(r'[^a-z0-9]+', '-', clean.lower()).strip('-')
+    slug = re.sub(r'-+', '-', slug)
+    return slug[:50]
 
-def _upload_via_node(slug, content, content_type):
-    """Fallback: write temp file and call node for blob upload."""
+def upload_blob(db_slug, content, content_type, company_name=None):
+    """Upload with clean filename. Uses company_name for clean slug if provided."""
+    if args.dry_run:
+        return f'https://blob.vercel-storage.com/dry/{db_slug}'
+
+    # Determine extension
+    ext = 'svg' if ('svg' in (content_type or '') or content[:5] == b'<svg ') else \
+          'webp' if 'webp' in (content_type or '') else \
+          'jpg' if ('jpg' in (content_type or '') or 'jpeg' in (content_type or '')) else 'png'
+
+    # Use clean name-based slug, not the AMF-number slug
+    if company_name:
+        filename_base = clean_slug_for_filename(company_name)
+    else:
+        # Strip trailing -NNNN from db_slug
+        filename_base = re.sub(r'-\d+$', '', db_slug)
+
+    filename = f'{filename_base}.{ext}'
+
     import tempfile, subprocess
-    ext = 'svg' if 'svg' in content_type else 'jpg' if 'jpg' in content_type or 'jpeg' in content_type else 'png'
     with tempfile.NamedTemporaryFile(suffix=f'.{ext}', delete=False) as f:
         f.write(content); tmp = f.name
+
+    ct_safe = (content_type or 'image/png').split(';')[0].strip()
     result = subprocess.run([
         'node', '-e', f'''
 const {{put}}=require("@vercel/blob");
 const fs=require("fs");
 const buf=fs.readFileSync("{tmp}");
-put("logos/{slug}.{ext}",buf,{{access:"public",token:"{BLOB_TOKEN}",contentType:"{content_type}",addRandomSuffix:false,allowOverwrite:true}})
-.then(r=>console.log(r.url)).catch(e=>console.error(e.message));
+put("logos/{filename}",buf,{{
+  access:"public",
+  token:"{BLOB_TOKEN}",
+  contentType:"{ct_safe}",
+  addRandomSuffix:false,
+  allowOverwrite:true
+}}).then(r=>console.log(r.url)).catch(e=>{{console.error(e.message);process.exit(1)}});
 '''
     ], capture_output=True, text=True, cwd=project_dir)
     os.unlink(tmp)
-    return result.stdout.strip() or f'https://blob.vercel-storage.com/logos/{slug}.{ext}'
+
+    if result.returncode == 0 and result.stdout.strip():
+        return result.stdout.strip()
+    raise Exception(f'Blob upload failed: {result.stderr[:100]}')
 
 # ── Per-company pipeline ──────────────────────────────────────────────────────
 
@@ -388,7 +397,7 @@ def process_company(company):
         if r:
             content, ct = get_content_for_url(r[0])
             if content:
-                blob_url = upload_blob(slug, content, ct or 'image/png')
+                blob_url = upload_blob(slug, content, ct or 'image/png', company_name=name)
                 return {'url': blob_url, 'source': r[1]}
 
     # Phase 2: Scrape each candidate website
@@ -397,7 +406,7 @@ def process_company(company):
         if r:
             content, ct = get_content_for_url(r[0])
             if content:
-                blob_url = upload_blob(slug, content, ct or 'image/png')
+                blob_url = upload_blob(slug, content, ct or 'image/png', company_name=name)
                 return {'url': blob_url, 'source': r[1]}
 
     # Phase 3: Google Favicon (quick fallback, acceptable quality)
@@ -406,7 +415,7 @@ def process_company(company):
         if r:
             content, ct = get_content_for_url(r[0])
             if content:
-                blob_url = upload_blob(slug, content, ct or 'image/png')
+                blob_url = upload_blob(slug, content, ct or 'image/png', company_name=name)
                 return {'url': blob_url, 'source': r[1]}
 
     # Phase 4: OpenAI last resort
@@ -415,7 +424,7 @@ def process_company(company):
     if r:
         content, ct = get_content_for_url(r[0])
         if content:
-            blob_url = upload_blob(slug, content, ct or 'image/png')
+            blob_url = upload_blob(slug, content, ct or 'image/png', company_name=name)
             return {'url': blob_url, 'source': r[1]}
 
     return None

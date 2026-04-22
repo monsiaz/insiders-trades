@@ -1,5 +1,5 @@
 /**
- * /methodologie — Explication complète des données, du scoring et des signaux.
+ * /methodologie · Explication complète des données, du scoring et des signaux.
  *
  * Tout est basé sur des données publiques (AMF France + Yahoo Finance) et des
  * calculs déterministes. Pas de boîte noire.
@@ -10,7 +10,7 @@ import Link from "next/link";
 export const revalidate = 3600; // refresh stats every 1h
 
 export const metadata = {
-  title: "Méthodologie — InsiderTrades",
+  title: "Méthodologie · InsiderTrades",
   description:
     "Comment nous collectons les déclarations AMF, calculons les signaux, backtestons les performances et gérons les périodes temporelles. Transparence totale.",
 };
@@ -185,11 +185,13 @@ function Stat({ value, label, sub }: { value: string; label: string; sub?: strin
 // ── Score breakdown table ────────────────────────────────────────────────────
 function ScoreTable({ rows }: { rows: { label: string; pts: string; desc: string; accent?: string }[] }) {
   return (
+    <div style={{ overflowX: "auto" }}>
     <div
       style={{
         border: "1px solid var(--border-med)",
         borderRadius: "2px",
         overflow: "hidden",
+        minWidth: "480px",
       }}
     >
       {rows.map((r, i) => (
@@ -232,6 +234,7 @@ function ScoreTable({ rows }: { rows: { label: string; pts: string; desc: string
           </div>
         </div>
       ))}
+    </div>
     </div>
   );
 }
@@ -409,7 +412,7 @@ function SignalCard({
 export default async function MethodologiePage() {
   const stats = await getLiveStats();
   const fmtDateFr = (d: Date | null) =>
-    d ? d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }) : "—";
+    d ? d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }) : "·";
 
   return (
     <div className="content-wrapper">
@@ -490,7 +493,7 @@ export default async function MethodologiePage() {
         </section>
       )}
 
-      {/* ── Section 1 — Sources ─────────────── */}
+      {/* ── Section 1 · Sources ─────────────── */}
       <section className="mb-16">
         <SectionTitle
           eyebrow="1. Sources"
@@ -603,15 +606,15 @@ export default async function MethodologiePage() {
                 paddingLeft: "18px",
               }}
             >
-              <li><code className="mono">v8/chart</code> — prix historique quotidien (20 ans)</li>
-              <li><code className="mono">fundamentals-timeseries</code> — compte de résultat annuel</li>
-              <li><code className="mono">quoteSummary</code> — valorisation, ratios, targets analystes</li>
+              <li><code className="mono">v8/chart</code> · prix historique quotidien (20 ans)</li>
+              <li><code className="mono">fundamentals-timeseries</code> · compte de résultat annuel</li>
+              <li><code className="mono">quoteSummary</code> · valorisation, ratios, targets analystes</li>
             </ul>
           </div>
         </div>
       </section>
 
-      {/* ── Section 2 — Pipeline ──────────────── */}
+      {/* ── Section 2 · Pipeline ──────────────── */}
       <section className="mb-16">
         <SectionTitle
           eyebrow="2. Pipeline"
@@ -715,7 +718,7 @@ export default async function MethodologiePage() {
         </div>
       </section>
 
-      {/* ── Section 3 — Signal score breakdown ── */}
+      {/* ── Section 3 · Signal score breakdown ── */}
       <section className="mb-16">
         <SectionTitle
           eyebrow="3. Signal score"
@@ -795,7 +798,7 @@ export default async function MethodologiePage() {
         </div>
       </section>
 
-      {/* ── Section 4 — Composite signals (NEW) ── */}
+      {/* ── Section 4 · Composite signals (NEW) ── */}
       <section className="mb-16">
         <SectionTitle
           eyebrow="4. Signaux composites"
@@ -811,7 +814,7 @@ export default async function MethodologiePage() {
         >
           <SignalCard
             name="Près plus bas 52s"
-            desc="Achat d'un dirigeant alors que le cours est proche du plus bas sur 52 semaines — contrarian classique."
+            desc="Achat d'un dirigeant alors que le cours est proche du plus bas sur 52 semaines, contrarian classique."
             threshold="position < 20% du range 52s"
             points="+3 pts"
             badge="Près plus bas 52s"
@@ -868,7 +871,7 @@ export default async function MethodologiePage() {
         </div>
       </section>
 
-      {/* ── Section 5 — Reco score ──────────── */}
+      {/* ── Section 5 · Reco score ──────────── */}
       <section className="mb-16">
         <SectionTitle
           eyebrow="5. Score de recommandation"
@@ -924,7 +927,7 @@ export default async function MethodologiePage() {
         </div>
       </section>
 
-      {/* ── Section 6 — Backtest methodology ── */}
+      {/* ── Section 6 · Backtest methodology ── */}
       <section className="mb-16">
         <SectionTitle
           eyebrow="6. Backtest"
@@ -993,7 +996,7 @@ export default async function MethodologiePage() {
           tolérance de <strong style={{ color: "var(--tx-1)" }}>±12 jours</strong> calendaires
           autour de chaque cible (week-ends, jours fériés, suspensions de
           cotation). Si aucun prix n&apos;est disponible dans cette fenêtre,
-          le return correspondant est laissé nul — jamais extrapolé.
+          le return correspondant est laissé nul, jamais extrapolé.
         </Paragraph>
         <Paragraph>
           Le <em>win rate</em> est le pourcentage de trades dont le return
@@ -1004,18 +1007,20 @@ export default async function MethodologiePage() {
         </Paragraph>
       </section>
 
-      {/* ── Section 7 — Period handling ───────── */}
+      {/* ── Section 7 · Period handling ───────── */}
       <section className="mb-16">
         <SectionTitle
           eyebrow="7. Gestion des périodes"
           title="Pas de confusion temporelle"
           sub="Les erreurs les plus fréquentes en analyse d'insider trading viennent d'un mauvais appariement entre la date du trade et les données fondamentales. Voici comment on s'en prémunit."
         />
+        <div style={{ overflowX: "auto" }}>
         <div
           style={{
             border: "1px solid var(--border-med)",
             borderRadius: "2px",
             overflow: "hidden",
+            minWidth: "420px",
           }}
         >
           {[
@@ -1068,10 +1073,11 @@ export default async function MethodologiePage() {
             </div>
           ))}
         </div>
+        </div>
         <Paragraph>
           <strong style={{ color: "var(--tx-1)" }}>Look-ahead bias.</strong> Le backtest
           utilise uniquement les prix disponibles à la date de la
-          transaction — aucune information future ne peut influencer le
+          transaction : aucune information future ne peut influencer le
           score historique d&apos;un trade.
         </Paragraph>
         <Paragraph>
@@ -1083,7 +1089,7 @@ export default async function MethodologiePage() {
         </Paragraph>
       </section>
 
-      {/* ── Section 8 — Limits ────────────────── */}
+      {/* ── Section 8 · Limits ────────────────── */}
       <section className="mb-16">
         <SectionTitle
           eyebrow="8. Limites"
@@ -1157,10 +1163,10 @@ export default async function MethodologiePage() {
           un risque de perte en capital.
         </p>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <Link href="/recommendations" className="btn btn-primary" style={{ fontSize: "0.82rem" }}>
+          <Link href="/recommendations" className="btn btn-primary" style={{ fontSize: "0.82rem", minHeight: "44px" }}>
             Voir les recommandations
           </Link>
-          <Link href="/backtest" className="btn btn-outline" style={{ fontSize: "0.82rem" }}>
+          <Link href="/backtest" className="btn btn-outline" style={{ fontSize: "0.82rem", minHeight: "44px" }}>
             Explorer le backtest
           </Link>
         </div>

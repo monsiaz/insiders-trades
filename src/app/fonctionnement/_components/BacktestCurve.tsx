@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Animated line chart — simulates a backtest equity curve for a portfolio
+ * Animated line chart · simulates a backtest equity curve for a portfolio
  * composed of "buy-when-insider-buys" signals vs. CAC40 baseline.
  * Pure SVG, no canvas, theme-aware.
  */
 
-// Simulated monthly equity curves (indexed base 100) — representative of
+// Simulated monthly equity curves (indexed base 100) · representative of
 // what the backtest page produces. NOT live data; illustrative.
 const SIGNAL_CURVE = [
   100, 102.4, 104.1, 103.8, 106.2, 108.5, 107.9, 110.6, 113.2, 112.4,

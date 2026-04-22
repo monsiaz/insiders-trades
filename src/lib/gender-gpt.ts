@@ -1,5 +1,5 @@
 /**
- * gender-gpt.ts — GPT-4o gender classification for insider names/functions.
+ * gender-gpt.ts · GPT-4o gender classification for insider names/functions.
  *
  * Used by the daily cron to resolve gender for insiders that the local
  * heuristic (gender-utils.ts) could not determine.
@@ -80,7 +80,7 @@ export async function gptGenderForUnknownInsiders(options?: {
   const maxInsiders = options?.maxInsiders ?? 500;
 
   if (!apiKey) {
-    console.warn("[gender-gpt] No OPENAI_API_KEY — skipping GPT gender step");
+    console.warn("[gender-gpt] No OPENAI_API_KEY · skipping GPT gender step");
     return { resolved: 0, skipped: 0, errors: 0 };
   }
 

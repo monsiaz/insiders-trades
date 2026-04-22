@@ -1,5 +1,5 @@
 /**
- * Signal scoring engine — v2 (recalibrated 2026-04 based on 3-year backtest).
+ * Signal scoring engine · v2 (recalibrated 2026-04 based on 3-year backtest).
  *
  * Empirical findings from scripts/strategy-backtest-v2.mjs on 15k retail-realistic
  * backtests :
@@ -19,21 +19,21 @@
  *  - signalScore:      composite 0-100 score
  *
  * ──────────── Budget v2 ─────────────  total ≤ 100 pts
- *  22 pts  — % of market cap           (was 28 — downweighted: noisy on small caps)
- *  12 pts  — % of insider own flow      (was 16 — downweighted)
- *  16 pts  — insider function           (was 12 — upweighted: PDG/CFO matters)
- *  18 pts  — cluster strength           (was 8  — ★ UPWEIGHTED: the real alpha)
- *   4 pts  — directional conviction    (unchanged: net buyer on this stock)
- *   8 pts  — fundamentals              (was 12 — downweighted: weak predictor)
- *  20 pts  — composite signals          (unchanged: momentum/value/quality)
- *  −5 pts — staleness penalty          (NEW: signals published > 14d ago get dinged)
+ *  22 pts · % of market cap           (was 28 · downweighted: noisy on small caps)
+ *  12 pts · % of insider own flow      (was 16 · downweighted)
+ *  16 pts · insider function           (was 12 · upweighted: PDG/CFO matters)
+ *  18 pts · cluster strength           (was 8 · ★ UPWEIGHTED: the real alpha)
+ *   4 pts · directional conviction    (unchanged: net buyer on this stock)
+ *   8 pts · fundamentals              (was 12 · downweighted: weak predictor)
+ *  20 pts · composite signals          (unchanged: momentum/value/quality)
+ *  −5 pts · staleness penalty          (NEW: signals published > 14d ago get dinged)
  */
 
 import { prisma } from "./prisma";
 import { roleFunctionScore } from "./role-utils";
 
 /**
- * Transaction natures that are NOT genuine market trades — corporate actions,
+ * Transaction natures that are NOT genuine market trades · corporate actions,
  * intra-group reclassifications, loans, pledges, conversions, etc. These
  * produce extreme %mcap values because they either:
  *   - move 100%+ of the capital (apport en nature, reclassement);
@@ -99,7 +99,7 @@ function pctFlowScore(pct: number): number {
   return Math.max(0, Math.round(s));
 }
 
-/** Analyst + valuation + leverage fundamentals (max 8 pts, min -3) — recalibrated smaller */
+/** Analyst + valuation + leverage fundamentals (max 8 pts, min -3) · recalibrated smaller */
 function fundamentalsScore(
   analystScore: number | null,   // 1=strong buy → 5=strong sell
   trailingPE: number | null,
@@ -122,7 +122,7 @@ function fundamentalsScore(
 }
 
 /**
- * Cluster strength bonus (0–18 pts) — UPWEIGHTED in v2.
+ * Cluster strength bonus (0–18 pts) · UPWEIGHTED in v2.
  *  2 insiders → 12 pts  (entry level: worth a real look)
  *  3 insiders → 15 pts
  *  4+ insiders → 18 pts  (very strong signal, rarely wrong)
@@ -135,7 +135,7 @@ function clusterStrengthScore(nearbyInsiderCount: number): number {
 }
 
 /**
- * Staleness penalty — NEW in v2. Signals that have been sitting in the feed
+ * Staleness penalty · NEW in v2. Signals that have been sitting in the feed
  * for a long time without the market digesting them (weird!) get a slight
  * penalty, signaling they're probably not going to move.
  *
@@ -154,7 +154,7 @@ function stalenessPenalty(daysOld: number): number {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Composite signals (extended — 20 pts budget)
+// Composite signals (extended · 20 pts budget)
 // Each emits a boolean flag + a small point value, and the UI shows the flag.
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -192,7 +192,7 @@ export function computeComposite(i: CompositeInputs): CompositeResult {
   const flags: string[] = [];
   let pts = 0;
 
-  // ── 1. Momentum (position in 52w range) — up to 3 pts + flag
+  // ── 1. Momentum (position in 52w range) · up to 3 pts + flag
   //    NB: "contrarian near 52w low" flag when insider buys a falling stock
   if (i.currentPrice && i.fiftyTwoWeekHigh && i.fiftyTwoWeekLow
       && i.fiftyTwoWeekHigh > i.fiftyTwoWeekLow) {
@@ -202,14 +202,14 @@ export function computeComposite(i: CompositeInputs): CompositeResult {
     else if (pos >= 0.85) { pts += 1; flags.push("near-52w-high"); } // momentum but weak signal on its own
   }
 
-  // ── 2. Price vs 200-day MA (long-term trend) — up to 2 pts + flag
+  // ── 2. Price vs 200-day MA (long-term trend) · up to 2 pts + flag
   if (i.currentPrice && i.twoHundredDayAverage && i.twoHundredDayAverage > 0) {
     const r = i.currentPrice / i.twoHundredDayAverage;
     if (r >= 1.05) { pts += 2; flags.push("above-ma200"); }
     else if (r <= 0.85) { pts += 1; flags.push("oversold"); } // price 15%+ below MA200 + insider buy = strong
   }
 
-  // ── 3. Analyst upside to target price — up to 3 pts + flag
+  // ── 3. Analyst upside to target price · up to 3 pts + flag
   if (i.currentPrice && i.targetMean && i.numAnalysts && i.numAnalysts >= 3) {
     const upside = (i.targetMean - i.currentPrice) / i.currentPrice;
     if (upside >= 0.25) { pts += 3; flags.push("upside-25pct"); }
@@ -217,13 +217,13 @@ export function computeComposite(i: CompositeInputs): CompositeResult {
     else if (upside >= 0.05) { pts += 1; }
   }
 
-  // ── 4. Analyst consensus Strong Buy — up to 2 pts + flag
+  // ── 4. Analyst consensus Strong Buy · up to 2 pts + flag
   if (i.analystScore != null && i.numAnalysts && i.numAnalysts >= 3) {
     if (i.analystScore <= 1.75) { pts += 2; flags.push("analyst-strong-buy"); }
     else if (i.analystScore <= 2.25) { pts += 1; flags.push("analyst-buy"); }
   }
 
-  // ── 5. Value combo (low P/E + low P/B + positive FCF) — up to 2 pts + flag
+  // ── 5. Value combo (low P/E + low P/B + positive FCF) · up to 2 pts + flag
   const fcf = typeof i.freeCashFlow === "bigint" ? Number(i.freeCashFlow) : i.freeCashFlow;
   const lowPE = i.trailingPE != null && i.trailingPE > 0 && i.trailingPE < 15;
   const lowPB = i.priceToBook != null && i.priceToBook > 0 && i.priceToBook < 2;
@@ -231,7 +231,7 @@ export function computeComposite(i: CompositeInputs): CompositeResult {
   if (lowPE && lowPB && posFCF) { pts += 2; flags.push("value-combo"); }
   else if (lowPE && posFCF) { pts += 1; flags.push("value"); }
 
-  // ── 6. Quality combo (high ROE + high margin + low debt) — up to 3 pts + flag
+  // ── 6. Quality combo (high ROE + high margin + low debt) · up to 3 pts + flag
   const hiROE = i.returnOnEquity != null && i.returnOnEquity >= 0.15;      // ≥15%
   const hiMargin = i.profitMargin != null && i.profitMargin >= 0.10;       // ≥10%
   const loDebt = i.debtToEquity != null && i.debtToEquity < 80;
@@ -239,13 +239,13 @@ export function computeComposite(i: CompositeInputs): CompositeResult {
   else if (hiROE && hiMargin) { pts += 2; flags.push("quality"); }
   else if (hiROE) { pts += 1; }
 
-  // ── 7. Smart money (institutional ownership) — up to 1 pt + flag
+  // ── 7. Smart money (institutional ownership) · up to 1 pt + flag
   if (i.heldByInstitutions != null && i.heldByInstitutions >= 0.5) {
     pts += 1;
     flags.push("institutional-majority");
   }
 
-  // ── 8. Insider alignment (insiders already hold material stake) — up to 2 pts + flag
+  // ── 8. Insider alignment (insiders already hold material stake) · up to 2 pts + flag
   //    Ownership is a strong signal that the insider has skin in the game
   if (i.heldByInsiders != null && i.heldByInsiders >= 0.2) {
     pts += 2;
@@ -255,7 +255,7 @@ export function computeComposite(i: CompositeInputs): CompositeResult {
     flags.push("insider-owned");
   }
 
-  // ── 9. Short-squeeze setup — up to 2 pts + flag
+  // ── 9. Short-squeeze setup · up to 2 pts + flag
   if (i.shortRatio != null && i.shortRatio >= 5) {
     pts += 2;
     flags.push("short-squeeze");
@@ -288,7 +288,7 @@ function computeScore(
   score += fundamentalsScore(analystScore ?? null, trailingPE ?? null, debtToEquity ?? null);
   score += compositePoints ?? 0;
 
-  // Staleness penalty (only applied at display time — scoredAt ≠ signal age)
+  // Staleness penalty (only applied at display time · scoredAt ≠ signal age)
   if (pubDate) {
     const daysOld = (Date.now() - pubDate.getTime()) / 86400_000;
     score += stalenessPenalty(daysOld);
@@ -398,7 +398,7 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
       const mcap = decl.company.marketCap ? Number(decl.company.marketCap) : null;
       const isNonMarket = isNonMarketNature(decl.transactionNature);
 
-      // pctOfMarketCap — skip for non-market natures (apport, reclassement, nantissement…)
+      // pctOfMarketCap · skip for non-market natures (apport, reclassement, nantissement…)
       // and clamp to a realistic range (0–100%) so OCR bugs don't propagate.
       const rawPctMcap = mcap && mcap > 0 && !isNonMarket ? (amount / mcap) * 100 : null;
       const pctOfMarketCap = sanitizePctMcap(rawPctMcap);
@@ -503,7 +503,7 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Market cap enrichment (legacy — now use enrichCompanyFinancials from financials.ts)
+// Market cap enrichment (legacy · now use enrichCompanyFinancials from financials.ts)
 // ────────────────────────────────────────────────────────────────────────────
 export async function enrichMarketCaps(limit = 50) {
   const cutoff = new Date(Date.now() - 7 * 86400_000);
@@ -603,7 +603,7 @@ interface YahooFinancials {
   asOfDate?: string;
 }
 
-// Yahoo Finance fundamentals-timeseries — no crumb required, works in serverless
+// Yahoo Finance fundamentals-timeseries · no crumb required, works in serverless
 async function fetchYahooTimeseries(symbol: string): Promise<YahooFinancials | null> {
   const types = [
     "annualMarketCap",

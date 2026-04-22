@@ -7,7 +7,7 @@ import { CompaniesClient, type CompanyRow } from "@/components/CompaniesClient";
 
 export const revalidate = 300;
 
-// Single aggregated SQL query — one round trip, DB-side aggregate, no N+1.
+// Single aggregated SQL query · one round trip, DB-side aggregate, no N+1.
 // Returns: one row per company with pre-computed count and latest declaration.
 interface CompanyAggregateRow {
   id: string;
@@ -136,7 +136,7 @@ export default async function CompaniesPage({ searchParams }: Props) {
           <span className="masthead-folio">Cotation</span>
           <span className="masthead-rule" aria-hidden="true" />
           <span className="masthead-count">
-            {displayCount.toLocaleString("fr-FR")} sociétés
+            {displayCount.toLocaleString("fr-FR")}{" "}sociétés
           </span>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -168,15 +168,18 @@ export default async function CompaniesPage({ searchParams }: Props) {
                 padding: "3px",
                 background: "var(--bg-raised)",
                 border: "1px solid var(--border-med)",
-                borderRadius: "6px",
+                borderRadius: "8px",
               }}
             >
               <Link
                 href="/companies"
                 style={{
-                  padding: "5px 10px",
-                  borderRadius: "3px",
-                  fontSize: "0.72rem",
+                  padding: "10px 14px",
+                  minHeight: "44px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: "5px",
+                  fontSize: "0.78rem",
                   fontWeight: 600,
                   textDecoration: "none",
                   letterSpacing: "0.02em",
@@ -189,9 +192,12 @@ export default async function CompaniesPage({ searchParams }: Props) {
               <Link
                 href="/companies?all=1"
                 style={{
-                  padding: "5px 10px",
-                  borderRadius: "3px",
-                  fontSize: "0.72rem",
+                  padding: "10px 14px",
+                  minHeight: "44px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: "5px",
+                  fontSize: "0.78rem",
                   fontWeight: 600,
                   textDecoration: "none",
                   letterSpacing: "0.02em",

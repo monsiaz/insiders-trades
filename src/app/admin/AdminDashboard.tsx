@@ -61,13 +61,13 @@ type Tab = "users" | "cron" | "alerts" | "ai" | "apikeys" | "system";
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const fmtDate = (d: string | null) =>
-  d ? new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+  d ? new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }) : "·";
 
 const fmtDateTime = (d: string | null) =>
-  d ? new Date(d).toLocaleString("fr-FR") : "—";
+  d ? new Date(d).toLocaleString("fr-FR") : "·";
 
 const fmtEur = (n: number | null | undefined) =>
-  n == null ? "—" : n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+  n == null ? "·" : n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 
 // ── Root component ────────────────────────────────────────────────────────────
 
@@ -401,7 +401,7 @@ function UsersTab({ showToast }: { showToast: (msg: string, ok?: boolean) => voi
                           {(u.firstName?.[0] ?? u.name?.[0] ?? u.email[0]).toUpperCase()}
                         </div>
                         <span style={{ color: "var(--tx-1)", fontWeight: 500 }}>
-                          {u.firstName && u.lastName ? `${u.firstName} ${u.lastName}` : u.name ?? "—"}
+                          {u.firstName && u.lastName ? `${u.firstName} ${u.lastName}` : u.name ?? "·"}
                         </span>
                       </div>
                     </td>
@@ -943,12 +943,12 @@ function UserModal({
                     >
                       <td style={{ padding: "7px 10px", color: "var(--tx-1)", fontWeight: 500 }}>{p.name}</td>
                       <td style={{ padding: "7px 10px", color: "var(--tx-3)", fontFamily: "monospace", fontSize: "0.75rem" }}>
-                        {p.isin ?? "—"}
+                        {p.isin ?? "·"}
                       </td>
                       <td style={{ padding: "7px 10px", color: "var(--tx-2)", fontFamily: "monospace" }}>{p.quantity}</td>
                       <td style={{ padding: "7px 10px", color: "var(--tx-2)" }}>{p.buyingPrice.toFixed(2)}€</td>
                       <td style={{ padding: "7px 10px", color: "var(--tx-2)" }}>
-                        {p.currentPrice ? `${p.currentPrice.toFixed(2)}€` : "—"}
+                        {p.currentPrice ? `${p.currentPrice.toFixed(2)}€` : "·"}
                       </td>
                       <td style={{ padding: "7px 10px", color: "var(--tx-1)", fontWeight: 500 }}>
                         {fmtEur(p.currentValue ?? p.totalInvested)}
@@ -961,7 +961,7 @@ function UserModal({
                           fontFamily: "monospace",
                         }}
                       >
-                        {p.pnl == null ? "—" : `${p.pnl >= 0 ? "+" : ""}${p.pnl.toFixed(0)}€ (${p.pnlPct?.toFixed(1)}%)`}
+                        {p.pnl == null ? "·" : `${p.pnl >= 0 ? "+" : ""}${p.pnl.toFixed(0)}€ (${p.pnlPct?.toFixed(1)}%)`}
                       </td>
                     </tr>
                   ))}
@@ -1069,7 +1069,7 @@ function CronTab({ showToast }: { showToast: (msg: string, ok?: boolean) => void
         Les crons sont déclenchés automatiquement par Vercel selon la fréquence indiquée (fuseau UTC).
         Vous pouvez aussi lancer n&apos;importe quel job manuellement avec le bouton &laquo; Exécuter &raquo;.
         L&apos;exécution utilise le <code style={{ fontFamily: "monospace", color: "var(--gold)" }}>CRON_SECRET</code> côté serveur
-        — le secret n&apos;est jamais exposé au navigateur.
+ · le secret n&apos;est jamais exposé au navigateur.
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -1266,7 +1266,7 @@ function SystemTab() {
       </h3>
       <div style={{ fontSize: "0.82rem", color: "var(--tx-2)", lineHeight: 1.7 }}>
         <p>L&apos;inscription publique est fermée. Seuls les emails présents dans la whitelist de <code style={{ fontFamily: "monospace", color: "var(--gold)" }}>src/app/api/auth/register/route.ts</code> peuvent créer un compte.</p>
-        <p>Les non-admins n&apos;ont pour l&apos;instant pas de case d&apos;usage dédié — cette page existe en bêta uniquement pour le propriétaire du site.</p>
+        <p>Les non-admins n&apos;ont pour l&apos;instant pas de case d&apos;usage dédié · cette page existe en bêta uniquement pour le propriétaire du site.</p>
       </div>
     </div>
   );

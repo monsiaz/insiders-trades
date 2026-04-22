@@ -1,5 +1,5 @@
 /**
- * /recommendations — Page des recommandations actionnables
+ * /recommendations · Page des recommandations actionnables
  *
  * Tab "Achats"   : Top 10 signaux d'achat (tous utilisateurs)
  * Tab "Ventes"   : Top 10 signaux de vente (tous utilisateurs)
@@ -19,7 +19,7 @@ const FREE_VISIBLE = 3; // number of reco cards visible to non-authenticated use
 export const revalidate = 600; // Revalidate every 10 min
 
 export const metadata = {
-  title: "Recommandations — InsiderTrades Sigma",
+  title: "Recommandations · InsiderTrades Sigma",
   description: "Top signaux d'achat et de vente basés sur les performances historiques et les transactions récentes des dirigeants AMF.",
 };
 
@@ -113,7 +113,7 @@ function AlertToggle({ alertEnabled }: { alertEnabled: boolean }) {
 
 function SectionHeader({ title, sub, count }: { title: string; sub: string; count?: number }) {
   return (
-    <div className="flex items-end justify-between gap-4 mb-6 pb-3" style={{ borderBottom: "1px solid var(--border-med)" }}>
+    <div className="flex flex-wrap items-end justify-between gap-3 mb-6 pb-3" style={{ borderBottom: "1px solid var(--border-med)" }}>
       <div>
         <div className="flex items-baseline gap-3">
           <h2 style={{
@@ -134,7 +134,7 @@ function SectionHeader({ title, sub, count }: { title: string; sub: string; coun
               textTransform: "uppercase",
               fontWeight: 600,
             }}>
-              — {count.toString().padStart(2, "0")} signaux
+ · {count.toString().padStart(2, "0")} signaux
             </span>
           )}
         </div>
@@ -160,7 +160,7 @@ function MethodologyCard() {
       border: "1px solid var(--border-med)",
       borderLeft: "3px solid var(--gold)",
       borderRadius: "2px",
-      padding: "18px 24px 20px",
+      padding: "16px clamp(14px, 4vw, 24px) 18px",
     }}>
       <div className="flex items-baseline gap-3 mb-4 flex-wrap">
         <span style={{
@@ -179,7 +179,7 @@ function MethodologyCard() {
           letterSpacing: "0.14em",
           textTransform: "uppercase",
         }}>
-          — Score composite / 100 pts
+ · Score composite / 100 pts
         </span>
         <Link
           href="/methodologie"
@@ -204,9 +204,9 @@ function MethodologyCard() {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5" style={{ gap: 0 }}>
         {pts.map((p, i) => (
-          <div key={i} style={{
+          <div key={i} className="methodology-cell" style={{
             padding: "10px 14px",
-            borderRight: i < pts.length - 1 ? "1px solid var(--border)" : "none",
+            borderBottom: "1px solid var(--border)",
           }}>
             <div className="flex items-baseline gap-1.5 mb-1">
               <span style={{
@@ -286,7 +286,7 @@ function Tabs({ activeTab, isAuth }: { activeTab: "general" | "sells" | "persona
 
 function RecoGridSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-5" style={{ animation: "pulse 1.5s ease-in-out infinite" }}>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5" style={{ animation: "pulse 1.5s ease-in-out infinite" }}>
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} style={{ height: "210px", borderRadius: "14px", background: "var(--bg-raised)" }} />
       ))}
@@ -297,13 +297,13 @@ function RecoGridSkeleton({ count = 6 }: { count?: number }) {
 function SectionHeaderSkeleton() {
   return (
     <div className="mb-6 pb-3" style={{ borderBottom: "1px solid var(--border-med)", animation: "pulse 1.5s ease-in-out infinite" }}>
-      <div style={{ height: "28px", width: "260px", borderRadius: "6px", background: "var(--bg-raised)", marginBottom: "8px" }} />
-      <div style={{ height: "14px", width: "440px", borderRadius: "4px", background: "var(--bg-raised)" }} />
+      <div style={{ height: "28px", width: "min(260px, 70%)", borderRadius: "6px", background: "var(--bg-raised)", marginBottom: "8px" }} />
+      <div style={{ height: "14px", width: "min(440px, 90%)", borderRadius: "4px", background: "var(--bg-raised)" }} />
     </div>
   );
 }
 
-// ── Streaming sections — heavy Prisma work happens here ──────────────────────
+// ── Streaming sections · heavy Prisma work happens here ──────────────────────
 
 async function GeneralTabContent({ isAuth }: { isAuth: boolean }) {
   const raw = await getGeneralRecos();
@@ -319,14 +319,14 @@ async function GeneralTabContent({ isAuth }: { isAuth: boolean }) {
         <EmptyState mode="general" />
       ) : (
         <>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
             {recos.slice(0, FREE_VISIBLE).map((item, i) => (
               <RecoCard key={item.declarationId} item={item} rank={i + 1} />
             ))}
           </div>
           {!isAuth && recos.length > FREE_VISIBLE && (
             <FreemiumGate feature="les 7 autres recommandations avec noms des entreprises, scores et retours estimés">
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {recos.slice(FREE_VISIBLE).map((item, i) => (
                   <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
                 ))}
@@ -334,7 +334,7 @@ async function GeneralTabContent({ isAuth }: { isAuth: boolean }) {
             </FreemiumGate>
           )}
           {isAuth && recos.length > FREE_VISIBLE && (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {recos.slice(FREE_VISIBLE).map((item, i) => (
                 <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
               ))}
@@ -373,14 +373,14 @@ async function SellsTabContent({ isAuth }: { isAuth: boolean }) {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
             {recos.slice(0, FREE_VISIBLE).map((item, i) => (
               <RecoCard key={item.declarationId} item={item} rank={i + 1} />
             ))}
           </div>
           {!isAuth && recos.length > FREE_VISIBLE && (
             <FreemiumGate feature={`les ${recos.length - FREE_VISIBLE} autres signaux de vente avec sociétés, dirigeants et retours historiques`}>
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {recos.slice(FREE_VISIBLE).map((item, i) => (
                   <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
                 ))}
@@ -388,7 +388,7 @@ async function SellsTabContent({ isAuth }: { isAuth: boolean }) {
             </FreemiumGate>
           )}
           {isAuth && recos.length > FREE_VISIBLE && (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {recos.slice(FREE_VISIBLE).map((item, i) => (
                 <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
               ))}
@@ -435,7 +435,7 @@ async function PersonalTabContent({ userId }: { userId: string }) {
         {data.recos.length === 0 ? (
           <EmptyState mode="personal" />
         ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {data.recos.map((item, i) => (
               <RecoCard key={item.declarationId} item={item} rank={i + 1} />
             ))}
@@ -451,7 +451,7 @@ async function PersonalTabContent({ userId }: { userId: string }) {
   return (
     <>
       {/* Alert preference toggle */}
-      <div className="flex items-center justify-between mb-6 p-4 rounded-xl"
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 p-4 rounded-xl"
         style={{ background: "var(--bg-surface)", border: "1px solid var(--border-med)" }}>
         <div>
           <div className="text-sm font-semibold" style={{ color: "var(--tx-1)" }}>
@@ -471,7 +471,7 @@ async function PersonalTabContent({ userId }: { userId: string }) {
             sub="Des insiders vendent des sociétés que vous détenez en portefeuille"
             count={sellRecos.length}
           />
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
             {sellRecos.map((item, i) => (
               <RecoCard key={item.declarationId} item={item} rank={i + 1} />
             ))}
@@ -486,7 +486,7 @@ async function PersonalTabContent({ userId }: { userId: string }) {
             sub="Basés sur votre profil de portfolio et les performances historiques similaires"
             count={buyRecos.length}
           />
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {buyRecos.map((item, i) => (
               <RecoCard key={item.declarationId} item={item} rank={i + 1} />
             ))}
@@ -512,14 +512,14 @@ export default async function RecommendationsPage({
     : tab === "sells" ? "sells"
     : "general";
 
-  // Only fetch auth status (instant JWT verify, no DB call) — heavy data streams in below
+  // Only fetch auth status (instant JWT verify, no DB call) · heavy data streams in below
   const user = await getCurrentUser();
   const isAuth = !!user;
 
   return (
     <div className="content-wrapper">
 
-      {/* ── Page header — editorial masthead (rendered instantly) ── */}
+      {/* ── Page header · editorial masthead (rendered instantly) ── */}
       <div className="mb-8">
         <div className="masthead-dateline">
           <span className="masthead-folio">
@@ -560,7 +560,7 @@ export default async function RecommendationsPage({
             </>
           ) : (
             <>
-              Signaux d&apos;achat classés par score composite — signal AMF × backtest historique × récence × conviction.
+              Signaux d&apos;achat classés par score composite · signal AMF × backtest historique × récence × conviction.
               Nous ne présentons que les dossiers avec un retour estimé supérieur à{" "}
               <strong style={{ color: "var(--tx-1)" }}>+4 % T+90</strong>.
             </>

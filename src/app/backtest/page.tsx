@@ -2,7 +2,11 @@ import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { getBacktestBase, applyBacktestMasking } from "@/lib/backtest-compute";
-import BacktestDashboard from "@/components/BacktestDashboard";
+import dynamic from "next/dynamic";
+
+const BacktestDashboard = dynamic(() => import("@/components/BacktestDashboard"), {
+  loading: () => <div style={{ minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.85rem" }}>Chargement du dashboard…</div>,
+});
 import { unstable_cache } from "next/cache";
 
 export const revalidate = 3600;
@@ -48,7 +52,8 @@ async function BacktestDashboardSection() {
 
   return (
     <BacktestDashboard
-      initialData={initialData as Parameters<typeof BacktestDashboard>[0]["initialData"]}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      initialData={initialData as any}
     />
   );
 }
@@ -103,10 +108,9 @@ export default async function BacktestPage() {
         }}>
           Analyse quantitative de{" "}
           <strong style={{ color: "var(--tx-1)" }}>
-            {total.toLocaleString("fr-FR")} transactions d&apos;initiés
+            {total.toLocaleString("fr-FR")}{" "}transactions d&apos;initiés
           </strong>
-          {" "}— {totalBuys.toLocaleString("fr-FR")} achats, {totalSells.toLocaleString("fr-FR")} ventes — sur 6 horizons
-          (<span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.82rem" }}>
+          {" "}· {totalBuys.toLocaleString("fr-FR")} achats, {totalSells.toLocaleString("fr-FR")} ventes · sur 6 horizons{" "}(<span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.82rem" }}>
             T+30 · T+60 · T+90 · T+160 · T+365 · T+2ans
           </span>).
         </p>

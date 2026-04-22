@@ -1,5 +1,5 @@
 /**
- * /docs/mcp — Public MCP (Model Context Protocol) documentation.
+ * /docs/mcp · Public MCP (Model Context Protocol) documentation.
  *
  * Long-form reference covering:
  *   - What MCP is + value prop
@@ -21,7 +21,7 @@ import { TOOLS } from "@/lib/mcp/tools";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "MCP Server — Insiders Trades Sigma",
+  title: "MCP Server · Insiders Trades Sigma",
   description:
     "Serveur MCP (Model Context Protocol) pour Insiders Trades Sigma. 20 outils donnant à Claude, Cursor, Windsurf et tout agent IA l'accès aux données AMF, signaux scorés et backtests.",
 };
@@ -175,7 +175,7 @@ export default function McpDocsPage() {
             <Callout tone="info">
               Tout ce que fait l&apos;API REST (<Link href="/docs" style={linkGold}>voir docs</Link>)
               est aussi exposé en MCP. Mais en plus, vous y gagnez 6 outils composites
-              qui enchaînent plusieurs requêtes — optimisés pour les prompts vagues du style
+              qui enchaînent plusieurs requêtes, optimisés pour les prompts vagues du style
               <em>&laquo; donne-moi tout sur LVMH &raquo;</em>.
             </Callout>
           </Section>
@@ -244,11 +244,11 @@ export default function McpDocsPage() {
                 </thead>
                 <tbody>
                   {[
-                    ["initialize",      "request",      "non",  "Handshake initial — échange des versions de protocole et capacités"],
+                    ["initialize",      "request",      "non",  "Handshake initial · échange des versions de protocole et capacités"],
                     ["initialized",     "notification", "non",  "Confirmation client (aucune réponse, HTTP 204)"],
                     ["tools/list",      "request",      "oui",  "Retourne les 20 outils avec leur inputSchema JSON Schema"],
                     ["tools/call",      "request",      "oui",  "Exécute un outil et retourne le résultat dans content[0].text"],
-                    ["ping",            "request",      "non",  "Heartbeat — retourne {}"],
+                    ["ping",            "request",      "non",  "Heartbeat · retourne {}"],
                   ].map((r, i) => (
                     <tr key={i} style={{ borderBottom: "1px solid var(--border)" }}>
                       <td style={td}><code style={codeInline}>{r[0]}</code></td>
@@ -304,7 +304,7 @@ export default function McpDocsPage() {
 
             <Callout tone="info">
               Le résultat est une chaîne JSON dans <code style={codeInline}>content[0].text</code>
-              (convention MCP — les modèles parsent nativement le texte).
+              (convention MCP, les modèles parsent nativement le texte).
               L&apos;objet parsé contient toujours un champ <code style={codeInline}>meta</code> avec la latence.
             </Callout>
           </Section>
@@ -317,9 +317,9 @@ export default function McpDocsPage() {
               par ordre de priorité :
             </p>
             <ol style={ulBody}>
-              <li><code style={codeInline}>Authorization: Bearer &lt;key&gt;</code> — préféré, supporté par les clients MCP modernes (Claude Desktop ≥ 3.7, Cursor, Windsurf).</li>
-              <li><code style={codeInline}>X-Api-Key: &lt;key&gt;</code> — alternative header.</li>
-              <li><code style={codeInline}>?apiKey=&lt;key&gt;</code> — dans l&apos;URL (fallback pour clients MCP simples qui ne supportent pas les headers — rare).</li>
+              <li><code style={codeInline}>Authorization: Bearer &lt;key&gt;</code> · préféré, supporté par les clients MCP modernes (Claude Desktop ≥ 3.7, Cursor, Windsurf).</li>
+              <li><code style={codeInline}>X-Api-Key: &lt;key&gt;</code> · alternative header.</li>
+              <li><code style={codeInline}>?apiKey=&lt;key&gt;</code> · dans l&apos;URL (fallback pour clients MCP simples qui ne supportent pas les headers, rare).</li>
             </ol>
             <CodeBlock
               filename="URL complète avec clé inline (fallback)"
@@ -338,7 +338,7 @@ export default function McpDocsPage() {
               <Link href="/account/api-keys" style={linkGold}>
                 /account/api-keys
               </Link>{" "}
-              (5 secondes). La clé s&apos;affiche une seule fois — copiez-la immédiatement.
+              (5 secondes). La clé s&apos;affiche une seule fois, copiez-la immédiatement.
               Elle partage le même quota que l&apos;API REST (5 000 requêtes/jour en beta).
             </p>
           </Section>
@@ -451,7 +451,7 @@ export default function McpDocsPage() {
                   label: "Claude Desktop",
                   badge: "NATIF MCP",
                   intro:
-                    "Application desktop Anthropic (Mac & Windows) — support MCP natif depuis Claude 3.7+. La version web ne le supporte pas.",
+                    "Application desktop Anthropic (Mac & Windows) · support MCP natif depuis Claude 3.7+. La version web ne le supporte pas.",
                   steps: [
                     { title: "Installez Claude Desktop", body: <>Téléchargez sur <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer" style={linkGold}>claude.ai/download</a>.</> },
                     { title: "Ouvrez le fichier de configuration",
@@ -491,7 +491,7 @@ export default function McpDocsPage() {
                     { title: "Ouvrez les réglages Cursor", body: <>Cmd+Shift+J → onglet <strong>MCP</strong>.</> },
                     { title: "Cliquez sur + Add new MCP server", body: <>Choisissez type <code style={codeInline}>http</code>.</> },
                     { title: "Remplissez les champs", body: <>Name : <code style={codeInline}>insiders-trades</code> · URL : collez l&apos;URL MCP · Headers : <code style={codeInline}>Authorization</code> = <code style={codeInline}>Bearer sit_live_...</code></> },
-                    { title: "Activez le serveur", body: <>Toggle sur ON. Ouvrez le chat agent — les 20 outils sont disponibles.</> },
+                    { title: "Activez le serveur", body: <>Toggle sur ON. Ouvrez le chat agent, les 20 outils sont disponibles.</> },
                   ],
                   config: {
                     filename: "~/.cursor/mcp.json (alternative via fichier)",
@@ -584,7 +584,7 @@ export default function McpDocsPage() {
                   intro:
                     "Pour débugger ou appeler le serveur depuis un script / n8n / Zapier / LangChain, utilisez directement l'HTTP JSON-RPC.",
                   steps: [
-                    { title: "Initialize", body: <>Handshake — retourne <code style={codeInline}>protocolVersion</code> et <code style={codeInline}>serverInfo</code>.</> },
+                    { title: "Initialize", body: <>Handshake · retourne <code style={codeInline}>protocolVersion</code> et <code style={codeInline}>serverInfo</code>.</> },
                     { title: "tools/list", body: <>Catalog complet des 20 outils. Nécessite l&apos;auth.</> },
                     { title: "tools/call", body: <>Exécute un outil. Réponse dans <code style={codeInline}>content[0].text</code>.</> },
                   ],
@@ -649,7 +649,8 @@ curl -s "$URL" -X POST \\
             </ul>
 
             <h4 style={h4}>Prompts d&apos;exemple qui déclenchent des outils</h4>
-            <table style={tableStyle}>
+            <div style={{ overflowX: "auto" }}>
+            <table style={{ ...tableStyle, minWidth: "480px" }}>
               <thead>
                 <tr>
                   <th style={th}>Prompt</th>
@@ -672,6 +673,7 @@ curl -s "$URL" -X POST \\
                 ))}
               </tbody>
             </table>
+            </div>
           </Section>
 
           {/* ── ERRORS ─────────────────────────────────────────────────── */}
@@ -726,7 +728,7 @@ curl -s "$URL" -X POST \\
                 },
                 {
                   q: "Quels clients sont compatibles ?",
-                  a: "Claude Desktop ≥ 3.7 (natif), Cursor (natif), Windsurf (natif), VS Code via Continue, et tout framework agentique Python/JS supportant MCP (LangChain, LlamaIndex). ChatGPT n'a pas encore de support MCP natif — utilisez notre API REST via Custom GPT Actions.",
+                  a: "Claude Desktop ≥ 3.7 (natif), Cursor (natif), Windsurf (natif), VS Code via Continue, et tout framework agentique Python/JS supportant MCP (LangChain, LlamaIndex). ChatGPT n'a pas encore de support MCP natif. Utilisez notre API REST via Custom GPT Actions.",
                 },
                 {
                   q: "Les données sont-elles à jour en temps réel ?",
@@ -742,11 +744,11 @@ curl -s "$URL" -X POST \\
                 },
                 {
                   q: "Puis-je self-host le serveur ?",
-                  a: "Le code source du serveur MCP (/api/mcp + src/lib/mcp/) est dans le même repo Next.js que le site. Si vous déployez votre propre instance, la connexion à la BDD Postgres reste nécessaire — la valeur du service vient des données, pas du code du serveur MCP.",
+                  a: "Le code source du serveur MCP (/api/mcp + src/lib/mcp/) est dans le même repo Next.js que le site. Si vous déployez votre propre instance, la connexion à la BDD Postgres reste nécessaire · la valeur du service vient des données, pas du code du serveur MCP.",
                 },
                 {
                   q: "CORS & navigateur : puis-je appeler depuis un JS front ?",
-                  a: "Oui techniquement — le serveur émet Access-Control-Allow-Origin: *. Mais cela exposerait votre clé API dans le bundle JS. À réserver aux environnements trusted (agent backend) ou passer par un proxy.",
+                  a: "Oui techniquement · le serveur émet Access-Control-Allow-Origin: *. Mais cela exposerait votre clé API dans le bundle JS. À réserver aux environnements trusted (agent backend) ou passer par un proxy.",
                 },
                 {
                   q: "Quel est le coût par appel ?",
@@ -794,6 +796,7 @@ curl -s "$URL" -X POST \\
 
           {/* ── FINAL CTA ──────────────────────────────────────────────── */}
           <section
+            className="docs-cta"
             style={{
               marginTop: "60px",
               padding: "40px 32px",
@@ -848,6 +851,9 @@ curl -s "$URL" -X POST \\
         @media (max-width: 960px) {
           .docs-layout { grid-template-columns: 1fr; gap: 20px; }
           .docs-sidebar { display: none; }
+        }
+        @media (max-width: 640px) {
+          .docs-cta { padding: 24px 16px !important; }
         }
       `}</style>
     </div>

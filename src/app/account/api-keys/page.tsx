@@ -5,7 +5,7 @@ import ApiKeysClient from "./ApiKeysClient";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Mes clés API — Insiders Trades Sigma",
+  title: "Mes clés API · Insiders Trades Sigma",
 };
 
 export default async function ApiKeysPage() {

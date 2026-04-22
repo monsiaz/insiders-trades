@@ -36,20 +36,20 @@ const COLORS = [
 ];
 
 function fmt(n: number | null | undefined, d = 2): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   return n.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
 function fmtPct(n: number | null | undefined): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   return `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
 }
 function fmtEur(n: number | null | undefined, d = 0): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   return n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", minimumFractionDigits: d, maximumFractionDigits: d });
 }
 
 function PnlBadge({ pct }: { pct: number | null }) {
-  if (pct == null) return <span className="text-[var(--tx-3)] text-xs">—</span>;
+  if (pct == null) return <span className="text-[var(--tx-3)] text-xs">·</span>;
   const isPos = pct >= 0;
   return (
     <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold tabular-nums ${isPos ? "bg-pos-soft tx-pos" : "bg-neg-soft tx-neg"}`}>
@@ -238,11 +238,11 @@ export function PortfolioDashboard({ user }: { user: User }) {
             Portfolio PEA · {user.name ?? user.email}
           </div>
           <h1 className="text-3xl font-bold text-[var(--tx-1)] tracking-tight">Mon <span className="text-gradient-indigo">Portfolio</span></h1>
-          <p className="text-[var(--tx-2)] text-sm mt-1">{positions.length} position{positions.length !== 1 ? "s" : ""} · Mis à jour {priced.length > 0 ? "récemment" : "—"}</p>
+          <p className="text-[var(--tx-2)] text-sm mt-1">{positions.length} position{positions.length !== 1 ? "s" : ""} · Mis à jour {priced.length > 0 ? "récemment" : "·"}</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={refreshPrices} disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl btn-glass text-sm font-medium disabled:opacity-50 transition-all">
+            className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl btn-glass text-sm font-medium disabled:opacity-50 transition-all">
             <svg className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} viewBox="0 0 24 24" fill="none">
               <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -276,7 +276,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
           background: "linear-gradient(135deg, var(--bg-raised) 0%, var(--bg-surface) 100%)",
           borderColor: "var(--border-med)",
         }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 0, borderRadius: "14px", overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(200px, 100%), 1fr))", gap: 0, borderRadius: "14px", overflow: "hidden" }}>
             {[
               {
                 label: "Total Portefeuille (titres + espèces)",
@@ -285,7 +285,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
               },
               {
                 label: portfolioCash != null ? `Solde Espèces disponible ${new Date().toLocaleDateString("fr-FR")}` : "Espèces",
-                value: portfolioCash != null ? fmtEur(portfolioCash) : "—",
+                value: portfolioCash != null ? fmtEur(portfolioCash) : "·",
                 color: "var(--tx-2)", bold: false,
               },
               {
@@ -327,13 +327,15 @@ export function PortfolioDashboard({ user }: { user: User }) {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 p-1 glass-card-static rounded-xl w-fit">
+      <div className="overflow-x-auto mb-6 -mx-1 px-1">
+      <div className="flex gap-1 p-1 glass-card-static rounded-xl w-fit min-w-max">
         {tabs.map((t) => (
           <button key={t.id} onClick={() => { if (t.id !== "add" || !editId) setEditId(null); setTab(t.id); if (t.id !== "add") setForm(EMPTY_FORM); }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.id ? "bg-brand-soft tx-brand border bd-brand" : "text-[var(--tx-2)] hover-tx-1"}`}>
+            className={`px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium transition-all ${tab === t.id ? "bg-brand-soft tx-brand border bd-brand" : "text-[var(--tx-2)] hover-tx-1"}`}>
             {t.label}
           </button>
         ))}
+      </div>
       </div>
 
       {/* ── POSITIONS TAB ── */}
@@ -344,8 +346,8 @@ export function PortfolioDashboard({ user }: { user: User }) {
               <div className="flex justify-center mb-3 opacity-30"><BarChart2 size={40} strokeWidth={1.2} /></div>
               <p className="text-[var(--tx-2)] mb-4">Aucune position. Ajoutez des titres ou importez un CSV.</p>
               <div className="flex justify-center gap-3">
-                <button onClick={() => setTab("add")} className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold">+ Ajouter manuellement</button>
-                <button onClick={() => setTab("import")} className="px-4 py-2 rounded-xl btn-glass text-sm">Importer CSV</button>
+                <button onClick={() => setTab("add")} className="px-4 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold">+ Ajouter manuellement</button>
+                <button onClick={() => setTab("import")} className="px-4 py-2.5 min-h-[44px] rounded-xl btn-glass text-sm">Importer CSV</button>
               </div>
             </div>
           ) : (
@@ -398,7 +400,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
                               <td className="px-4 py-3 text-right tabular-nums text-xs">
                                 {pos.currentPrice != null ? (
                                   <span className="text-[var(--tx-1)]">{fmtEur(pos.currentPrice, 2)}</span>
-                                ) : <span className="text-[var(--tx-3)]">—</span>}
+                                ) : <span className="text-[var(--tx-3)]">·</span>}
                               </td>
                               <td className="px-4 py-3 text-right tabular-nums text-xs text-[var(--tx-2)]">
                                 {fmtEur(pos.currentValue ?? pos.totalInvested)}
@@ -411,13 +413,13 @@ export function PortfolioDashboard({ user }: { user: User }) {
                                 {alertTriggered ? <Bell size={13} className="tx-gold" /> :
                                   (pos.alertBelow || pos.alertAbove) ? <Bell size={13} className="text-[var(--tx-3)]" /> : null}
                               </td>
-                              <td className="px-4 py-3">
+                              <td className="px-2 py-2">
                                 <div className="flex gap-1">
-                                  <button onClick={() => startEdit(pos)} className="p-1 rounded text-[var(--tx-3)] hover:tx-brand transition-colors">
-                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                                  <button onClick={() => startEdit(pos)} className="p-2.5 min-w-[36px] min-h-[36px] rounded text-[var(--tx-3)] hover:tx-brand transition-colors flex items-center justify-center">
+                                    <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                                   </button>
-                                  <button onClick={() => deletePosition(pos.id)} className="p-1 rounded text-[var(--tx-3)] hover:tx-neg transition-colors">
-                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                                  <button onClick={() => deletePosition(pos.id)} className="p-2.5 min-w-[36px] min-h-[36px] rounded text-[var(--tx-3)] hover:tx-neg transition-colors flex items-center justify-center">
+                                    <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                                   </button>
                                 </div>
                               </td>
@@ -464,7 +466,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
 
       {/* ── ADD/EDIT TAB ── */}
       {tab === "add" && (
-        <div className="max-w-lg animate-fade-in">
+        <div className="w-full max-w-lg animate-fade-in">
           <div className="glass-card rounded-2xl p-6">
             <h2 className="text-base font-semibold text-[var(--tx-1)] mb-5">{editId ? "Modifier la position" : "Ajouter une position"}</h2>
             <form onSubmit={submitPosition} className="space-y-4">
@@ -473,25 +475,25 @@ export function PortfolioDashboard({ user }: { user: User }) {
                 <div className="col-span-2">
                   <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Nom du titre *</label>
                   <input type="text" required value={form.name} onChange={setF("name")}
-                    className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
+                    className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                     placeholder="ex: NANOBIOTIX" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">ISIN (optionnel)</label>
                   <input type="text" value={form.isin} onChange={setF("isin")}
-                    className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
+                    className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                     placeholder="FR0011341205" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Quantité *</label>
                   <input type="text" required value={form.quantity} onChange={setF("quantity")}
-                    className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
+                    className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                     placeholder="114" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">PRU (prix moyen d'achat) *</label>
                   <input type="text" required value={form.buyingPrice} onChange={setF("buyingPrice")}
-                    className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
+                    className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                     placeholder="3.54" />
                 </div>
               </div>
@@ -501,13 +503,13 @@ export function PortfolioDashboard({ user }: { user: User }) {
                   <div>
                     <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Alerte si cours ≤ €</label>
                     <input type="text" value={form.alertBelow} onChange={setF("alertBelow")}
-                      className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500/50 transition-all"
+                      className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500/50 transition-all"
                       placeholder="20.00" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Alerte si cours ≥ €</label>
                     <input type="text" value={form.alertAbove} onChange={setF("alertAbove")}
-                      className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500/50 transition-all"
+                      className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500/50 transition-all"
                       placeholder="50.00" />
                   </div>
                 </div>
@@ -520,11 +522,11 @@ export function PortfolioDashboard({ user }: { user: User }) {
               </div>
               <div className="flex gap-3 pt-1">
                 <button type="submit" disabled={formLoading}
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
+                  className="flex-1 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
                   {formLoading ? "Enregistrement…" : editId ? "Mettre à jour" : "Ajouter la position"}
                 </button>
                 <button type="button" onClick={cancelEdit}
-                  className="px-4 py-2.5 rounded-xl btn-glass text-sm">Annuler</button>
+                  className="px-4 py-3 min-h-[44px] rounded-xl btn-glass text-sm">Annuler</button>
               </div>
             </form>
           </div>
@@ -533,7 +535,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
 
       {/* ── IMPORT TAB ── */}
       {tab === "import" && (
-        <div className="max-w-2xl animate-fade-in space-y-6">
+        <div className="w-full max-w-2xl animate-fade-in space-y-6">
           {/* Model CSV */}
           <div className="glass-card-static rounded-2xl p-6 border border-indigo-500/10">
             <h2 className="text-sm font-semibold text-[var(--tx-1)] mb-1">Format CSV attendu</h2>
@@ -593,7 +595,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
                   </table>
                 </div>
                 <button onClick={submitImport} disabled={importLoading}
-                  className="mt-3 w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
+                  className="mt-3 w-full py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
                   {importLoading ? "Import en cours…" : `Importer ${importRows.length} positions`}
                 </button>
               </div>
@@ -649,9 +651,9 @@ function InsiderMatchSection({ positions }: { positions: Position[] }) {
             <div className="text-xs font-semibold tx-brand mb-2">{m.positionName}</div>
             <div className="space-y-2">
               {m.declarations.slice(0, 3).map((d, i) => (
-                <div key={i} className="flex items-center justify-between text-xs py-1.5 border-b border-white/5 last:border-0">
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs py-1.5 border-b border-white/5 last:border-0">
                   <div>
-                    <span className="text-[var(--tx-2)]">{d.insiderName ?? "—"}</span>
+                    <span className="text-[var(--tx-2)]">{d.insiderName ?? "·"}</span>
                     <span className="text-[var(--tx-3)] ml-2">{d.insiderFunction?.slice(0, 30)}</span>
                   </div>
                   <div className="flex items-center gap-3">

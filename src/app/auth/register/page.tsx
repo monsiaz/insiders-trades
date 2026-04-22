@@ -76,6 +76,7 @@ export default function RegisterPage() {
       justifyContent: "center",
       padding: "24px 16px",
       background: "var(--bg-base)",
+      boxSizing: "border-box",
     }}>
       <div style={{ width: "100%", maxWidth: "420px" }}>
 
@@ -122,7 +123,7 @@ export default function RegisterPage() {
             )}
 
             {/* Prénom + Nom côte à côte */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px" }}>
               <FieldGroup label="Prénom" required>
                 <input
                   type="text"
@@ -131,7 +132,7 @@ export default function RegisterPage() {
                   autoComplete="given-name"
                   required
                   placeholder="Marie"
-                  style={{ width: "100%", padding: "9px 12px", borderRadius: "10px" }}
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: "10px", fontSize: "1rem" }}
                 />
               </FieldGroup>
               <FieldGroup label="Nom" required>
@@ -142,7 +143,7 @@ export default function RegisterPage() {
                   autoComplete="family-name"
                   required
                   placeholder="Dupont"
-                  style={{ width: "100%", padding: "9px 12px", borderRadius: "10px" }}
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: "10px", fontSize: "1rem" }}
                 />
               </FieldGroup>
             </div>
@@ -155,7 +156,7 @@ export default function RegisterPage() {
                 autoComplete="email"
                 required
                 placeholder="vous@exemple.com"
-                style={{ width: "100%", padding: "9px 12px", borderRadius: "10px" }}
+                style={{ width: "100%", padding: "9px 12px", borderRadius: "10px", fontSize: "1rem" }}
               />
             </FieldGroup>
 
@@ -168,7 +169,7 @@ export default function RegisterPage() {
                   autoComplete="new-password"
                   required
                   placeholder="8 caractères minimum"
-                  style={{ width: "100%", padding: "9px 40px 9px 12px", borderRadius: "10px" }}
+                  style={{ width: "100%", padding: "9px 40px 9px 12px", borderRadius: "10px", fontSize: "1rem" }}
                 />
                 <button type="button" onClick={() => setShowPwd(v => !v)} style={{
                   position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)",
@@ -208,7 +209,7 @@ export default function RegisterPage() {
                   autoComplete="new-password"
                   required
                   placeholder="••••••••"
-                  style={{ width: "100%", padding: "9px 40px 9px 12px", borderRadius: "10px" }}
+                  style={{ width: "100%", padding: "9px 40px 9px 12px", borderRadius: "10px", fontSize: "1rem" }}
                 />
                 {form.confirm && (
                   <span style={{
@@ -230,7 +231,7 @@ export default function RegisterPage() {
               type="submit"
               disabled={loading}
               className="btn btn-cta-gradient"
-              style={{ width: "100%", padding: "11px", fontSize: "0.9375rem", marginTop: "4px" }}
+              style={{ width: "100%", padding: "13px 18px", fontSize: "0.9375rem", marginTop: "4px" }}
             >
               {loading ? (
                 <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -280,7 +281,7 @@ function FieldGroup({ label, required, children }: { label: string; required?: b
     <div>
       <label style={{
         display: "block",
-        fontSize: "0.78rem",
+        fontSize: "0.875rem",
         fontWeight: 600,
         fontFamily: "'Inter', system-ui",
         color: "var(--tx-2)",

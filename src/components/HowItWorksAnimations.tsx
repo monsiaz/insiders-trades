@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// ── Pure CSS/SVG animations — no canvas, fully theme-aware via CSS vars ─────
+// ── Pure CSS/SVG animations · no canvas, fully theme-aware via CSS vars ─────
 
 // ── Step 1: AMF Data Stream ──────────────────────────────────────────────────
 
@@ -79,7 +79,7 @@ function AnimScoring() {
   const target = 87;
   const barTargets = [92, 85, 78, 65, 72];
   const barLabels = ["Montant/Mcap", "Rôle dirigeant", "Backtest", "Cluster", "Historique"];
-  // DA v3: monochrome gold scale — no rainbow
+  // DA v3: monochrome gold scale · no rainbow
   const barColors = ["var(--gold)", "var(--gold-2)", "var(--corporate)", "var(--corporate-2)", "var(--gold)"];
 
   useEffect(() => {
@@ -143,7 +143,7 @@ function AnimScoring() {
       </div>
 
       {/* Bars */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "9px" }}>
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "9px" }}>
         {barLabels.map((label, i) => (
           <div key={label}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
@@ -255,7 +255,7 @@ function AnimBacktest() {
           </>
         )}
 
-        {/* Trade dots — only losses get red; wins stay neutral (the line already shows performance) */}
+        {/* Trade dots · only losses get red; wins stay neutral (the line already shows performance) */}
         {trades.map(({ xi, win }) => {
           const col = win ? "var(--gold)" : "var(--c-crimson)";
           if (xi > N) return null;
@@ -445,7 +445,7 @@ function AnimPanel({ step, accentColor, pill, title, body, children }: {
 
 export function HowItWorksAnimations() {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(270px, 1fr))", gap: "16px" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(270px, 100%), 1fr))", gap: "16px" }}>
       <AnimPanel
         step="01" accentColor="var(--corporate-2)" pill="01 · Collecte"
         title="Déclarations AMF en temps réel"
@@ -473,7 +473,7 @@ export function HowItWorksAnimations() {
       <AnimPanel
         step="04" accentColor="var(--gold)" pill="04 · Signal"
         title="Recommandation actionnable"
-        body="Les meilleurs signaux remontent en Top 10 quotidien. Score, retour attendu, historique du dirigeant — tout en un clic."
+        body="Les meilleurs signaux remontent en Top 10 quotidien. Score, retour attendu, historique du dirigeant · tout en un clic."
       >
         <AnimSignal />
       </AnimPanel>

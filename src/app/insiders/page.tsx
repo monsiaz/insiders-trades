@@ -4,7 +4,7 @@ import { InsidersClient, type InsiderRow } from "@/components/InsidersClient";
 
 export const revalidate = 300; // Revalidate every 5 min
 
-// Cache the Prisma query — invalidated every 5min or on demand
+// Cache the Prisma query · invalidated every 5min or on demand
 const getInsiders = unstable_cache(
   async () =>
     prisma.insider.findMany({
@@ -63,7 +63,7 @@ export default async function InsidersPage() {
           <span className="masthead-folio">Registre</span>
           <span className="masthead-rule" aria-hidden="true" />
           <span className="masthead-count">
-            {insiders.length.toLocaleString("fr-FR")} dirigeants
+            {insiders.length.toLocaleString("fr-FR")}{" "}dirigeants
           </span>
         </div>
         <h1

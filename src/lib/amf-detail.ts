@@ -116,7 +116,7 @@ async function extractWithPdfjs(buffer: Buffer): Promise<string> {
     useWorkerFetch: false,
     isEvalSupported: false,
     disableFontFace: true,
-    // Suppress font warning — we don't need font rendering
+    // Suppress font warning · we don't need font rendering
     standardFontDataUrl: undefined,
   });
 

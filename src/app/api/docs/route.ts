@@ -9,7 +9,7 @@ export async function GET() {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Insiders Trades Sigma — API Reference</title>
+  <title>Insiders Trades Sigma · API Reference</title>
   <link rel="icon" href="/favicon.ico">
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui.css">
   <style>
@@ -48,7 +48,7 @@ export async function GET() {
 <body>
   <div class="sigma-bar">
     <div class="sigma-eye" aria-hidden></div>
-    <h1>Insiders Trades Sigma — API Reference</h1>
+    <h1>Insiders Trades Sigma · API Reference</h1>
     <div class="right">
       <a href="/fonctionnement">Comment ça marche ↗</a>
       <a href="/methodologie">Méthodologie ↗</a>

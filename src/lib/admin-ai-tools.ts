@@ -5,7 +5,7 @@
  * safe, auditable function that reads (never writes) from Postgres and
  * returns structured data that the model can reason about.
  *
- * NEVER add tools that mutate data here — write operations must go through
+ * NEVER add tools that mutate data here · write operations must go through
  * the dedicated admin endpoints (/api/admin/users, /api/admin/alerts).
  */
 

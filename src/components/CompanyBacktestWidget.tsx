@@ -28,7 +28,7 @@ interface CompanyBacktestData {
 }
 
 function fmt(n: number | null, decimals = 1): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   const sign = n >= 0 ? "+" : "";
   return `${sign}${n.toFixed(decimals)}%`;
 }
@@ -77,7 +77,7 @@ export function CompanyBacktestWidget({ companyId }: { companyId: string }) {
         </Link>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
           <div style={{
             fontFamily: "'Banana Grotesk', monospace",
@@ -94,7 +94,7 @@ export function CompanyBacktestWidget({ companyId }: { companyId: string }) {
             fontSize: "1.2rem", fontWeight: 700, letterSpacing: "-0.03em",
             color: "var(--c-indigo-2)",
           }}>
-            {data.winRate90d != null ? `${data.winRate90d.toFixed(0)}%` : "—"}
+            {data.winRate90d != null ? `${data.winRate90d.toFixed(0)}%` : "·"}
           </div>
           <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "2px" }}>Taux de réussite</div>
         </div>

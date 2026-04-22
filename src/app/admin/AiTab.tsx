@@ -198,7 +198,7 @@ export function AiTab({
           >
             {MODELS.map((m) => (
               <option key={m.value} value={m.value}>
-                {m.label} — {m.hint}
+                {m.label} · {m.hint}
               </option>
             ))}
           </select>

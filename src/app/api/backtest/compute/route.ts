@@ -15,7 +15,7 @@ interface YahooChartResult {
   indicators: { quote: Array<{ close: (number | null)[] }> };
 }
 
-/** Fetch daily close prices for a Yahoo symbol — 20y range to cover all AMF dates */
+/** Fetch daily close prices for a Yahoo symbol · 20y range to cover all AMF dates */
 async function fetchYahooChart(
   symbol: string
 ): Promise<Array<{ ts: number; close: number }>> {
@@ -115,7 +115,7 @@ async function handle(req: NextRequest) {
     const direction = getDirection(decl.transactionNature ?? null);
 
     // Smart date: if transactionDate is in the future or >3y before pubDate (parsing error)
-    // fall back to pubDate — the date the signal became public.
+    // fall back to pubDate ; the date the signal became public.
     const now = Date.now();
     let tradeDate = decl.pubDate;
     if (decl.transactionDate) {

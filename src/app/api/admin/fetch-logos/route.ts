@@ -3,9 +3,9 @@
  *
  * Server-side logo fetcher.
  * Strategy (NO Google Favicon):
- *   1. Clearbit logo API — tries multiple domain variants
+ *   1. Clearbit logo API · tries multiple domain variants
  *   2. Direct website scraping (OG image / logo img tag)
- *   3. OpenAI gpt-4o-search-preview — web search for real logo URL
+ *   3. OpenAI gpt-4o-search-preview · web search for real logo URL
  *
  * Protected by CRON_SECRET.
  * Body: { limit?: number, reprocess?: boolean }

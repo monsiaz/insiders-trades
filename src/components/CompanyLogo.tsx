@@ -25,7 +25,7 @@ const fontSize = (size: number) =>
   size >= 48 ? "1.2rem" : size >= 36 ? "0.95rem" : "0.78rem";
 
 /**
- * CompanyLogo — Aspect-aware logo display.
+ * CompanyLogo · Aspect-aware logo display.
  * - Uses natural image dimensions to allow wordmark logos to render wider
  *   (so "TELEPERFORMANCE" doesn't shrink to unreadable size in a 56×56 box).
  * - Gracefully falls back to a letter avatar on error or missing logo.

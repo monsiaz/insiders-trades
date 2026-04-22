@@ -47,6 +47,10 @@ export interface GroupStats {
   winRate365d: number | null;
   medianReturn90d: number | null;
   medianReturn365d: number | null;
+  medianReturn730d: number | null;
+  countReturn90d: number;
+  countReturn365d: number;
+  countReturn730d: number;
   sharpe90d: number | null;
   sharpe365d: number | null;
   best90d: number | null;
@@ -70,7 +74,8 @@ function aggregateGroup(rows: ReturnRow[]): GroupStats {
     avgReturn30d: avg(r30), avgReturn60d: avg(r60), avgReturn90d: avg(r90),
     avgReturn160d: avg(r160), avgReturn365d: avg(r365), avgReturn730d: avg(r730),
     winRate90d: winRate(r90), winRate365d: winRate(r365),
-    medianReturn90d: median(r90), medianReturn365d: median(r365),
+    medianReturn90d: median(r90), medianReturn365d: median(r365), medianReturn730d: median(r730),
+    countReturn90d: r90.length, countReturn365d: r365.length, countReturn730d: r730.length,
     sharpe90d: sharpe(r90), sharpe365d: sharpe(r365),
     best90d:  r90.length > 0 ? Math.max(...r90) : null,
     worst90d: r90.length > 0 ? Math.min(...r90) : null,
@@ -191,7 +196,7 @@ export interface BacktestBase {
   lastComputedAt: string | null;
 }
 
-// ── Core computation (expensive — runs once, cached for 1h) ─────────────────
+// ── Core computation (expensive · runs once, cached for 1h) ─────────────────
 
 async function _computeBacktestBase(): Promise<BacktestBase | null> {
   const totalEligible = await prisma.declaration.count({
@@ -449,28 +454,28 @@ async function _computeBacktestBase(): Promise<BacktestBase | null> {
 
   const cfo = byRole["CFO/DAF"];
   if (cfo && cfo.avgReturn90d != null && cfo.count >= 5) {
-    insights.push({ icon: "TrendingUp", title: "Signal CFO/DAF : rare et puissant", text: `Les achats de Directeurs Financiers sont le signal le plus prédictif : rendement moyen de +${cfo.avgReturn90d.toFixed(1)}% à T+90, +${cfo.avgReturn365d?.toFixed(1) ?? "—"}% à T+365 avec ${cfo.winRate365d?.toFixed(0)}% de succès sur 1 an.`, highlight: `+${cfo.avgReturn365d?.toFixed(1) ?? cfo.avgReturn90d.toFixed(1)}%/an` });
+    insights.push({ icon: "TrendingUp", title: "Signal CFO/DAF : rare et puissant", text: `Les achats de Directeurs Financiers sont le signal le plus prédictif : rendement moyen de +${cfo.avgReturn90d.toFixed(1)}% à T+90, +${cfo.avgReturn365d?.toFixed(1) ?? "·"}% à T+365 avec ${cfo.winRate365d?.toFixed(0)}% de succès sur 1 an.`, highlight: `+${cfo.avgReturn365d?.toFixed(1) ?? cfo.avgReturn90d.toFixed(1)}%/an` });
   }
   const deepCluster = byBehavior["Deep cluster (3+)"];
   if (deepCluster && deepCluster.avgReturn90d != null && deepCluster.count >= 3) {
-    insights.push({ icon: "Users", title: "3 insiders simultanés : signal de conviction", text: `Quand 3+ dirigeants achètent la même société en 30 jours : +${deepCluster.avgReturn90d.toFixed(1)}% T+90, ${deepCluster.winRate90d?.toFixed(0)}% de succès. Le rendement grimpe à +${deepCluster.avgReturn365d?.toFixed(1) ?? "—"}% sur 1 an.`, highlight: `${deepCluster.count} occurrences` });
+    insights.push({ icon: "Users", title: "3 insiders simultanés : signal de conviction", text: `Quand 3+ dirigeants achètent la même société en 30 jours : +${deepCluster.avgReturn90d.toFixed(1)}% T+90, ${deepCluster.winRate90d?.toFixed(0)}% de succès. Le rendement grimpe à +${deepCluster.avgReturn365d?.toFixed(1) ?? "·"}% sur 1 an.`, highlight: `${deepCluster.count} occurrences` });
   }
   const q2 = bySeason["Mar-Mai"];
   if (q2 && q2.avgReturn90d != null) {
-    insights.push({ icon: "Calendar", title: "Saisonnalité : Mars-Mai, la meilleure fenêtre", text: `Les achats d'initiés en Mars-Mai génèrent +${q2.avgReturn90d.toFixed(1)}% à T+90 vs ${bySeason["Jan-Fév"]?.avgReturn90d?.toFixed(1) ?? "—"}% en Jan-Fév. Coïncide avec la publication des résultats annuels.`, highlight: "Q2 = peak" });
+    insights.push({ icon: "Calendar", title: "Saisonnalité : Mars-Mai, la meilleure fenêtre", text: `Les achats d'initiés en Mars-Mai génèrent +${q2.avgReturn90d.toFixed(1)}% à T+90 vs ${bySeason["Jan-Fév"]?.avgReturn90d?.toFixed(1) ?? "·"}% en Jan-Fév. Coïncide avec la publication des résultats annuels.`, highlight: "Q2 = peak" });
   }
   const bigMcap = rows.filter((r) => (r.declaration.pctOfMarketCap ?? 0) >= 2);
   if (bigMcap.length >= 3) {
     const g = aggregateGroup(bigMcap);
-    insights.push({ icon: "Target", title: ">2% de la capitalisation : conviction extrême", text: `Ces trades représentent un signal de conviction maximale de la part du dirigeant : +${g.avgReturn90d?.toFixed(1) ?? "—"}% T+90, +${g.avgReturn365d?.toFixed(1) ?? "—"}% T+365, ${g.winRate365d?.toFixed(0) ?? "—"}% de réussite.`, highlight: `${g.count} trades` });
+    insights.push({ icon: "Target", title: ">2% de la capitalisation : conviction extrême", text: `Ces trades représentent un signal de conviction maximale de la part du dirigeant : +${g.avgReturn90d?.toFixed(1) ?? "·"}% T+90, +${g.avgReturn365d?.toFixed(1) ?? "·"}% T+365, ${g.winRate365d?.toFixed(0) ?? "·"}% de réussite.`, highlight: `${g.count} trades` });
   }
   const mid = bySize["Mid"]; const small = bySize["Small"];
   if (mid && small) {
-    insights.push({ icon: "Building2", title: "Small & Mid-cap : le meilleur terrain", text: `Les insiders de mid-cap génèrent +${mid.avgReturn365d?.toFixed(1) ?? "—"}% sur 1 an vs +${bySize["Large"]?.avgReturn365d?.toFixed(1) ?? "—"}% sur Large-cap. Moins de couverture analytique = alpha plus accessible.`, highlight: "Mid > Large" });
+    insights.push({ icon: "Building2", title: "Small & Mid-cap : le meilleur terrain", text: `Les insiders de mid-cap génèrent +${mid.avgReturn365d?.toFixed(1) ?? "·"}% sur 1 an vs +${bySize["Large"]?.avgReturn365d?.toFixed(1) ?? "·"}% sur Large-cap. Moins de couverture analytique = alpha plus accessible.`, highlight: "Mid > Large" });
   }
   const cascade = byBehavior["Cascade (4+ insiders)"];
   if (cascade && cascade.count >= 3) {
-    insights.push({ icon: "Layers", title: "Cascade 4+ insiders : conviction collective", text: `Lorsque 4 dirigeants ou plus achètent simultanément, le rendement à 1 an est de +${cascade.avgReturn365d?.toFixed(1) ?? "—"}% avec ${cascade.winRate365d?.toFixed(0) ?? "—"}% de taux de succès (${cascade.count} cas historiques).`, highlight: `${cascade.count} cas` });
+    insights.push({ icon: "Layers", title: "Cascade 4+ insiders : conviction collective", text: `Lorsque 4 dirigeants ou plus achètent simultanément, le rendement à 1 an est de +${cascade.avgReturn365d?.toFixed(1) ?? "·"}% avec ${cascade.winRate365d?.toFixed(0) ?? "·"}% de taux de succès (${cascade.count} cas historiques).`, highlight: `${cascade.count} cas` });
   }
 
   // Gender
@@ -494,7 +499,7 @@ async function _computeBacktestBase(): Promise<BacktestBase | null> {
     const fAvg = femaleStats.avgReturn365d; const mAvg = maleStats.avgReturn365d;
     if (fAvg != null && mAvg != null) {
       const diff = fAvg - mAvg;
-      insights.push({ icon: diff > 0 ? "TrendingUp" : "TrendingDown", title: diff > 0 ? "Femmes dirigeantes : signal plus fort" : "Signal homme vs femme : analyse comparative", text: `Sur ${femaleRows.length} achats de femmes dirigeantes vs ${maleRows.length} d'hommes : F→+${fAvg.toFixed(1)}% vs M→+${mAvg.toFixed(1)}% à T+365. Win rate F:${femaleStats.winRate365d?.toFixed(0) ?? "—"}% vs M:${maleStats.winRate365d?.toFixed(0) ?? "—"}%.`, highlight: `${diff > 0 ? "F" : "M"} +${Math.abs(diff).toFixed(1)}%` });
+      insights.push({ icon: diff > 0 ? "TrendingUp" : "TrendingDown", title: diff > 0 ? "Femmes dirigeantes : signal plus fort" : "Signal homme vs femme : analyse comparative", text: `Sur ${femaleRows.length} achats de femmes dirigeantes vs ${maleRows.length} d'hommes : F→+${fAvg.toFixed(1)}% vs M→+${mAvg.toFixed(1)}% à T+365. Win rate F:${femaleStats.winRate365d?.toFixed(0) ?? "·"}% vs M:${maleStats.winRate365d?.toFixed(0) ?? "·"}%.`, highlight: `${diff > 0 ? "F" : "M"} +${Math.abs(diff).toFixed(1)}%` });
     }
   }
 

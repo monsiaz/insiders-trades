@@ -12,7 +12,7 @@ interface Props {
 // ── Formatters ────────────────────────────────────────────────────────────
 
 function fmtB(n: number | null | undefined, currency = "€"): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   const abs = Math.abs(n);
   const sign = n < 0 ? "−" : "";
   if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(2)} Md${currency}`;
@@ -22,22 +22,22 @@ function fmtB(n: number | null | undefined, currency = "€"): string {
 }
 
 function fmtPct(n: number | null | undefined): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   return `${(n * 100).toFixed(1)}%`;
 }
 
 function fmtX(n: number | null | undefined, decimals = 1): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   return n.toFixed(decimals) + "x";
 }
 
 function fmtNum(n: number | null | undefined, decimals = 2): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   return n.toFixed(decimals);
 }
 
 function fmtPrice(n: number | null | undefined): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   return `${n.toFixed(2)} €`;
 }
 
@@ -69,7 +69,7 @@ function scoreToReco(s: number): string {
 function RecoGauge({ score, reco }: { score?: number | null; reco?: string | null }) {
   const key = reco ?? (score != null ? scoreToReco(score) : null);
   const cfg = key ? RECO_CONFIG[key] : null;
-  if (!cfg && score == null) return <span style={{ color: "var(--tx-4)" }}>—</span>;
+  if (!cfg && score == null) return <span style={{ color: "var(--tx-4)" }}>·</span>;
 
   const barPct = score != null ? Math.max(5, Math.round(((5 - score) / 4) * 100)) : (cfg?.pct ?? 50);
   const barColor = barPct >= 70 ? "var(--c-emerald)" : barPct >= 45 ? "var(--c-amber)" : "var(--c-crimson)";
@@ -232,7 +232,7 @@ export function CompanyFinancials({ companyId, companyName, initial }: Props) {
   return (
     <div className="card p-5" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
         <div>
           <h3 style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--tx-1)", margin: 0, letterSpacing: "-0.02em" }}>
             Données financières

@@ -1,15 +1,15 @@
 /**
- * The Sigma Winning Strategy (2026-04) — discovered via exhaustive grid
+ * The Sigma Winning Strategy (2026-04), discovered via exhaustive grid
  * search across 583 200 filter combinations on 15 171 historical backtests.
  *
  * Criteria (all must match) :
  *   1. Transaction = pure acquisition (transactionNature = "Acquisition")
- *      — exclude options exercises, apports, conversions…
+ * ; exclude options exercises, apports, conversions…
  *   2. Cluster active (≥ 2 distinct insiders ±30 days on the company)
- *   3. Role ∈ {PDG, CFO, Directeur} — exclude CA/Board-only trades
+ *   3. Role ∈ {PDG, CFO, Directeur} ; exclude CA/Board-only trades
  *   4. Fresh publication (delay transactionDate → pubDate ≤ 7 days)
  *   5. Mid-cap company (market cap between 200 M€ and 1 B€)
- *   6. Score ≥ 30 (low bar — the other filters do the heavy lifting)
+ *   6. Score ≥ 30 (low bar ; the other filters do the heavy lifting)
  *
  * Holding window : T+90 (rebalance quarterly), equal-weight portfolio.
  *
@@ -21,7 +21,7 @@
  *   2025 : +25.5% vs CAC 40 +10.2% → α = +15.3 pts
  *   Average : +16.3% · Sharpe 1.00 · 66% win rate · α = +10.4 pts/an
  *
- * Beats the CAC 40 every single year from 2022 to 2025 — the only filter
+ * Beats the CAC 40 every single year from 2022 to 2025 ; the only filter
  * combination with that property out of 583k tested.
  */
 
@@ -100,9 +100,9 @@ export async function getWinningStrategySignals(opts: {
       pubDate: { gte: since },
       signalScore: { gte: WINNING_STRATEGY.minScore },
       isCluster: true,
-      // Pure acquisition — exact match
+      // Pure acquisition (exact match)
       transactionNature: { equals: "Acquisition", mode: "insensitive" },
-      // Mid-cap filter — BigInt values
+      // Mid-cap filter · BigInt values
       company: {
         marketCap: {
           gte: BigInt(WINNING_STRATEGY.minMarketCapEur),
@@ -135,7 +135,7 @@ export async function getWinningStrategySignals(opts: {
     },
   });
 
-  // In-memory filters (role + freshness — easier in JS than in Prisma)
+  // In-memory filters (role + freshness, easier in JS than in Prisma)
   const filtered = rows.filter((d) => {
     const role = roleCategory(d.insiderFunction);
     if (WINNING_STRATEGY.excludeBoardRole && (role === "board" || role === "other")) return false;
@@ -187,7 +187,7 @@ export async function getWinningStrategySignals(opts: {
       },
       reasons: [
         "Cluster : ≥ 2 dirigeants ont acheté ces 30 derniers jours",
-        "Mid-cap (200 M€ – 1 B€) — sweet spot liquidité / alpha",
+        "Mid-cap (200 M€ – 1 B€) · sweet spot liquidité / alpha",
         "Acquisition au marché (pas d'exercice ni d'apport)",
         `Publiée ${pubDelayDays != null ? pubDelayDays.toFixed(1) + "j" : "peu"} après la transaction`,
         "Fonction dirigeante (PDG, CFO ou directeur opérationnel)",
@@ -219,7 +219,7 @@ export interface StrategyProof {
 }
 
 /**
- * Static proof — computed once-and-for-all from the grid search and hard-coded.
+ * Static proof · computed once-and-for-all from the grid search and hard-coded.
  * Rationale: we don't want the page to recompute on every visit, and the
  * underlying data is backtest-frozen (only new signals get added).
  * To refresh these numbers : re-run scripts/grid-search-v2.mjs.

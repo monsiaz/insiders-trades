@@ -59,14 +59,14 @@ export async function POST(req: NextRequest) {
   });
   if (active >= 10) {
     return NextResponse.json(
-      { error: "Limite de 10 clés actives atteinte — révoquez-en une d'abord." },
+      { error: "Limite de 10 clés actives atteinte · révoquez-en une d'abord." },
       { status: 403 }
     );
   }
 
   const { key, record } = await createApiKey({ userId: user.id, name });
   return NextResponse.json({
-    key,               // plaintext — shown ONCE
+    key,               // plaintext · shown ONCE
     record: {
       id: record.id,
       name: record.name,

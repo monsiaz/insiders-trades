@@ -20,8 +20,8 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
         background: "var(--bg-surface)",
       }}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-3">
             <h2
               className="text-sm font-semibold"
@@ -30,7 +30,7 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
               Performance historique
             </h2>
           </div>
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             <div>
               <div
                 className="text-xl font-bold tabular-nums"
@@ -71,7 +71,8 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
         </div>
         <Link
           href="/backtest"
-          className="btn-glass px-3 py-1.5 rounded-xl text-xs font-medium flex-shrink-0"
+          className="btn btn-glass flex-shrink-0 self-start"
+          style={{ fontSize: "0.78rem", padding: "8px 14px", borderRadius: "8px" }}
         >
           Analyse →
         </Link>

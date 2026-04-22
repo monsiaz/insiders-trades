@@ -112,13 +112,13 @@ export function AppNav() {
       <header className="app-nav" ref={menuRef}>
         <div className="nav-inner">
 
-          {/* Logo — full wordmark on desktop, mark-only on mobile */}
+          {/* Logo · full wordmark on desktop, mark-only on mobile */}
           <Link href="/" className="nav-logo" aria-label="InsiderTrades Sigma accueil">
             <span className="nav-logo-desktop">
-              <LogoWordmark height={28} />
+              <LogoWordmark height={36} />
             </span>
             <span className="nav-logo-mobile">
-              <LogoMark size={30} />
+              <LogoMark size={36} />
             </span>
           </Link>
 

@@ -1,16 +1,41 @@
 export default function Loading() {
   return (
     <div className="content-wrapper">
-      <div style={{ animation: "pulse 1.5s ease-in-out infinite", display: "flex", flexDirection: "column", gap: "16px" }}>
-        <div style={{ height: "40px", width: "260px", borderRadius: "8px", background: "var(--bg-raised)" }} />
-        <div style={{ height: "20px", width: "380px", borderRadius: "6px", background: "var(--bg-raised)" }} />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginTop: "8px" }}>
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} style={{ height: "100px", borderRadius: "12px", background: "var(--bg-raised)" }} />
+      <div className="loading-wrap">
+        <div className="loading-gold-bar" />
+
+        {/* Title */}
+        <div className="skel skel-h" style={{ height: 14, width: 100 }} />
+        <div className="skel skel-h" style={{ height: 32, width: 220 }} />
+
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+          {[90, 70, 100, 70].map((w, i) => (
+            <div key={i} className="skel" style={{ height: 36, width: w }} />
           ))}
         </div>
-        <div style={{ height: "320px", borderRadius: "14px", background: "var(--bg-raised)", marginTop: "8px" }} />
-        <div style={{ height: "260px", borderRadius: "14px", background: "var(--bg-raised)" }} />
+
+        {/* KPI strip */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="skel" style={{ height: 90 }} />
+          ))}
+        </div>
+
+        {/* Chart */}
+        <div className="skel" style={{ height: 260 }} />
+
+        {/* Table header */}
+        <div style={{ display: "flex", gap: 10, padding: "10px 0" }}>
+          {[160, 80, 80, 80, 90].map((w, i) => (
+            <div key={i} className="skel skel-h" style={{ height: 10, width: w }} />
+          ))}
+        </div>
+
+        {/* Table rows */}
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="skel" style={{ height: 52 }} />
+        ))}
       </div>
     </div>
   );

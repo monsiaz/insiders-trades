@@ -65,7 +65,7 @@ export default function ApiKeysClient({
       setCreatedKey(d.key);
       setNewName("");
       await load();
-      showToast("Clé créée. Copiez-la maintenant — elle ne sera plus affichée.", true);
+      showToast("Clé créée. Copiez-la maintenant, elle ne sera plus affichée.", true);
     } finally {
       setCreating(false);
     }
@@ -90,7 +90,7 @@ export default function ApiKeysClient({
   };
 
   return (
-    <div className="content-wrapper" style={{ maxWidth: "1000px" }}>
+    <div className="content-wrapper px-4 sm:px-6" style={{ maxWidth: "1000px" }}>
       {/* Header */}
       <div style={{ marginBottom: "24px" }}>
         <div
@@ -121,7 +121,7 @@ export default function ApiKeysClient({
         <p style={{ fontSize: "0.95rem", color: "var(--tx-2)", lineHeight: 1.6 }}>
           Créez des clés pour accéder à notre API REST publique (signaux, sociétés, dirigeants,
           backtests…). Une clé est affichée <strong>une seule fois</strong> à la création.
-          Stockez-la en lieu sûr — vous ne pourrez pas la récupérer ensuite.
+          Stockez-la en lieu sûr. Vous ne pourrez pas la récupérer ensuite.
         </p>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }}>
           <Link
@@ -180,7 +180,7 @@ export default function ApiKeysClient({
               marginBottom: "6px",
             }}
           >
-            ⚠ Clé générée — copiez-la maintenant
+            ⚠ Clé générée · copiez-la maintenant
           </div>
           <p style={{ fontSize: "0.82rem", color: "var(--tx-2)", marginBottom: "10px" }}>
             Cette clé ne sera <strong>plus jamais affichée</strong>. Si vous la perdez,
@@ -197,6 +197,7 @@ export default function ApiKeysClient({
               borderRadius: "3px",
               fontFamily: "'JetBrains Mono', monospace",
               fontSize: "0.82rem",
+              flexWrap: "wrap",
             }}
           >
             <code
@@ -205,6 +206,8 @@ export default function ApiKeysClient({
                 color: "var(--tx-1)",
                 overflow: "auto",
                 whiteSpace: "nowrap",
+                minWidth: 0,
+                wordBreak: "break-all",
               }}
             >
               {createdKey}
@@ -212,7 +215,8 @@ export default function ApiKeysClient({
             <button
               onClick={() => copyToClipboard(createdKey)}
               style={{
-                padding: "6px 10px",
+                padding: "10px 14px",
+                minHeight: "44px",
                 fontSize: "0.74rem",
                 fontWeight: 700,
                 background: "var(--gold)",
@@ -221,6 +225,7 @@ export default function ApiKeysClient({
                 borderRadius: "3px",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
+                flexShrink: 0,
               }}
             >
               {revealCopied ? "✓ Copié" : "Copier"}
@@ -230,7 +235,8 @@ export default function ApiKeysClient({
             onClick={() => setCreatedKey(null)}
             style={{
               marginTop: "10px",
-              padding: "6px 12px",
+              padding: "10px 14px",
+              minHeight: "44px",
               fontSize: "0.74rem",
               background: "transparent",
               border: "1px solid var(--border-strong)",
@@ -239,7 +245,7 @@ export default function ApiKeysClient({
               cursor: "pointer",
             }}
           >
-            J&apos;ai sauvegardé ma clé — masquer
+            J&apos;ai sauvegardé ma clé · masquer
           </button>
         </div>
       )}
@@ -257,7 +263,7 @@ export default function ApiKeysClient({
         <h2 style={{ fontSize: "0.92rem", fontWeight: 700, color: "var(--tx-1)", marginBottom: "10px" }}>
           Créer une nouvelle clé
         </h2>
-        <div style={{ display: "flex", gap: "8px", alignItems: "stretch" }}>
+        <div style={{ display: "flex", gap: "8px", alignItems: "stretch", flexWrap: "wrap" }}>
           <input
             type="text"
             value={newName}
@@ -266,7 +272,9 @@ export default function ApiKeysClient({
             onKeyDown={(e) => { if (e.key === "Enter") createKey(); }}
             style={{
               flex: 1,
-              padding: "8px 12px",
+              minWidth: "180px",
+              padding: "12px 12px",
+              minHeight: "44px",
               fontSize: "0.88rem",
               borderRadius: "3px",
             }}
@@ -276,7 +284,8 @@ export default function ApiKeysClient({
             onClick={createKey}
             disabled={!newName.trim() || creating}
             style={{
-              padding: "8px 18px",
+              padding: "12px 18px",
+              minHeight: "44px",
               fontSize: "0.85rem",
               fontWeight: 700,
               background: "var(--corporate)",
@@ -286,6 +295,7 @@ export default function ApiKeysClient({
               cursor: creating ? "progress" : "pointer",
               opacity: !newName.trim() || creating ? 0.5 : 1,
               whiteSpace: "nowrap",
+              flexShrink: 0,
             }}
           >
             {creating ? "Création…" : "Générer →"}
@@ -313,7 +323,7 @@ export default function ApiKeysClient({
           <div style={{ padding: "20px", textAlign: "center", color: "var(--tx-3)" }}>Chargement…</div>
         ) : keys.length === 0 ? (
           <div style={{ padding: "20px", textAlign: "center", color: "var(--tx-3)" }}>
-            Aucune clé — créez-en une ci-dessus.
+            Aucune clé. Créez-en une ci-dessus.
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -371,10 +381,10 @@ curl https://insiders-trades-sigma.vercel.app/api/v1/companies/bouygues \\
       {toast && (
         <div
           style={{
-            position: "fixed",
-            bottom: "24px",
-            right: "24px",
-            padding: "12px 18px",
+          position: "fixed",
+          bottom: "max(24px, env(safe-area-inset-bottom, 24px))",
+          right: "max(16px, env(safe-area-inset-right, 16px))",
+          padding: "12px 18px",
             borderRadius: "4px",
             background: toast.ok ? "var(--c-emerald-bg)" : "var(--c-crimson-bg)",
             border: `1px solid ${toast.ok ? "var(--c-emerald-bd)" : "var(--c-crimson-bd)"}`,
@@ -522,7 +532,8 @@ function KeyRow({
           <button
             onClick={() => onRevoke(k.id)}
             style={{
-              padding: "6px 12px",
+              padding: "11px 14px",
+              minHeight: "44px",
               fontSize: "0.76rem",
               fontWeight: 600,
               border: "1px solid var(--c-crimson-bd)",

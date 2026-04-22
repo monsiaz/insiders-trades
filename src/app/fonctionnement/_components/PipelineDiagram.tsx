@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Animated pipeline diagram — shows data flowing through 6 stages.
+ * Animated pipeline diagram · shows data flowing through 6 stages.
  * Pure SVG + CSS animations, no canvas, fully responsive, theme-aware.
  */
 

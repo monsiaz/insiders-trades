@@ -1,15 +1,15 @@
 /**
- * role-utils.ts — Insider role normalization
+ * role-utils.ts · Insider role normalization
  *
  * Handles French AND English job titles, accented/unaccented, uppercase,
  * feminine forms, abbreviations, typos and compound phrases.
  *
  * Roles (5 canonical buckets):
- *   PDG/DG   — CEO, President, Managing Director, DG, PDG, Gérant, General Manager
- *   CFO/DAF  — CFO, Directeur Financier, DAF, Financial Controller
- *   Directeur — Other C-suite: COO, CTO, DGA, DRH, EVP, Comité Exécutif, Head of…
- *   CA/Board  — Board member, Administrateur, Conseil, Surveillance, PCA
- *   Autre    — Shareholders, legal entities, related persons, unclassifiable
+ *   PDG/DG · CEO, President, Managing Director, DG, PDG, Gérant, General Manager
+ *   CFO/DAF · CFO, Directeur Financier, DAF, Financial Controller
+ *   Directeur · Other C-suite: COO, CTO, DGA, DRH, EVP, Comité Exécutif, Head of…
+ *   CA/Board · Board member, Administrateur, Conseil, Surveillance, PCA
+ *   Autre · Shareholders, legal entities, related persons, unclassifiable
  *
  * Display (normalizeDisplay):
  *   Returns a clean French label from any raw insiderFunction string.
@@ -30,13 +30,13 @@ export function normalizeRole(fn: string | null | undefined): InsiderRole {
   const f = deaccent(raw).toLowerCase();
 
   // ── Block: clearly non-executive (check first to avoid false positives) ────
-  // "Actionnaire" — but NOT if also "administrateur/président/directeur" (employee shareholders are board members)
+  // "Actionnaire" · but NOT if also "administrateur/président/directeur" (employee shareholders are board members)
   if ((f.includes("actionnaire") || f.includes("shareholder")) &&
       !f.includes("administrateur") && !f.includes("administratrice") &&
       !f.includes("president") && !f.includes("directeur") && !f.includes("gerant")) {
     return "Autre";
   }
-  // "Personne morale" — but NOT if also an exec/board role
+  // "Personne morale" · but NOT if also an exec/board role
   if ((f.includes("personne morale") || f.includes("legal entity")) &&
       !f.includes("administrateur") && !f.includes("administratrice") && !f.includes("president") &&
       !f.includes("directeur") && !f.includes("gerant") && !f.includes("conseil")) {
@@ -146,7 +146,7 @@ export function normalizeRole(fn: string | null | undefined): InsiderRole {
     return "PDG/DG";
   }
 
-  // "Président" alone or "Président de X" — but NOT "Président du Conseil/CA/CS/Surveillance"
+  // "Président" alone or "Président de X" · but NOT "Président du Conseil/CA/CS/Surveillance"
   // "pressident", "presidente" etc. (typos/feminine/English)
   if (/pr[eé]ss?id[ae]nt/.test(f) &&
       !f.includes("conseil") && !f.includes("surveillance") &&
@@ -220,7 +220,7 @@ export function normalizeRole(fn: string | null | undefined): InsiderRole {
   if (/\badmin[a-z]{3,}/.test(f))                                                return "CA/Board";
   if (f.includes("administrateur") || f.includes("administratrice"))             return "CA/Board";
 
-  // "Conseil" patterns — use word boundary for "conseil" at end of string
+  // "Conseil" patterns · use word boundary for "conseil" at end of string
   if (/\bconseil\b/.test(f))                                                      return "CA/Board";
   if (f.includes("board") || f.includes("supervisory"))                           return "CA/Board";
   if (f.includes("surveillance"))                                                  return "CA/Board";

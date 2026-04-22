@@ -2,8 +2,55 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { DeclarationCard } from "@/components/DeclarationCard";
+import { unstable_cache } from "next/cache";
 
-export const revalidate = 300; // Revalidate every 5 min
+export const revalidate = 300;
+
+const getInsiderData = (slug: string) =>
+  unstable_cache(
+    async () => {
+      const insider = await prisma.insider.findUnique({
+        where: { slug },
+        include: {
+          companies: { include: { company: { select: { name: true, slug: true } } } },
+          _count: { select: { declarations: true } },
+        },
+      });
+      if (!insider) return null;
+
+      const [buyAgg, sellAgg] = await Promise.all([
+        prisma.declaration.aggregate({
+          where: { insiderId: insider.id, transactionNature: { contains: "Acquisition", mode: "insensitive" } },
+          _sum: { totalAmount: true },
+          _count: true,
+        }),
+        prisma.declaration.aggregate({
+          where: { insiderId: insider.id, transactionNature: { contains: "Cession", mode: "insensitive" } },
+          _sum: { totalAmount: true },
+          _count: true,
+        }),
+      ]);
+
+      return { insider, buyAgg, sellAgg };
+    },
+    [`insider-data-${slug}`],
+    { revalidate: 300, tags: [`insider-${slug}`] }
+  )();
+
+// Pre-build the top 50 most-active insider pages
+export async function generateStaticParams() {
+  try {
+    const insiders = await prisma.insider.findMany({
+      where: { declarations: { some: { type: "DIRIGEANTS" } } },
+      orderBy: { declarations: { _count: "desc" } },
+      take: 50,
+      select: { slug: true },
+    });
+    return insiders.map((i) => ({ slug: i.slug }));
+  } catch {
+    return [];
+  }
+}
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -17,16 +64,11 @@ export default async function InsiderPage({ params, searchParams }: Props) {
   const limit = 25;
   const offset = (pageNum - 1) * limit;
 
-  const insider = await prisma.insider.findUnique({
-    where: { slug },
-    include: {
-      companies: { include: { company: { select: { name: true, slug: true } } } },
-      _count: { select: { declarations: true } },
-    },
-  });
-  if (!insider) notFound();
+  const cached = await getInsiderData(slug);
+  if (!cached) notFound();
+  const { insider, buyAgg, sellAgg } = cached;
 
-  const [declarations, totalCount, buyAgg, sellAgg] = await Promise.all([
+  const [declarations, totalCount] = await Promise.all([
     prisma.declaration.findMany({
       where: { insiderId: insider.id },
       orderBy: { pubDate: "desc" },
@@ -43,23 +85,13 @@ export default async function InsiderPage({ params, searchParams }: Props) {
       },
     }),
     prisma.declaration.count({ where: { insiderId: insider.id } }),
-    prisma.declaration.aggregate({
-      where: { insiderId: insider.id, transactionNature: { contains: "Acquisition", mode: "insensitive" } },
-      _sum: { totalAmount: true },
-      _count: true,
-    }),
-    prisma.declaration.aggregate({
-      where: { insiderId: insider.id, transactionNature: { contains: "Cession", mode: "insensitive" } },
-      _sum: { totalAmount: true },
-      _count: true,
-    }),
   ]);
 
   const totalPages = Math.ceil(totalCount / limit);
   const initials = insider.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
 
   const fmt = (v: number | null | undefined) =>
-    v ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0, notation: v >= 1_000_000 ? "compact" : "standard" }).format(v) : "—";
+    v ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0, notation: v >= 1_000_000 ? "compact" : "standard" }).format(v) : "·";
 
   return (
     <div className="content-wrapper">
@@ -70,12 +102,12 @@ export default async function InsiderPage({ params, searchParams }: Props) {
 
       {/* Hero */}
       <div className="glass-card-static rounded-3xl p-6 mb-6">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border border-violet-500/25 flex items-center justify-center text-xl font-bold tx-violet">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border border-violet-500/25 flex items-center justify-center text-xl font-bold tx-violet flex-shrink-0">
             {initials}
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--tx-1)] tracking-tight">{insider.name}</h1>
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-[var(--tx-1)] tracking-tight">{insider.name}</h1>
             <div className="flex flex-wrap gap-1.5 mt-2">
               {insider.companies.map((ci) => (
                 <Link
@@ -138,7 +170,7 @@ export default async function InsiderPage({ params, searchParams }: Props) {
           )}
         </div>
       )}
-      <div className="mt-4 text-center text-xs text-slate-700">
+      <div className="mt-4 text-center text-xs" style={{ color: "var(--tx-3)" }}>
         {totalCount} déclaration{totalCount !== 1 ? "s" : ""} au total
       </div>
     </div>

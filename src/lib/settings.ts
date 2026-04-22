@@ -16,11 +16,11 @@ import { prisma } from "./prisma";
 export type AlertFrequency = "daily" | "weekdays" | "weekly" | "disabled";
 
 export interface AlertsConfig {
-  /** Master switch — if false, no emails are sent regardless of other settings */
+  /** Master switch · if false, no emails are sent regardless of other settings */
   enabled: boolean;
   /** When to send: daily / Mon-Fri only / once a week on Monday / off */
   frequency: AlertFrequency;
-  /** Hour of the day (0–23, UTC) — only used when triggered by cron */
+  /** Hour of the day (0–23, UTC) · only used when triggered by cron */
   hour: number;
   /** Minimum signalScore (0–100) for a declaration to surface as portfolio alert */
   minSignalScore: number;
@@ -39,11 +39,11 @@ export interface AlertsConfig {
   /** Include portfolio-specific alerts in digest */
   includePortfolioAlerts: boolean;
   /**
-   * Dev / test override — if set, every outgoing alert email goes to this
+   * Dev / test override · if set, every outgoing alert email goes to this
    * address instead of the user's real email. Keep null in production.
    */
   recipientOverride: string | null;
-  /** Free-form operator note (why did we tweak this? etc.) — surfaced in admin UI */
+  /** Free-form operator note (why did we tweak this? etc.) · surfaced in admin UI */
   note: string;
   /** Updated timestamp (for display only) */
   updatedAt?: string;
@@ -79,7 +79,7 @@ export async function getAlertsConfig(): Promise<AlertsConfig> {
   };
 }
 
-/** Persist a partial update — fields not provided keep their stored value. */
+/** Persist a partial update · fields not provided keep their stored value. */
 export async function updateAlertsConfig(
   patch: Partial<AlertsConfig>
 ): Promise<AlertsConfig> {
@@ -114,7 +114,7 @@ export async function updateAlertsConfig(
 
 /**
  * Given the current config + current date, should the cron actually dispatch
- * emails right now? (Used by /api/cron — it always runs at 3am UTC, but we
+ * emails right now? (Used by /api/cron · it always runs at 3am UTC, but we
  * only want to actually email users when the frequency says so.)
  */
 export function shouldDispatchOn(

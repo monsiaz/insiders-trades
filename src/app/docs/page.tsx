@@ -1,5 +1,5 @@
 /**
- * /docs — Public API reference (editorial, Sigma DA).
+ * /docs · Public API reference (editorial, Sigma DA).
  *
  * Long-form reference covering:
  *   - Authentification
@@ -9,7 +9,7 @@
  *   - Rate limits
  *   - Code samples (cURL, Node, Python)
  *
- * Public (beta-unlocked) — whitelisted in middleware.
+ * Public (beta-unlocked) · whitelisted in middleware.
  */
 
 import Link from "next/link";
@@ -21,7 +21,7 @@ import { TOC } from "./_components/TOC";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Documentation API — Insiders Trades Sigma",
+  title: "Documentation API · Insiders Trades Sigma",
   description:
     "Référence complète de l'API REST publique d'Insiders Trades Sigma : déclarations AMF, signaux scorés, backtests, fondamentaux Yahoo. Exemples en cURL, Python, JavaScript.",
 };
@@ -86,7 +86,7 @@ export default function DocsPage() {
 
       {/* ── TWO-COLUMN LAYOUT (TOC + content) ─────────────────────────────── */}
       <div className="docs-layout">
-        {/* Sidebar TOC — desktop only */}
+        {/* Sidebar TOC · desktop only */}
         <aside className="docs-sidebar">
           <TOC sections={TOC_SECTIONS} />
         </aside>
@@ -114,7 +114,7 @@ export default function DocsPage() {
               </li>
               <li>
                 Générez une clé nommée (ex : &laquo; Production bot &raquo;). Copiez-la
-                immédiatement — elle ne sera plus affichée.
+                immédiatement, elle ne sera plus affichée.
               </li>
               <li>
                 Ajoutez le header <code style={codeInline}>Authorization: Bearer &lt;key&gt;</code> à
@@ -163,11 +163,11 @@ print(r.json())`,
             </p>
             <ul style={ulBody}>
               <li>
-                <code style={codeInline}>Authorization: Bearer &lt;key&gt;</code> — standard,
+                <code style={codeInline}>Authorization: Bearer &lt;key&gt;</code> · standard,
                 recommandé.
               </li>
               <li>
-                <code style={codeInline}>X-Api-Key: &lt;key&gt;</code> — alternative si votre
+                <code style={codeInline}>X-Api-Key: &lt;key&gt;</code> · alternative si votre
                 client HTTP ne gère pas bien le header Authorization.
               </li>
             </ul>
@@ -211,7 +211,7 @@ jamais retrouvable en clair.`}
             <p style={pBody}>
               Chaque réponse 200 inclut un objet <code style={codeInline}>meta</code>. Il contient la
               latence serveur et un mini-dictionnaire <code style={codeInline}>dataFreshness</code>
-              avec la date de dernière mise à jour de chaque bloc de données — permettant à votre
+              avec la date de dernière mise à jour de chaque bloc de données, permettant à votre
               client de décider s&apos;il doit invalider son cache.
             </p>
             <CodeBlock
@@ -745,7 +745,7 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
                     ["404", "company_not_found", "Slug de société inexistant"],
                     ["404", "insider_not_found", "Slug de dirigeant inexistant"],
                     ["404", "declaration_not_found", "amfId inexistant"],
-                    ["500", "internal_error", "Erreur serveur — remontez-nous l'URL + heure"],
+                    ["500", "internal_error", "Erreur serveur, remontez-nous l'URL + heure"],
                   ].map((r, i) => (
                     <tr key={i} style={{ borderBottom: "1px solid var(--border)" }}>
                       <td style={td}><code style={codeInline}>{r[0]}</code></td>
@@ -769,7 +769,7 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
             </p>
             <ul style={ulBody}>
               <li><strong>5 000 requêtes / jour</strong> par clé (compteur reset 00:00 UTC).</li>
-              <li><strong>10 req/seconde</strong> (burst) — suffisant pour la plupart des usages.</li>
+              <li><strong>10 req/seconde</strong> (burst) · suffisant pour la plupart des usages.</li>
               <li>
                 <strong>10 clés actives maximum</strong> par compte. Au-delà, révoquez-en une
                 depuis <Link href="/account/api-keys" style={linkGold}>votre page de clés</Link>.
@@ -788,7 +788,7 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
                 adapter votre fréquence de polling.
               </li>
               <li>
-                <strong>Cachez agressivement.</strong> Un détail société change rarement — cachez-le
+                <strong>Cachez agressivement.</strong> Un détail société change rarement, cachez-le
                 côté client jusqu&apos;au <code style={codeInline}>priceAt + 1h</code>.
               </li>
               <li>
@@ -1027,6 +1027,7 @@ console.log(\`Wrote \${rows.length} rows\`);`,
 
           {/* ── FINAL CTA ───────────────────────────────────────────────── */}
           <section
+            className="docs-cta"
             style={{
               marginTop: "60px",
               padding: "40px 32px",
@@ -1084,6 +1085,9 @@ console.log(\`Wrote \${rows.length} rows\`);`,
         @media (max-width: 960px) {
           .docs-layout { grid-template-columns: 1fr; gap: 20px; }
           .docs-sidebar { display: none; }
+        }
+        @media (max-width: 640px) {
+          .docs-cta { padding: 24px 16px !important; }
         }
         .docs-content h4 { scroll-margin-top: 90px; }
       `}</style>
@@ -1259,10 +1263,10 @@ function EntityCard({
         borderLeft: `3px solid ${color}`,
         borderRadius: "3px",
         marginBottom: "14px",
-        overflow: "hidden",
+        overflowX: "auto",
       }}
     >
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", minWidth: "480px" }}>
         <tbody>
           {rows.map(([field, type, desc], i) => (
             <tr key={i} style={{ borderBottom: i === rows.length - 1 ? "none" : "1px solid var(--border)" }}>
@@ -1337,6 +1341,7 @@ const linkGold: React.CSSProperties = {
   textUnderlineOffset: "2px",
 };
 const btnGold: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", minHeight: "44px",
   padding: "12px 22px",
   background: "var(--gold)",
   color: "#0A0C10",
@@ -1348,6 +1353,7 @@ const btnGold: React.CSSProperties = {
   boxShadow: "0 4px 16px rgba(184,149,90,0.30)",
 };
 const btnGhost: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", minHeight: "44px",
   padding: "12px 22px",
   border: "1px solid var(--border-strong)",
   color: "var(--tx-2)",

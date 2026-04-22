@@ -274,7 +274,7 @@ async function dispatchAlertEmails(): Promise<{
 
   if (users.length === 0) return { sent: 0, skipped: 0 };
 
-  // Pre-fetch once (shared across all users) — buy & sell recos are user-agnostic.
+  // Pre-fetch once (shared across all users) · buy & sell recos are user-agnostic.
   const [topBuys, topSells] = await Promise.all([
     cfg.includeTopBuys
       ? getRecommendations({ mode: "general", limit: cfg.topBuysLimit, lookbackDays: cfg.lookbackDays })
@@ -299,7 +299,7 @@ async function dispatchAlertEmails(): Promise<{
       // Apply admin toggles
       if (!cfg.includePortfolioAlerts) payload.portfolioAlerts = [];
 
-      // Dev / test override — force all outgoing emails to a single address
+      // Dev / test override · force all outgoing emails to a single address
       const to = cfg.recipientOverride ?? user.email;
 
       const res = await sendDailyDigestEmail({ ...payload, to });

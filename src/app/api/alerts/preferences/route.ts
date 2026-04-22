@@ -1,6 +1,6 @@
 /**
- * GET  /api/alerts/preferences  — returns user alert settings
- * POST /api/alerts/preferences  — { enabled: boolean } toggle opt-in
+ * GET  /api/alerts/preferences · returns user alert settings
+ * POST /api/alerts/preferences · { enabled: boolean } toggle opt-in
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";

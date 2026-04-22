@@ -209,7 +209,7 @@ function ParamTable({ title, params }: { title: string; params: EndpointParam[] 
                   </code>
                 </td>
                 <td style={{ padding: "8px 12px", verticalAlign: "top", color: "var(--tx-3)", fontFamily: "'JetBrains Mono', monospace", fontSize: "0.78rem" }}>
-                  {p.default ?? "—"}
+                  {p.default ?? "·"}
                 </td>
                 <td style={{ padding: "8px 12px", color: "var(--tx-2)", lineHeight: 1.55 }}>
                   {p.description}

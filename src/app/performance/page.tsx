@@ -1,5 +1,5 @@
 /**
- * /performance — Public transparency page.
+ * /performance · Public transparency page.
  *
  * Honest disclosure of what our signals actually deliver, with a clear guide
  * for small retail investors on how to apply the signals given their
@@ -16,20 +16,20 @@ import { computePerformanceData, type StrategyResult } from "@/lib/performance-d
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Performance & transparence — Insiders Trades Sigma",
+  title: "Performance & transparence · Insiders Trades Sigma",
   description:
     "Transparence complète sur la performance réelle de notre système. Backtest 4 ans sur 21 000 trades, comparaison vs CAC 40, stratégie recommandée pour petit investisseur.",
 };
 
 const fmt = {
   pct: (n: number | null | undefined, decimals = 2): string => {
-    if (n == null) return "—";
+    if (n == null) return "·";
     const s = n.toFixed(decimals);
     return (n > 0 ? "+" : "") + s + "%";
   },
-  num: (n: number | null | undefined): string => n?.toLocaleString("fr-FR") ?? "—",
-  sharpe: (n: number | null | undefined): string => n?.toFixed(2) ?? "—",
-  days: (n: number | null | undefined, d = 1): string => n != null ? n.toFixed(d) + " j" : "—",
+  num: (n: number | null | undefined): string => n?.toLocaleString("fr-FR") ?? "·",
+  sharpe: (n: number | null | undefined): string => n?.toFixed(2) ?? "·",
+  days: (n: number | null | undefined, d = 1): string => n != null ? n.toFixed(d) + " j" : "·",
 };
 
 export default async function PerformancePage() {
@@ -114,18 +114,18 @@ export default async function PerformancePage() {
           <TakeawayCard
             label="CAGR stratégie recommandée"
             value={fmt.pct(reco?.cagr, 1)}
-            sub={`vs CAC 40 +${d.cacBenchmark.cagrPct.toFixed(1)}% · ${reco?.sharpe != null ? `Sharpe ${reco.sharpe.toFixed(2)}` : "—"}`}
+            sub={`vs CAC 40 +${d.cacBenchmark.cagrPct.toFixed(1)}% · ${reco?.sharpe != null ? `Sharpe ${reco.sharpe.toFixed(2)}` : "·"}`}
             color={(reco?.cagr ?? 0) > 0 ? "var(--signal-pos)" : "var(--signal-neg)"}
           />
         </div>
 
         <Callout tone="info">
           <strong>À quoi sert Sigma, concrètement.</strong> Le système n&apos;est pas conçu pour
-          remplacer un ETF indiciel — c&apos;est un <strong>outil de pré-filtrage</strong> qui transforme
+          remplacer un ETF indiciel, c&apos;est un <strong>outil de pré-filtrage</strong> qui transforme
           585 sociétés en 10 à 15 dossiers par semaine méritant une vraie lecture. Sur la période
           2021-2026 (CAC à ses plus hauts historiques), notre meilleure stratégie filtrée dégage
           {" "}<strong>{fmt.pct(reco?.cagr, 1)} CAGR net de frais</strong> avec un Max DD de{" "}
-          <strong>{reco?.maxDDPct?.toFixed(0) ?? "—"}%</strong>, face à un indice à{" "}
+          <strong>{reco?.maxDDPct?.toFixed(0) ?? "·"}%</strong>, face à un indice à{" "}
           +{d.cacBenchmark.cagrPct.toFixed(1)}%. L&apos;alpha absolu n&apos;est pas au rendez-vous sur
           ce cycle particulièrement haussier ; en revanche le signal garde son utilité première :
           identifier les sociétés où les dirigeants eux-mêmes prennent position, pour orienter
@@ -158,7 +158,7 @@ export default async function PerformancePage() {
 
         <p style={pBody}>
           <strong>Conclusion :</strong> la majorité ({d.freshness.withinMarPct.toFixed(0)}%) sont
-          dans les clous MAR. La médiane est à {d.freshness.median.toFixed(1)} jours — ce qui veut dire que
+          dans les clous MAR. La médiane est à {d.freshness.median.toFixed(1)} jours, ce qui veut dire que
           quand vous voyez un signal sur le site, la transaction a déjà eu lieu il y a <strong>
           {d.freshness.median.toFixed(1)} jours en moyenne</strong>. Le marché a eu le temps de pricer
           l&apos;information.
@@ -216,8 +216,8 @@ export default async function PerformancePage() {
           Nous avons testé 6 stratégies sur le même univers, avec les mêmes règles :
         </p>
         <ul style={ulBody}>
-          <li>Portefeuille top-20 — on achète les 20 meilleurs signaux du mois précédent, score-triés.</li>
-          <li>Rebalancement mensuel — on sort les anciens, on prend les nouveaux.</li>
+          <li>Portefeuille top-20 · on achète les 20 meilleurs signaux du mois précédent, score-triés.</li>
+          <li>Rebalancement mensuel · on sort les anciens, on prend les nouveaux.</li>
           <li>Holding 3 mois par position (correspond à la fenêtre T+90 du backtest).</li>
           <li>Frais de courtage <strong>1% aller-retour</strong> (prix retail en France).</li>
           <li>Entrée à <code style={codeInline}>pubDate+1</code> (le lendemain de la publication AMF).</li>
@@ -280,9 +280,9 @@ export default async function PerformancePage() {
                 <td style={{ padding: "10px 12px", color: "var(--tx-2)", fontFamily: "monospace" }}>
                   {fmt.sharpe(d.cacBenchmark.sharpe)}
                 </td>
-                <td style={{ padding: "10px 12px", color: "var(--tx-3)", fontFamily: "monospace" }}>—</td>
-                <td style={{ padding: "10px 12px", color: "var(--tx-3)", fontFamily: "monospace" }}>—</td>
-                <td style={{ padding: "10px 12px", color: "var(--tx-3)", fontFamily: "monospace" }}>—</td>
+                <td style={{ padding: "10px 12px", color: "var(--tx-3)", fontFamily: "monospace" }}>·</td>
+                <td style={{ padding: "10px 12px", color: "var(--tx-3)", fontFamily: "monospace" }}>·</td>
+                <td style={{ padding: "10px 12px", color: "var(--tx-3)", fontFamily: "monospace" }}>·</td>
               </tr>
             </tbody>
           </table>
@@ -296,12 +296,12 @@ export default async function PerformancePage() {
         </p>
 
         <Callout tone="info">
-          <strong>Lecture :</strong> sur 2021-2026 — période où le CAC 40 a atteint ses plus hauts
-          historiques (+{d.cacBenchmark.cagrPct.toFixed(1)}% annualisé) — la stratégie &laquo; ★ Sigma &raquo;
+          <strong>Lecture :</strong> sur 2021-2026, période où le CAC 40 a atteint ses plus hauts
+          historiques (+{d.cacBenchmark.cagrPct.toFixed(1)}% annualisé), la stratégie &laquo; ★ Sigma &raquo;
           dégage <strong>+{reco?.cagr?.toFixed(1)}% CAGR net</strong> avec un{" "}
-          <strong>Max DD de {reco?.maxDDPct?.toFixed(0) ?? "—"}%</strong> et{" "}
-          <strong>{reco?.beatCacPct?.toFixed(0) ?? "—"}% de mois</strong> qui battent l&apos;indice.
-          Les stratégies filtrées servent de socle de sélection — leur intérêt se mesure surtout
+          <strong>Max DD de {reco?.maxDDPct?.toFixed(0) ?? "·"}%</strong> et{" "}
+          <strong>{reco?.beatCacPct?.toFixed(0) ?? "·"}% de mois</strong> qui battent l&apos;indice.
+          Les stratégies filtrées servent de socle de sélection, leur intérêt se mesure surtout
           en période de repli où les signaux insiders historiquement résistent mieux.
         </Callout>
       </Section>
@@ -318,7 +318,7 @@ export default async function PerformancePage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
             gap: "12px",
             margin: "22px 0",
           }}
@@ -341,8 +341,8 @@ export default async function PerformancePage() {
             body={
               <>
                 <strong>Quand ≥ 2 dirigeants achètent la même société dans les 30 jours</strong>, le signal
-                est robuste — c&apos;est le seul qui a généré un alpha positif constant dans nos backtests
-                ({d.strategies[2]?.cagr != null ? fmt.pct(d.strategies[2].cagr, 1) : "—"} vs CAC +{d.cacBenchmark.cagrPct.toFixed(1)}%).
+                est robuste, c&apos;est le seul qui a généré un alpha positif constant dans nos backtests
+                ({d.strategies[2]?.cagr != null ? fmt.pct(d.strategies[2].cagr, 1) : "·"} vs CAC +{d.cacBenchmark.cagrPct.toFixed(1)}%).
                 Un achat isolé peut être du bruit ; plusieurs achats coordonnés, c&apos;est une vraie conviction collective.
               </>
             }
@@ -353,7 +353,7 @@ export default async function PerformancePage() {
             body={
               <>
                 Les trades de <strong>PDG et CFO</strong> sont plus prédictifs que ceux des administrateurs
-                ou membres du CS. Préférez aussi les montants <strong>≥ 100 000 €</strong> — un achat
+                ou membres du CS. Préférez aussi les montants <strong>≥ 100 000 €</strong>, un achat
                 de 5 k€ par un administrateur est symbolique, un achat de 500 k€ par un PDG est une conviction matérielle.
               </>
             }
@@ -364,7 +364,7 @@ export default async function PerformancePage() {
             body={
               <>
                 Les signaux insiders fonctionnent mieux sur <strong>6-12 mois</strong> que sur 3 mois.
-                Si vous achetez une position Sigma, prévoyez de la tenir au moins 6 mois — sinon les
+                Si vous achetez une position Sigma, prévoyez de la tenir au moins 6 mois, sinon les
                 frais de transaction (1% aller-retour en FR) grignotent tout l&apos;alpha potentiel.
               </>
             }
@@ -388,7 +388,7 @@ export default async function PerformancePage() {
               <>
                 <strong>Notre recommandation honnête :</strong> 60% de votre portefeuille en ETF large
                 (CAC 40 ou MSCI World), 40% sur des convictions Sigma. Le noyau ETF capte la performance
-                passive du marché. Les 40% Sigma sont votre "edge" — et s&apos;ils sous-performent, vous
+                passive du marché. Les 40% Sigma sont votre "edge", et s&apos;ils sous-performent, vous
                 n&apos;avez pas tout perdu.
               </>
             }
@@ -413,7 +413,7 @@ export default async function PerformancePage() {
           </li>
           <li>
             <strong>Survivorship bias.</strong> Notre base contient les sociétés encore cotées. Les radiées
-            ou en faillite ne sont pas comptées — ce qui pourrait surestimer la performance réelle de 0.5 à 1 point.
+            ou en faillite ne sont pas comptées, ce qui pourrait surestimer la performance réelle de 0.5 à 1 point.
           </li>
           <li>
             <strong>Slippage non modélisé.</strong> Sur les small-caps françaises, l&apos;écart bid-ask
@@ -433,7 +433,7 @@ export default async function PerformancePage() {
           <li>
             <strong>Période favorable au CAC.</strong> 2021-2025 a été particulièrement haussier pour
             le CAC 40 (ATH en 2024). Sur un cycle baissier, nos signaux à faible drawdown pourraient
-            rattraper le benchmark — mais nous n&apos;avons pas encore la donnée pour le prouver.
+            rattraper le benchmark, mais nous n&apos;avons pas encore la donnée pour le prouver.
           </li>
           <li>
             <strong>Pas un conseil en investissement.</strong> Ce site est un outil
@@ -464,7 +464,7 @@ export default async function PerformancePage() {
             (disponible aujourd&apos;hui : {startYear} → {endYear}).
           </li>
           <li>
-            <strong>Signaux de vente.</strong> La v2 de notre engine supporte BUY et SELL — utile
+            <strong>Signaux de vente.</strong> La v2 de notre engine supporte BUY et SELL, utile
             pour la gestion de position sur un titre détenu.
           </li>
         </ul>
@@ -472,6 +472,7 @@ export default async function PerformancePage() {
 
       {/* ── FINAL CTA ────────────────────────────────────────────────── */}
       <section
+        className="perf-cta"
         style={{
           marginTop: "60px",
           padding: "40px 32px",
@@ -522,6 +523,12 @@ export default async function PerformancePage() {
           </Link>
         </div>
       </section>
+
+      <style>{`
+        @media (max-width: 640px) {
+          .perf-cta { padding: 24px 16px !important; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -812,13 +819,13 @@ function StrategyRow({ s, isBest }: { s: StrategyResult; isBest: boolean }) {
         {fmt.sharpe(s.sharpe)}
       </td>
       <td style={{ padding: "10px 12px", color: "var(--signal-neg)", fontFamily: "monospace", verticalAlign: "top" }}>
-        {s.maxDDPct != null ? s.maxDDPct.toFixed(1) + "%" : "—"}
+        {s.maxDDPct != null ? s.maxDDPct.toFixed(1) + "%" : "·"}
       </td>
       <td style={{ padding: "10px 12px", color: "var(--tx-2)", fontFamily: "monospace", verticalAlign: "top" }}>
-        {s.winRatePct != null ? s.winRatePct.toFixed(0) + "%" : "—"}
+        {s.winRatePct != null ? s.winRatePct.toFixed(0) + "%" : "·"}
       </td>
       <td style={{ padding: "10px 12px", color: "var(--tx-2)", fontFamily: "monospace", verticalAlign: "top" }}>
-        {s.beatCacPct != null ? s.beatCacPct.toFixed(0) + "%" : "—"}
+        {s.beatCacPct != null ? s.beatCacPct.toFixed(0) + "%" : "·"}
       </td>
     </tr>
   );
@@ -880,6 +887,7 @@ const codeInline: React.CSSProperties = {
   border: "1px solid var(--border)",
 };
 const btnGold: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", minHeight: "44px",
   padding: "12px 22px",
   background: "var(--gold)",
   color: "#0A0C10",
@@ -891,6 +899,7 @@ const btnGold: React.CSSProperties = {
   boxShadow: "0 4px 16px rgba(184,149,90,0.30)",
 };
 const btnGhost: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", minHeight: "44px",
   padding: "12px 22px",
   border: "1px solid var(--border-strong)",
   color: "var(--tx-2)",

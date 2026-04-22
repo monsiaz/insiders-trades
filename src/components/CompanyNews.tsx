@@ -72,7 +72,7 @@ export function CompanyNews({ slug, companyName }: { slug: string; companyName: 
     return <NewsSkeleton />;
   }
   if (!data || data.items.length === 0) {
-    // No news found across any source — keep a small placeholder
+    // No news found across any source · keep a small placeholder
     return (
       <div
         style={{
@@ -208,7 +208,7 @@ function SectionHeader({
               marginLeft: "8px",
             }}
           >
-            — {count.toString().padStart(2, "0")}
+ · {count.toString().padStart(2, "0")}
           </span>
         )}
       </h3>

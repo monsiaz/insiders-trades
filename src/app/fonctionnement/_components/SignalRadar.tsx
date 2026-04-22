@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 /**
- * Animated scatter radar — plots signals on 2 axes:
+ * Animated scatter radar · plots signals on 2 axes:
  *  - X: % of market cap engaged (log-scaled)
  *  - Y: signalScore
  * With a rotating radar sweep for a "live" feel.
@@ -16,7 +16,7 @@ type Signal = {
   action: "BUY" | "SELL";
 };
 
-// Illustrative signals — a spread across the X/Y plane to make a nice visual
+// Illustrative signals · a spread across the X/Y plane to make a nice visual
 const SIGNALS: Signal[] = [
   { name: "Schneider",   mcapPct: 0.02,  score: 62, action: "BUY" },
   { name: "TotalEnergies", mcapPct: 0.04, score: 68, action: "BUY" },

@@ -6,12 +6,12 @@ import { useState } from "react";
 import type { RecoItem } from "@/lib/recommendation-engine";
 
 function fmtPct(n: number | null | undefined, d = 1): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   return `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
 }
 
 function fmtAmt(n: number | null): string {
-  if (!n) return "—";
+  if (!n) return "·";
   if (n >= 1e9) return `${(n / 1e9).toFixed(1)} Md€`;
   if (n >= 1e6) return `${(n / 1e6).toFixed(1)} M€`;
   if (n >= 1e3) return `${(n / 1e3).toFixed(0)} k€`;
@@ -51,7 +51,7 @@ function folioLabel(rank: number): string {
   return rank.toString().padStart(2, "0");
 }
 
-// Inline company logo — integrated, not boxed avatar style
+// Inline company logo · integrated, not boxed avatar style
 function InlineLogo({ name, logoUrl }: { name: string; logoUrl?: string | null }) {
   const [err, setErr] = useState(false);
   const letter = name.replace(/^(la |le |les |l')/i, "").charAt(0).toUpperCase();
@@ -182,7 +182,7 @@ export function RecoCard({ item, rank }: { item: RecoItem; rank: number }) {
             {isBuy ? "Win rate" : "Taux de chute"}
           </span>
           <span className={`tearsheet-strip-value ${winRate >= 60 ? "pos" : ""}`}>
-            {item.historicalWinRate90d != null ? `${item.historicalWinRate90d.toFixed(0)}%` : "—"}
+            {item.historicalWinRate90d != null ? `${item.historicalWinRate90d.toFixed(0)}%` : "·"}
           </span>
           <span className="tearsheet-strip-sub">
             T+90 · {item.sampleSize.toLocaleString("fr-FR")} trades

@@ -12,9 +12,9 @@
  *   - ping         → heartbeat
  *
  * Auth: the caller passes their Insiders Trades API key via either
- *   - Authorization: Bearer <key>     — preferred (HTTP headers)
- *   - X-Api-Key: <key>                — alt header
- *   - ?apiKey=<key>                   — URL query (fallback for clients that can't set headers)
+ *   - Authorization: Bearer <key> · preferred (HTTP headers)
+ *   - X-Api-Key: <key> · alt header
+ *   - ?apiKey=<key> · URL query (fallback for clients that can't set headers)
  *
  * Clients like Claude Desktop since 3.7 support headers via `type: "http"` config.
  * Simpler `type: "url"` configs must use the query-param form.
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
   try {
     body = (await req.json()) as JsonRpcRequest;
   } catch {
-    return jsonRpcError(null, RPC_ERROR.PARSE_ERROR, "Parse error — body must be valid JSON");
+    return jsonRpcError(null, RPC_ERROR.PARSE_ERROR, "Parse error · body must be valid JSON");
   }
 
   if (body?.jsonrpc !== "2.0" || typeof body.method !== "string") {
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
 
   const { id, method, params } = body;
 
-  // ── Method: initialize (handshake — no auth required) ─────────────────────
+  // ── Method: initialize (handshake · no auth required) ─────────────────────
   if (method === "initialize") {
     return jsonRpcOk(id, {
       protocolVersion: PROTOCOL_VERSION,
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // ── Method: initialized (notification — HTTP 204) ─────────────────────────
+  // ── Method: initialized (notification · HTTP 204) ─────────────────────────
   if (method === "initialized" || method === "notifications/initialized") {
     return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
   }

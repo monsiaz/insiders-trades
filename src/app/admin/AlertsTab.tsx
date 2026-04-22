@@ -175,7 +175,7 @@ export function AlertsTab({
         {/* Master switch */}
         <Row
           label="Envois actifs"
-          hint="Arrêt d'urgence — désactive TOUS les envois (cron + test)."
+          hint="Arrêt d'urgence : désactive TOUS les envois (cron + test)."
         >
           <Toggle
             checked={config.enabled}
@@ -203,7 +203,7 @@ export function AlertsTab({
 
         <Row
           label="Heure d'envoi (UTC)"
-          hint="Informatif — le cron Vercel est fixé à 03:00 UTC. Utilisé uniquement si vous modifiez le crontab."
+          hint="Informatif. Le cron Vercel est fixé à 03:00 UTC. Utilisé uniquement si vous modifiez le crontab."
         >
           <NumberInput
             value={config.hour}
@@ -265,7 +265,7 @@ export function AlertsTab({
       >
         <TabHeader
           title="Sections incluses dans le digest"
-          sub="Cochez les blocs à inclure — un digest sans aucune section est automatiquement skippé."
+          sub="Cochez les blocs à inclure. Un digest sans aucune section est automatiquement skippé."
         />
         <Row
           label="Alertes portefeuille"
@@ -510,7 +510,7 @@ export function AlertsTab({
                     }}
                   >
                     <td style={{ padding: "6px 10px", color: "var(--tx-2)" }}>{r.email}</td>
-                    <td style={{ padding: "6px 10px", color: "var(--tx-1)" }}>{r.name ?? "—"}</td>
+                    <td style={{ padding: "6px 10px", color: "var(--tx-1)" }}>{r.name ?? "·"}</td>
                     <td style={{ padding: "6px 10px", color: "var(--tx-2)", fontFamily: "monospace" }}>
                       {r.positions}
                     </td>
@@ -885,7 +885,7 @@ function TextInput({
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmtAgo(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "·";
   const d = new Date(iso);
   const diffMs = Date.now() - d.getTime();
   if (diffMs < 0) return "dans le futur";

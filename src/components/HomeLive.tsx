@@ -29,7 +29,7 @@ function DataFreshnessBar({
   const msUntilSync = nextSync.getTime() - now.getTime();
   const minUntilSync = Math.ceil(msUntilSync / 60_000);
 
-  // Freshness status — gold-scale (not green) to reserve green for performance signals
+  // Freshness status · gold-scale (not green) to reserve green for performance signals
   let freshnessColor = "var(--gold)";
   let freshnessLabel = "À jour";
   let freshnessAge = "";
@@ -71,11 +71,11 @@ function DataFreshnessBar({
   return (
     <div style={{
       display: "flex",
-      alignItems: "center",
+      alignItems: "flex-start",
       justifyContent: "space-between",
       flexWrap: "wrap",
-      gap: "10px",
-      padding: "10px 16px",
+      gap: "8px",
+      padding: "12px 16px",
       borderRadius: "12px",
       background: "var(--bg-raised)",
       border: "1px solid var(--border)",
@@ -216,7 +216,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
         setLastRefresh(next.updatedAt);
       }
     } catch {
-      // silent fail — keep existing data
+      // silent fail · keep existing data
     } finally {
       setLoading(false);
     }
@@ -251,7 +251,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
       {/* Rankings */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-14">
         {/* Top 30 companies */}
-        <section className="glass-card-static rounded-2xl p-6">
+        <section className="glass-card-static rounded-2xl p-4 sm:p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">Sociétés les + actives</h2>
@@ -266,14 +266,15 @@ export function HomeLive({ initial }: { initial: HomeData }) {
               <li key={row.companyId}>
                 <Link
                   href={row.company ? `/company/${row.company.slug}` : "#"}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors group"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors group"
+                  style={{ minHeight: "44px" }}
                 >
                   <span className="text-xs font-mono text-[var(--tx-3)] w-5 text-right shrink-0">{i + 1}</span>
                   {row.company && <CompanyAvatar name={row.company.name} logoUrl={row.company.logoUrl} size="sm" />}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-sm font-medium text-[var(--tx-1)] truncate group-hover:text-[var(--c-indigo-2)] transition-colors">
-                        {row.company?.name ?? "—"}
+                        {row.company?.name ?? "·"}
                       </span>
                       {row.company?.marketCap && (
                         <span className="text-[10px] text-[var(--tx-3)] shrink-0">{fmtMcap(row.company.marketCap)}</span>
@@ -293,7 +294,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
         </section>
 
         {/* Top 30 insiders */}
-        <section className="glass-card-static rounded-2xl p-6">
+        <section className="glass-card-static rounded-2xl p-4 sm:p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">Dirigeants les + actifs</h2>
@@ -308,7 +309,8 @@ export function HomeLive({ initial }: { initial: HomeData }) {
               <li key={row.insiderName}>
                 <Link
                   href={row.insider ? `/insider/${row.insider.slug}` : "#"}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors group"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors group"
+                  style={{ minHeight: "44px" }}
                 >
                   <span className="text-xs font-mono text-[var(--tx-3)] w-5 text-right shrink-0">{i + 1}</span>
                   <div className="flex-1 min-w-0">

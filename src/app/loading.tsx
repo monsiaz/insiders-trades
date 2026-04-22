@@ -1,19 +1,25 @@
-// Global loading skeleton — shown during page transitions
+// Global fallback · shown during cold starts and first page loads
 export default function Loading() {
   return (
     <div className="content-wrapper">
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px", animation: "pulse 1.5s ease-in-out infinite" }}>
-        <div style={{ height: "48px", width: "240px", borderRadius: "10px", background: "var(--bg-raised)" }} />
-        <div style={{ height: "20px", width: "160px", borderRadius: "6px", background: "var(--bg-raised)" }} />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginTop: "8px" }}>
-          {[1,2,3,4].map(i => (
-            <div key={i} style={{ height: "90px", borderRadius: "14px", background: "var(--bg-raised)" }} />
+      <div className="loading-wrap">
+        <div className="loading-gold-bar" />
+
+        <div className="skel skel-h" style={{ height: 11, width: 90 }} />
+        <div className="skel skel-h" style={{ height: 36, width: 280 }} />
+        <div className="skel skel-h" style={{ height: 13, width: 360 }} />
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginTop: 8 }}>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="skel" style={{ height: 80 }} />
           ))}
         </div>
-        <div style={{ height: "260px", borderRadius: "16px", background: "var(--bg-raised)" }} />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
-          {[1,2,3,4,5,6].map(i => (
-            <div key={i} style={{ height: "130px", borderRadius: "14px", background: "var(--bg-raised)" }} />
+
+        <div className="skel" style={{ height: 240 }} />
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="skel" style={{ height: 110 }} />
           ))}
         </div>
       </div>

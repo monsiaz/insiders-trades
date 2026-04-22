@@ -5,10 +5,10 @@
  * LLM agent can answer questions without writing SQL.
  *
  * Tools are grouped in 4 families:
- *   - Discovery    — return lists / search
- *   - Enrichment   — single entity with complete data
- *   - System       — health, freshness, usage, backtest stats
- *   - Composite    — cross-source aggregation in a single call
+ *   - Discovery · return lists / search
+ *   - Enrichment · single entity with complete data
+ *   - System · health, freshness, usage, backtest stats
+ *   - Composite · cross-source aggregation in a single call
  */
 
 export interface ToolDef {
@@ -139,7 +139,7 @@ export const TOOLS: ToolDef[] = [
     name: "get_winning_strategy_signals",
     category: "discovery",
     description:
-      "★ STRATÉGIE SIGMA — signaux qui matchent la stratégie qui a battu le CAC 40 chaque année depuis 2022 (+16.3% annuel, Sharpe 1.00, alpha +10.4 pts/an). 6 filtres : cluster, mid-cap 200M-1B€, PDG/CFO/directeur, déclaration ≤ 7j après transaction, acquisition pure, score ≥ 30. C'est LE point d'entrée quand l'utilisateur demande 'quelles actions acheter' ou 'que faire avec mon capital'.",
+      "★ STRATÉGIE SIGMA · signaux qui matchent la stratégie qui a battu le CAC 40 chaque année depuis 2022 (+16.3% annuel, Sharpe 1.00, alpha +10.4 pts/an). 6 filtres : cluster, mid-cap 200M-1B€, PDG/CFO/directeur, déclaration ≤ 7j après transaction, acquisition pure, score ≥ 30. C'est LE point d'entrée quand l'utilisateur demande 'quelles actions acheter' ou 'que faire avec mon capital'.",
     inputSchema: {
       type: "object",
       properties: {

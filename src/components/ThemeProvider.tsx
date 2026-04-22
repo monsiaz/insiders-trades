@@ -31,7 +31,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("it-theme", next);
   }
 
-  // No visibility:hidden flash — the inline script in layout.tsx sets the correct
+  // No visibility:hidden flash ; the inline script in layout.tsx sets the correct
   // class on <html> before React hydrates, so content is always visible at the right theme.
   return (
     <ThemeCtx.Provider value={{ theme, toggle }}>

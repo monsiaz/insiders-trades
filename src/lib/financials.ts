@@ -173,7 +173,7 @@ async function getYahooCrumb(): Promise<{ crumb: string; cookie: string } | null
     return { crumb: _crumbCache.crumb, cookie: _crumbCache.cookie };
   }
   try {
-    // Step 1 — land on fc.yahoo.com to set consent cookie
+    // Step 1 · land on fc.yahoo.com to set consent cookie
     const cookieRes = await fetch("https://fc.yahoo.com", {
       headers: { "User-Agent": "Mozilla/5.0" },
       signal: AbortSignal.timeout(6000),
@@ -182,7 +182,7 @@ async function getYahooCrumb(): Promise<{ crumb: string; cookie: string } | null
     const cookie = setCookie.split(";")[0]; // keep only name=value
     if (!cookie) return null;
 
-    // Step 2 — exchange cookie for a crumb
+    // Step 2 · exchange cookie for a crumb
     const crumbRes = await fetch("https://query2.finance.yahoo.com/v1/test/getcrumb", {
       headers: { "User-Agent": "Mozilla/5.0", Cookie: cookie },
       signal: AbortSignal.timeout(6000),
@@ -242,7 +242,7 @@ async function fetchQuoteSummary(
     });
 
     if (!res.ok) {
-      // If 401/403, our crumb is stale — bust the cache so next call retries
+      // If 401/403, our crumb is stale · bust the cache so next call retries
       if (res.status === 401 || res.status === 403) _crumbCache = null;
       return { source: [] };
     }
@@ -349,7 +349,7 @@ function preferredSuffix(isin: string | null): string {
   return ".PA";
 }
 
-/** European exchange suffixes — only accept these for European ISINs to avoid false positives */
+/** European exchange suffixes · only accept these for European ISINs to avoid false positives */
 const EUROPEAN_SUFFIXES = [".PA", ".AS", ".BR", ".DE", ".L", ".MI", ".MC", ".SW", ".LS", ".ST", ".CO", ".OL", ".HE", ".WA", ".PR", ".EPA"];
 
 async function searchYahoo(q: string, suffix: string, strictEuropean = false): Promise<string | null> {
@@ -534,7 +534,7 @@ export async function resolveAndCache(
  */
 export async function enrichCompanyFinancials(limit = 60) {
   const cutoff = new Date(Date.now() - 7 * 86400_000);
-  // Include companies without ISIN — we'll try to find them by name
+  // Include companies without ISIN · we'll try to find them by name
   const companies = await prisma.company.findMany({
     where: {
       OR: [{ financialsAt: null }, { financialsAt: { lt: cutoff } }],

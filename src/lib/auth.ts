@@ -5,7 +5,7 @@ import { prisma } from "./prisma";
 
 function resolveJwtSecret(): Uint8Array {
   const fromEnv = process.env.JWT_SECRET;
-  // In production we REFUSE to fall back to a hardcoded secret —
+  // In production we REFUSE to fall back to a hardcoded secret ·
   // that would let anyone forge a session cookie.
   if (!fromEnv) {
     if (process.env.NODE_ENV === "production") {

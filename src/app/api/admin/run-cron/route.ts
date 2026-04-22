@@ -6,11 +6,11 @@
  * CRON_SECRET Bearer token, so the shared secret never leaves the server.
  *
  * Body:
- *   { path: "/api/cron"     }      — full pipeline
- *   { path: "/api/sync-latest" }   — hourly sync
- *   { path: "/api/enrich-mcap" }   — daily financials enrich
+ *   { path: "/api/cron"     } · full pipeline
+ *   { path: "/api/sync-latest" } · hourly sync
+ *   { path: "/api/enrich-mcap" } · daily financials enrich
  *   { path: "/api/backtest/compute" }
- *   { path: "/api/score-signals" } — re-score declarations
+ *   { path: "/api/score-signals" } · re-score declarations
  *   { path: "/api/reparse",  mode: "missing-isin", limit: 50 }
  *   { path: "/api/enrich",   limit: 50 }
  *
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     return NextResponse.json(
-      { error: "CRON_SECRET non configuré — impossible de déclencher un job" },
+      { error: "CRON_SECRET non configuré · impossible de déclencher un job" },
       { status: 500 }
     );
   }

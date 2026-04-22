@@ -66,7 +66,7 @@ const getHighScoreSignals = unstable_cache(
   { revalidate: 300 }
 );
 
-// ── Fast header stats — just 6 count queries, cached 5 min ────────────────────
+// ── Fast header stats · just 6 count queries, cached 5 min ────────────────────
 const getHeaderStats = unstable_cache(
   async () => {
     const [totalDeclarations, totalCompanies, totalInsiders, totalBuys, totalSells, earliestDecl] =
@@ -294,7 +294,7 @@ function HomeLiveSkeleton() {
 }
 
 export default async function HomePage() {
-  // Only fetch the fast header stats for SSR — everything else streams below
+  // Only fetch the fast header stats for SSR · everything else streams below
   const stats = await getHeaderStats();
   const buyPct = stats.totalBuys + stats.totalSells > 0
     ? Math.round((stats.totalBuys / (stats.totalBuys + stats.totalSells)) * 100)
@@ -305,7 +305,7 @@ export default async function HomePage() {
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
       <section className="mb-16 sm:mb-20 animate-fade-in" style={{ position: "relative" }}>
-        <div className="flex items-start gap-8 xl:gap-16">
+        <div className="flex flex-col xl:flex-row items-start gap-8 xl:gap-16">
 
           {/* Left column */}
           <div style={{ flex: "1 1 0", minWidth: 0 }}>
@@ -315,7 +315,7 @@ export default async function HomePage() {
               Données AMF · Temps réel · Règlement MAR
             </div>
 
-            {/* Main headline — Banana Grotesk, très grand */}
+            {/* Main headline · Banana Grotesk, très grand */}
             <h1 style={{
               fontFamily: "'Banana Grotesk', var(--font-inter), system-ui, sans-serif",
               fontSize: "clamp(2.25rem, 6.5vw, 5.75rem)",
@@ -381,7 +381,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Right column — animated hero (winRate streams in async) */}
+          {/* Right column · animated hero (winRate streams in async) */}
           <div className="hidden xl:flex flex-col flex-shrink-0">
             <Suspense fallback={<HeroBadgeSkeleton />}>
               <HeroBacktestBadge totalDeclarations={stats.totalDeclarations} />
@@ -444,7 +444,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── FEATURE STRIP — 3 valeurs (streams in with backtest total) ── */}
+      {/* ── FEATURE STRIP · 3 valeurs (streams in with backtest total) ── */}
       <Suspense fallback={<FeatureStripSkeleton />}>
         <FeatureStripSection earliestYear={stats.earliestYear} />
       </Suspense>
@@ -464,7 +464,7 @@ export default async function HomePage() {
             transition: "border-color 0.15s ease",
           }}
         >
-          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "24px", alignItems: "center", flexWrap: "wrap" }}>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6">
             <div style={{ minWidth: 0 }}>
               <div
                 style={{
@@ -477,7 +477,7 @@ export default async function HomePage() {
                   marginBottom: "8px",
                 }}
               >
-                ★ Stratégie Sigma — disponible
+                ★ Stratégie Sigma · disponible
               </div>
               <h2
                 style={{
@@ -539,6 +539,8 @@ export default async function HomePage() {
                 letterSpacing: "-0.005em",
                 whiteSpace: "nowrap",
                 boxShadow: "0 4px 16px rgba(184,149,90,0.25)",
+                flexShrink: 0,
+                alignSelf: "flex-start",
               }}
             >
               Voir la preuve →
@@ -557,7 +559,7 @@ export default async function HomePage() {
         <BacktestTeaserSection />
       </Suspense>
 
-      {/* ── VISUAL SECTION — "Comment ça marche" ─────────────────────── */}
+      {/* ── VISUAL SECTION · "Comment ça marche" ─────────────────────── */}
       <section className="mb-16">
         <SectionHeader
           title="Comment ça marche"
@@ -569,7 +571,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── LIVE FEED (streamed — heavy queries) ────────────────────── */}
+      {/* ── LIVE FEED (streamed · heavy queries) ────────────────────── */}
       <Suspense fallback={<HomeLiveSkeleton />}>
         <HomeLiveSection stats={stats} />
       </Suspense>
@@ -787,7 +789,7 @@ function SectionHeader({ title, sub, eyebrow, action }: {
   action?: { label: string; href: string };
 }) {
   return (
-    <div className="flex items-end justify-between gap-4 mb-1">
+    <div className="flex flex-wrap items-end justify-between gap-4 mb-1">
       <div>
         {eyebrow && (
           <div style={{

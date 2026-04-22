@@ -147,7 +147,7 @@ function InsiderCard({ insider }: { insider: InsiderRow }) {
             lineHeight: 1.4,
           }}
         >
-          — {insider.companies.join(" · ")}
+ · {insider.companies.join(" · ")}
         </div>
       )}
 
@@ -242,15 +242,8 @@ export function InsidersClient({ insiders }: { insiders: InsiderRow[] }) {
   return (
     <div>
       {/* Search + sort */}
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          flexWrap: "wrap",
-          marginBottom: "20px",
-        }}
-      >
-        <div style={{ position: "relative", flex: "1 1 200px" }}>
+      <div className="flex flex-col sm:flex-row gap-2.5 mb-5">
+        <div style={{ position: "relative", flex: "1 1 auto" }}>
           <svg
             width="14"
             height="14"
@@ -281,7 +274,7 @@ export function InsidersClient({ insiders }: { insiders: InsiderRow[] }) {
               width: "100%",
               paddingLeft: "34px",
               paddingRight: q ? "32px" : "12px",
-              height: "38px",
+              height: "44px",
               background: "var(--bg-surface)",
               border: "1px solid var(--border-med)",
               borderRadius: "6px",
@@ -325,7 +318,8 @@ export function InsidersClient({ insiders }: { insiders: InsiderRow[] }) {
               display: "flex",
               alignItems: "center",
               gap: "6px",
-              padding: "8px 14px",
+              padding: "10px 14px",
+              minHeight: "44px",
               borderRadius: "6px",
               border: "1px solid var(--border-med)",
               background: "var(--bg-raised)",

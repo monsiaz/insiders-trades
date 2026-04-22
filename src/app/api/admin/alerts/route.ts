@@ -128,7 +128,7 @@ export async function PATCH(req: NextRequest) {
   return NextResponse.json({ ok: true, config });
 }
 
-// ── POST — trigger a test send ───────────────────────────────────────────────
+// ── POST · trigger a test send ───────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   const admin = await requireAdmin();

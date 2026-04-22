@@ -69,7 +69,7 @@ function LoginForm() {
           </div>
           <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--tx-1)" }}>Connexion</h1>
           <p className="text-sm" style={{ color: "var(--tx-3)" }}>
-            Phase bêta — accès sur invitation uniquement.
+            Phase bêta · accès sur invitation uniquement.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ function LoginForm() {
               </div>
             )}
             <div>
-              <label className="block text-xs font-semibold mb-1.5" style={{ color: "var(--tx-2)" }}>Email</label>
+              <label className="block text-sm font-semibold mb-1.5" style={{ color: "var(--tx-2)" }}>Email</label>
               <input
                 type="email" required autoComplete="email"
                 value={email} onChange={(e) => setEmail(e.target.value)}
@@ -92,7 +92,7 @@ function LoginForm() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold mb-1.5" style={{ color: "var(--tx-2)" }}>Mot de passe</label>
+              <label className="block text-sm font-semibold mb-1.5" style={{ color: "var(--tx-2)" }}>Mot de passe</label>
               <input
                 type="password" required autoComplete="current-password"
                 value={password} onChange={(e) => setPassword(e.target.value)}
@@ -108,7 +108,7 @@ function LoginForm() {
             </div>
             <button
               type="submit" disabled={loading}
-              className="btn btn-primary w-full py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn btn-primary w-full rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Connexion…" : "Se connecter"}
             </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -25,6 +26,10 @@ interface GroupStats {
   winRate365d: number | null;
   medianReturn90d: number | null;
   medianReturn365d: number | null;
+  medianReturn730d: number | null;
+  countReturn90d: number;
+  countReturn365d: number;
+  countReturn730d: number;
   sharpe90d: number | null;
   sharpe365d: number | null;
   best90d: number | null;
@@ -111,17 +116,17 @@ interface StatsData {
 // ── Formatters ─────────────────────────────────────────────────────────────
 
 function fmt(n: number | null | undefined, d = 1): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   return `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
 }
 function fmtAmt(n: number | null | undefined): string {
-  if (!n) return "—";
+  if (!n) return "·";
   if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M€`;
   if (n >= 1e3) return `${(n / 1e3).toFixed(0)}k€`;
   return `${n.toFixed(0)}€`;
 }
 function fmtDate(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "·";
   return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "2-digit" });
 }
 function retColor(n: number | null | undefined): string {
@@ -149,7 +154,7 @@ function sharpeColor(s: number | null): string {
 // ── Mini components ────────────────────────────────────────────────────────
 
 function ReturnPill({ v }: { v: number | null }) {
-  if (v == null) return <span className="text-muted text-sm">—</span>;
+  if (v == null) return <span className="text-muted text-sm">·</span>;
   return (
     <span
       className="inline-block rounded px-1.5 py-0.5 text-xs font-mono font-semibold"
@@ -164,7 +169,7 @@ function ReturnPill({ v }: { v: number | null }) {
 }
 
 function SharpeBadge({ s }: { s: number | null }) {
-  if (s == null) return <span className="text-muted text-xs">—</span>;
+  if (s == null) return <span className="text-muted text-xs">·</span>;
   return (
     <span
       className="inline-flex items-center gap-1 text-xs font-mono font-bold px-2 py-0.5 rounded"
@@ -176,7 +181,7 @@ function SharpeBadge({ s }: { s: number | null }) {
 }
 
 function WinBadge({ w }: { w: number | null }) {
-  if (w == null) return <span className="text-muted text-xs">—</span>;
+  if (w == null) return <span className="text-muted text-xs">·</span>;
   const color = w >= 60 ? "var(--signal-pos)" : w >= 45 ? "var(--gold)" : "var(--signal-neg)";
   return (
     <span className="text-xs font-semibold" style={{ color }}>
@@ -185,17 +190,68 @@ function WinBadge({ w }: { w: number | null }) {
   );
 }
 
-// ── InfoTip — hover tooltip with smart positioning ────────────────────────
+// ── InfoTip · portal tooltip (escapes overflow:hidden containers) ──────────
 
 function InfoTip({ text, wide }: { text: string; wide?: boolean }) {
-  const [show, setShow] = useState(false);
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const ref = useRef<HTMLSpanElement>(null);
+  const tipW = wide ? 240 : 190;
+
+  function handleEnter() {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    // Centre the tooltip on the icon, positioned above it
+    let x = r.left + r.width / 2 - tipW / 2;
+    // Keep inside viewport horizontally
+    x = Math.max(8, Math.min(x, window.innerWidth - tipW - 8));
+    const y = r.top - 8; // anchor to top of icon; tooltip goes above
+    setPos({ x, y });
+  }
+
+  const tipNode = pos ? (
+    <div
+      className="pointer-events-none"
+      style={{
+        position: "fixed",
+        zIndex: 9999,
+        left: pos.x,
+        top: pos.y,
+        transform: "translateY(-100%)",
+        width: tipW,
+        padding: "10px 12px",
+        borderRadius: 12,
+        fontSize: "0.72rem",
+        lineHeight: 1.55,
+        background: "var(--bg-elevated)",
+        border: "1px solid var(--border-med)",
+        color: "var(--tx-2)",
+        boxShadow: "0 8px 28px rgba(0,0,0,0.32)",
+      }}
+    >
+      {text}
+      {/* Arrow */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: -8,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: 0,
+          height: 0,
+          borderLeft: "6px solid transparent",
+          borderRight: "6px solid transparent",
+          borderTop: "8px solid var(--border-med)",
+        }}
+      />
+    </div>
+  ) : null;
+
   return (
     <span
       ref={ref}
       className="relative inline-flex items-center cursor-help"
-      onMouseEnter={() => setShow(true)}
-      onMouseLeave={() => setShow(false)}
+      onMouseEnter={handleEnter}
+      onMouseLeave={() => setPos(null)}
     >
       <span
         className="inline-flex items-center justify-center rounded-full text-[9px] font-bold leading-none ml-1"
@@ -208,24 +264,9 @@ function InfoTip({ text, wide }: { text: string; wide?: boolean }) {
       >
         ?
       </span>
-      {show && (
-        <div
-          className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 p-2.5 rounded-xl text-xs leading-relaxed pointer-events-none"
-          style={{
-            width: wide ? 240 : 190,
-            background: "var(--bg-elevated)",
-            border: "1px solid var(--border-med)",
-            color: "var(--tx-2)",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
-          }}
-        >
-          {text}
-          <div
-            className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent"
-            style={{ borderTopColor: "var(--border-med)" }}
-          />
-        </div>
-      )}
+      {typeof document !== "undefined" && tipNode
+        ? createPortal(tipNode, document.body)
+        : null}
     </span>
   );
 }
@@ -428,27 +469,29 @@ function SignalsTable({ combos }: { combos: SignalCombo[] }) {
       </div>
 
       {/* Sort + horizon controls */}
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="text-xs text-muted">Trier par :</span>
-        {[
-          { k: "sharpe90d", label: "Sharpe 90j" },
-          { k: "sharpe365d", label: "Sharpe 1an" },
-          { k: "avgReturn365d", label: "Retour 1an" },
-          { k: "winRate365d", label: "Win rate 1an" },
-        ].map((opt) => (
-          <button
-            key={opt.k}
-            onClick={() => setSortKey(opt.k as typeof sortKey)}
-            className={`px-2.5 py-1 rounded text-xs transition-all ${
-              sortKey === opt.k
-                ? "bg-indigo text-white"
-                : "bg-surface border border-soft text-secondary hover:text-primary"
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-        <div className="ml-auto flex gap-1">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted">Trier par :</span>
+          {[
+            { k: "sharpe90d", label: "Sharpe 90j" },
+            { k: "sharpe365d", label: "Sharpe 1an" },
+            { k: "avgReturn365d", label: "Retour 1an" },
+            { k: "winRate365d", label: "Win rate 1an" },
+          ].map((opt) => (
+            <button
+              key={opt.k}
+              onClick={() => setSortKey(opt.k as typeof sortKey)}
+              className={`px-2.5 py-1 rounded text-xs transition-all ${
+                sortKey === opt.k
+                  ? "bg-indigo text-white"
+                  : "bg-surface border border-soft text-secondary hover:text-primary"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-1 sm:ml-auto">
           {HORIZONS.map((h) => (
             <button
               key={h.key}
@@ -467,7 +510,7 @@ function SignalsTable({ combos }: { combos: SignalCombo[] }) {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-sm table-zebra">
+        <table className="w-full text-sm table-zebra min-w-[720px]">
           <thead>
             <tr className="border-b border-soft">
               <th className="text-left pb-2 text-xs text-muted font-medium w-8">#</th>
@@ -476,9 +519,15 @@ function SignalsTable({ combos }: { combos: SignalCombo[] }) {
                 Trades
                 <InfoTip text="Nombre de trades historiques dans ce groupe. Minimum 5 requis pour afficher le signal." />
               </th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">{horizonLabel}</th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">
+                {horizonLabel}
+                {horizon === "90d" && <span className="block text-[10px] font-normal opacity-60">moy · médiane</span>}
+              </th>
               <th className="text-center pb-2 text-xs text-muted font-medium">T+365</th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">T+2ans</th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">
+                T+2ans
+                <InfoTip text="Affiché uniquement si au moins 5 trades ont un recul de 2 ans. En dessous, la moyenne est trop sensible aux outliers." />
+              </th>
               <th className="text-center pb-2 text-xs text-muted font-medium">
                 Win%/90j
                 <InfoTip text="% de trades avec un cours en hausse à T+90. >60% = fort signal. Un hasard pur donnerait ~50%." />
@@ -519,13 +568,30 @@ function SignalsTable({ combos }: { combos: SignalCombo[] }) {
                   <span className="text-xs font-mono text-secondary">{c.count}</span>
                 </td>
                 <td className="py-2 text-center">
-                  <ReturnPill v={getReturn(c, horizon)} />
+                  {horizon === "90d" ? (
+                    <div className="flex flex-col items-center gap-0.5">
+                      <ReturnPill v={c.avgReturn90d} />
+                      {c.medianReturn90d != null && (
+                        <span className="text-[10px] text-muted font-mono opacity-70">
+                          {c.medianReturn90d >= 0 ? "+" : ""}{c.medianReturn90d.toFixed(1)}%
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <ReturnPill v={getReturn(c, horizon)} />
+                  )}
                 </td>
                 <td className="py-2 text-center">
                   <ReturnPill v={c.avgReturn365d} />
                 </td>
                 <td className="py-2 text-center">
-                  <ReturnPill v={c.avgReturn730d} />
+                  {(c.countReturn730d ?? 0) >= 5 ? (
+                    <ReturnPill v={c.avgReturn730d} />
+                  ) : (
+                    <span className="text-[10px] font-mono text-muted/40 italic">
+                      n={(c.countReturn730d ?? 0)}
+                    </span>
+                  )}
                 </td>
                 <td className="py-2 text-center">
                   <WinBadge w={c.winRate90d} />
@@ -564,7 +630,7 @@ function TopTradesTable({ trades }: { trades: StatsData["topTrades"] }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-muted">Trier par horizon :</span>
         {HORIZONS.map((h) => (
           <button
@@ -582,7 +648,7 @@ function TopTradesTable({ trades }: { trades: StatsData["topTrades"] }) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm table-zebra">
+        <table className="w-full text-sm table-zebra min-w-[720px]">
           <thead>
             <tr className="border-b border-soft">
               <th className="text-left pb-2 text-xs text-muted font-medium">#</th>
@@ -612,7 +678,7 @@ function TopTradesTable({ trades }: { trades: StatsData["topTrades"] }) {
                 </td>
                 <td className="py-2 pr-2">
                   <div className="text-xs text-secondary leading-tight">
-                    {t.insiderName?.split(" ").slice(0, 2).join(" ") ?? "—"}
+                    {t.insiderName?.split(" ").slice(0, 2).join(" ") ?? "·"}
                   </div>
                   <div className="text-xs text-muted">{t.role}</div>
                 </td>
@@ -629,7 +695,7 @@ function TopTradesTable({ trades }: { trades: StatsData["topTrades"] }) {
                     >
                       {t.signalScore}
                     </span>
-                  ) : <span className="text-muted">—</span>}
+                  ) : <span className="text-muted">·</span>}
                 </td>
                 <td className="py-2 text-center"><ReturnPill v={t.return30d} /></td>
                 <td className="py-2 text-center"><ReturnPill v={t.return90d} /></td>
@@ -686,9 +752,9 @@ function KpiCard({
 
 // ── Scatter plot ───────────────────────────────────────────────────────────
 
-// DA v3: monochrome gold (by seniority) — no rainbow
+// DA v3: monochrome gold (by seniority) · no rainbow
 const ROLE_COLORS: Record<string, string> = {
-  "PDG/DG":    "#B8955A", // primary gold — highest seniority
+  "PDG/DG":    "#B8955A", // primary gold · highest seniority
   "CFO/DAF":   "#A07F47", // gold darker
   "Directeur": "#D4AF76", // gold lighter
   "CA/Board":  "#3A5687", // navy 2
@@ -795,7 +861,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
 
   // Dynamic KPI values: respond to the groupHorizon picker
   const kpiReturn = getReturn(g, groupHorizon);
-  const kpiWinRate = groupHorizon === "30d"  ? g.winRate90d   // no dedicated 30d win rate — fallback
+  const kpiWinRate = groupHorizon === "30d"  ? g.winRate90d   // no dedicated 30d win rate · fallback
     : groupHorizon === "60d"  ? g.winRate90d
     : groupHorizon === "90d"  ? g.winRate90d
     : groupHorizon === "160d" ? g.winRate90d
@@ -836,7 +902,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
         )}
       </div>
 
-      {/* ─ KPI strip — values update with the horizon picker ─────────── */}
+      {/* ─ KPI strip · values update with the horizon picker ─────────── */}
       <div className="space-y-3">
         {/* Horizon picker + coverage */}
         <div className="flex items-center gap-2 flex-wrap justify-between">
@@ -867,7 +933,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
           <CoverageBar coverage={data.coverageByHorizon} horizon={groupHorizon} totalBuys={data.totalBuys ?? data.total} />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <KpiCard
             label="Achats backtestés"
             value={(data.totalBuys ?? data.total).toLocaleString("fr")}
@@ -900,14 +966,14 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
           />
           <KpiCard
             label={`Win rate ${kpiHorizonLabel}`}
-            value={kpiWinRate != null ? `${kpiWinRate.toFixed(0)}%` : "—"}
+            value={kpiWinRate != null ? `${kpiWinRate.toFixed(0)}%` : "·"}
             border="mint"
             sub="trades positifs"
             tooltip="Pourcentage de trades où le cours était en hausse à l'horizon choisi. Un win rate >55% est significatif (le marché fait environ 50% sur longue période)."
           />
           <KpiCard
             label="Sharpe T+90"
-            value={g.sharpe90d != null ? g.sharpe90d.toFixed(2) : "—"}
+            value={g.sharpe90d != null ? g.sharpe90d.toFixed(2) : "·"}
             border="amber"
             sub="ratio risque/retour"
             tooltip="Ratio de Sharpe = rendement moyen / écart-type des retours. Mesure la régularité du signal. >0.5 = bon, >1.0 = excellent, <0 = signal erratique."
@@ -975,7 +1041,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
       {/* ═══════════════════════════════════════════════════════════════ */}
       {tab === "overview" && (
         <div className="space-y-6">
-          {/* Horizon picker is now above the KPI strip — hidden here */}
+          {/* Horizon picker is now above the KPI strip · hidden here */}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="card p-4">
@@ -1099,7 +1165,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
       {tab === "behaviors" && (
         <div className="space-y-6">
           {/* Horizon picker synced with global */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted">Horizon :</span>
             {HORIZONS.map((h) => (
               <button
@@ -1138,7 +1204,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
           <div className="card p-4">
             <h3 className="text-sm font-semibold text-primary mb-4">Détail par comportement · tous horizons</h3>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm min-w-[700px]">
                 <thead>
                   <tr className="border-b border-soft">
                     <th className="text-left pb-2 text-xs text-muted font-medium">Comportement</th>
@@ -1201,7 +1267,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
               <h3 className="text-sm font-semibold text-primary mb-1">Analyse Hommes vs Femmes</h3>
               <p className="text-xs text-muted mb-4">Performance des achats d&apos;initiés selon le genre du dirigeant</p>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm min-w-[560px]">
                   <thead>
                     <tr className="border-b border-soft">
                       <th className="text-left pb-2 text-xs text-muted font-medium">Genre</th>
@@ -1275,34 +1341,34 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
       {tab === "sells" && data.sellStats && (
         !isAuth ? (
           <FreemiumLock feature="l'analyse détaillée des signaux de vente par rôle et entreprise">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-2">
               <KpiCard label="Ventes analysées" value={data.sellStats.count.toLocaleString("fr")} />
-              <KpiCard label="Précision T+90" value={data.sellStats.accuracy90d != null ? `${data.sellStats.accuracy90d.toFixed(0)}%` : "—"} accent={(data.sellStats.accuracy90d ?? 0) > 50} />
-              <KpiCard label="Précision T+365" value={data.sellStats.accuracy365d != null ? `${data.sellStats.accuracy365d.toFixed(0)}%` : "—"} accent={(data.sellStats.accuracy365d ?? 0) > 50} />
-              <KpiCard label="Retour T+90" value={data.sellStats.avgReturn90d != null ? `${data.sellStats.avgReturn90d > 0 ? "+" : ""}${data.sellStats.avgReturn90d.toFixed(1)}%` : "—"} />
+              <KpiCard label="Précision T+90" value={data.sellStats.accuracy90d != null ? `${data.sellStats.accuracy90d.toFixed(0)}%` : "·"} accent={(data.sellStats.accuracy90d ?? 0) > 50} />
+              <KpiCard label="Précision T+365" value={data.sellStats.accuracy365d != null ? `${data.sellStats.accuracy365d.toFixed(0)}%` : "·"} accent={(data.sellStats.accuracy365d ?? 0) > 50} />
+              <KpiCard label="Retour T+90" value={data.sellStats.avgReturn90d != null ? `${data.sellStats.avgReturn90d > 0 ? "+" : ""}${data.sellStats.avgReturn90d.toFixed(1)}%` : "·"} />
             </div>
           </FreemiumLock>
         ) : (
         <div className="space-y-6">
 
           {/* Sell KPI strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <KpiCard label="Ventes analysées" value={data.sellStats.count.toLocaleString("fr")} />
             <KpiCard
               label="Précision signal T+90"
-              value={data.sellStats.accuracy90d != null ? `${data.sellStats.accuracy90d.toFixed(0)}%` : "—"}
+              value={data.sellStats.accuracy90d != null ? `${data.sellStats.accuracy90d.toFixed(0)}%` : "·"}
               sub="% des ventes suivies d'une baisse"
               accent={(data.sellStats.accuracy90d ?? 0) > 50}
             />
             <KpiCard
               label="Précision signal T+365"
-              value={data.sellStats.accuracy365d != null ? `${data.sellStats.accuracy365d.toFixed(0)}%` : "—"}
+              value={data.sellStats.accuracy365d != null ? `${data.sellStats.accuracy365d.toFixed(0)}%` : "·"}
               sub="% des ventes suivies d'une baisse"
               accent={(data.sellStats.accuracy365d ?? 0) > 50}
             />
             <KpiCard
               label="Retour moyen T+90 (marché)"
-              value={data.sellStats.avgReturn90d != null ? `${data.sellStats.avgReturn90d > 0 ? "+" : ""}${data.sellStats.avgReturn90d.toFixed(1)}%` : "—"}
+              value={data.sellStats.avgReturn90d != null ? `${data.sellStats.avgReturn90d > 0 ? "+" : ""}${data.sellStats.avgReturn90d.toFixed(1)}%` : "·"}
               sub={data.sellStats.avgReturn90d != null && data.sellStats.avgReturn90d < 0 ? "baisse confirmée" : "pas de signal clair"}
             />
           </div>
@@ -1321,7 +1387,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
             <div className="card p-4 md:p-6">
               <h3 className="text-sm font-semibold text-primary mb-4">Précision du signal vente par rôle</h3>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm min-w-[520px]">
                   <thead>
                     <tr className="border-b border-soft">
                       <th className="text-left pb-2 text-xs text-muted font-medium">Rôle</th>
@@ -1342,12 +1408,12 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
                           <td className="py-2 text-center text-xs font-mono text-secondary">{stats.count}</td>
                           <td className="py-2 text-center">
                             <span className={`text-xs font-mono font-semibold ${(stats.accuracy90d ?? 0) > 55 ? "tx-neg" : "text-muted"}`}>
-                              {stats.accuracy90d != null ? `${stats.accuracy90d.toFixed(0)}%` : "—"}
+                              {stats.accuracy90d != null ? `${stats.accuracy90d.toFixed(0)}%` : "·"}
                             </span>
                           </td>
                           <td className="py-2 text-center">
                             <span className={`text-xs font-mono font-semibold ${(stats.accuracy365d ?? 0) > 55 ? "tx-neg" : "text-muted"}`}>
-                              {stats.accuracy365d != null ? `${stats.accuracy365d.toFixed(0)}%` : "—"}
+                              {stats.accuracy365d != null ? `${stats.accuracy365d.toFixed(0)}%` : "·"}
                             </span>
                           </td>
                           <td className="py-2 text-center"><ReturnPill v={stats.avgReturn90d} /></td>
@@ -1365,7 +1431,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
             <h3 className="text-sm font-semibold text-primary mb-1">Ventes les mieux anticipées</h3>
             <p className="text-xs text-muted mb-4">Les ventes d&apos;initiés suivies des plus fortes baisses de cours</p>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm min-w-[560px]">
                 <thead>
                   <tr className="border-b border-soft">
                     <th className="text-left pb-2 text-xs text-muted font-medium">Société</th>
@@ -1384,13 +1450,13 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
                       <td className="py-2 font-medium text-primary max-w-[160px] truncate">
                         <a href={`/companies/${t.company.slug}`} className="hover:text-mint">{t.company.name}</a>
                       </td>
-                      <td className="py-2 text-xs text-secondary max-w-[140px] truncate">{t.insiderName ?? "—"}</td>
+                      <td className="py-2 text-xs text-secondary max-w-[140px] truncate">{t.insiderName ?? "·"}</td>
                       <td className="py-2 text-xs text-secondary">{t.role}</td>
                       <td className="py-2 text-center text-xs font-mono text-muted">
                         {new Date(t.transactionDate).toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit", year:"2-digit" })}
                       </td>
                       <td className="py-2 text-center text-xs font-mono text-muted">
-                        {t.totalAmount ? `${(t.totalAmount / 1000).toFixed(0)} k€` : "—"}
+                        {t.totalAmount ? `${(t.totalAmount / 1000).toFixed(0)} k€` : "·"}
                       </td>
                       <td className="py-2 text-center"><ReturnPill v={t.return30d} /></td>
                       <td className="py-2 text-center"><ReturnPill v={t.return90d} /></td>
@@ -1410,7 +1476,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
       {/* ═══════════════════════════════════════════════════════════════ */}
       {tab === "evolution" && (
         <div className="space-y-6">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted">Horizon :</span>
             {HORIZONS.map((h) => (
               <button
@@ -1472,7 +1538,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
                 <div className="card p-4">
                   <h3 className="text-sm font-semibold text-primary mb-4">Détail année par année · tous horizons</h3>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm table-zebra">
+                    <table className="w-full text-sm table-zebra min-w-[640px]">
                       <thead>
                         <tr className="border-b border-soft">
                           <th className="text-left pb-2 text-xs text-muted font-medium">Année</th>

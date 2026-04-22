@@ -129,7 +129,8 @@ function Pill<T extends string>({
           key={opt}
           onClick={() => onChange(opt)}
           style={{
-            padding: "4px 11px",
+            padding: "8px 11px",
+            minHeight: "36px",
             borderRadius: "7px",
             border: "none",
             cursor: "pointer",
@@ -168,7 +169,7 @@ function SortDropdown({ value, onChange }: { value: SortKey; onChange: (v: SortK
         onClick={() => setOpen((v) => !v)}
         style={{
           display: "flex", alignItems: "center", gap: "6px",
-          padding: "6px 12px", borderRadius: "9px",
+          padding: "9px 12px", minHeight: "44px", borderRadius: "9px",
           border: "1px solid var(--border-med)",
           background: "var(--bg-raised)",
           color: "var(--tx-2)", cursor: "pointer",
@@ -387,7 +388,7 @@ function CompanyCard({ company, q }: { company: CompanyRow; q: string }) {
           whiteSpace: "nowrap",
           marginTop: "-4px",
         }}>
-          — {lastDecl.insiderName}
+ · {lastDecl.insiderName}
         </div>
       )}
     </Link>
@@ -434,7 +435,7 @@ export function CompaniesClient({ companies, initialQ }: {
   const [sort, setSort]       = useState<SortKey>("activity");
   const [showFilters, setShowFilters] = useState(false);
 
-  // Progressive rendering — show first 120, load more on demand.
+  // Progressive rendering · show first 120, load more on demand.
   // Big win for initial render time when there are 2000+ companies.
   const PAGE_SIZE = 120;
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -523,9 +524,9 @@ export function CompaniesClient({ companies, initialQ }: {
       {/* ── Search + filter bar ─────────────────────────────── */}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
         {/* Row 1: search + sort + filter toggle */}
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+        <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
           {/* Search */}
-          <div style={{ position: "relative", flex: "1 1 200px" }}>
+          <div style={{ position: "relative", flex: "1 1 auto" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
               style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--tx-4)", pointerEvents: "none" }}>
               <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
@@ -537,7 +538,7 @@ export function CompaniesClient({ companies, initialQ }: {
               placeholder="Filtrer par nom ou ticker…"
               style={{
                 width: "100%", paddingLeft: "34px", paddingRight: q ? "32px" : "12px",
-                height: "38px",
+                height: "44px",
                 background: "var(--bg-surface)", border: "1px solid var(--border-med)",
                 borderRadius: "10px", outline: "none",
                 fontFamily: "'Inter', system-ui", fontSize: "0.84rem", color: "var(--tx-1)",
@@ -561,7 +562,8 @@ export function CompaniesClient({ companies, initialQ }: {
             )}
           </div>
 
-          {/* Sort */}
+          {/* Sort + filter toggle row (always horizontal) */}
+          <div className="flex items-center gap-2">
           <SortDropdown value={sort} onChange={setSort} />
 
           {/* Filter toggle */}
@@ -569,7 +571,7 @@ export function CompaniesClient({ companies, initialQ }: {
             onClick={() => setShowFilters((v) => !v)}
             style={{
               display: "flex", alignItems: "center", gap: "6px",
-              padding: "6px 12px", borderRadius: "9px",
+              padding: "9px 12px", minHeight: "44px", borderRadius: "9px",
               border: `1px solid ${showFilters || activeFilterCount ? "var(--c-indigo-bd)" : "var(--border-med)"}`,
               background: showFilters || activeFilterCount ? "var(--c-indigo-bg)" : "var(--bg-raised)",
               color: showFilters || activeFilterCount ? "var(--c-indigo-2)" : "var(--tx-2)",
@@ -583,6 +585,7 @@ export function CompaniesClient({ companies, initialQ }: {
             Filtres
             <ActiveCount n={activeFilterCount} />
           </button>
+          </div>
         </div>
 
         {/* Row 2: filter panels (expanded) */}
@@ -594,42 +597,48 @@ export function CompaniesClient({ companies, initialQ }: {
             animation: "slideDown 0.15s ease",
           }}>
             {/* Capitalisation */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-              <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.72rem", fontWeight: 700, color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.07em", minWidth: "80px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", flexWrap: "wrap" }}>
+              <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.72rem", fontWeight: 700, color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.07em", minWidth: "80px", paddingTop: "10px" }}>
                 Capitalisation
               </span>
-              <Pill
-                options={["all", "micro", "small", "mid", "large", "mega"] as CapFilter[]}
-                value={cap}
-                onChange={setCap}
-                labels={CAP_LABELS}
-              />
+              <div style={{ flex: "1 1 0", minWidth: 0, overflowX: "auto" }}>
+                <Pill
+                  options={["all", "micro", "small", "mid", "large", "mega"] as CapFilter[]}
+                  value={cap}
+                  onChange={setCap}
+                  labels={CAP_LABELS}
+                />
+              </div>
             </div>
 
             {/* Activité */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-              <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.72rem", fontWeight: 700, color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.07em", minWidth: "80px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", flexWrap: "wrap" }}>
+              <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.72rem", fontWeight: 700, color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.07em", minWidth: "80px", paddingTop: "10px" }}>
                 Activité
               </span>
-              <Pill
-                options={["all", "7d", "30d", "90d"] as ActivityFilter[]}
-                value={activity}
-                onChange={setActivity}
-                labels={ACTIVITY_LABELS}
-              />
+              <div style={{ flex: "1 1 0", minWidth: 0, overflowX: "auto" }}>
+                <Pill
+                  options={["all", "7d", "30d", "90d"] as ActivityFilter[]}
+                  value={activity}
+                  onChange={setActivity}
+                  labels={ACTIVITY_LABELS}
+                />
+              </div>
             </div>
 
             {/* Dernière transaction */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-              <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.72rem", fontWeight: 700, color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.07em", minWidth: "80px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", flexWrap: "wrap" }}>
+              <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.72rem", fontWeight: 700, color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.07em", minWidth: "80px", paddingTop: "10px" }}>
                 Transaction
               </span>
-              <Pill
-                options={["all", "buy", "sell"] as ActionFilter[]}
-                value={action}
-                onChange={setAction}
-                labels={ACTION_LABELS}
-              />
+              <div style={{ flex: "1 1 0", minWidth: 0, overflowX: "auto" }}>
+                <Pill
+                  options={["all", "buy", "sell"] as ActionFilter[]}
+                  value={action}
+                  onChange={setAction}
+                  labels={ACTION_LABELS}
+                />
+              </div>
             </div>
 
             {/* Reset */}

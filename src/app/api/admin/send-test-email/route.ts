@@ -59,7 +59,7 @@ async function dispatch(params: {
     return res;
   }
 
-  // Default — "digest"
+  // Default · "digest"
   // Fetch the same data the cron would, but delivered to `to` with the admin's first name.
   const [topBuys, topSells] = await Promise.all([
     getRecommendations({ mode: "general", limit: 3, lookbackDays: 14 }),

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 /**
- * CompanyBadge — company logo + name, used everywhere a company is mentioned.
+ * CompanyBadge · company logo + name, used everywhere a company is mentioned.
  * Falls back to a letter avatar if no logo or on image error.
  * size: "sm" (24px) | "md" (32px) | "lg" (40px) | "xl" (48px)
  */
@@ -71,7 +71,7 @@ export function CompanyBadge({
 }
 
 /**
- * Just the logo/avatar square — no name, no link.
+ * Just the logo/avatar square · no name, no link.
  */
 export function CompanyAvatar({
   name,

@@ -145,7 +145,7 @@ function parseDate(raw: string | undefined): Date | undefined {
     if (isPlausibleDate(d)) return d;
   }
 
-  // "07/05/24" (DD/MM/YY — 2-digit year, common in older AMF PDFs)
+  // "07/05/24" (DD/MM/YY · 2-digit year, common in older AMF PDFs)
   const mSlash2 = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/);
   if (mSlash2) {
     const yr = +mSlash2[3];
@@ -214,8 +214,8 @@ function extractIsin(text: string): string | undefined {
 
   // 2. Header pattern (newer PDFs 2024+):
   //    "<AMFID>\n<ISIN> - <ref>\n<date>"
-  //    The ref may be DDxxxxxx, CP.xx.xxxxx, FORMxxxx, etc. — match anything after dash.
-  const dashes = "[-–—−\u2012\u2013\u2014]";
+  //    The ref may be DDxxxxxx, CP.xx.xxxxx, FORMxxxx, etc. · match anything after dash.
+  const dashes = "[-–·−\u2012\u2013\u2014]";
   const headerMatch = textNl.match(
     new RegExp(`\n([A-Z]{2}[A-Z0-9]{9}[0-9])\\s*${dashes}\\s*[A-Z0-9]`)
   );
@@ -363,7 +363,7 @@ export function parsePdfText(rawText: string, pdfUrl?: string): TradeDetails {
       result.totalAmount = Math.round(openPrice * result.volume * 100) / 100;
       result.unitPrice = openPrice; // use opening price as reference
     } else {
-      // Keep totalAmount as undefined — volume alone tells the story
+      // Keep totalAmount as undefined · volume alone tells the story
       result.unitPrice = 0;
     }
   }

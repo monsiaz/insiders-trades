@@ -8,7 +8,7 @@ async function requireAdmin() {
   return user;
 }
 
-// GET /api/admin/users — list all users with portfolio & alert counts
+// GET /api/admin/users · list all users with portfolio & alert counts
 export async function GET(req: NextRequest) {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -58,18 +58,18 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * PATCH /api/admin/users — body: { userId, action, ... }
+ * PATCH /api/admin/users · body: { userId, action, ... }
  *
  * Supported actions:
- *   ban             — body: { reason? }
+ *   ban · body: { reason? }
  *   unban
- *   make_admin      — grant admin role
- *   revoke_admin    — demote to user
- *   set_credits     — body: { credits: number }         — absolute
- *   adjust_credits  — body: { delta: number }           — add/subtract
- *   set_cash        — body: { portfolioCash: number|null }
- *   toggle_alerts   — body: { enabled: boolean }
- *   force_logout    — clears session markers (lastLoginAt reset);
+ *   make_admin · grant admin role
+ *   revoke_admin · demote to user
+ *   set_credits · body: { credits: number } · absolute
+ *   adjust_credits · body: { delta: number } · add/subtract
+ *   set_cash · body: { portfolioCash: number|null }
+ *   toggle_alerts · body: { enabled: boolean }
+ *   force_logout · clears session markers (lastLoginAt reset);
  *                     the next middleware hit rejects stale JWTs because
  *                     the banned flag can't be toggled per-user at JWT
  *                     layer. Kept as a no-op rename for clarity.

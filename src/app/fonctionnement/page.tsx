@@ -1,7 +1,7 @@
 /**
- * /fonctionnement — Public marketing + explainer page.
+ * /fonctionnement · Public marketing + explainer page.
  *
- * Long-form, visually rich, animated (pure SVG/CSS — no canvas) walkthrough
+ * Long-form, visually rich, animated (pure SVG/CSS · no canvas) walkthrough
  * of how Insiders Trades Sigma works. Intended to be the landing page
  * linked from the site footer for non-authenticated visitors.
  */
@@ -16,7 +16,7 @@ import { SignalRadar } from "./_components/SignalRadar";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Comment ça marche — Insiders Trades Sigma",
+  title: "Comment ça marche · Insiders Trades Sigma",
   description:
     "Découvrez comment Insiders Trades Sigma transforme les déclarations AMF des dirigeants en signaux d'investissement actionnables. Collecte, scoring, backtest historique, recommandations.",
 };
@@ -44,7 +44,7 @@ function Eyebrow({ children, color = "var(--gold)" }: { children: React.ReactNod
 function Section({
   id,
   children,
-  mt = "100px",
+  mt = "clamp(48px, 8vw, 100px)",
 }: {
   id?: string;
   children: React.ReactNode;
@@ -141,13 +141,14 @@ export default function FonctionnementPage() {
           }}
         >
           Les dirigeants de sociétés cotées françaises sont obligés de déclarer leurs achats
-          et ventes à l&apos;AMF. Nous transformons ces déclarations publiques — mais rarement
-          exploitées — en signaux classés, backtestés et personnalisés.
+          et ventes à l&apos;AMF. Nous transformons ces déclarations publiques, mais rarement
+          exploitées · en signaux classés, backtestés et personnalisés.
         </p>
         <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
           <Link
             href="/auth/login"
             style={{
+              display: "inline-flex", alignItems: "center", minHeight: "44px",
               padding: "12px 24px",
               background: "var(--gold)",
               color: "#0A0C10",
@@ -164,6 +165,7 @@ export default function FonctionnementPage() {
           <Link
             href="/methodologie"
             style={{
+              display: "inline-flex", alignItems: "center", minHeight: "44px",
               padding: "12px 24px",
               border: "1px solid var(--border-strong)",
               color: "var(--tx-2)",
@@ -210,7 +212,7 @@ export default function FonctionnementPage() {
           >
             Depuis le règlement européen <strong style={{ color: "var(--tx-1)" }}>MAR 596/2014</strong>,
             tout dirigeant d&apos;une société cotée doit déclarer ses transactions à l&apos;AMF sous 3 jours.
-            Ces données sont publiques — mais éparpillées dans des milliers de PDF, sans scoring, sans
+            Ces données sont publiques, mais éparpillées dans des milliers de PDF, sans scoring, sans
             historique, sans méthode d&apos;évaluation.
           </p>
         </div>
@@ -349,27 +351,27 @@ export default function FonctionnementPage() {
               }}
             >
               <li>
-                <strong style={{ color: "var(--tx-1)" }}>% capitalisation</strong> — un achat qui pèse 1% du mcap
+                <strong style={{ color: "var(--tx-1)" }}>% capitalisation</strong>, un achat qui pèse 1% du mcap
                 compte plus qu&apos;un achat symbolique
               </li>
               <li>
-                <strong style={{ color: "var(--tx-1)" }}>% flux de l&apos;insider</strong> — est-ce son plus gros
+                <strong style={{ color: "var(--tx-1)" }}>% flux de l&apos;insider</strong> · est-ce son plus gros
                 mouvement sur ce titre ?
               </li>
               <li>
-                <strong style={{ color: "var(--tx-1)" }}>Fonction</strong> — PDG &gt; CFO &gt; Directeur &gt; Membre du CA
+                <strong style={{ color: "var(--tx-1)" }}>Fonction</strong> · PDG &gt; CFO &gt; Directeur &gt; Membre du CA
               </li>
               <li>
-                <strong style={{ color: "var(--tx-1)" }}>Cluster</strong> — plusieurs dirigeants en ±30 jours ?
+                <strong style={{ color: "var(--tx-1)" }}>Cluster</strong> · plusieurs dirigeants en ±30 jours ?
               </li>
               <li>
-                <strong style={{ color: "var(--tx-1)" }}>Conviction</strong> — l&apos;insider est-il net-acheteur cumulé ?
+                <strong style={{ color: "var(--tx-1)" }}>Conviction</strong> · l&apos;insider est-il net-acheteur cumulé ?
               </li>
               <li>
-                <strong style={{ color: "var(--tx-1)" }}>Fondamentaux</strong> — consensus analyste, P/E, leverage
+                <strong style={{ color: "var(--tx-1)" }}>Fondamentaux</strong> · consensus analyste, P/E, leverage
               </li>
               <li>
-                <strong style={{ color: "var(--tx-1)" }}>Signaux composites Yahoo</strong> — 8 flags additionnels
+                <strong style={{ color: "var(--tx-1)" }}>Signaux composites Yahoo</strong> · 8 flags additionnels
                 (momentum, value, qualité, upside…)
               </li>
             </ul>
@@ -450,7 +452,7 @@ export default function FonctionnementPage() {
               lineHeight: 1.6,
             }}
           >
-            Chaque point représente un signal réel — achat (vert) ou vente (rouge) — positionné par son
+            Chaque point représente un signal réel · achat (vert) ou vente (rouge) · positionné par son
             score et son % de mcap.
           </p>
         </div>
@@ -507,6 +509,7 @@ export default function FonctionnementPage() {
       {/* ── STACK / TRUST ─────────────────────────────────────────────────── */}
       <Section>
         <div
+          className="fct-stack"
           style={{
             background: "var(--bg-surface)",
             border: "1px solid var(--border-med)",
@@ -613,6 +616,7 @@ export default function FonctionnementPage() {
       {/* ── FINAL CTA ─────────────────────────────────────────────────────── */}
       <Section mt="80px">
         <div
+          className="fct-cta"
           style={{
             padding: "40px 32px",
             textAlign: "center",
@@ -652,6 +656,7 @@ export default function FonctionnementPage() {
             <Link
               href="/auth/login"
               style={{
+                display: "inline-flex", alignItems: "center", minHeight: "44px",
                 padding: "13px 26px",
                 background: "var(--gold)",
                 color: "#0A0C10",
@@ -668,6 +673,7 @@ export default function FonctionnementPage() {
             <Link
               href="/methodologie"
               style={{
+                display: "inline-flex", alignItems: "center", minHeight: "44px",
                 padding: "13px 26px",
                 border: "1px solid var(--border-strong)",
                 color: "var(--tx-2)",
@@ -684,10 +690,14 @@ export default function FonctionnementPage() {
         </div>
       </Section>
 
-      {/* Scoped responsive tweaks for two-column sections */}
+      {/* Scoped responsive tweaks */}
       <style>{`
         @media (max-width: 820px) {
           .fct-two-col { grid-template-columns: 1fr !important; gap: 24px !important; }
+        }
+        @media (max-width: 640px) {
+          .fct-cta   { padding: 24px 16px !important; }
+          .fct-stack { padding: 20px 16px !important; }
         }
       `}</style>
     </div>
@@ -783,7 +793,7 @@ const FAQ_ITEMS = [
     q: "Est-ce légal d'utiliser ces données ?",
     a: (
       <>
-        <strong>Entièrement légal.</strong> Les déclarations AMF sont publiques par définition —
+        <strong>Entièrement légal.</strong> Les déclarations AMF sont publiques par définition ·
         c&apos;est l&apos;essence même du règlement MAR 596/2014 : informer le marché des
         transactions des dirigeants. Elles sont consultables gratuitement sur{" "}
         <a href="https://bdif.amf-france.org" target="_blank" rel="noopener noreferrer" style={{ color: "var(--gold)", textDecoration: "underline" }}>
@@ -858,7 +868,7 @@ const FAQ_ITEMS = [
     a: (
       <>
         Oui. Importez votre portefeuille (CSV de votre courtier), activez les alertes email, et
-        recevez chaque matin les mouvements d&apos;insiders survenus dans les 48h sur vos titres —
+        recevez chaque matin les mouvements d&apos;insiders survenus dans les 48h sur vos titres ·
         incluant les signaux de vente. L&apos;outil vous dit à quels dirigeants faire attention,
         sans remplacer votre analyse.
       </>

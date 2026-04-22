@@ -3,7 +3,7 @@
  *
  *   const ctx = await requireApiKey(req);
  *   if (ctx instanceof NextResponse) return ctx; // 401 / 403
- *   // ctx.user, ctx.key — use at will
+ *   // ctx.user, ctx.key · use at will
  *
  * Also provides `withApi()` that handles auth + latency metadata + JSON wrap.
  */
@@ -52,7 +52,7 @@ export async function requireApiKey(req: NextRequest): Promise<ApiContext | Next
     null;
   const userAgent = req.headers.get("user-agent") ?? null;
 
-  // Don't await — counter bump is best-effort and should never block the response.
+  // Don't await · counter bump is best-effort and should never block the response.
   // We fire-and-forget.
   void bumpKeyUsage(key.id, key.requestsToday, key.todayResetAt, { ip, ua: userAgent });
 

@@ -39,7 +39,7 @@ function createTransport() {
       },
     });
   }
-  // Gmail shorthand — support both GMAIL_USER and GMAIL_APP_USER env names
+  // Gmail shorthand · support both GMAIL_USER and GMAIL_APP_USER env names
   const gmailUser = process.env.GMAIL_USER ?? process.env.GMAIL_APP_USER;
   const gmailPass = process.env.GMAIL_APP_PASS ?? process.env.GMAIL_PASS;
   if (gmailUser && gmailPass) {
@@ -68,7 +68,7 @@ async function sendEmail({ to, subject, html, text }: { to: string; subject: str
 
 // ── Branded layout (navy header + eye logo inline SVG) ───────────────────────
 
-/** Minimal pure SVG that matches the geometric eye logo — inlined so email
+/** Minimal pure SVG that matches the geometric eye logo · inlined so email
  *  clients render it reliably without loading external images. */
 function eyeLogoSvg(color: string, size = 26): string {
   return (
@@ -114,7 +114,7 @@ function brandedLayout({ content, previewText = "", noUnsubscribe = false }: Lay
       <table role="presentation" width="640" cellpadding="0" cellspacing="0" border="0"
              style="max-width:640px;width:100%;background:${BRAND.paper};border:1px solid ${BRAND.border};border-radius:4px;overflow:hidden">
 
-        <!-- Header — navy block with eye + wordmark -->
+        <!-- Header · navy block with eye + wordmark -->
         <tr>
           <td style="background:${BRAND.navy};padding:22px 28px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -152,7 +152,7 @@ function brandedLayout({ content, previewText = "", noUnsubscribe = false }: Lay
                 <td style="font-family:-apple-system,sans-serif;font-size:12px;color:${BRAND.tx3};line-height:1.6">
                   <strong style="color:${BRAND.navy}">Insiders Trades Sigma</strong> · Données AMF publiques · Règlement MAR 596/2014<br>
                   Usage informatif · ne constitue pas un conseil en investissement<br>
-                  © ${year} — <a href="${APP_URL}" style="color:${BRAND.gold};text-decoration:none">insiders-trades-sigma.app</a>
+                  © ${year} · <a href="${APP_URL}" style="color:${BRAND.gold};text-decoration:none">insiders-trades-sigma.app</a>
                   ${noUnsubscribe
                     ? ""
                     : ` · <a href="${APP_URL}/portfolio?settings=alerts" style="color:${BRAND.tx3};text-decoration:underline">Se désabonner</a>`}
@@ -185,7 +185,7 @@ function escape(s: string): string {
 // ── Formatters used across templates ─────────────────────────────────────────
 
 function fmtEur(n: number | null | undefined): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   if (Math.abs(n) >= 1e9) return `${(n / 1e9).toFixed(1)} Md€`;
   if (Math.abs(n) >= 1e6) return `${(n / 1e6).toFixed(1)} M€`;
   if (Math.abs(n) >= 1e3) return `${(n / 1e3).toFixed(0)} k€`;
@@ -193,7 +193,7 @@ function fmtEur(n: number | null | undefined): string {
 }
 
 function fmtPct(n: number | null | undefined, d = 1, withSign = true): string {
-  if (n == null) return "—";
+  if (n == null) return "·";
   const sign = withSign && n >= 0 ? "+" : "";
   return `${sign}${n.toFixed(d)}%`;
 }
@@ -218,7 +218,7 @@ export async function sendVerificationEmail(email: string, token: string) {
         </p>
         <p style="font-size:15px;color:${BRAND.tx2};line-height:1.6;margin:0 0 20px">
           Merci de votre inscription. Cliquez sur le bouton ci-dessous pour vérifier
-          votre adresse et activer votre compte — l'accès complet aux signaux,
+          votre adresse et activer votre compte · l'accès complet aux signaux,
           backtests et recommandations sera débloqué immédiatement.
         </p>
         ${btnPrimary(url, "Vérifier mon adresse")}
@@ -286,7 +286,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
   });
 }
 
-// ── Daily digest email (NEW — portfolio alerts + buys + sells) ───────────────
+// ── Daily digest email (NEW · portfolio alerts + buys + sells) ───────────────
 
 export interface PortfolioAlert {
   /** Nature of the insider transaction on a company held by the user */
@@ -371,21 +371,21 @@ function buildDigestPlainText(p: DailyDigestPayload): string {
   if (p.portfolioAlerts.length > 0) {
     lines.push("=== Mouvements sur votre portfolio ===");
     for (const a of p.portfolioAlerts) {
-      lines.push(`- ${a.action === "BUY" ? "Achat" : "Vente"} sur ${a.company.name} par ${a.insider.name ?? "un dirigeant"} (${a.insider.role}) — ${fmtEur(a.amount)}`);
+      lines.push(`- ${a.action === "BUY" ? "Achat" : "Vente"} sur ${a.company.name} par ${a.insider.name ?? "un dirigeant"} (${a.insider.role}) · ${fmtEur(a.amount)}`);
     }
     lines.push("");
   }
   if (p.buyRecos.length > 0) {
     lines.push("=== Top achats recommandés ===");
     for (const r of p.buyRecos) {
-      lines.push(`- ${r.company.name} (score ${Math.round(r.recoScore)}) — ${r.insider.name ?? "Dirigeant"} · ${r.insider.role}`);
+      lines.push(`- ${r.company.name} (score ${Math.round(r.recoScore)}) · ${r.insider.name ?? "Dirigeant"} · ${r.insider.role}`);
     }
     lines.push("");
   }
   if (p.sellRecos.length > 0) {
     lines.push("=== Top signaux de vente ===");
     for (const r of p.sellRecos) {
-      lines.push(`- ${r.company.name} (score ${Math.round(r.recoScore)}) — ${r.insider.name ?? "Dirigeant"}`);
+      lines.push(`- ${r.company.name} (score ${Math.round(r.recoScore)}) · ${r.insider.name ?? "Dirigeant"}`);
     }
     lines.push("");
   }
@@ -419,7 +419,7 @@ function sectionHeader(opts: {
           </div>
           <div style="font-family:Georgia,serif;font-size:18px;font-weight:400;color:${BRAND.tx1};letter-spacing:-0.01em">
             ${opts.title}
-            <span style="font-family:'SF Mono',monospace;font-size:11px;color:${BRAND.gold};letter-spacing:0.08em;margin-left:8px">— ${opts.count.toString().padStart(2, "0")}</span>
+            <span style="font-family:'SF Mono',monospace;font-size:11px;color:${BRAND.gold};letter-spacing:0.08em;margin-left:8px">· ${opts.count.toString().padStart(2, "0")}</span>
           </div>
         </td>
       </tr>
@@ -468,7 +468,7 @@ function portfolioAlertCard(a: PortfolioAlert, rank: number): string {
   const actionLabel = a.action === "SELL" ? "Vente dirigeant" : "Achat dirigeant";
   const pnlStr = a.userPosition.pnlPct != null
     ? `${a.userPosition.pnlPct >= 0 ? "+" : ""}${a.userPosition.pnlPct.toFixed(1)}%`
-    : "—";
+    : "·";
   const pnlColor = a.userPosition.pnlPct != null
     ? (a.userPosition.pnlPct >= 0 ? BRAND.green : BRAND.red)
     : BRAND.tx3;
@@ -508,7 +508,7 @@ function portfolioAlertCard(a: PortfolioAlert, rank: number): string {
                     </td>
                     <td style="padding-right:14px">
                       <div style="font-family:'SF Mono',monospace;font-size:9px;color:${BRAND.tx4};letter-spacing:0.1em;text-transform:uppercase">% Mcap</div>
-                      <div style="font-size:13px;font-weight:700;color:${BRAND.tx1}">${a.pctOfMarketCap != null && a.pctOfMarketCap > 0 ? `${a.pctOfMarketCap.toFixed(2)}%` : "—"}</div>
+                      <div style="font-size:13px;font-weight:700;color:${BRAND.tx1}">${a.pctOfMarketCap != null && a.pctOfMarketCap > 0 ? `${a.pctOfMarketCap.toFixed(2)}%` : "·"}</div>
                     </td>
                     <td style="padding-right:14px">
                       <div style="font-family:'SF Mono',monospace;font-size:9px;color:${BRAND.tx4};letter-spacing:0.1em;text-transform:uppercase">Score</div>
@@ -613,7 +613,7 @@ function recoCompactCard(r: RecoItem, rank: number, direction: "BUY" | "SELL"): 
                     </td>
                     <td style="padding-right:14px">
                       <div style="font-family:'SF Mono',monospace;font-size:9px;color:${BRAND.tx4};letter-spacing:0.1em;text-transform:uppercase">${wrLabel}</div>
-                      <div style="font-size:13px;font-weight:700;color:${BRAND.tx1}">${wr != null ? `${wr.toFixed(0)}%` : "—"}</div>
+                      <div style="font-size:13px;font-weight:700;color:${BRAND.tx1}">${wr != null ? `${wr.toFixed(0)}%` : "·"}</div>
                     </td>
                     <td style="padding-right:14px">
                       <div style="font-family:'SF Mono',monospace;font-size:9px;color:${BRAND.tx4};letter-spacing:0.1em;text-transform:uppercase">Montant</div>
@@ -671,7 +671,7 @@ export async function sendSignalAlertEmail(
   _signals: SignalAlert[],
   _mode: "general" | "personal" = "general"
 ) {
-  // Thin shim — redirect callers through the new digest with empty portfolio
+  // Thin shim · redirect callers through the new digest with empty portfolio
   // alerts and the old signals mapped as buy recos. The cron path has been
   // rewritten to call sendDailyDigestEmail directly; this stub exists for any
   // legacy code still referencing the old function.

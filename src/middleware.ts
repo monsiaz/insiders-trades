@@ -38,7 +38,7 @@ const PUBLIC_PREFIXES: string[] = [
   "/api/mcp",
   // Auth API
   "/api/auth/",
-  // Cron / webhook / scheduled jobs — gated by CRON_SECRET header or secret query
+  // Cron / webhook / scheduled jobs · gated by CRON_SECRET header or secret query
   "/api/cron",
   "/api/sync",
   "/api/sync-latest",

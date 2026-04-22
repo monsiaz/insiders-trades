@@ -5,7 +5,7 @@
  *  1. Explicit honorific in raw insiderName   (Mme / Madame → F, M. / Monsieur → M)
  *  2. Feminine morphology in insiderFunction  (Administratrice, Directrice, Présidente…)
  *  3. French female first-name dictionary     (Marie, Sophie, Claire…)
- *  4. null — could not determine
+ *  4. null · could not determine
  */
 
 type Gender = "M" | "F" | null;

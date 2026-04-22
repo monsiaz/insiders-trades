@@ -220,7 +220,7 @@ export function NavSearch() {
   const isEmpty = showResults && !loading && allResults.length === 0;
 
   return (
-    <div ref={containerRef} style={{ position: "relative", display: "flex" }}>
+    <div ref={containerRef} style={{ position: "relative", display: "flex", minWidth: 0 }}>
 
       {/* Input */}
       <div
@@ -230,13 +230,13 @@ export function NavSearch() {
           alignItems: "center",
           gap: "8px",
           padding: "0 12px",
-          height: "36px",
+          height: "44px",
           borderRadius: "9px",
           border: `1px solid ${open ? "var(--border-strong)" : "var(--border-med)"}`,
           background: open ? "var(--bg-surface)" : "var(--bg-raised)",
           transition: "all 0.18s ease",
           cursor: "text",
-          minWidth: open ? "220px" : "160px",
+          minWidth: open ? "clamp(160px, 240px, 100%)" : "clamp(140px, 180px, 100%)",
         }}
         onClick={() => { inputRef.current?.focus(); setOpen(true); }}
       >
@@ -281,7 +281,7 @@ export function NavSearch() {
           position: "absolute",
           top: "calc(100% + 8px)",
           right: 0,
-          width: "360px",
+          width: "min(360px, calc(100vw - 24px))",
           maxHeight: "480px",
           overflowY: "auto",
           background: "var(--bg-surface)",
@@ -515,7 +515,8 @@ function ResultRow({
       style={{
         display: "flex", alignItems: "center", gap: "10px",
         width: "100%", textAlign: "left",
-        padding: "8px 14px",
+        padding: "11px 14px",
+        minHeight: "44px",
         background: active ? "var(--bg-hover)" : "transparent",
         border: "none", cursor: "pointer",
         transition: "background 0.1s",

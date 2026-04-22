@@ -3,7 +3,7 @@
  *
  * Given a user + the daily top buy/sell recos, this module builds the email
  * payload that combines:
- *   1. Portfolio alerts — insider transactions on the user's own holdings
+ *   1. Portfolio alerts · insider transactions on the user's own holdings
  *      (last 48h, score >= 35). These are the most urgent, shown first.
  *   2. Top 3 BUY recos (shared across all users)
  *   3. Top 3 SELL recos (shared across all users)
@@ -30,7 +30,7 @@ interface BuildOpts {
 export async function buildDigestForUser(opts: BuildOpts): Promise<DailyDigestPayload | null> {
   const { user, topBuys, topSells } = opts;
 
-  // 1. Portfolio alerts — insider movements on companies the user holds.
+  // 1. Portfolio alerts · insider movements on companies the user holds.
   const alerts = await getPortfolioAlerts(user.id);
 
   // If zero portfolio alerts AND zero global recos → nothing to send.

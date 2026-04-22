@@ -70,7 +70,7 @@ type TooltipPayload = { dataKey?: string; value?: number; payload?: Record<strin
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipPayload[]; label?: string }) {
   if (!active || !payload?.length) return null;
 
-  // Pull fields by dataKey (not by index) — Recharts may emit items in render
+  // Pull fields by dataKey (not by index) · Recharts may emit items in render
   // order, which flipped our value/invested math and produced wrong P&L signs.
   const row      = payload[0]?.payload ?? {};
   const value    = (payload.find((p) => p.dataKey === "value")?.value)
@@ -85,10 +85,10 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
   return (
     <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border-med)", borderRadius: "10px", padding: "10px 14px", boxShadow: "var(--shadow-md)", fontSize: "12px", minWidth: "160px" }}>
       <p style={{ color: "var(--tx-3)", marginBottom: "6px", fontSize: "11px" }}>{label}</p>
-      <p style={{ fontWeight: 700, color: "var(--tx-1)", fontFamily: "monospace", fontSize: "14px" }}>{value != null ? fmtEur(value) : "—"}</p>
+      <p style={{ fontWeight: 700, color: "var(--tx-1)", fontFamily: "monospace", fontSize: "14px" }}>{value != null ? fmtEur(value) : "·"}</p>
       {pnl != null && (
         <p style={{ color: isPos ? "var(--c-emerald)" : "var(--c-crimson)", fontWeight: 600, fontSize: "12px", marginTop: "2px" }}>
-          {isPos ? "+" : ""}{fmtEur(pnl)} ({pct != null ? fmtPct(pct) : "—"})
+          {isPos ? "+" : ""}{fmtEur(pnl)} ({pct != null ? fmtPct(pct) : "·"})
         </p>
       )}
       {invested != null && <p style={{ color: "var(--tx-4)", fontSize: "10px", marginTop: "3px" }}>Investi : {fmtEur(invested)}</p>}
@@ -277,9 +277,10 @@ export function PortfolioPerformance({ positions }: { positions: Position[] }) {
           <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--tx-3)", marginBottom: "16px" }}>
             P&L par position
           </div>
-          <div style={{ height: Math.max(160, waterfallData.length * 36) + "px" }}>
+          <div className="overflow-x-auto">
+          <div style={{ height: Math.max(160, waterfallData.length * 36) + "px", minWidth: "280px" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={waterfallData} layout="vertical" margin={{ top: 0, right: 80, left: 0, bottom: 0 }} barCategoryGap="30%">
+              <BarChart data={waterfallData} layout="vertical" margin={{ top: 0, right: 40, left: 0, bottom: 0 }} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="2 6" stroke="var(--border)" horizontal={false}/>
                 <XAxis type="number" tick={{ fontSize: 10, fill: "var(--tx-4)" }} axisLine={false} tickLine={false}
                   tickFormatter={(v) => `${v >= 0 ? "+" : ""}${v.toFixed(0)}%`} domain={["auto", "auto"]}/>
@@ -296,11 +297,12 @@ export function PortfolioPerformance({ positions }: { positions: Position[] }) {
               </BarChart>
             </ResponsiveContainer>
           </div>
+          </div>
         </div>
       )}
 
       {/* ── KPI grid ───────────────────────────────────────────────────── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "10px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(160px, 100%), 1fr))", gap: "10px" }}>
         {[
           { label: "Capital investi",     value: fmtEur(totalInvested),                   sub: `${positions.length} lignes`,          color: "var(--tx-1)" },
           { label: "Valeur actuelle",      value: fmtEur(totalValue),                      sub: hasPrices ? "cours temps réel" : "PRU × quantité", color: "var(--tx-1)" },

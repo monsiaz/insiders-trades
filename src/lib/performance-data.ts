@@ -2,7 +2,7 @@
  * Server-side computations for the public /performance page.
  *
  * Runs the same backtest logic as scripts/strategy-backtest-v2.mjs but cached
- * at page revalidation time (hourly). No external network calls — uses data
+ * at page revalidation time (hourly). No external network calls · uses data
  * already in Postgres (backtestResult.returnFromPub90d + cac40 benchmark).
  */
 
@@ -89,7 +89,7 @@ function roleCategory(fn: string | null): "ceo" | "cfo" | "director" | "board" |
   return "board";
 }
 
-// ── CAC 40 — cached manually. Since Vercel ISR caches this for 1h, we can
+// ── CAC 40 · cached manually. Since Vercel ISR caches this for 1h, we can
 //   afford to call Yahoo once per hour. Safe fallback if Yahoo rate-limits us. ─
 async function fetchCacMonthlyReturns(): Promise<Record<string, number>> {
   try {
@@ -303,7 +303,7 @@ export async function computePerformanceData(): Promise<PerfData> {
   // Run strategies
   const strategies: StrategyResult[] = [
     runStrategy(universe, cacByMonth, {
-      label: "Passif — tous les signaux d'achat",
+      label: "Passif · tous les signaux d'achat",
       description: "Stratégie naïve : on achète les 20 meilleurs scores chaque mois, quel que soit le filtre.",
       filter: () => true,
     }),
@@ -314,7 +314,7 @@ export async function computePerformanceData(): Promise<PerfData> {
     }),
     runStrategy(universe, cacByMonth, {
       label: "Cluster uniquement",
-      description: "Uniquement les trades où ≥ 2 dirigeants ont acheté la même société ±30 jours — signal de conviction collective.",
+      description: "Uniquement les trades où ≥ 2 dirigeants ont acheté la même société ±30 jours · signal de conviction collective.",
       filter: (bt) => bt.isCluster === true,
     }),
     runStrategy(universe, cacByMonth, {

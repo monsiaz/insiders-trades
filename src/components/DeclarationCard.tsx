@@ -245,7 +245,7 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
           href={declaration.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-shrink-0 btn-glass px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-1"
+          className="flex-shrink-0 btn-glass px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-1 min-h-[44px] justify-center"
         >
           AMF ↗
         </a>

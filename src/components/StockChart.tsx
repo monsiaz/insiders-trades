@@ -24,7 +24,7 @@ interface TradeEvent {
   person?: string;
 }
 
-/** Aggregated bubble — one per (day, buy|sell). Holds all trades that contributed. */
+/** Aggregated bubble · one per (day, buy|sell). Holds all trades that contributed. */
 interface TradeBubble {
   date: string;
   type: "buy" | "sell";
@@ -240,7 +240,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
     return list;
   }, [allTrades, filter, sortBy]);
 
-  // Tooltip map — keyed by date, returns ALL bubbles (buy + sell) for that date.
+  // Tooltip map · keyed by date, returns ALL bubbles (buy + sell) for that date.
   const tradeMap = useMemo(() => {
     const m = new Map<string, TradeBubble[]>();
     tradeBubbles.forEach((b) => {
@@ -257,7 +257,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
   const totalBuy = buyTrades.reduce((s, t) => s + (t.amount ?? 0), 0);
   const totalSell = sellTrades.reduce((s, t) => s + (t.amount ?? 0), 0);
 
-  // Dot sizes — based on aggregated bubble totals (not individual trades)
+  // Dot sizes · based on aggregated bubble totals (not individual trades)
   const amounts = tradeBubbles.map((b) => b.totalAmount).filter((a) => a > 0);
   const minAmt = amounts.length ? Math.min(...amounts) : 1;
   const maxAmt = amounts.length ? Math.max(...amounts) : 1;
@@ -285,7 +285,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
   }
 
   const isPositive = data.change >= 0;
-  // DA v3: signal-pos / signal-neg — direct hex for Recharts (it can't parse CSS vars)
+  // DA v3: signal-pos / signal-neg · direct hex for Recharts (it can't parse CSS vars)
   const lineColor = isPositive ? "#009E62" : "#C82038";
   const currency = data.currency || "EUR";
   const gradientId = `sg-${data.symbol.replace(/[^a-zA-Z0-9]/g, "")}`;
@@ -300,8 +300,8 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
       {/* Chart card */}
       <div className="glass-card rounded-2xl p-5">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3 min-w-0">
             <div>
               <div className="flex items-center gap-2">
                 <span style={{ fontSize: "1.5rem", fontWeight: 700, fontFamily: "'Banana Grotesk', monospace", color: "var(--tx-1)", letterSpacing: "-0.04em" }}>
@@ -399,7 +399,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
                 dot={false}
                 activeDot={{ r: 3, fill: lineColor, strokeWidth: 0 }}
               />
-              {/* Trade bubbles — 1 per (date, buy|sell), sized by total amount */}
+              {/* Trade bubbles · 1 per (date, buy|sell), sized by total amount */}
               {tradeBubbles.map((bubble) => {
                 const price = priceMap.get(bubble.date);
                 if (!price) return null;
@@ -430,7 +430,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
 
         {/* Legend */}
         {tradeBubbles.length > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "8px", paddingTop: "10px", borderTop: "1px solid var(--border)", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginTop: "8px", paddingTop: "10px", borderTop: "1px solid var(--border)", flexWrap: "wrap" }}>
             <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>
               Transactions insiders sur la période <strong style={{ color: "var(--tx-2)" }}>({allTrades.length})</strong> :
             </span>
@@ -451,7 +451,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
       {allTrades.length > 0 && (
         <div className="card" style={{ overflow: "hidden" }}>
           {/* Toolbar */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", borderBottom: "1px solid var(--border)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", padding: "10px 16px", borderBottom: "1px solid var(--border)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "3px", background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: "9px" }}>
               {(["all", "buy", "sell"] as TradeFilter[]).map((f) => (
                 <button
@@ -521,7 +521,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
                   </span>
                   {/* Person */}
                   <span style={{ fontSize: "0.78rem", color: "var(--tx-2)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
-                    {trade.person ?? "—"}
+                    {trade.person ?? "·"}
                   </span>
                   {/* Amount */}
                   {trade.amount && (
@@ -540,7 +540,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
           </div>
 
           {/* Summary footer */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", borderTop: "1px solid var(--border)", background: "var(--bg-raised)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", padding: "10px 16px", borderTop: "1px solid var(--border)", background: "var(--bg-raised)" }}>
             <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>
               {filteredTrades.length} transaction{filteredTrades.length > 1 ? "s" : ""} sur la période
             </span>

@@ -2,7 +2,7 @@
  * API key generation, hashing, validation.
  *
  * Format:   sit_live_<32 chars base62>
- * Prefix:   first 12 chars (sit_live_XXX) — safe to display
+ * Prefix:   first 12 chars (sit_live_XXX) · safe to display
  * Storage:  sha256(plaintext) hex in DB
  */
 
@@ -12,7 +12,7 @@ import { prisma } from "./prisma";
 const KEY_LEN = 32;
 const KEY_PREFIX = "sit_live_";
 
-/** Generate a new plaintext API key. Never stored — only returned once. */
+/** Generate a new plaintext API key. Never stored · only returned once. */
 export function generateApiKey(): { plaintext: string; prefix: string; hash: string } {
   // crypto.randomBytes -> base64url -> strip "=" and take KEY_LEN chars
   const raw = crypto
@@ -31,7 +31,7 @@ export function hashApiKey(plaintext: string): string {
   return crypto.createHash("sha256").update(plaintext).digest("hex");
 }
 
-/** Rough validation — the key *looks* like one we'd issue. */
+/** Rough validation ; the key *looks* like one we'd issue. */
 export function isApiKeyShape(s: string | null | undefined): boolean {
   return !!s && s.startsWith(KEY_PREFIX) && s.length >= KEY_PREFIX.length + 20;
 }

@@ -36,7 +36,7 @@ export function AppFooter() {
               className="app-footer-logo"
               aria-label="InsiderTrades accueil"
             >
-              <LogoWordmark height={46} />
+              <LogoWordmark height={60} />
             </Link>
             <p className="app-footer-tagline">
               Surveillance des déclarations de transactions de dirigeants publiées
@@ -81,12 +81,12 @@ export function AppFooter() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="app-footer-source"
-                title="AMF — Autorité des Marchés Financiers"
+                title="AMF · Autorité des Marchés Financiers"
               >
                 <span className="app-footer-source-logo">
                   <Image
                     src="/logo-amf.png"
-                    alt="AMF — Autorité des Marchés Financiers"
+                    alt="AMF · Autorité des Marchés Financiers"
                     width={60}
                     height={26}
                     style={{ objectFit: "contain" }}

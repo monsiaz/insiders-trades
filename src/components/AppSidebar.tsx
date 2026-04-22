@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo, LogoMark } from "./Logo";
@@ -72,21 +73,68 @@ const NAV = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   return (
-    <nav className="app-sidebar" aria-label="Navigation principale">
-      {/* Logo — icon always visible; on hover: name beside + tagline below */}
+    <>
+      {/* Mobile toggle button — visible only on < md when sidebar is closed */}
+      <button
+        onClick={() => setOpen(true)}
+        className={`fixed top-3 left-3 z-[300] flex md:hidden items-center justify-center w-9 h-9 rounded-lg border border-[var(--border-med)] bg-[var(--bg-surface)] text-[var(--tx-2)] shadow-sm transition-opacity duration-150 ${open ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+        aria-label="Ouvrir la navigation"
+        aria-expanded={open}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      </button>
+
+      {/* Backdrop — mobile only */}
+      {open && (
+        <div
+          className="fixed inset-0 z-[290] md:hidden bg-black/40 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+          aria-hidden
+        />
+      )}
+
+      {/* Sidebar */}
+      <nav
+        className={`app-sidebar
+          fixed md:relative inset-y-0 left-0 z-[295] md:z-auto
+          w-64 md:w-auto
+          flex flex-col
+          bg-[var(--bg-surface)] md:bg-transparent
+          border-r border-[var(--border-med)] md:border-0
+          transition-transform duration-200 ease-in-out md:transition-none
+          ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+        `}
+        aria-label="Navigation principale"
+      >
+        {/* Mobile close button */}
+        <button
+          onClick={() => setOpen(false)}
+          className="absolute top-3 right-3 md:hidden flex items-center justify-center w-8 h-8 rounded-lg text-[var(--tx-3)] hover:bg-[var(--bg-hover)] transition-colors"
+          aria-label="Fermer la navigation"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </button>
+      {/* Logo · icon always visible; on hover: name beside + tagline below */}
       <div className="mb-4 flex-shrink-0 w-full">
         <Link href="/" className="block" aria-label="InsiderTrades accueil">
           <div className="flex items-center gap-3 px-3 py-1">
-            <LogoMark size={36} />
+            <LogoMark size={40} />
             <div className="sidebar-label">
-              <div style={{ fontFamily: "'Banana Grotesk', 'Inter', system-ui, sans-serif", fontWeight: 700, fontSize: "0.875rem", letterSpacing: "-0.025em", color: "var(--tx-1)" }}>InsiderTrades</div>
-              <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: "0.58rem", letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--tx-3)", fontWeight: 600 }}>AMF · France</div>
+              <div style={{ fontFamily: "'Banana Grotesk', 'Inter', system-ui, sans-serif", fontWeight: 800, fontSize: "0.95rem", letterSpacing: "-0.03em", color: "var(--tx-1)" }}>InsiderTrades</div>
+              <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: "0.58rem", letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--tx-2)", fontWeight: 600 }}>AMF · France</div>
             </div>
           </div>
         </Link>
-        {/* Brand tagline — slides in below logo when sidebar expands */}
+        {/* Brand tagline · slides in below logo when sidebar expands */}
         <div className="sidebar-brand-text px-3 pb-1">
           <div style={{
             fontFamily: "'Inter', system-ui, sans-serif",
@@ -147,6 +195,7 @@ export function AppSidebar() {
         </a>
       </div>
     </nav>
+    </>
   );
 }
 
@@ -162,7 +211,7 @@ export function AppTopBar() {
         <span style={{ fontFamily: "'Banana Grotesk', 'Inter', system-ui, sans-serif", fontWeight: 700, fontSize: "0.875rem", letterSpacing: "-0.025em", color: "var(--tx-1)" }}>InsiderTrades</span>
       </Link>
 
-      {/* Page title — with brand accent dot */}
+      {/* Page title · with brand accent dot */}
       <div className="hidden md:flex items-center gap-2">
         <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--c-indigo)", flexShrink: 0, display: "inline-block" }} />
         <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: "0.875rem", fontWeight: 500, color: "var(--tx-2)", letterSpacing: "0" }}>

@@ -2,13 +2,13 @@
  * GET /api/company/[slug]/news
  *
  * Returns the latest news headlines for a company. Strategy:
- *   1. Google News RSS (company name + "action Bourse" query) — primary.
+ *   1. Google News RSS (company name + "action Bourse" query) · primary.
  *      Free, reliable, FR-filtered, covers small & mid caps.
- *   2. Yahoo Finance RSS by ticker — fallback for larger caps.
+ *   2. Yahoo Finance RSS by ticker · fallback for larger caps.
  *
  * Both results are merged + deduplicated, sorted by pubDate, capped at 10.
  *
- * Cache: s-maxage=900 (15 min) + SWR=3600 (1h) — news moves slowly.
+ * Cache: s-maxage=900 (15 min) + SWR=3600 (1h) · news moves slowly.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -68,7 +68,7 @@ function parseRss(xml: string): NewsItem[] {
     if (!title || !link || !pubDate) continue;
     title = decodeEntities(title);
 
-    // Google News titles often end with " - Publisher" — extract publisher
+    // Google News titles often end with " - Publisher" · extract publisher
     let publisher: string | null =
       extract("source", block) ??
       extract("dc:creator", block) ??
@@ -94,7 +94,7 @@ function parseRss(xml: string): NewsItem[] {
         .replace(/\s+/g, " ")
         .trim();
       if (description.length > 220) description = description.slice(0, 218).trimEnd() + "\u2026";
-      // Google News descriptions often just repeat the title — skip if too similar
+      // Google News descriptions often just repeat the title · skip if too similar
       const lcDesc = description.toLowerCase();
       const lcTitle = title.toLowerCase();
       if (lcDesc.startsWith(lcTitle.slice(0, 30))) description = null;

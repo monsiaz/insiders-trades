@@ -38,13 +38,13 @@ export default function ForgotPasswordPage() {
           ) : (
             <form onSubmit={onSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Email</label>
+                <label className="block text-sm font-semibold mb-1.5" style={{ color: "var(--tx-2)" }}>Email</label>
                 <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
                   className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                   placeholder="vous@exemple.com" />
               </div>
               <button type="submit" disabled={loading}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
+                className="btn btn-primary w-full rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading ? "Envoi…" : "Envoyer le lien"}
               </button>
             </form>

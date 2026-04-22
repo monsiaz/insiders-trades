@@ -1,5 +1,5 @@
 /**
- * Admin AI assistant — OpenAI chat with read-only DB tools.
+ * Admin AI assistant · OpenAI chat with read-only DB tools.
  *
  *   POST /api/admin/ai
  *     body: {
@@ -38,7 +38,7 @@ Tu aides l'administrateur à :
   • produire des résumés et recommandations opérationnelles.
 
 Règles strictes :
-  • Utilise toujours les outils fournis pour obtenir des données FRAÎCHES — ne jamais inventer de chiffres.
+  • Utilise toujours les outils fournis pour obtenir des données FRAÎCHES · ne jamais inventer de chiffres.
   • Si une question peut être répondue en appelant un outil, appelle-le.
   • Mentionne les noms de tables/outils quand c'est utile à l'admin.
   • Formate les réponses en Markdown (listes, titres, code inline).
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
   for (let round = 0; round < MAX_ROUNDS; round++) {
     let completion;
     try {
-      // Some newer models (gpt-5.x) reject temperature != 1 — drop it for those.
+      // Some newer models (gpt-5.x) reject temperature != 1 · drop it for those.
       const isReasoningModel = /^gpt-5/i.test(model);
       completion = await openai.chat.completions.create({
         model,
@@ -181,7 +181,7 @@ export async function POST(req: NextRequest) {
       continue; // next round
     }
 
-    // No more tool calls — we have a final reply.
+    // No more tool calls · we have a final reply.
     finalReply = msg.content ?? "";
     break;
   }

@@ -4,14 +4,82 @@ import Link from "next/link";
 import { DeclarationCard } from "@/components/DeclarationCard";
 import { CompanySyncButton } from "@/components/CompanySyncButton";
 import { EnrichButton } from "@/components/EnrichButton";
-import { StockChart } from "@/components/StockChart";
+import dynamic from "next/dynamic";
 import { CompanyFinancials } from "@/components/CompanyFinancials";
-import { CompanyBacktestWidget } from "@/components/CompanyBacktestWidget";
+
+const StockChart = dynamic(() => import("@/components/StockChart").then(m => ({ default: m.StockChart })), {
+  loading: () => <div style={{ height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.8rem" }}>Chargement du graphique…</div>,
+});
+
+const CompanyBacktestWidget = dynamic(() => import("@/components/CompanyBacktestWidget").then(m => ({ default: m.CompanyBacktestWidget })), {
+  loading: () => <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.8rem" }}>Chargement des statistiques…</div>,
+});
 import { CompanyNews } from "@/components/CompanyNews";
 import { DeclarationType } from "@prisma/client";
 import { CompanyLogo } from "@/components/CompanyLogo";
+import { unstable_cache } from "next/cache";
 
 export const revalidate = 300; // Revalidate every 5 min
+
+const getCompanyData = (slug: string) =>
+  unstable_cache(
+    async () => {
+      const company = await prisma.company.findUnique({
+        where: { slug },
+        include: { _count: { select: { declarations: true, insiders: true } } },
+      });
+      if (!company) return null;
+
+      const [typeCounts, lastDecl, isinRow, buyTotal, sellTotal, allTradeEvents] =
+        await Promise.all([
+          prisma.declaration.groupBy({ by: ["type"], where: { companyId: company.id }, _count: true }),
+          prisma.declaration.findFirst({
+            where: { companyId: company.id, type: "DIRIGEANTS" },
+            orderBy: { pubDate: "desc" },
+            select: { pubDate: true },
+          }),
+          prisma.declaration.findFirst({
+            where: { companyId: company.id, type: "DIRIGEANTS", isin: { not: null } },
+            select: { isin: true },
+          }),
+          prisma.declaration.aggregate({
+            where: { companyId: company.id, type: "DIRIGEANTS", transactionNature: { contains: "Acquisition", mode: "insensitive" } },
+            _sum: { totalAmount: true },
+            _count: true,
+          }),
+          prisma.declaration.aggregate({
+            where: { companyId: company.id, type: "DIRIGEANTS", transactionNature: { contains: "Cession", mode: "insensitive" } },
+            _sum: { totalAmount: true },
+            _count: true,
+          }),
+          prisma.declaration.findMany({
+            where: { companyId: company.id, type: "DIRIGEANTS", transactionNature: { not: null } },
+            orderBy: { pubDate: "desc" },
+            take: 500,
+            select: { transactionDate: true, pubDate: true, transactionNature: true, totalAmount: true, insiderName: true },
+          }),
+        ]);
+
+      return { company, typeCounts, lastDecl, isinRow, buyTotal, sellTotal, allTradeEvents };
+    },
+    [`company-data-${slug}`],
+    { revalidate: 300, tags: [`company-${slug}`] }
+  )();
+
+// Pre-build the top 50 most-visited company pages (by declaration count)
+export async function generateStaticParams() {
+  try {
+    const companies = await prisma.company.findMany({
+      where: { declarations: { some: { type: "DIRIGEANTS" } } },
+      orderBy: { declarations: { _count: "desc" } },
+      take: 50,
+      select: { slug: true },
+    });
+    return companies.map((c) => ({ slug: c.slug }));
+  } catch {
+    return [];
+  }
+}
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -26,71 +94,33 @@ export default async function CompanyPage({ params, searchParams }: Props) {
   const offset = (pageNum - 1) * limit;
   const filterType = type as DeclarationType | undefined;
 
-  const company = await prisma.company.findUnique({
-    where: { slug },
-    include: {
-      _count: { select: { declarations: true, insiders: true } },
-    },
-  });
-  if (!company) notFound();
+  const cached = await getCompanyData(slug);
+  if (!cached) notFound();
+  const { company, typeCounts, lastDecl, isinRow, buyTotal, sellTotal, allTradeEvents } = cached;
 
   const where = {
     companyId: company.id,
     ...(filterType ? { type: filterType } : {}),
   };
 
-  const [declarations, totalCount, typeCounts, lastDecl, isinRow, buyTotal, sellTotal, allTradeEvents] =
-    await Promise.all([
-      prisma.declaration.findMany({
-        where,
-        orderBy: { pubDate: "desc" },
-        take: limit,
-        skip: offset,
-        select: {
-          id: true, amfId: true, type: true, pubDate: true, link: true, description: true,
-          insiderName: true, insiderFunction: true, transactionNature: true,
-          instrumentType: true, isin: true, unitPrice: true, volume: true,
-          totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
-          pdfParsed: true, signalScore: true, pctOfMarketCap: true, pctOfInsiderFlow: true,
-          company: { select: { name: true, slug: true, logoUrl: true } },
-          insider: { select: { name: true, slug: true } },
-        },
-      }),
-      prisma.declaration.count({ where }),
-      prisma.declaration.groupBy({ by: ["type"], where: { companyId: company.id }, _count: true }),
-      prisma.declaration.findFirst({
-        where: { companyId: company.id, type: "DIRIGEANTS" },
-        orderBy: { pubDate: "desc" },
-        select: { pubDate: true },
-      }),
-      prisma.declaration.findFirst({
-        where: { companyId: company.id, type: "DIRIGEANTS", isin: { not: null } },
-        select: { isin: true },
-      }),
-      // Buy total
-      prisma.declaration.aggregate({
-        where: { companyId: company.id, type: "DIRIGEANTS", transactionNature: { contains: "Acquisition", mode: "insensitive" } },
-        _sum: { totalAmount: true },
-        _count: true,
-      }),
-      // Sell total
-      prisma.declaration.aggregate({
-        where: { companyId: company.id, type: "DIRIGEANTS", transactionNature: { contains: "Cession", mode: "insensitive" } },
-        _sum: { totalAmount: true },
-        _count: true,
-      }),
-      // All trade events for chart (up to 500 most recent, sorted by date)
-      prisma.declaration.findMany({
-        where: {
-          companyId: company.id,
-          type: "DIRIGEANTS",
-          transactionNature: { not: null },
-        },
-        orderBy: { pubDate: "desc" },
-        take: 500,
-        select: { transactionDate: true, pubDate: true, transactionNature: true, totalAmount: true, insiderName: true },
-      }),
-    ]);
+  const [declarations, totalCount] = await Promise.all([
+    prisma.declaration.findMany({
+      where,
+      orderBy: { pubDate: "desc" },
+      take: limit,
+      skip: offset,
+      select: {
+        id: true, amfId: true, type: true, pubDate: true, link: true, description: true,
+        insiderName: true, insiderFunction: true, transactionNature: true,
+        instrumentType: true, isin: true, unitPrice: true, volume: true,
+        totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
+        pdfParsed: true, signalScore: true, pctOfMarketCap: true, pctOfInsiderFlow: true,
+        company: { select: { name: true, slug: true, logoUrl: true } },
+        insider: { select: { name: true, slug: true } },
+      },
+    }),
+    prisma.declaration.count({ where }),
+  ]);
 
   const typeMap = Object.fromEntries(typeCounts.map((t) => [t.type, t._count]));
   const totalPages = Math.ceil(totalCount / limit);
@@ -109,7 +139,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
   const formatAmount = (v: number | null | undefined) =>
     v
       ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0, notation: v >= 1_000_000 ? "compact" : "standard" }).format(v)
-      : "—";
+      : "·";
 
   return (
     <div className="content-wrapper">

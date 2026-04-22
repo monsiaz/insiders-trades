@@ -47,7 +47,7 @@ export function buildOpenApiSpec() {
   return {
     openapi: "3.1.0",
     info: {
-      title: "Insiders Trades Sigma — Public REST API",
+      title: "Insiders Trades Sigma · Public REST API",
       version: "1.0.0",
       description: `
 API publique d'Insiders Trades Sigma. Toutes les données publiques AMF (déclarations
@@ -56,8 +56,8 @@ Yahoo, signaux composites) sont accessibles via cette API.
 
 ## Authentification
 Chaque requête doit inclure une clé API :
-  - \`Authorization: Bearer <your_api_key>\` — **recommandé**
-  - \`X-Api-Key: <your_api_key>\` — alternative
+  - \`Authorization: Bearer <your_api_key>\` · **recommandé**
+  - \`X-Api-Key: <your_api_key>\` · alternative
 
 Les clés sont créées depuis votre compte (page **Mon compte → Clés API**). La clé est affichée
 **une seule fois** à la création. Stockez-la en lieu sûr.

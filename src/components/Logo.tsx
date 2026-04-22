@@ -7,7 +7,7 @@ interface LogoProps {
 }
 
 /**
- * LogoMark — the brand icon only (eye + upward arrow).
+ * LogoMark ; the brand icon only (eye + upward arrow).
  *
  * Theme-aware: renders both light and dark variants and relies on CSS classes
  * (.light / .dark on <html>) to show the right one. No JS/flicker.
@@ -48,7 +48,7 @@ export function LogoMark({ size = 32 }: { size?: number }) {
 }
 
 /**
- * Logo — mark + "InsiderTrades" text inline (used in nav).
+ * Logo · mark + "InsiderTrades" text inline (used in nav).
  */
 export function Logo({ size = 32, showText = true, className = "" }: LogoProps) {
   return (
@@ -58,9 +58,9 @@ export function Logo({ size = 32, showText = true, className = "" }: LogoProps) 
         <div className="flex flex-col leading-none">
           <span
             style={{
-              fontSize: size * 0.44,
+              fontSize: size * 0.46,
               fontFamily: "'Banana Grotesk', 'Inter', system-ui, sans-serif",
-              fontWeight: 700,
+              fontWeight: 800,
               letterSpacing: "-0.03em",
               color: "var(--tx-1)",
               lineHeight: 1,
@@ -75,7 +75,7 @@ export function Logo({ size = 32, showText = true, className = "" }: LogoProps) 
               fontWeight: 600,
               letterSpacing: "0.09em",
               textTransform: "uppercase" as const,
-              color: "var(--tx-3)",
+              color: "var(--tx-2)",
               marginTop: "3px",
             }}
           >
@@ -88,7 +88,7 @@ export function Logo({ size = 32, showText = true, className = "" }: LogoProps) 
 }
 
 /**
- * LogoWordmark — the full "INSIDERS TRADES SIGMA" lockup with mark above.
+ * LogoWordmark ; the full "INSIDERS TRADES SIGMA" lockup with mark above.
  * Perfect for hero / footer / social cards. Theme-aware.
  */
 export function LogoWordmark({

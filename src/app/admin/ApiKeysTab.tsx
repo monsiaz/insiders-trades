@@ -102,11 +102,11 @@ export function ApiKeysTab({
           gap: "12px",
         }}
       >
-        <MiniStat label="Clés actives" value={stats?.activeKeys ?? "—"} color="var(--c-emerald)" />
-        <MiniStat label="Révoquées"    value={stats?.revokedKeys ?? "—"} color="var(--c-crimson)" />
-        <MiniStat label="Propriétaires uniques" value={stats?.uniqueOwners ?? "—"} color="var(--c-indigo-2)" />
-        <MiniStat label="Requêtes 24h" value={stats?.requestsToday?.toLocaleString("fr-FR") ?? "—"} color="var(--gold)" />
-        <MiniStat label="Requêtes total" value={stats?.totalRequests?.toLocaleString("fr-FR") ?? "—"} color="var(--c-violet)" />
+        <MiniStat label="Clés actives" value={stats?.activeKeys ?? "·"} color="var(--c-emerald)" />
+        <MiniStat label="Révoquées"    value={stats?.revokedKeys ?? "·"} color="var(--c-crimson)" />
+        <MiniStat label="Propriétaires uniques" value={stats?.uniqueOwners ?? "·"} color="var(--c-indigo-2)" />
+        <MiniStat label="Requêtes 24h" value={stats?.requestsToday?.toLocaleString("fr-FR") ?? "·"} color="var(--gold)" />
+        <MiniStat label="Requêtes total" value={stats?.totalRequests?.toLocaleString("fr-FR") ?? "·"} color="var(--c-violet)" />
       </div>
 
       {/* Top consumers */}
@@ -288,7 +288,7 @@ function MiniStat({ label, value, color }: { label: string; value: number | stri
 }
 
 function fmtAgo(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "·";
   const d = new Date(iso);
   const diff = Date.now() - d.getTime();
   if (diff < 0) return "future";

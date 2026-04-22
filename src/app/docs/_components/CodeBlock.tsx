@@ -86,7 +86,7 @@ export function CodeBlock({
 }
 
 /**
- * CodeTabs — shows the same operation in multiple languages (cURL / JS / Python).
+ * CodeTabs · shows the same operation in multiple languages (cURL / JS / Python).
  */
 export function CodeTabs({
   tabs,

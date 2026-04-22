@@ -1,11 +1,11 @@
 /**
- * /strategie — Public "Winning Strategy" showcase.
+ * /strategie · Public "Winning Strategy" showcase.
  *
  * Hero : "La stratégie qui a battu le CAC 40 chaque année depuis 2022."
  * Parts :
  *   1. Résultats année par année (table + barres)
  *   2. Les 6 critères de la stratégie (carte détaillée)
- *   3. Signaux live matching — 90 dernier jours
+ *   3. Signaux live matching · 90 dernier jours
  *   4. Comment reproduire (3 étapes)
  *   5. Disclaimer honnête
  *
@@ -26,14 +26,14 @@ import {
 export const revalidate = 900; // 15 min
 
 export const metadata = {
-  title: "Stratégie Sigma · bat le CAC 40 chaque année — Insiders Trades",
+  title: "Stratégie Sigma · bat le CAC 40 chaque année · Insiders Trades",
   description:
     "La stratégie Sigma découverte par grid-search sur 583 200 combinaisons de filtres. Bat le CAC 40 chaque année depuis 2022 : +16.3% annualisé, Sharpe 1.00, alpha +10.4 pts/an. Signaux live.",
 };
 
 const fmtPct = (n: number, d = 1) => (n > 0 ? "+" : "") + n.toFixed(d) + "%";
 const fmtEur = (n: number | null | undefined) => {
-  if (n == null) return "—";
+  if (n == null) return "·";
   if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)} Md€`;
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} M€`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(0)} k€`;
@@ -179,7 +179,7 @@ export default async function StrategiePage() {
         </div>
 
         <Callout tone="info">
-          <strong>Note :</strong> l&apos;année 2026 n&apos;est pas encore affichée — nous avons
+          <strong>Note :</strong> l&apos;année 2026 n&apos;est pas encore affichée · nous avons
           moins de 5 mois de données et peu de signaux ont eu le temps de se matérialiser à
           T+90. Nous actualiserons cette page trimestriellement.
         </Callout>
@@ -194,7 +194,7 @@ export default async function StrategiePage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(240px, 100%), 1fr))",
             gap: "12px",
             margin: "20px 0",
           }}
@@ -216,7 +216,7 @@ export default async function StrategiePage() {
             detail={
               <>
                 Au moins <strong>2 dirigeants distincts</strong> ont acheté la société dans une fenêtre
-                de ±30 jours. Seul signal <em>empiriquement</em> robuste — c&apos;est la conviction collective
+                de ±30 jours. Seul signal <em>empiriquement</em> robuste, c&apos;est la conviction collective
                 qui prédit le mouvement.
               </>
             }
@@ -258,7 +258,7 @@ export default async function StrategiePage() {
             detail={
               <>
                 Notre scoring composite (0–100) sert de filtre bas. Les autres filtres ci-dessus
-                font l&apos;essentiel du tri — inutile d&apos;exiger score ≥ 70.
+                font l&apos;essentiel du tri, inutile d&apos;exiger score ≥ 70.
               </>
             }
           />
@@ -266,7 +266,7 @@ export default async function StrategiePage() {
 
         <Callout tone="warn">
           <strong>Horizon : T+90 jours.</strong> On achète à <code style={codeInline}>pubDate + 1</code>,
-          on revend 3 mois plus tard. Rebalancement trimestriel. L&apos;horizon court suffit —
+          on revend 3 mois plus tard. Rebalancement trimestriel. L&apos;horizon court suffit ·
           pas besoin de tenir 1 an.
         </Callout>
       </Section>
@@ -290,7 +290,7 @@ export default async function StrategiePage() {
               borderRadius: "4px",
             }}
           >
-            Aucun signal ne match tous les critères en ce moment. Revenez dans quelques jours —
+            Aucun signal ne match tous les critères en ce moment. Revenez dans quelques jours ·
             le marché produit 3 à 10 matches par mois en moyenne.
           </div>
         ) : (
@@ -310,11 +310,11 @@ export default async function StrategiePage() {
             },
             {
               title: "Achetez à pubDate + 1",
-              body: "Dès que la déclaration apparaît sur le site, achetez le lendemain à l'ouverture. N'attendez pas de confirmation technique — chaque jour de retard grignote l'edge.",
+              body: "Dès que la déclaration apparaît sur le site, achetez le lendemain à l'ouverture. N'attendez pas de confirmation technique · chaque jour de retard grignote l'edge.",
             },
             {
               title: "Revendez à T+90",
-              body: "3 mois après l'entrée, vendez sans sentimentalisme. Si vous aimez le titre, rachetez-le comme une position autonome — mais sortez le PnL de la stratégie.",
+              body: "3 mois après l'entrée, vendez sans sentimentalisme. Si vous aimez le titre, rachetez-le comme une position autonome, mais sortez le PnL de la stratégie.",
             },
           ].map((step, i) => (
             <li
@@ -381,7 +381,7 @@ export default async function StrategiePage() {
           </li>
           <li>
             <strong>Look-ahead bias minimal mais non-zéro.</strong> Nos filtres ont été optimisés
-            sur cette période — par construction, ils&nbsp;<em>s&apos;ajustent</em> à 2022-2025.
+            sur cette période · par construction, ils&nbsp;<em>s&apos;ajustent</em> à 2022-2025.
             Un test out-of-sample sur 2026-2027 sera le vrai juge.
           </li>
           <li>
@@ -391,7 +391,7 @@ export default async function StrategiePage() {
           </li>
           <li>
             <strong>Petit échantillon sur certains segments.</strong> 2022 et 2023 n&apos;ont respectivement
-            que 35 et 25 signaux matching — statistiquement maigre. Les années 2024 (71) et 2025 (118)
+            que 35 et 25 signaux matching · statistiquement maigre. Les années 2024 (71) et 2025 (118)
             sont plus solides.
           </li>
           <li>
@@ -404,6 +404,7 @@ export default async function StrategiePage() {
 
       {/* ── FINAL CTA ─────────────────────────────────────────────────────── */}
       <section
+        className="strat-cta"
         style={{
           marginTop: "60px",
           padding: "40px 32px",
@@ -437,7 +438,7 @@ export default async function StrategiePage() {
           }}
         >
           Alertes email quotidiennes filtrées sur les 6 critères de la stratégie gagnante.
-          Vous recevez uniquement ce qui compte — 3 à 10 signaux par mois en moyenne.
+          Vous recevez uniquement ce qui compte · 3 à 10 signaux par mois en moyenne.
         </p>
         <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
           <Link href="/recommendations?mode=winning" style={btnGold}>
@@ -451,6 +452,20 @@ export default async function StrategiePage() {
           </Link>
         </div>
       </section>
+
+      <style>{`
+        @media (max-width: 640px) {
+          .strat-cta { padding: 24px 16px !important; }
+          .strat-signal-card {
+            grid-template-columns: 40px 1fr !important;
+            grid-template-rows: auto auto !important;
+          }
+          .strat-signal-card > div:last-child {
+            grid-column: 2;
+            text-align: left !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -674,6 +689,7 @@ function SignalCard({ s }: { s: WinningSignal }) {
   return (
     <Link
       href={`/company/${s.company.slug}`}
+      className="strat-signal-card"
       style={{
         display: "grid",
         gridTemplateColumns: "44px 1fr auto",
@@ -706,7 +722,7 @@ function SignalCard({ s }: { s: WinningSignal }) {
           </span>
         )}
       </div>
-      <div style={{ minWidth: 0 }}>
+      <div style={{ minWidth: 0, overflow: "hidden" }}>
         <div
           style={{
             display: "flex",
@@ -728,7 +744,7 @@ function SignalCard({ s }: { s: WinningSignal }) {
             {s.company.name}
           </span>
           <span style={{ fontSize: "0.7rem", color: "var(--tx-3)", fontFamily: "'JetBrains Mono', monospace" }}>
-            {s.company.yahooSymbol ?? "—"}
+            {s.company.yahooSymbol ?? "·"}
           </span>
           {s.company.marketCap != null && (
             <span style={{ fontSize: "0.7rem", color: "var(--tx-4)", fontFamily: "'JetBrains Mono', monospace" }}>
@@ -746,7 +762,7 @@ function SignalCard({ s }: { s: WinningSignal }) {
           </span>
         </div>
         <div style={{ fontSize: "0.78rem", color: "var(--tx-2)", lineHeight: 1.5 }}>
-          {s.insider.name} · {s.insider.role ?? s.insider.function ?? "—"}
+          {s.insider.name} · {s.insider.role ?? s.insider.function ?? "·"}
           {s.transaction.pctOfMarketCap != null && (
             <> · <strong>{s.transaction.pctOfMarketCap.toFixed(3)}%</strong> du mcap</>
           )}
@@ -835,6 +851,7 @@ const codeInline: React.CSSProperties = {
   border: "1px solid var(--border)",
 };
 const btnGold: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", minHeight: "44px",
   padding: "12px 22px",
   background: "var(--gold)",
   color: "#0A0C10",
@@ -846,6 +863,7 @@ const btnGold: React.CSSProperties = {
   boxShadow: "0 4px 16px rgba(184,149,90,0.30)",
 };
 const btnGhost: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", minHeight: "44px",
   padding: "12px 22px",
   border: "1px solid var(--border-strong)",
   color: "var(--tx-2)",

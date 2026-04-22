@@ -1,5 +1,5 @@
 /**
- * /admin/tech — Deep technical documentation (admin-only).
+ * /admin/tech · Deep technical documentation (admin-only).
  *
  * Covers:
  *   1. Architecture & stack
@@ -24,8 +24,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
-  title: "Architecture technique — Insiders Trades Sigma",
-  description: "Documentation interne admin — pipelines, algorithmes, stack, roadmap.",
+  title: "Architecture technique · Insiders Trades Sigma",
+  description: "Documentation interne admin · pipelines, algorithmes, stack, roadmap.",
 };
 
 export const dynamic = "force-dynamic";
@@ -365,9 +365,9 @@ export default async function AdminTechPage() {
 
   const s = await getLiveStats();
   const fmtDateFr = (d: Date | null) =>
-    d ? d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }) : "—";
+    d ? d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }) : "·";
   const fmtDateTimeFr = (d: Date | null) =>
-    d ? d.toLocaleString("fr-FR") : "—";
+    d ? d.toLocaleString("fr-FR") : "·";
   const pct = (num: number, total: number) =>
     total > 0 ? Math.round((num / total) * 100) : 0;
 
@@ -459,7 +459,7 @@ export default async function AdminTechPage() {
       <Section
         eyebrow="1. Vue d'ensemble"
         title="Architecture globale"
-        sub="Monolithe Next.js 16 App Router, déployé sur Vercel (edge + Node runtime), Neon Postgres comme source de vérité, Vercel Blob pour les assets, jobs planifiés via Vercel Cron. Pas de micro-services, pas de queue — tout passe par des routes API idempotentes ou des scripts locaux."
+        sub="Monolithe Next.js 16 App Router, déployé sur Vercel (edge + Node runtime), Neon Postgres comme source de vérité, Vercel Blob pour les assets, jobs planifiés via Vercel Cron. Pas de micro-services, pas de queue ; tout passe par des routes API idempotentes ou des scripts locaux."
       >
         <Card accent="var(--gold)" padding="18px 22px">
           <pre
@@ -653,7 +653,7 @@ export default async function AdminTechPage() {
       {/* ── 6. Scoring engine ── */}
       <Section
         eyebrow="6. Moteur de scoring"
-        title="signalScore — décomposition 100 pts"
+        title="signalScore · décomposition 100 pts"
         sub={<>Calculé par <Code>src/lib/signals.ts</Code> à chaque <Code>scoreDeclarations()</Code>. Re-scoring manuel via l&apos;onglet Cron admin. Budget total strict de 100.</>}
       >
         <div style={{ border: "1px solid var(--border-med)", borderRadius: "3px", overflow: "hidden" }}>
@@ -738,7 +738,7 @@ export default async function AdminTechPage() {
       {/* ── 8. Reco engine ── */}
       <Section
         eyebrow="8. Moteur de recommandation"
-        title="recoScore — 100 pts avec backtest"
+        title="recoScore · 100 pts avec backtest"
         sub={<>Voir <Code>src/lib/recommendation-engine.ts</Code>. Cache <Code>unstable_cache</Code> 10 min pour <Code>general</Code> + <Code>sells</Code>.</>}
       >
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "10px" }}>
@@ -786,7 +786,7 @@ export default async function AdminTechPage() {
         sub="Architecture découplée : le rendu HTML vit dans src/lib/email.ts (renderDailyDigest), la composition par utilisateur dans src/lib/digest.ts (buildDigestForUser), le dispatcher dans /api/cron."
       >
         <Para>
-          Trois sections dans chaque digest : (1) alertes portfolio — mouvements d&apos;insiders sur les positions de l&apos;utilisateur dans les 48 dernières heures, (2) top 3 BUY (lookback 7j), (3) top 3 SELL. Template HTML 100% inline, table-based pour la compat Outlook, pas d&apos;images externes (logo SVG inline).
+          Trois sections dans chaque digest : (1) alertes portfolio · mouvements d&apos;insiders sur les positions de l&apos;utilisateur dans les 48 dernières heures, (2) top 3 BUY (lookback 7j), (3) top 3 SELL. Template HTML 100% inline, table-based pour la compat Outlook, pas d&apos;images externes (logo SVG inline).
         </Para>
         <Para>
           Subject personnalisé : <em>&laquo; 3 mouvements sur votre portfolio · Sigma &raquo;</em> ou <em>&laquo; Signaux du jour · 3 achats, 2 ventes &raquo;</em>. Preview text (teaser) calculé depuis la première ligne pertinente. Désabonnement en un clic vers <Code>/portfolio?settings=alerts</Code>.
@@ -806,7 +806,7 @@ export default async function AdminTechPage() {
             <li><strong style={{ color: "var(--tx-1)" }}>Middleware full-site</strong> : chaque page + API demande un JWT valide, sauf <Code>/auth/*</Code>, <Code>/api/auth/*</Code> et les routes cron (protégées par <Code>CRON_SECRET</Code>).</li>
             <li><strong style={{ color: "var(--tx-1)" }}>JWT HS256</strong> · secret 64 bytes aléatoires stockés uniquement dans Vercel env encrypted. <Code>auth.ts</Code> refuse de démarrer en prod sans <Code>JWT_SECRET ≥ 32 chars</Code>.</li>
             <li><strong style={{ color: "var(--tx-1)" }}>Cookie session</strong> : HttpOnly + Secure + SameSite=lax + maxAge 30j.</li>
-            <li><strong style={{ color: "var(--tx-1)" }}>Passwords</strong> : bcryptjs cost 12 · jamais en clair · script <Code>scripts/set-admin-password.ts</Code> lit le mot de passe depuis argv/env.</li>
+            <li><strong style={{ color: "var(--tx-1)" }}>Passwords</strong> : bcryptjs cost 12 ; jamais en clair ; script <Code>scripts/set-admin-password.ts</Code> lit le mot de passe depuis argv/env.</li>
             <li><strong style={{ color: "var(--tx-1)" }}>Registration fermée</strong> : allow-list email dans <Code>register/route.ts</Code>. Autres emails → 403.</li>
             <li><strong style={{ color: "var(--tx-1)" }}>Admin endpoints</strong> : <Code>getCurrentUser().role === &quot;admin&quot;</Code> sinon 403. Le déclenchement de cron côté admin passe le <Code>CRON_SECRET</Code> server-side seulement.</li>
             <li><strong style={{ color: "var(--tx-1)" }}>.gitignore</strong> : <Code>.env*</Code> exclu. Aucun secret dans le repo (vérifié par grep).</li>
@@ -859,7 +859,7 @@ export default async function AdminTechPage() {
             { title: "Audit log persistent", body: "Table AuditEvent {id, userId, action, meta, at} pour tracer chaque action admin (ban, promote, set_credits, run-cron). Historique consultable dans l'admin." },
             { title: "Rate-limit côté app", body: "Middleware edge qui limite les appels /api/auth/login à 5/min par IP pour contrer le brute force (en complément du retry exponentiel UI)." },
             { title: "Cache distribué Redis", body: "Remplacer unstable_cache (per-region Vercel) par un cache Redis unique (Upstash) pour recos, logos, backtest stats. Gain : cohérence multi-région, TTL plus fins, invalidation ciblée." },
-            { title: "Scoring v2 — régression historique", body: "Au lieu du barème fixe (28/16/12/…), régresser les poids sur le return T+90 historique (logistic regression ou gradient boosting). Cross-validation walk-forward pour éviter le look-ahead." },
+            { title: "Scoring v2 · régression historique", body: "Au lieu du barème fixe (28/16/12/…), régresser les poids sur le return T+90 historique (logistic regression ou gradient boosting). Cross-validation walk-forward pour éviter le look-ahead." },
             { title: "Cluster detection probabiliste", body: "Actuellement : binaire (≥2 insiders distincts en 30j). Passer à un score continu basé sur la densité temporelle + taille de chaque trade + diversité des rôles." },
             { title: "Prix intraday + événements corporate", body: "Yahoo n'a pas les split/dividends structurés. Intégrer une source payante (Stooq, EOD, Alpaca) pour ajuster les backtests des annonces de dividende/split rétroactivement." },
             { title: "SEC EDGAR (ADR US cotés FR)", body: "Certaines sociétés cotées à Paris ont aussi des filings US (Form 4). Permettrait de croiser les insider trades FR avec les trades US." },
@@ -895,7 +895,7 @@ export default async function AdminTechPage() {
         }}
       >
         <p style={{ fontSize: "0.78rem", color: "var(--tx-3)", margin: 0, lineHeight: 1.55 }}>
-          Documentation interne — se met à jour automatiquement avec les compteurs live.
+          Documentation interne · se met à jour automatiquement avec les compteurs live.
         </p>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
           <Link href="/admin" className="btn btn-outline" style={{ fontSize: "0.82rem" }}>

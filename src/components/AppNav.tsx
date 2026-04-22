@@ -174,8 +174,11 @@ export function AppNav() {
           </div>
         </div>
 
-        {/* Mobile dropdown menu */}
-        {menuOpen && (
+      </header>
+
+      {/* Mobile dropdown — rendered OUTSIDE the header to escape contain:paint clipping */}
+      {menuOpen && (
+        <>
           <div className="nav-mobile-menu">
             <nav>
               {NAV.map((item) => {
@@ -222,16 +225,14 @@ export function AppNav() {
               </div>
             </nav>
           </div>
-        )}
-      </header>
 
-      {/* Backdrop */}
-      {menuOpen && (
-        <div
-          className="nav-backdrop"
-          onClick={() => setMenuOpen(false)}
-          aria-hidden
-        />
+          {/* Backdrop */}
+          <div
+            className="nav-backdrop"
+            onClick={() => setMenuOpen(false)}
+            aria-hidden
+          />
+        </>
       )}
     </>
   );

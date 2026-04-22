@@ -74,6 +74,7 @@ export function AppNav() {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   // Close on route change
   useEffect(() => { setMenuOpen(false); }, [pathname]);
@@ -85,26 +86,33 @@ export function AppNav() {
     });
   }, [router]);
 
-  // Close on outside click
+  // Close on outside pointer — covers BOTH header and panel refs
   useEffect(() => {
     if (!menuOpen) return;
-    function handle(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
+    function handle(e: PointerEvent) {
+      const inHeader = menuRef.current?.contains(e.target as Node);
+      const inPanel  = panelRef.current?.contains(e.target as Node);
+      if (!inHeader && !inPanel) setMenuOpen(false);
     }
-    document.addEventListener("mousedown", handle);
-    return () => document.removeEventListener("mousedown", handle);
+    document.addEventListener("pointerdown", handle);
+    return () => document.removeEventListener("pointerdown", handle);
   }, [menuOpen]);
 
-  // Lock scroll when menu is open on mobile
+  // iOS-safe scroll lock: fixed body trick keeps scroll position
   useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
+    if (!menuOpen) return;
+    const scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    document.body.style.overflowY = "scroll";
+    return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflowY = "";
+      window.scrollTo(0, scrollY);
+    };
   }, [menuOpen]);
 
   return (
@@ -179,7 +187,7 @@ export function AppNav() {
       {/* Mobile dropdown — rendered OUTSIDE the header to escape contain:paint clipping */}
       {menuOpen && (
         <>
-          <div className="nav-mobile-menu">
+          <div className="nav-mobile-menu" ref={panelRef}>
             <nav>
               {NAV.map((item) => {
                 const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
@@ -226,11 +234,12 @@ export function AppNav() {
             </nav>
           </div>
 
-          {/* Backdrop */}
-          <div
+          {/* Backdrop — <button> fires reliably on iOS Safari unlike bare divs */}
+          <button
             className="nav-backdrop"
             onClick={() => setMenuOpen(false)}
-            aria-hidden
+            aria-label="Fermer le menu"
+            tabIndex={-1}
           />
         </>
       )}

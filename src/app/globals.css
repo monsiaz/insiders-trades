@@ -558,6 +558,8 @@ body::before {
   font-size: 0.9375rem; font-weight: 500;
   min-height: 48px;
   transition: background 0.12s, color 0.12s; margin-bottom: 2px;
+  -webkit-tap-highlight-color: rgba(184,149,90,0.12);
+  touch-action: manipulation;
 }
 .nav-mobile-link:hover { background: var(--bg-hover); color: var(--tx-1); }
 .nav-mobile-link.active { background: var(--gold-bg); color: var(--gold); font-weight: 600; }
@@ -576,9 +578,18 @@ body::before {
 }
 
 .nav-backdrop {
+  /* <button> element — fires reliably on iOS Safari */
   position: fixed; inset: 0; z-index: 199;
   background: rgba(0,0,0,0.35);
-  backdrop-filter: blur(2px); animation: fadeIn 0.15s ease;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.15s ease;
+  /* Reset button styles */
+  border: none; padding: 0; margin: 0;
+  cursor: pointer;
+  /* iOS tap highlight */
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 @media (max-width: 880px) {
@@ -1772,39 +1783,43 @@ input[type="search"], textarea, select {
 /* Mobile · single column, tighter rhythm */
 @media (max-width: 640px) {
   .app-footer { margin-top: 40px; }
-  .app-footer-inner { padding: 28px 16px 20px; }
+  .app-footer-inner { padding: 28px 16px 24px; }
 
-  /* Brand full-width, then 2-col for nav cols, sources full-width last */
+  /* 1-col brand, 2-col nav links, 1-col sources */
   .app-footer-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 24px 20px;
+    gap: 28px 20px;
     margin-bottom: 20px;
-    padding-bottom: 16px;
+    padding-bottom: 20px;
   }
+  /* Brand spans full width, stacked column */
   .app-footer-brand {
     grid-column: 1 / -1;
-    gap: 8px;
-    flex-direction: row;
-    align-items: flex-start;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 10px;
   }
-  /* Sources go full-width at the bottom */
+  /* Sources full width */
   .app-footer-col:last-child {
     grid-column: 1 / -1;
   }
 
-  .app-footer-logo { max-width: 160px; }
+  .app-footer-logo { max-width: 200px; }
   .app-footer-tagline {
     max-width: 100%;
-    font-size: 0.78rem;
-    line-height: 1.55;
-    flex: 1 1 240px;
+    font-size: 0.79rem;
+    line-height: 1.6;
   }
-  .app-footer-eyebrow { font-size: 0.58rem; margin-bottom: 8px; }
-  .app-footer-links { gap: 5px; }
-  .app-footer-link { font-size: 0.8rem; }
+  .app-footer-eyebrow { font-size: 0.58rem; margin-bottom: 10px; }
+  .app-footer-links { gap: 0; }
+  .app-footer-link {
+    font-size: 0.82rem;
+    display: block;
+    padding: 6px 0;             /* 44px min tap target per row */
+    min-height: 36px;
+    display: flex; align-items: center;
+  }
 
-  /* Sources: horizontal on mobile */
+  /* Sources: side-by-side cards */
   .app-footer-sources {
     flex-direction: row;
     flex-wrap: wrap;
@@ -1812,17 +1827,15 @@ input[type="search"], textarea, select {
   }
   .app-footer-source {
     flex: 1 1 140px;
-    padding: 8px 10px;
+    padding: 10px 12px;
     background: var(--bg-raised);
     border: 1px solid var(--border-med);
-    border-radius: 6px;
-    gap: 8px;
+    border-radius: 8px;
+    gap: 10px;
+    -webkit-tap-highlight-color: rgba(184,149,90,0.1);
   }
-  .app-footer-source-logo {
-    width: 48px;
-    height: 26px;
-  }
-  .app-footer-source-name { font-size: 0.74rem; }
+  .app-footer-source-logo { width: 48px; height: 24px; }
+  .app-footer-source-name { font-size: 0.75rem; }
   .app-footer-source-desc { font-size: 0.64rem; }
 
   .app-footer-bottom {
@@ -1831,11 +1844,7 @@ input[type="search"], textarea, select {
     gap: 4px;
     font-size: 0.64rem;
   }
-  .app-footer-legal {
-    gap: 5px;
-    line-height: 1.5;
-    flex-wrap: wrap;
-  }
+  .app-footer-legal { gap: 5px; flex-wrap: wrap; line-height: 1.6; }
   .app-footer-disclaimer { font-size: 0.62rem; }
 }
 

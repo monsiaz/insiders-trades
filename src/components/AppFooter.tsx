@@ -12,6 +12,7 @@ const NAV_LINKS = [
 ];
 
 const ABOUT_LINKS = [
+  { href: "/pitch", label: "Le Pitch investisseur" },
   { href: "/fonctionnement", label: "Comment ça marche" },
   { href: "/strategie", label: "Stratégie Sigma ★" },
   { href: "/methodologie", label: "Méthodologie" },

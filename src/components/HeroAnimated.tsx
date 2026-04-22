@@ -192,8 +192,8 @@ export function HeroAnimated({ winRate, totalDeclarations }: {
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{
             width: "7px", height: "7px", borderRadius: "50%",
-            background: "var(--c-emerald)",
-            boxShadow: "0 0 8px var(--c-emerald)",
+            background: "var(--gold)",
+            boxShadow: "0 0 8px var(--gold-bg)",
             animation: "pulse-dot 2s ease-in-out infinite",
             flexShrink: 0,
           }} />
@@ -204,7 +204,7 @@ export function HeroAnimated({ winRate, totalDeclarations }: {
         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
           {winRate != null && (
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontFamily: "'Banana Grotesk', monospace", fontSize: "0.85rem", fontWeight: 700, color: "var(--c-emerald)", letterSpacing: "-0.02em" }}>
+              <div style={{ fontFamily: "'Banana Grotesk', monospace", fontSize: "0.85rem", fontWeight: 700, color: "var(--tx-1)", letterSpacing: "-0.02em" }}>
                 {winRate.toFixed(0)}%
               </div>
               <div style={{ fontFamily: "'Inter', system-ui", fontSize: "0.58rem", color: "var(--tx-4)", textTransform: "uppercase", letterSpacing: "0.05em" }}>

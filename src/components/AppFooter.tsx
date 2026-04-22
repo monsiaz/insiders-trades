@@ -9,7 +9,16 @@ const NAV_LINKS = [
   { href: "/recommendations", label: "Recommandations" },
   { href: "/backtest", label: "Backtest & Signaux" },
   { href: "/portfolio", label: "Mon portfolio" },
+];
+
+const ABOUT_LINKS = [
+  { href: "/fonctionnement", label: "Comment ça marche" },
+  { href: "/strategie", label: "Stratégie Sigma ★" },
   { href: "/methodologie", label: "Méthodologie" },
+  { href: "/performance", label: "Performance & transparence" },
+  { href: "/docs", label: "Documentation API" },
+  { href: "/docs/mcp", label: "MCP Server ↗" },
+  { href: "/account/api-keys", label: "Mes clés API" },
 ];
 
 export function AppFooter() {
@@ -40,6 +49,20 @@ export function AppFooter() {
             <div className="app-footer-eyebrow">Navigation</div>
             <ul className="app-footer-links">
               {NAV_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="app-footer-link">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* À propos */}
+          <div className="app-footer-col">
+            <div className="app-footer-eyebrow">À propos</div>
+            <ul className="app-footer-links">
+              {ABOUT_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="app-footer-link">
                     {link.label}

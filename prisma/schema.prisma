@@ -146,6 +146,7 @@ model BacktestResult {
   declarationId String      @unique
   declaration   Declaration @relation(fields: [declarationId], references: [id])
   direction     String      @default("BUY")  // BUY | SELL | OTHER
+  // ── Insider-view: returns from transactionDate (what an insider captures) ──
   priceAtTrade  Float?
   price30d      Float?
   price60d      Float?
@@ -159,6 +160,13 @@ model BacktestResult {
   return160d    Float?
   return365d    Float?
   return730d    Float?
+  // ── Retail-view: returns from pubDate+1 (what a retail investor captures) ──
+  // Entry = close of the day AFTER the AMF publication (user sees and buys next morning)
+  priceAtPub       Float?    // close at pubDate+1
+  returnFromPub30d  Float?
+  returnFromPub90d  Float?
+  returnFromPub365d Float?
+  pubLeakPct        Float?    // (priceAtPub - priceAtTrade) / priceAtTrade * 100 — leak before user sees
   computedAt    DateTime    @default(now())
 }
 
@@ -199,6 +207,41 @@ model User {
 
   positions PortfolioPosition[]
   alerts    UserAlert[]
+  apiKeys   ApiKey[]
+}
+
+/// Personal API keys issued to users. Plaintext key is shown ONCE at creation
+/// and stored hashed (SHA-256, hex). `prefix` is the first 12 chars, safe to
+/// display for identification. Usage counters are rolled up on each request.
+model ApiKey {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  prefix          String    @unique    // e.g. "sit_live_Ab1C" — for UI display
+  keyHash         String    @unique    // sha256(plaintext), hex
+  scopes          String    @default("read") // "read" | "read:all" | "admin" (future)
+  lastUsedAt      DateTime?
+  lastUsedIp      String?
+  lastUserAgent   String?
+  totalRequests   Int       @default(0)
+  requestsToday   Int       @default(0)
+  todayResetAt    DateTime  @default(now())
+  revokedAt       DateTime?
+  revokedReason   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([keyHash])
+}
+
+/// Key-value store for admin-tunable settings (alert config, feature flags…).
+/// Value is a JSON blob so we can evolve the schema without migrations.
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
 }
 
 model UserAlert {

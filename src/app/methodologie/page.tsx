@@ -757,14 +757,14 @@ export default async function MethodologiePage() {
               pts: "0–4",
               desc:
                 "bonus si l'insider est net acheteur cumulé sur ce titre avant la transaction.",
-              accent: "var(--signal-pos)",
+              accent: "var(--gold)",
             },
             {
               label: "Fondamentaux de base",
               pts: "-4 à 12",
               desc:
                 "consensus analyste (1.0 → +6, 3.0 → 0), P/E (<10 → +3, <20 → +1), dette/equity (<30 → +3).",
-              accent: "var(--signal-pos)",
+              accent: "var(--c-indigo-2)",
             },
             {
               label: "Signaux composites",
@@ -887,7 +887,7 @@ export default async function MethodologiePage() {
               label: "Win rate historique",
               pts: "25",
               desc: "% de trades gagnants T+90 pour ce type de signal (fonction + taille société).",
-              accent: "var(--signal-pos)",
+              accent: "var(--gold)",
             },
             {
               label: "Retour estimé T+90",

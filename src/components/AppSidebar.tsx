@@ -117,8 +117,8 @@ export function AppSidebar() {
                   <span style={{
                     fontSize: "0.55rem", fontWeight: 800, letterSpacing: "0.06em",
                     padding: "1px 5px", borderRadius: "4px",
-                    background: "var(--c-mint-bg)", color: "var(--c-mint)",
-                    border: "1px solid var(--c-mint-bd)", lineHeight: 1.4,
+                    background: "var(--gold-bg)", color: "var(--gold)",
+                    border: "1px solid var(--gold-bd)", lineHeight: 1.4,
                   }}>
                     {item.badge}
                   </span>

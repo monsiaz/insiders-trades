@@ -5,87 +5,59 @@ import { unstable_cache } from "next/cache";
 import { SyncButton } from "@/components/SyncButton";
 import { CompaniesClient, type CompanyRow } from "@/components/CompaniesClient";
 
-export const revalidate = 300; // Revalidate every 5 min
+export const revalidate = 300;
 
-// Cache the Prisma query — invalidated every 5min or on demand
-const getCompaniesWithDecl = unstable_cache(
-  async () => prisma.company.findMany({
-    where: { declarations: { some: { type: "DIRIGEANTS" } } },
-    select: {
-      id: true, name: true, slug: true, amfToken: true,
-      marketCap: true, yahooSymbol: true, currentPrice: true, logoUrl: true,
-      _count: { select: { declarations: { where: { type: "DIRIGEANTS" } } } },
-      declarations: {
-        where: { type: "DIRIGEANTS" },
-        orderBy: { pubDate: "desc" },
-        take: 1,
-        select: { pubDate: true, insiderName: true, transactionNature: true, totalAmount: true },
-      },
-    },
-    orderBy: { name: "asc" },
-  }),
-  ["companies-with-decl"],
-  { revalidate: 300 }
-);
-
-const getAllCompanies = unstable_cache(
-  async () => prisma.company.findMany({
-    select: {
-      id: true, name: true, slug: true, amfToken: true,
-      marketCap: true, yahooSymbol: true, currentPrice: true, logoUrl: true,
-      _count: { select: { declarations: { where: { type: "DIRIGEANTS" } } } },
-      declarations: {
-        where: { type: "DIRIGEANTS" },
-        orderBy: { pubDate: "desc" },
-        take: 1,
-        select: { pubDate: true, insiderName: true, transactionNature: true, totalAmount: true },
-      },
-    },
-    orderBy: { name: "asc" },
-  }),
-  ["companies-all"],
-  { revalidate: 300 }
-);
-
-interface Props {
-  searchParams: Promise<{ all?: string; q?: string }>;
+// Single aggregated SQL query — one round trip, DB-side aggregate, no N+1.
+// Returns: one row per company with pre-computed count and latest declaration.
+interface CompanyAggregateRow {
+  id: string;
+  name: string;
+  slug: string;
+  amfToken: string | null;
+  marketCap: bigint | null;
+  yahooSymbol: string | null;
+  currentPrice: number | null;
+  logoUrl: string | null;
+  declarationCount: bigint;
+  lastPubDate: Date | null;
+  lastInsiderName: string | null;
+  lastTransactionNature: string | null;
+  lastTotalAmount: bigint | null;
 }
 
-export default async function CompaniesPage({ searchParams }: Props) {
-  const { all, q } = await searchParams;
-  const showAll = all === "1";
+async function fetchCompanies(showAll: boolean): Promise<CompanyRow[]> {
+  const rows = await prisma.$queryRawUnsafe<CompanyAggregateRow[]>(`
+    SELECT
+      c.id,
+      c.name,
+      c.slug,
+      c."amfToken",
+      c."marketCap",
+      c."yahooSymbol",
+      c."currentPrice",
+      c."logoUrl",
+      COALESCE(d.decl_count, 0)::bigint AS "declarationCount",
+      d.last_pub_date AS "lastPubDate",
+      d.last_insider AS "lastInsiderName",
+      d.last_nature AS "lastTransactionNature",
+      d.last_total AS "lastTotalAmount"
+    FROM "Company" c
+    ${showAll ? "LEFT JOIN" : "INNER JOIN"} (
+      SELECT
+        "companyId",
+        COUNT(*) AS decl_count,
+        MAX("pubDate") AS last_pub_date,
+        (ARRAY_AGG("insiderName" ORDER BY "pubDate" DESC))[1] AS last_insider,
+        (ARRAY_AGG("transactionNature" ORDER BY "pubDate" DESC))[1] AS last_nature,
+        (ARRAY_AGG("totalAmount" ORDER BY "pubDate" DESC))[1] AS last_total
+      FROM "Declaration"
+      WHERE "type" = 'DIRIGEANTS'
+      GROUP BY "companyId"
+    ) d ON d."companyId" = c.id
+    ORDER BY c.name ASC
+  `);
 
-  const raw = await (showAll ? getAllCompanies() : getCompaniesWithDecl());
-
-  // dead code kept for TypeScript type inference only — replaced by cached queries above
-  if (false) await prisma.company.findMany({
-    where: showAll ? undefined : { declarations: { some: { type: "DIRIGEANTS" } } },
-      select: {
-      id: true,
-      name: true,
-      slug: true,
-      amfToken: true,
-      marketCap: true,
-      yahooSymbol: true,
-      currentPrice: true,
-      logoUrl: true,
-      _count: { select: { declarations: { where: { type: "DIRIGEANTS" } } } },
-      declarations: {
-        where: { type: "DIRIGEANTS" },
-        orderBy: { pubDate: "desc" },
-        take: 1,
-        select: {
-          pubDate: true,
-          insiderName: true,
-          transactionNature: true,
-          totalAmount: true,
-        },
-      },
-    },
-    orderBy: { name: "asc" },
-  });
-
-  const companies: CompanyRow[] = raw.map((c) => ({
+  return rows.map((c) => ({
     id: c.id,
     name: c.name,
     slug: c.slug,
@@ -94,28 +66,77 @@ export default async function CompaniesPage({ searchParams }: Props) {
     yahooSymbol: c.yahooSymbol,
     currentPrice: c.currentPrice,
     logoUrl: c.logoUrl ?? null,
-    declarationCount: c._count.declarations,
-    lastDecl: c.declarations[0]
+    declarationCount: Number(c.declarationCount),
+    lastDecl: c.lastPubDate
       ? {
-          pubDate: c.declarations[0].pubDate.toISOString(),
-          insiderName: c.declarations[0].insiderName,
-          transactionNature: c.declarations[0].transactionNature,
-          totalAmount: c.declarations[0].totalAmount
-            ? Number(c.declarations[0].totalAmount)
-            : null,
+          pubDate: c.lastPubDate.toISOString(),
+          insiderName: c.lastInsiderName,
+          transactionNature: c.lastTransactionNature,
+          totalAmount: c.lastTotalAmount ? Number(c.lastTotalAmount) : null,
         }
       : null,
   }));
+}
+
+const getCompaniesWithDecl = unstable_cache(
+  () => fetchCompanies(false),
+  ["companies-with-decl-v2"],
+  { revalidate: 300 }
+);
+
+const getAllCompanies = unstable_cache(
+  () => fetchCompanies(true),
+  ["companies-all-v2"],
+  { revalidate: 300 }
+);
+
+// Also cache the total count separately so we can render the header instantly.
+const getCompanyCounts = unstable_cache(
+  async () => {
+    const [withDecl, all] = await Promise.all([
+      prisma.company.count({ where: { declarations: { some: { type: "DIRIGEANTS" } } } }),
+      prisma.company.count(),
+    ]);
+    return { withDecl, all };
+  },
+  ["company-counts-v1"],
+  { revalidate: 300 }
+);
+
+interface Props {
+  searchParams: Promise<{ all?: string; q?: string }>;
+}
+
+async function CompaniesGrid({ showAll, q }: { showAll: boolean; q?: string }) {
+  const companies = await (showAll ? getAllCompanies() : getCompaniesWithDecl());
+  return <CompaniesClient companies={companies} initialQ={q} />;
+}
+
+function CompaniesGridSkeleton() {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {[...Array(12)].map((_, i) => (
+        <div key={i} className="card p-5" style={{ height: "140px", animation: "pulse 1.5s ease-in-out infinite" }} />
+      ))}
+    </div>
+  );
+}
+
+export default async function CompaniesPage({ searchParams }: Props) {
+  const { all, q } = await searchParams;
+  const showAll = all === "1";
+
+  const counts = await getCompanyCounts();
+  const displayCount = showAll ? counts.all : counts.withDecl;
 
   return (
     <div className="content-wrapper">
-      {/* Header — editorial masthead */}
       <div className="mb-8">
         <div className="masthead-dateline">
           <span className="masthead-folio">Cotation</span>
           <span className="masthead-rule" aria-hidden="true" />
           <span className="masthead-count">
-            {companies.length.toLocaleString("fr-FR")} sociétés
+            {displayCount.toLocaleString("fr-FR")} sociétés
           </span>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -189,15 +210,8 @@ export default async function CompaniesPage({ searchParams }: Props) {
         </div>
       </div>
 
-      {/* Client component: search + filters + grid */}
-      <Suspense fallback={
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {[...Array(12)].map((_, i) => (
-            <div key={i} className="card p-5" style={{ height: "140px", animation: "pulse 1.5s ease-in-out infinite" }} />
-          ))}
-        </div>
-      }>
-        <CompaniesClient companies={companies} initialQ={q} />
+      <Suspense fallback={<CompaniesGridSkeleton />}>
+        <CompaniesGrid showAll={showAll} q={q} />
       </Suspense>
     </div>
   );

@@ -28,8 +28,8 @@ function AnimCollecte() {
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px", position: "relative" }}>
-        <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "var(--c-emerald)", boxShadow: "0 0 8px var(--c-emerald)", flexShrink: 0, animation: "pulse-dot 2s ease-in-out infinite" }} />
-        <span style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--c-indigo-2)" }}>
+        <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "var(--gold)", boxShadow: "0 0 8px var(--gold-bg)", flexShrink: 0, animation: "pulse-dot 2s ease-in-out infinite" }} />
+        <span style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--gold)" }}>
           AMF · BDIF FEED
         </span>
         <span style={{ marginLeft: "auto", fontSize: "0.62rem", color: "var(--tx-3)", fontFamily: "monospace" }}>LIVE</span>
@@ -37,20 +37,20 @@ function AnimCollecte() {
 
       {/* Data rows */}
       <div style={{ display: "flex", flexDirection: "column", gap: "6px", position: "relative" }}>
-        {rows.map((row, i) => (
+        {rows.map((row) => (
           <div key={row.ticker} style={{
             display: "flex", alignItems: "center", gap: "8px",
             padding: "7px 10px", borderRadius: "8px",
-            background: row.ok ? "color-mix(in srgb, var(--c-emerald) 8%, var(--bg-raised))" : "color-mix(in srgb, var(--c-indigo) 8%, var(--bg-raised))",
-            border: `1px solid ${row.ok ? "var(--c-emerald-bd)" : "var(--border)"}`,
+            background: row.ok ? "color-mix(in srgb, var(--gold) 6%, var(--bg-raised))" : "var(--bg-raised)",
+            border: `1px solid ${row.ok ? "var(--gold-bd)" : "var(--border)"}`,
             animation: `fade-in-row 0.4s ease both`,
             animationDelay: `${row.delay}s`,
           }}>
-            <span style={{ width: "6px", height: "6px", borderRadius: "50%", flexShrink: 0, background: row.ok ? "var(--c-emerald)" : "var(--c-amber)" }} />
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", flexShrink: 0, background: row.ok ? "var(--gold)" : "var(--tx-4)" }} />
             <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--tx-1)", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {row.ticker}
             </span>
-            <span style={{ fontSize: "0.7rem", fontFamily: "monospace", fontWeight: 700, color: row.ok ? "var(--c-emerald)" : "var(--tx-3)", flexShrink: 0 }}>
+            <span style={{ fontSize: "0.7rem", fontFamily: "monospace", fontWeight: 700, color: row.ok ? "var(--tx-1)" : "var(--tx-3)", flexShrink: 0 }}>
               {row.amount}
             </span>
           </div>
@@ -79,7 +79,8 @@ function AnimScoring() {
   const target = 87;
   const barTargets = [92, 85, 78, 65, 72];
   const barLabels = ["Montant/Mcap", "Rôle dirigeant", "Backtest", "Cluster", "Historique"];
-  const barColors = ["var(--c-emerald)", "var(--c-indigo)", "var(--c-violet)", "var(--c-amber)", "var(--c-emerald)"];
+  // DA v3: monochrome gold scale — no rainbow
+  const barColors = ["var(--gold)", "var(--gold-2)", "var(--corporate)", "var(--corporate-2)", "var(--gold)"];
 
   useEffect(() => {
     let frame = 0;
@@ -124,10 +125,10 @@ function AnimScoring() {
             strokeDasharray={`${filled} ${circumference - filled}`}
             transform={`rotate(${startAngle} ${cx} ${cy})`} />
           <defs>
+            {/* DA v3: gauge gradient navy → gold (brand only) */}
             <linearGradient id="gauge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="var(--c-indigo)" />
-              <stop offset="50%" stopColor="var(--c-violet)" />
-              <stop offset="100%" stopColor="var(--c-emerald)" />
+              <stop offset="0%" stopColor="var(--corporate)" />
+              <stop offset="100%" stopColor="var(--gold)" />
             </linearGradient>
           </defs>
         </svg>
@@ -202,16 +203,16 @@ function AnimBacktest() {
     <div style={{ padding: "16px 18px 10px", display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-        <span style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--c-indigo-2)" }}>
+        <span style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--gold)" }}>
           Performance · T+90
         </span>
         <div style={{ display: "flex", gap: "12px" }}>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: "0.8rem", fontWeight: 800, fontFamily: "monospace", color: "var(--c-emerald)" }}>{winRate}%</div>
+            <div style={{ fontSize: "0.8rem", fontWeight: 800, fontFamily: "monospace", color: "var(--tx-1)" }}>{winRate}%</div>
             <div style={{ fontSize: "0.58rem", color: "var(--tx-4)", letterSpacing: "0.04em" }}>win rate</div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: "0.8rem", fontWeight: 800, fontFamily: "monospace", color: "var(--c-emerald-2)" }}>{perfPct}</div>
+            <div style={{ fontSize: "0.8rem", fontWeight: 800, fontFamily: "monospace", color: "var(--gold)" }}>{perfPct}</div>
             <div style={{ fontSize: "0.58rem", color: "var(--tx-4)", letterSpacing: "0.04em" }}>retour</div>
           </div>
         </div>
@@ -221,8 +222,8 @@ function AnimBacktest() {
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style={{ flex: 1 }}>
         <defs>
           <linearGradient id="bg-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--c-emerald)" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="var(--c-emerald)" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="var(--gold)" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="var(--gold)" stopOpacity="0.02" />
           </linearGradient>
         </defs>
 
@@ -232,7 +233,7 @@ function AnimBacktest() {
             stroke="var(--border)" strokeWidth="0.5" />
         ))}
         <line x1={pL} y1={pT + 0.5 * plotH} x2={W - pR} y2={pT + 0.5 * plotH}
-          stroke="var(--c-indigo)" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
+          stroke="var(--corporate-2)" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
 
         {/* Area */}
         {N > 0 && (
@@ -245,19 +246,19 @@ function AnimBacktest() {
         {N > 0 && (
           <>
             <polyline points={`${linePts} ${headX},${headY}`}
-              fill="none" stroke="var(--c-emerald)" strokeWidth="2.5"
+              fill="none" stroke="var(--gold)" strokeWidth="2.5"
               strokeLinecap="round" strokeLinejoin="round"
-              style={{ filter: "drop-shadow(0 0 4px var(--c-emerald))" }} />
+              style={{ filter: "drop-shadow(0 0 4px var(--gold-bg))" }} />
             {/* Head dot */}
-            <circle cx={headX} cy={headY} r="5" fill="var(--c-emerald)" opacity="0.2" />
-            <circle cx={headX} cy={headY} r="3" fill="var(--c-emerald)" />
+            <circle cx={headX} cy={headY} r="5" fill="var(--gold)" opacity="0.2" />
+            <circle cx={headX} cy={headY} r="3" fill="var(--gold)" />
           </>
         )}
 
-        {/* Trade dots */}
+        {/* Trade dots — only losses get red; wins stay neutral (the line already shows performance) */}
         {trades.map(({ xi, win }) => {
+          const col = win ? "var(--gold)" : "var(--c-crimson)";
           if (xi > N) return null;
-          const col = win ? "var(--c-emerald)" : "var(--c-crimson)";
           return (
             <g key={xi}>
               <circle cx={xOf(xi)} cy={yOf(curve[xi])} r="5" fill={col} opacity="0.2" />
@@ -273,7 +274,7 @@ function AnimBacktest() {
 
       {/* Legend */}
       <div style={{ display: "flex", gap: "14px", marginTop: "6px" }}>
-        {[{color:"var(--c-emerald)",label:"Gain"},{color:"var(--c-crimson)",label:"Perte"}].map(l => (
+        {[{color:"var(--gold)",label:"Gain"},{color:"var(--c-crimson)",label:"Perte"}].map(l => (
           <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
             <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: l.color }} />
             <span style={{ fontSize: "0.65rem", color: "var(--tx-3)" }}>{l.label}</span>
@@ -314,9 +315,9 @@ function AnimSignal() {
           <span style={{
             display: "inline-flex", alignItems: "center", gap: "5px",
             padding: "4px 12px", borderRadius: "20px",
-            background: "var(--c-emerald)", color: "#fff",
+            background: "var(--gold-bg)", color: "var(--gold)",
+            border: "1px solid var(--gold-bd)",
             fontSize: "0.7rem", fontWeight: 800, letterSpacing: "0.06em",
-            boxShadow: "0 0 14px var(--c-emerald)",
           }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
@@ -339,7 +340,7 @@ function AnimSignal() {
       {/* Amount */}
       {show(45) && (
         <div style={{ opacity: alpha(45), marginTop: "8px", marginBottom: "10px" }}>
-          <span style={{ fontFamily: "monospace", fontSize: "1.2rem", fontWeight: 700, color: "var(--c-emerald)", letterSpacing: "-0.02em" }}>
+          <span style={{ fontFamily: "monospace", fontSize: "1.2rem", fontWeight: 700, color: "var(--tx-1)", letterSpacing: "-0.02em" }}>
             4 200 000 €
           </span>
           <span style={{ fontSize: "0.7rem", color: "var(--tx-3)", marginLeft: "6px" }}>déclaré</span>
@@ -351,19 +352,19 @@ function AnimSignal() {
         <div style={{ opacity: alpha(60) }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
             <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--tx-3)", letterSpacing: "0.06em" }}>SCORE CONVICTION</span>
-            <span style={{ fontSize: "0.72rem", fontWeight: 800, fontFamily: "monospace", color: "var(--c-indigo-2)" }}>{scoreVal}/100</span>
+            <span style={{ fontSize: "0.72rem", fontWeight: 800, fontFamily: "monospace", color: "var(--gold)" }}>{scoreVal}/100</span>
           </div>
           <div style={{ height: "8px", borderRadius: "4px", background: "var(--border-med)", overflow: "hidden" }}>
             <div style={{
               height: "100%", width: `${scoreVal}%`,
-              background: "linear-gradient(90deg, var(--c-indigo), var(--c-violet), var(--c-emerald))",
+              background: "linear-gradient(90deg, var(--corporate-2), var(--gold))",
               borderRadius: "4px",
               transition: "width 0.04s linear",
-              boxShadow: "0 0 10px var(--c-indigo)",
+              boxShadow: "0 0 10px var(--gold-bg)",
             }} />
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "5px" }}>
-            <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--c-emerald)" }}>+21.4% attendu T+90</span>
+            <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--gold)" }}>+21.4% attendu T+90</span>
           </div>
         </div>
       )}
@@ -446,7 +447,7 @@ export function HowItWorksAnimations() {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(270px, 1fr))", gap: "16px" }}>
       <AnimPanel
-        step="01" accentColor="var(--c-indigo)" pill="01 · Collecte"
+        step="01" accentColor="var(--corporate-2)" pill="01 · Collecte"
         title="Déclarations AMF en temps réel"
         body="Chaque déclaration BDIF est récupérée, parsée et enrichie automatiquement chaque jour. Prix, capitalisation, rôle, montant exact."
       >
@@ -454,7 +455,7 @@ export function HowItWorksAnimations() {
       </AnimPanel>
 
       <AnimPanel
-        step="02" accentColor="var(--c-violet)" pill="02 · Scoring"
+        step="02" accentColor="var(--gold)" pill="02 · Scoring"
         title="Score de conviction algorithmique"
         body="100 points composites : taille vs capitalisation, rôle du dirigeant, performances historiques de la catégorie, signaux cluster."
       >
@@ -462,7 +463,7 @@ export function HowItWorksAnimations() {
       </AnimPanel>
 
       <AnimPanel
-        step="03" accentColor="var(--c-emerald)" pill="03 · Backtest"
+        step="03" accentColor="var(--corporate-2)" pill="03 · Backtest"
         title="Validation sur données historiques"
         body="Chaque pattern est backtesté sur 22 000+ transactions depuis 2021. Win rate, Sharpe, retour médian T+90 / T+365 vérifiés."
       >
@@ -470,7 +471,7 @@ export function HowItWorksAnimations() {
       </AnimPanel>
 
       <AnimPanel
-        step="04" accentColor="var(--c-amber)" pill="04 · Signal"
+        step="04" accentColor="var(--gold)" pill="04 · Signal"
         title="Recommandation actionnable"
         body="Les meilleurs signaux remontent en Top 10 quotidien. Score, retour attendu, historique du dirigeant — tout en un clic."
       >

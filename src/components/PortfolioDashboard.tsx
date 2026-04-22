@@ -29,7 +29,11 @@ interface Position {
 interface User { id: string; email: string; name: string | null }
 interface PortfolioSummary { portfolioCash: number | null }
 
-const COLORS = ["#6366f1", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#f43f5e", "#3b82f6", "#a855f7", "#14b8a6", "#84cc16"];
+// DA v3: monochrome gold → navy gradient (no rainbow) for portfolio allocation chart
+const COLORS = [
+  "#B8955A", "#C9A772", "#A07F47", "#D4AF76", "#8C6C3D",
+  "#17305C", "#3A5687", "#5E7BA8", "#112A46", "#1F3A6A",
+];
 
 function fmt(n: number | null | undefined, d = 2): string {
   if (n == null) return "—";
@@ -376,8 +380,8 @@ export function PortfolioDashboard({ user }: { user: User }) {
                                       display: "inline-flex", alignItems: "center", gap: "3px",
                                       padding: "1px 6px", borderRadius: "4px",
                                       fontSize: "0.58rem", fontWeight: 800, letterSpacing: "0.05em",
-                                      background: "var(--c-emerald-bg)", border: "1px solid var(--c-emerald-bd)",
-                                      color: "var(--c-emerald)", flexShrink: 0,
+                                      background: "var(--gold-bg)", border: "1px solid var(--gold-bd)",
+                                      color: "var(--gold)", flexShrink: 0,
                                     }}>
                                       <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
                                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
@@ -535,7 +539,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
             <h2 className="text-sm font-semibold text-[var(--tx-1)] mb-1">Format CSV attendu</h2>
             <p className="text-xs text-[var(--tx-3)] mb-3">Séparateur : <code className="tx-brand">;</code> · Encodage : UTF-8 · Décimales : virgule</p>
             <div className="bg-black/30 rounded-xl p-3 overflow-x-auto">
-              <code className="text-xs tx-pos whitespace-nowrap">
+              <code className="text-xs whitespace-nowrap" style={{ color: "var(--tx-1)" }}>
                 name;isin;quantity;buyingPrice<br/>
                 NANOBIOTIX;FR0011341205;114;3,54<br/>
                 WAGA ENERGY;FR0012532810;66;17,40

@@ -11,7 +11,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({ log: ["error"] });
 
-const OPENAI_KEY  = "REDACTED_OPENAI_KEY";
+const OPENAI_KEY  = process.env.OPENAI_API_KEY;
+if (!OPENAI_KEY) {
+  console.error("❌ Missing OPENAI_API_KEY env var. Export it before running this script.");
+  process.exit(1);
+}
 const MODEL       = "gpt-4o";
 const BATCH_SIZE  = 50;
 const CONCURRENCY = 200;

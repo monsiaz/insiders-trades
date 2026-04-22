@@ -24,6 +24,15 @@ interface TradeEvent {
   person?: string;
 }
 
+/** Aggregated bubble — one per (day, buy|sell). Holds all trades that contributed. */
+interface TradeBubble {
+  date: string;
+  type: "buy" | "sell";
+  totalAmount: number;
+  count: number;
+  trades: TradeEvent[];
+}
+
 interface StockChartProps {
   isin?: string | null;
   companyName: string;
@@ -88,7 +97,7 @@ function fmtDate(d: string): string {
 const CustomChartTooltip = ({ active, payload, label, tradeMap, currency }: any) => {
   if (!active || !payload?.length) return null;
   const price = payload[0]?.value as number;
-  const trade = tradeMap?.get(label) as TradeEvent | undefined;
+  const bubbles = (tradeMap?.get(label) as TradeBubble[] | undefined) ?? [];
 
   return (
     <div style={{
@@ -96,25 +105,55 @@ const CustomChartTooltip = ({ active, payload, label, tradeMap, currency }: any)
       border: "1px solid var(--border-med)",
       background: "var(--bg-surface)",
       boxShadow: "var(--shadow-md)",
-      fontSize: "11px", minWidth: "160px",
+      fontSize: "11px", minWidth: "180px", maxWidth: "280px",
     }}>
       <p style={{ color: "var(--tx-3)", marginBottom: "4px" }}>{formatXAxis(label)}</p>
       <p style={{ color: "var(--tx-1)", fontWeight: 700, fontSize: "13px", fontFamily: "monospace" }}>
         {new Intl.NumberFormat("fr-FR", { style: "currency", currency: currency || "EUR", minimumFractionDigits: 2 }).format(price)}
       </p>
-      {trade && (
-        <div style={{
-          marginTop: "8px", paddingTop: "8px",
-          borderTop: "1px solid var(--border)",
-          color: trade.type === "sell" ? "var(--c-crimson)" : "var(--c-emerald)",
-        }}>
-          <div style={{ fontWeight: 700, fontSize: "10px", marginBottom: "2px" }}>
-            {trade.type === "sell" ? "▼ Vente" : "▲ Achat"}
+      {bubbles.map((bubble, i) => {
+        const isBuy = bubble.type === "buy";
+        // Uniq persons list
+        const persons = Array.from(new Set(bubble.trades.map((t) => t.person).filter(Boolean))) as string[];
+        return (
+          <div
+            key={i}
+            style={{
+              marginTop: "8px", paddingTop: "8px",
+              borderTop: "1px solid var(--border)",
+              color: isBuy ? "var(--signal-pos)" : "var(--signal-neg)",
+            }}
+          >
+            <div style={{ fontWeight: 700, fontSize: "10px", marginBottom: "3px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span>{isBuy ? "▲ Achat" : "▼ Vente"}</span>
+              {bubble.count > 1 && (
+                <span style={{
+                  background: isBuy ? "var(--signal-pos-bg)" : "var(--signal-neg-bg)",
+                  border: `1px solid ${isBuy ? "var(--signal-pos-bd)" : "var(--signal-neg-bd)"}`,
+                  padding: "0px 5px", borderRadius: "3px",
+                  fontSize: "9px", fontWeight: 700, letterSpacing: "0.02em",
+                }}>
+                  × {bubble.count}
+                </span>
+              )}
+            </div>
+            {persons.length > 0 && (
+              <p style={{ color: "var(--tx-2)", fontWeight: 500, fontSize: "10.5px", marginBottom: "2px" }}>
+                {persons.slice(0, 3).join(" · ")}
+                {persons.length > 3 && ` · +${persons.length - 3}`}
+              </p>
+            )}
+            <p style={{ fontWeight: 700, fontFamily: "monospace" }}>
+              {fmtAmount(bubble.totalAmount, currency)}
+              {bubble.count > 1 && (
+                <span style={{ fontWeight: 400, color: "var(--tx-3)", fontSize: "10px", marginLeft: "4px" }}>
+                  (total)
+                </span>
+              )}
+            </p>
           </div>
-          {trade.person && <p style={{ color: "var(--tx-2)", fontWeight: 500 }}>{trade.person}</p>}
-          {trade.amount && <p style={{ fontWeight: 700 }}>{fmtAmount(trade.amount, currency)}</p>}
-        </div>
-      )}
+        );
+      })}
     </div>
   );
 };
@@ -146,23 +185,39 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
     return m;
   }, [data]);
 
-  // Normalize + filter trades in current range
-  const normalizedTrades = useMemo(() => {
+  // Aggregate trades into bubbles: one per (date, buy|sell).
+  //   → Un achat et une vente le même jour = 2 bulles distinctes.
+  //   → 4 achats le même jour = 1 bulle avec count=4 et totalAmount = somme.
+  // Ainsi toutes les transactions sont visibles (plus de perte d'info à cause
+  // d'une dedup par date seule qui gardait arbitrairement la plus grosse).
+  const tradeBubbles = useMemo((): TradeBubble[] => {
     if (!data?.points.length) return [];
     const rangeStart = data.points[0].date;
     const rangeEnd = data.points[data.points.length - 1].date;
 
-    // Deduplicate by date: keep highest amount
-    const byDate = new Map<string, TradeEvent>();
+    const byKey = new Map<string, TradeBubble>();
     for (const t of trades) {
+      if (t.type !== "buy" && t.type !== "sell") continue;
       const norm = normalizeDate(t.date.length === 10 ? t.date + "T12:00:00Z" : t.date);
       if (norm < rangeStart || norm > rangeEnd) continue;
-      const existing = byDate.get(norm);
-      if (!existing || (t.amount ?? 0) > (existing.amount ?? 0)) {
-        byDate.set(norm, { ...t, date: norm });
+
+      const key = `${norm}::${t.type}`;
+      const existing = byKey.get(key);
+      if (existing) {
+        existing.totalAmount += t.amount ?? 0;
+        existing.count += 1;
+        existing.trades.push(t);
+      } else {
+        byKey.set(key, {
+          date: norm,
+          type: t.type,
+          totalAmount: t.amount ?? 0,
+          count: 1,
+          trades: [t],
+        });
       }
     }
-    return Array.from(byDate.values());
+    return Array.from(byKey.values());
   }, [trades, data]);
 
   // Trade list (all trades, not deduplicated)
@@ -185,11 +240,16 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
     return list;
   }, [allTrades, filter, sortBy]);
 
+  // Tooltip map — keyed by date, returns ALL bubbles (buy + sell) for that date.
   const tradeMap = useMemo(() => {
-    const m = new Map<string, TradeEvent>();
-    normalizedTrades.forEach((t) => m.set(t.date, t));
+    const m = new Map<string, TradeBubble[]>();
+    tradeBubbles.forEach((b) => {
+      const arr = m.get(b.date) ?? [];
+      arr.push(b);
+      m.set(b.date, arr);
+    });
     return m;
-  }, [normalizedTrades]);
+  }, [tradeBubbles]);
 
   // Stats
   const buyTrades = allTrades.filter((t) => t.type === "buy");
@@ -197,10 +257,10 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
   const totalBuy = buyTrades.reduce((s, t) => s + (t.amount ?? 0), 0);
   const totalSell = sellTrades.reduce((s, t) => s + (t.amount ?? 0), 0);
 
-  // Dot sizes
-  const amounts = normalizedTrades.filter((t) => t.amount).map((t) => t.amount!);
-  const minAmt = Math.min(...amounts);
-  const maxAmt = Math.max(...amounts);
+  // Dot sizes — based on aggregated bubble totals (not individual trades)
+  const amounts = tradeBubbles.map((b) => b.totalAmount).filter((a) => a > 0);
+  const minAmt = amounts.length ? Math.min(...amounts) : 1;
+  const maxAmt = amounts.length ? Math.max(...amounts) : 1;
 
   if (loading) {
     return (
@@ -225,7 +285,8 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
   }
 
   const isPositive = data.change >= 0;
-  const lineColor = isPositive ? "#10b981" : "#f43f5e";
+  // DA v3: signal-pos / signal-neg — direct hex for Recharts (it can't parse CSS vars)
+  const lineColor = isPositive ? "#009E62" : "#C82038";
   const currency = data.currency || "EUR";
   const gradientId = `sg-${data.symbol.replace(/[^a-zA-Z0-9]/g, "")}`;
 
@@ -248,9 +309,9 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
                 </span>
                 <span style={{
                   fontSize: "0.72rem", fontWeight: 700, padding: "2px 8px", borderRadius: "20px",
-                  border: `1px solid ${isPositive ? "var(--c-emerald-bd)" : "var(--c-crimson-bd)"}`,
-                  background: isPositive ? "var(--c-emerald-bg)" : "var(--c-crimson-bg)",
-                  color: isPositive ? "var(--c-emerald)" : "var(--c-crimson)",
+                  border: `1px solid ${isPositive ? "var(--signal-pos-bd)" : "var(--signal-neg-bd)"}`,
+                  background: isPositive ? "var(--signal-pos-bg)" : "var(--signal-neg-bg)",
+                  color: isPositive ? "var(--signal-pos)" : "var(--signal-neg)",
                 }}>
                   {isPositive ? "+" : ""}{data.change.toFixed(2)}%
                 </span>
@@ -338,22 +399,26 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
                 dot={false}
                 activeDot={{ r: 3, fill: lineColor, strokeWidth: 0 }}
               />
-              {/* Trade dots — sized by amount */}
-              {normalizedTrades.map((trade) => {
-                const price = priceMap.get(trade.date);
+              {/* Trade bubbles — 1 per (date, buy|sell), sized by total amount */}
+              {tradeBubbles.map((bubble) => {
+                const price = priceMap.get(bubble.date);
                 if (!price) return null;
-                const r = scaleDotRadius(trade.amount ?? 1, minAmt, maxAmt);
-                const isBuy = trade.type !== "sell";
-                const fillColor = isBuy ? "#10b981" : "#f43f5e";
-                const strokeColor = isBuy ? "#064e3b" : "#881337";
+                const r = scaleDotRadius(bubble.totalAmount || 1, minAmt, maxAmt);
+                const isBuy = bubble.type === "buy";
+                // DA v3: signal-pos/signal-neg
+                const fillColor = isBuy ? "#009E62" : "#C82038";
+                const strokeColor = isBuy ? "#00704A" : "#8E162A";
+                // Offset buy bubbles slightly above and sell below so both are
+                // visible when they exist on the same day (never overlap).
+                const yOffset = isBuy ? price * 1.005 : price * 0.995;
                 return (
                   <ReferenceDot
-                    key={trade.date}
-                    x={trade.date}
-                    y={price}
+                    key={`${bubble.date}-${bubble.type}`}
+                    x={bubble.date}
+                    y={yOffset}
                     r={r}
                     fill={fillColor}
-                    fillOpacity={0.9}
+                    fillOpacity={0.92}
                     stroke={strokeColor}
                     strokeWidth={1.5}
                   />
@@ -364,18 +429,20 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
         </div>
 
         {/* Legend */}
-        {normalizedTrades.length > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "8px", paddingTop: "10px", borderTop: "1px solid var(--border)" }}>
-            <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>Transactions insiders sur la période :</span>
+        {tradeBubbles.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "8px", paddingTop: "10px", borderTop: "1px solid var(--border)", flexWrap: "wrap" }}>
+            <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>
+              Transactions insiders sur la période <strong style={{ color: "var(--tx-2)" }}>({allTrades.length})</strong> :
+            </span>
             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "var(--c-emerald)" }} />
-              <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>Achat</span>
+              <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "var(--signal-pos)" }} />
+              <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>Achat ({buyTrades.length})</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "var(--c-crimson)" }} />
-              <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>Vente</span>
+              <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "var(--signal-neg)" }} />
+              <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>Vente ({sellTrades.length})</span>
             </div>
-            <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>· taille = montant</span>
+            <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>· taille = montant cumulé · 1 bulle / jour / côté</span>
           </div>
         )}
       </div>

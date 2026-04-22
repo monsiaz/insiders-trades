@@ -138,11 +138,12 @@ function retClass(n: number | null | undefined): string {
   return "text-red";
 }
 function sharpeColor(s: number | null): string {
-  if (s == null) return "#555";
-  if (s >= 1.5) return "var(--color-mint)";
-  if (s >= 0.8) return "#f59e0b";
-  if (s >= 0)   return "#94a3b8";
-  return "var(--color-red)";
+  // DA v3: green (excellent) → gold (average) → grey → red
+  if (s == null) return "var(--tx-3)";
+  if (s >= 1.5) return "var(--signal-pos)";
+  if (s >= 0.8) return "var(--gold)";
+  if (s >= 0)   return "var(--tx-3)";
+  return "var(--signal-neg)";
 }
 
 // ── Mini components ────────────────────────────────────────────────────────
@@ -176,7 +177,7 @@ function SharpeBadge({ s }: { s: number | null }) {
 
 function WinBadge({ w }: { w: number | null }) {
   if (w == null) return <span className="text-muted text-xs">—</span>;
-  const color = w >= 60 ? "var(--color-mint)" : w >= 45 ? "#f59e0b" : "var(--color-red)";
+  const color = w >= 60 ? "var(--signal-pos)" : w >= 45 ? "var(--gold)" : "var(--signal-neg)";
   return (
     <span className="text-xs font-semibold" style={{ color }}>
       {w.toFixed(0)}%
@@ -257,7 +258,7 @@ function CoverageBar({
         <span className="text-[11px] font-medium" style={{ color: "var(--tx-4)" }}>
           Couverture prix :
         </span>
-        <span className="text-[11px] font-bold" style={{ color: withPricePct >= 90 ? "var(--c-mint)" : withPricePct >= 70 ? "var(--c-amber)" : "var(--c-red)" }}>
+        <span className="text-[11px] font-bold" style={{ color: withPricePct >= 90 ? "var(--gold)" : withPricePct >= 70 ? "var(--tx-2)" : "var(--c-red)" }}>
           {withPricePct}%
         </span>
         <span className="text-[10px]" style={{ color: "var(--tx-4)" }}>
@@ -274,7 +275,7 @@ function CoverageBar({
             className="h-full rounded-full"
             style={{
               width: `${horizonPct}%`,
-              background: horizonPct >= 80 ? "var(--c-mint)" : horizonPct >= 60 ? "var(--c-amber)" : "var(--c-red)",
+              background: horizonPct >= 80 ? "var(--gold)" : horizonPct >= 60 ? "var(--tx-2)" : "var(--c-red)",
               opacity: 0.85,
             }}
           />
@@ -685,12 +686,13 @@ function KpiCard({
 
 // ── Scatter plot ───────────────────────────────────────────────────────────
 
+// DA v3: monochrome gold (by seniority) — no rainbow
 const ROLE_COLORS: Record<string, string> = {
-  "PDG/DG": "#6366f1",
-  "CFO/DAF": "#38d79c",
-  "Directeur": "#f59e0b",
-  "CA/Board": "#94a3b8",
-  "Autre": "#64748b",
+  "PDG/DG":    "#B8955A", // primary gold — highest seniority
+  "CFO/DAF":   "#A07F47", // gold darker
+  "Directeur": "#D4AF76", // gold lighter
+  "CA/Board":  "#3A5687", // navy 2
+  "Autre":     "#6B5D4E", // warm grey
 };
 
 // ── Freemium lock overlay ──────────────────────────────────────────────────
@@ -821,7 +823,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
       {/* ─ Header with freshness indicator ────────────────────────────── */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "var(--c-mint)" }} />
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "var(--gold)" }} />
           <span className="text-xs font-semibold" style={{ color: "var(--tx-3)" }}>
             Backtest sur données réelles AMF
           </span>
@@ -854,7 +856,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
                     : { background: "transparent", border: "1px solid var(--border)", color: "var(--tx-3)" }}>
                   <span>{h.label}</span>
                   {hPct != null && (
-                    <span style={{ fontSize: "0.58rem", fontWeight: 700, opacity: 0.75, color: hPct >= 80 ? "var(--c-mint)" : hPct >= 60 ? "var(--c-amber)" : "var(--c-red)" }}>
+                    <span style={{ fontSize: "0.58rem", fontWeight: 700, opacity: 0.75, color: hPct >= 80 ? "var(--gold)" : hPct >= 60 ? "var(--tx-3)" : "var(--c-red)" }}>
                       {hPct}%
                     </span>
                   )}

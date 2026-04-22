@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AlertsTab } from "./AlertsTab";
+import { AiTab } from "./AiTab";
+import { ApiKeysTab } from "./ApiKeysTab";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -53,7 +56,7 @@ interface CronJob {
   category: string;
 }
 
-type Tab = "users" | "cron" | "system";
+type Tab = "users" | "cron" | "alerts" | "ai" | "apikeys" | "system";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -97,11 +100,17 @@ export default function AdminDashboard() {
         >
           <TabButton active={tab === "users"}  onClick={() => setTab("users")}>Utilisateurs</TabButton>
           <TabButton active={tab === "cron"}   onClick={() => setTab("cron")}>Tâches & Cron</TabButton>
+          <TabButton active={tab === "alerts"} onClick={() => setTab("alerts")}>Alertes</TabButton>
+          <TabButton active={tab === "ai"}     onClick={() => setTab("ai")}>Assistant IA</TabButton>
+          <TabButton active={tab === "apikeys"} onClick={() => setTab("apikeys")}>Clés API</TabButton>
           <TabButton active={tab === "system"} onClick={() => setTab("system")}>Système</TabButton>
         </div>
 
         {tab === "users"  && <UsersTab showToast={showToast} />}
         {tab === "cron"   && <CronTab  showToast={showToast} />}
+        {tab === "alerts" && <AlertsTab showToast={showToast} />}
+        {tab === "ai"     && <AiTab     showToast={showToast} />}
+        {tab === "apikeys" && <ApiKeysTab showToast={showToast} />}
         {tab === "system" && <SystemTab />}
       </div>
 
@@ -1246,9 +1255,10 @@ function SystemTab() {
         <p><strong style={{ color: "var(--tx-1)" }}>Base de données :</strong> Neon Postgres (EU)</p>
         <p><strong style={{ color: "var(--tx-1)" }}>Storage :</strong> Vercel Blob (CDN)</p>
         <p><strong style={{ color: "var(--tx-1)" }}>Session :</strong> JWT HS256 · cookie HttpOnly · 30j</p>
-        <p><strong style={{ color: "var(--tx-1)" }}>Emails :</strong> Nodemailer + Gmail (app password)</p>
-        <p><strong style={{ color: "var(--tx-1)" }}>Modèles OpenAI :</strong> gpt-image-1 (logos), gpt-4o-mini Vision (audit), gpt-4o-search-preview (web-search)</p>
+        <p><strong style={{ color: "var(--tx-1)" }}>Emails :</strong> Nodemailer + Gmail (app password) · config dans l&apos;onglet <em>Alertes</em></p>
+        <p><strong style={{ color: "var(--tx-1)" }}>Modèles OpenAI :</strong> gpt-4o / gpt-4o-mini (assistant admin), gpt-image-1 (logos), gpt-4o-mini Vision (audit), gpt-4o-search-preview (web-search)</p>
         <p><strong style={{ color: "var(--tx-1)" }}>Sources finance :</strong> AMF BDIF · Yahoo Finance (v8/chart, quoteSummary, timeseries, RSS) · Google News RSS</p>
+        <p><strong style={{ color: "var(--tx-1)" }}>Assistant IA :</strong> OpenAI Chat Completions + function-calling sur 8 outils lecture-seule (stats, signaux, users, backtest…)</p>
       </div>
 
       <h3 style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--tx-1)", marginTop: "22px", marginBottom: "6px" }}>

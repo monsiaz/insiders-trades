@@ -12,6 +12,7 @@ import { getRecommendations } from "@/lib/recommendation-engine";
 import { buildDigestForUser, sendDailyDigestEmail } from "@/lib/digest";
 import { prisma } from "@/lib/prisma";
 import { fetchDeclarationDetail } from "@/lib/amf-detail";
+import { getAlertsConfig, shouldDispatchOn } from "@/lib/settings";
 
 export const maxDuration = 300;
 
@@ -244,7 +245,17 @@ async function reparseIncomplete(limit: number): Promise<{ improved: number; err
 
 // ── Step 7: dispatch alert emails (new branded digest) ───────────────────────
 
-async function dispatchAlertEmails(): Promise<{ sent: number; skipped: number }> {
+async function dispatchAlertEmails(): Promise<{
+  sent: number;
+  skipped: number;
+  reason?: string;
+}> {
+  // Respect the admin-tunable config (frequency / hour / enabled)
+  const cfg = await getAlertsConfig();
+  if (!shouldDispatchOn(cfg)) {
+    return { sent: 0, skipped: 0, reason: `disabled-or-off-schedule (${cfg.frequency})` };
+  }
+
   // Only send once per day per user (check lastAlertAt)
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -265,8 +276,12 @@ async function dispatchAlertEmails(): Promise<{ sent: number; skipped: number }>
 
   // Pre-fetch once (shared across all users) — buy & sell recos are user-agnostic.
   const [topBuys, topSells] = await Promise.all([
-    getRecommendations({ mode: "general", limit: 3, lookbackDays: 7 }),
-    getRecommendations({ mode: "sells",   limit: 3, lookbackDays: 7 }),
+    cfg.includeTopBuys
+      ? getRecommendations({ mode: "general", limit: cfg.topBuysLimit, lookbackDays: cfg.lookbackDays })
+      : Promise.resolve([]),
+    cfg.includeTopSells
+      ? getRecommendations({ mode: "sells",   limit: cfg.topSellsLimit, lookbackDays: cfg.lookbackDays })
+      : Promise.resolve([]),
   ]);
 
   let sent = 0;
@@ -281,7 +296,13 @@ async function dispatchAlertEmails(): Promise<{ sent: number; skipped: number }>
       });
       if (!payload) { skipped++; continue; }
 
-      const res = await sendDailyDigestEmail(payload);
+      // Apply admin toggles
+      if (!cfg.includePortfolioAlerts) payload.portfolioAlerts = [];
+
+      // Dev / test override — force all outgoing emails to a single address
+      const to = cfg.recipientOverride ?? user.email;
+
+      const res = await sendDailyDigestEmail({ ...payload, to });
       if (res.delivered) {
         await prisma.user.update({ where: { id: user.id }, data: { lastAlertAt: new Date() } });
         sent++;

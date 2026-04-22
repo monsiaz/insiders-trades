@@ -107,13 +107,13 @@ function InsiderCard({ insider }: { insider: InsiderRow }) {
                 fontFamily: "'Banana Grotesk', sans-serif",
                 fontSize: "0.92rem",
                 fontWeight: 700,
-                color: isSell ? "var(--signal-neg)" : "var(--signal-pos)",
+                color: "var(--tx-1)",
                 letterSpacing: "-0.02em",
                 fontVariantNumeric: "tabular-nums",
                 lineHeight: 1,
               }}
             >
-              {isSell ? "▼ " : "▲ "}
+              {isSell ? <span style={{ color: "var(--signal-neg)", marginRight: "2px" }}>▼</span> : <span style={{ color: "var(--signal-pos)", marginRight: "2px" }}>▲</span>}
               {new Intl.NumberFormat("fr-FR", {
                 style: "currency",
                 currency: "EUR",

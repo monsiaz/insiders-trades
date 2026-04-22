@@ -29,8 +29,8 @@ function DataFreshnessBar({
   const msUntilSync = nextSync.getTime() - now.getTime();
   const minUntilSync = Math.ceil(msUntilSync / 60_000);
 
-  // Freshness status
-  let freshnessColor = "var(--c-emerald)";
+  // Freshness status — gold-scale (not green) to reserve green for performance signals
+  let freshnessColor = "var(--gold)";
   let freshnessLabel = "À jour";
   let freshnessAge = "";
 
@@ -40,14 +40,13 @@ function DataFreshnessBar({
     const ageD = ageMs / 86_400_000;
 
     if (ageH < 4) {
-      freshnessColor = "var(--c-emerald)";
+      freshnessColor = "var(--gold)";
       freshnessLabel = "À jour";
     } else if (ageD < 1.5) {
-      freshnessColor = "var(--c-amber)";
+      freshnessColor = "var(--tx-3)";
       freshnessLabel = "Récent";
     } else if (ageD < 3.5) {
-      // Weekend gap is normal
-      freshnessColor = "var(--c-amber)";
+      freshnessColor = "var(--tx-3)";
       freshnessLabel = "Week-end";
     } else {
       freshnessColor = "var(--c-crimson)";
@@ -115,8 +114,8 @@ function DataFreshnessBar({
         {todayCount > 0 && (
           <>
             <span style={{ color: "var(--border-strong)", fontSize: "0.7rem" }}>·</span>
-            <span style={{ color: "var(--c-emerald)", fontWeight: 600 }}>
-              +{todayCount} aujourd'hui
+            <span style={{ color: "var(--tx-1)", fontWeight: 600 }}>
+              +{todayCount} aujourd&apos;hui
             </span>
           </>
         )}
@@ -284,7 +283,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
                       {row.count} transaction{row.count > 1 ? "s" : ""}
                     </div>
                   </div>
-                  <span className="text-sm font-semibold tx-pos tabular-nums shrink-0">
+                  <span className="text-sm font-semibold tabular-nums shrink-0" style={{ color: "var(--tx-1)" }}>
                     {fmtAmount(row.totalAmount)}
                   </span>
                 </Link>

@@ -6,7 +6,12 @@ import Image from "next/image";
 interface CompanyLogoProps {
   name: string;
   logoUrl?: string | null;
+  /** Target height in px (width auto-adapts for wide wordmarks). */
   size?: number;
+  /** Max aspect ratio allowed (default 3.5). Beyond this, the logo gets clipped. */
+  maxAspect?: number;
+  /** Force a square container (ignore aspect, useful for grid/table avatars). */
+  square?: boolean;
   className?: string;
 }
 
@@ -20,18 +25,22 @@ const fontSize = (size: number) =>
   size >= 48 ? "1.2rem" : size >= 36 ? "0.95rem" : "0.78rem";
 
 /**
- * CompanyLogo — Optimized logo display with WebP support.
- * - Uses Next.js Image with priority hints for LCP logos
- * - Falls back to letter avatar on error or missing logo
- * - Responsive: works at any size
+ * CompanyLogo — Aspect-aware logo display.
+ * - Uses natural image dimensions to allow wordmark logos to render wider
+ *   (so "TELEPERFORMANCE" doesn't shrink to unreadable size in a 56×56 box).
+ * - Gracefully falls back to a letter avatar on error or missing logo.
+ * - Always renders at the requested HEIGHT; width stretches up to `maxAspect × size`.
  */
 export function CompanyLogo({
   name,
   logoUrl,
   size = 40,
+  maxAspect = 3.5,
+  square = false,
   className = "",
 }: CompanyLogoProps) {
   const [error, setError] = useState(false);
+  const [aspect, setAspect] = useState<number>(1);
   const l = letter(name);
   const r = radius(size);
 
@@ -63,7 +72,11 @@ export function CompanyLogo({
     );
   }
 
-  const pad = Math.max(2, Math.round(size * 0.1));
+  // Aspect ratio clamped to [1, maxAspect]; container uses height = size, width scales
+  const clampedAspect = square ? 1 : Math.min(maxAspect, Math.max(1, aspect));
+  const pad = Math.max(2, Math.round(size * 0.08));
+  const containerWidth = Math.round(size * clampedAspect);
+  const containerHeight = size;
 
   return (
     <span
@@ -72,8 +85,8 @@ export function CompanyLogo({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        width: size,
-        height: size,
+        width: containerWidth,
+        height: containerHeight,
         flexShrink: 0,
         borderRadius: r,
         overflow: "hidden",
@@ -85,18 +98,22 @@ export function CompanyLogo({
       <Image
         src={logoUrl}
         alt={name}
-        width={size - pad * 2}
-        height={size - pad * 2}
+        width={containerWidth - pad * 2}
+        height={containerHeight - pad * 2}
         style={{
           width: "100%",
           height: "100%",
           objectFit: "contain",
           display: "block",
         }}
-        // Use native lazy loading — Next.js handles optimization
         loading="lazy"
         onError={() => setError(true)}
-        // Don't run through Next.js image optimizer (already WebP on Blob)
+        onLoadingComplete={(img) => {
+          if (img.naturalHeight > 0) {
+            const ratio = img.naturalWidth / img.naturalHeight;
+            if (Number.isFinite(ratio) && ratio > 1.1) setAspect(ratio);
+          }
+        }}
         unoptimized
       />
     </span>

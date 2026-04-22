@@ -159,68 +159,163 @@ async function fetchChartMeta(
   }
 }
 
-// ── Layer 3: quoteSummary via yahoo-finance2 (crumb auto, best-effort) ────
+// ── Layer 3: quoteSummary via direct HTTP + manual crumb ───────────────────
+//
+// NOTE: the `yahoo-finance2` library gets aggressively rate-limited on
+// production workloads ("Too Many Requests"). Direct HTTP with crumb
+// management works reliably, so we bypass the library entirely.
+
+let _crumbCache: { crumb: string; cookie: string; expiresAt: number } | null = null;
+const CRUMB_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+async function getYahooCrumb(): Promise<{ crumb: string; cookie: string } | null> {
+  if (_crumbCache && Date.now() < _crumbCache.expiresAt) {
+    return { crumb: _crumbCache.crumb, cookie: _crumbCache.cookie };
+  }
+  try {
+    // Step 1 — land on fc.yahoo.com to set consent cookie
+    const cookieRes = await fetch("https://fc.yahoo.com", {
+      headers: { "User-Agent": "Mozilla/5.0" },
+      signal: AbortSignal.timeout(6000),
+    });
+    const setCookie = cookieRes.headers.get("set-cookie") ?? "";
+    const cookie = setCookie.split(";")[0]; // keep only name=value
+    if (!cookie) return null;
+
+    // Step 2 — exchange cookie for a crumb
+    const crumbRes = await fetch("https://query2.finance.yahoo.com/v1/test/getcrumb", {
+      headers: { "User-Agent": "Mozilla/5.0", Cookie: cookie },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!crumbRes.ok) return null;
+    const crumb = (await crumbRes.text()).trim();
+    if (!crumb || crumb.length < 5) return null;
+
+    _crumbCache = { crumb, cookie, expiresAt: Date.now() + CRUMB_TTL_MS };
+    return { crumb, cookie };
+  } catch {
+    return null;
+  }
+}
+
+type YahooField<T> = T | { raw?: T; fmt?: string };
+type YahooRecord = Record<string, YahooField<number> | YahooField<string> | null | undefined>;
+
+function yFieldNum(v: unknown): number | undefined {
+  if (v == null) return undefined;
+  if (typeof v === "number") return v;
+  if (typeof v === "object" && v != null && "raw" in v) {
+    const raw = (v as { raw?: unknown }).raw;
+    if (typeof raw === "number") return raw;
+  }
+  return undefined;
+}
+
+function yFieldStr(v: unknown): string | undefined {
+  if (v == null) return undefined;
+  if (typeof v === "string") return v;
+  if (typeof v === "object" && v != null && "raw" in v) {
+    const raw = (v as { raw?: unknown }).raw;
+    if (typeof raw === "string") return raw;
+    if (typeof raw === "number") return String(raw);
+  }
+  return undefined;
+}
 
 async function fetchQuoteSummary(
   symbol: string
 ): Promise<Partial<CompanyFinancials> & { source: string[] }> {
   try {
-    // Dynamic require so the module is only loaded when needed
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const yf = require("yahoo-finance2") as {
-      default?: {
-        quoteSummary: (s: string, opts: object, cfg?: object) => Promise<Record<string, unknown>>;
-      };
-      quoteSummary?: (s: string, opts: object, cfg?: object) => Promise<Record<string, unknown>>;
-    };
-    const lib = (yf.default ?? yf) as {
-      quoteSummary: (s: string, opts: object, cfg?: object) => Promise<Record<string, unknown>>;
-    };
-    if (!lib.quoteSummary) return { source: [] };
+    const creds = await getYahooCrumb();
+    if (!creds) return { source: [] };
 
-    const result = await lib.quoteSummary(
-      symbol,
-      { modules: ["financialData", "defaultKeyStatistics", "summaryDetail"] },
-      { validateResult: false }
-    );
+    const modules = "financialData,defaultKeyStatistics,summaryDetail";
+    const url = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=${modules}&crumb=${encodeURIComponent(creds.crumb)}`;
 
-    const fd = result.financialData as Record<string, number | string | null> | undefined;
-    const ks = result.defaultKeyStatistics as Record<string, number | null> | undefined;
-    const sd = result.summaryDetail as Record<string, number | null> | undefined;
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        Cookie: creds.cookie,
+        Accept: "application/json",
+      },
+      signal: AbortSignal.timeout(10_000),
+    });
+
+    if (!res.ok) {
+      // If 401/403, our crumb is stale — bust the cache so next call retries
+      if (res.status === 401 || res.status === 403) _crumbCache = null;
+      return { source: [] };
+    }
+
+    const data = await res.json().catch(() => null) as
+      | { quoteSummary?: { result?: Array<Record<string, YahooRecord>> } }
+      | null;
+    const r0 = data?.quoteSummary?.result?.[0];
+    if (!r0) return { source: [] };
+
+    const fd = (r0.financialData ?? {}) as YahooRecord;
+    const ks = (r0.defaultKeyStatistics ?? {}) as YahooRecord;
+    const sd = (r0.summaryDetail ?? {}) as YahooRecord;
 
     const out: Partial<CompanyFinancials> = {};
-    if (fd) {
-      if (fd.profitMargins != null) out.profitMargin = fd.profitMargins as number;
-      if (fd.debtToEquity != null) out.debtToEquity = fd.debtToEquity as number;
-      if (fd.returnOnEquity != null) out.returnOnEquity = fd.returnOnEquity as number;
-      if (fd.returnOnAssets != null) out.returnOnAssets = fd.returnOnAssets as number;
-      if (fd.recommendationKey) out.analystReco = fd.recommendationKey as string;
-      if (fd.recommendationMean != null) out.analystScore = fd.recommendationMean as number;
-      if (fd.targetMeanPrice != null) out.targetMean = fd.targetMeanPrice as number;
-      if (fd.targetHighPrice != null) out.targetHigh = fd.targetHighPrice as number;
-      if (fd.targetLowPrice != null) out.targetLow = fd.targetLowPrice as number;
-      if (fd.numberOfAnalystOpinions != null) out.numAnalysts = fd.numberOfAnalystOpinions as number;
-    }
-    if (ks) {
-      if (ks.forwardPE != null) out.forwardPE = ks.forwardPE as number;
-      if (ks.trailingEps != null) out.dilutedEps ??= ks.trailingEps as number;
-      if (ks.priceToBook != null) out.priceToBook = ks.priceToBook as number;
-      if (ks.beta != null) out.beta = ks.beta as number;
-      if (ks.heldPercentInsiders != null) out.heldByInsiders = ks.heldPercentInsiders as number;
-      if (ks.heldPercentInstitutions != null) out.heldByInstitutions = ks.heldPercentInstitutions as number;
-      if (ks.shortRatio != null) out.shortRatio = ks.shortRatio as number;
-      if (ks.sharesOutstanding != null) out.sharesOut ??= ks.sharesOutstanding as number;
-    }
-    if (sd) {
-      if (sd.trailingPE != null) out.trailingPE = sd.trailingPE as number;
-      if (sd.marketCap != null) out.marketCap ??= sd.marketCap as number;
-      if (sd.fiftyTwoWeekHigh != null) out.fiftyTwoWeekHigh ??= sd.fiftyTwoWeekHigh as number;
-      if (sd.fiftyTwoWeekLow != null) out.fiftyTwoWeekLow ??= sd.fiftyTwoWeekLow as number;
-      if (sd.fiftyDayAverage != null) out.fiftyDayAverage = sd.fiftyDayAverage as number;
-      if (sd.twoHundredDayAverage != null) out.twoHundredDayAverage = sd.twoHundredDayAverage as number;
-      if (sd.dividendYield != null) out.dividendYield = sd.dividendYield as number;
-    }
-    return { ...out, source: ["quoteSummary"] };
+
+    // financialData
+    const profitMargins = yFieldNum(fd.profitMargins);
+    if (profitMargins != null) out.profitMargin = profitMargins;
+    const debtToEquity = yFieldNum(fd.debtToEquity);
+    if (debtToEquity != null) out.debtToEquity = debtToEquity;
+    const roe = yFieldNum(fd.returnOnEquity);
+    if (roe != null) out.returnOnEquity = roe;
+    const roa = yFieldNum(fd.returnOnAssets);
+    if (roa != null) out.returnOnAssets = roa;
+    const recoKey = yFieldStr(fd.recommendationKey);
+    if (recoKey) out.analystReco = recoKey;
+    const recoMean = yFieldNum(fd.recommendationMean);
+    if (recoMean != null) out.analystScore = recoMean;
+    const tMean = yFieldNum(fd.targetMeanPrice);
+    if (tMean != null) out.targetMean = tMean;
+    const tHigh = yFieldNum(fd.targetHighPrice);
+    if (tHigh != null) out.targetHigh = tHigh;
+    const tLow = yFieldNum(fd.targetLowPrice);
+    if (tLow != null) out.targetLow = tLow;
+    const nAn = yFieldNum(fd.numberOfAnalystOpinions);
+    if (nAn != null) out.numAnalysts = Math.round(nAn);
+
+    // defaultKeyStatistics
+    const fPE = yFieldNum(ks.forwardPE);
+    if (fPE != null) out.forwardPE = fPE;
+    const tEps = yFieldNum(ks.trailingEps);
+    if (tEps != null && out.dilutedEps == null) out.dilutedEps = tEps;
+    const pB = yFieldNum(ks.priceToBook);
+    if (pB != null) out.priceToBook = pB;
+    const beta = yFieldNum(ks.beta);
+    if (beta != null) out.beta = beta;
+    const hIns = yFieldNum(ks.heldPercentInsiders);
+    if (hIns != null) out.heldByInsiders = hIns;
+    const hInst = yFieldNum(ks.heldPercentInstitutions);
+    if (hInst != null) out.heldByInstitutions = hInst;
+    const sRatio = yFieldNum(ks.shortRatio);
+    if (sRatio != null) out.shortRatio = sRatio;
+    const so = yFieldNum(ks.sharesOutstanding);
+    if (so != null && out.sharesOut == null) out.sharesOut = so;
+
+    // summaryDetail
+    const tPE = yFieldNum(sd.trailingPE);
+    if (tPE != null) out.trailingPE = tPE;
+    const mc = yFieldNum(sd.marketCap);
+    if (mc != null && out.marketCap == null) out.marketCap = mc;
+    const wHigh = yFieldNum(sd.fiftyTwoWeekHigh);
+    if (wHigh != null && out.fiftyTwoWeekHigh == null) out.fiftyTwoWeekHigh = wHigh;
+    const wLow = yFieldNum(sd.fiftyTwoWeekLow);
+    if (wLow != null && out.fiftyTwoWeekLow == null) out.fiftyTwoWeekLow = wLow;
+    const f50 = yFieldNum(sd.fiftyDayAverage);
+    if (f50 != null) out.fiftyDayAverage = f50;
+    const f200 = yFieldNum(sd.twoHundredDayAverage);
+    if (f200 != null) out.twoHundredDayAverage = f200;
+    const divY = yFieldNum(sd.dividendYield);
+    if (divY != null) out.dividendYield = divY;
+
+    return { ...out, source: ["quoteSummary-http"] };
   } catch {
     return { source: [] };
   }

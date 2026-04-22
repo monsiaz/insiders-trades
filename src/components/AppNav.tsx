@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LogoMark, LogoWordmark } from "./Logo";
 import { ThemeToggle } from "./ThemeProvider";
 import { NavUser } from "./NavUser";
@@ -71,11 +71,19 @@ const NAV = [
 
 export function AppNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close on route change
   useEffect(() => { setMenuOpen(false); }, [pathname]);
+
+  // Prefetch all primary routes on mount so the first click feels instant.
+  useEffect(() => {
+    NAV.forEach((item) => {
+      try { router.prefetch(item.href); } catch {}
+    });
+  }, [router]);
 
   // Close on outside click
   useEffect(() => {
@@ -122,6 +130,8 @@ export function AppNav() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch
+                  onMouseEnter={() => { try { router.prefetch(item.href); } catch {} }}
                   className={`nav-link${active ? " active" : ""}`}
                 >
                   {item.label}
@@ -174,6 +184,7 @@ export function AppNav() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    prefetch
                     className={`nav-mobile-link${active ? " active" : ""}`}
                     onClick={() => setMenuOpen(false)}
                   >

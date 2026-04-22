@@ -24,6 +24,18 @@ const COOKIE_NAME = "it_session";
 const PUBLIC_PREFIXES: string[] = [
   // Auth pages
   "/auth/",
+  // Public marketing / methodology / API docs
+  "/fonctionnement",
+  "/methodologie",
+  "/performance",
+  "/strategie",
+  "/docs",
+  // Public REST API v1 (API-key auth, handled per-route)
+  "/api/v1/",
+  "/api/docs",
+  "/api/openapi.json",
+  // MCP server (JSON-RPC over HTTP, API-key auth inside)
+  "/api/mcp",
   // Auth API
   "/api/auth/",
   // Cron / webhook / scheduled jobs — gated by CRON_SECRET header or secret query

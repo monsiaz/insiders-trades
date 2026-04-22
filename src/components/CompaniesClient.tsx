@@ -260,7 +260,7 @@ function CompanyCard({ company, q }: { company: CompanyRow; q: string }) {
 
       {/* Head: logo + name + last amount */}
       <div className="flex items-start gap-3">
-        <CompanyLogo name={company.name} logoUrl={company.logoUrl} size={38} />
+        <CompanyLogo name={company.name} logoUrl={company.logoUrl} size={38} square />
         <div className="min-w-0 flex-1">
           <h3 style={{
             fontFamily: "'DM Serif Display', Georgia, serif",
@@ -307,13 +307,13 @@ function CompanyCard({ company, q }: { company: CompanyRow; q: string }) {
             <div style={{
               fontSize: "0.92rem",
               fontWeight: 700,
-              color: isB ? "var(--signal-pos)" : isS ? "var(--signal-neg)" : "var(--tx-2)",
+              color: "var(--tx-1)",
               fontFamily: "'Banana Grotesk', sans-serif",
               letterSpacing: "-0.02em",
               fontVariantNumeric: "tabular-nums",
               lineHeight: 1,
             }}>
-              {isB ? "▲ " : isS ? "▼ " : ""}{fmtAmount(lastDecl.totalAmount)}
+              {isB ? <span style={{ color: "var(--signal-pos)", marginRight: "2px" }}>▲</span> : isS ? <span style={{ color: "var(--signal-neg)", marginRight: "2px" }}>▼</span> : ""}{fmtAmount(lastDecl.totalAmount)}
             </div>
             <div style={{
               fontSize: "0.55rem",

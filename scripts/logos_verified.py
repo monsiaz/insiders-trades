@@ -33,8 +33,11 @@ Modes:
   test        — one-shot for a single company by name (--test "ABEO")
 """
 
+from __future__ import annotations
+
 import os, re, sys, json, base64, argparse, tempfile, subprocess, warnings
 from io import BytesIO
+from typing import Optional, Tuple
 from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor
 
@@ -368,6 +371,98 @@ def src_scrape(url, name=""):
         pass
     return out
 
+def src_wikidata_logo(name, ticker=""):
+    """
+    Look up the official logo on Wikidata via property P154 (logo image).
+    This is the canonical source for large listed companies — SVG + high-res PNG.
+
+    Strategy: search Wikidata with name (+ ticker as fallback), walk top 3 results,
+    return the P154 image URL. Multiple candidates prevent missing entries where
+    the company rebranded (e.g. Teleperformance → "TP (company)").
+    """
+    if not name:
+        return []
+
+    def wikidata_search(q):
+        try:
+            r = requests.get(
+                "https://www.wikidata.org/w/api.php",
+                params={
+                    "action": "wbsearchentities",
+                    "search": q,
+                    "language": "en",
+                    "format": "json",
+                    "type": "item",
+                    "limit": 5,
+                },
+                headers=HEADERS,
+                timeout=6,
+            )
+            if r.status_code != 200:
+                return []
+            return r.json().get("search", [])
+        except Exception:
+            return []
+
+    def entity_logo(qid):
+        try:
+            r = requests.get(
+                "https://www.wikidata.org/w/api.php",
+                params={
+                    "action": "wbgetentities",
+                    "ids": qid,
+                    "props": "claims|labels",
+                    "format": "json",
+                },
+                headers=HEADERS,
+                timeout=6,
+            )
+            if r.status_code != 200:
+                return None
+            ent = r.json().get("entities", {}).get(qid) or {}
+            # Confirm it's a company (P31 = instance of, Q4830453 = business enterprise)
+            # We don't strictly filter, but grab P154
+            claims = ent.get("claims", {})
+            logos = claims.get("P154", [])
+            for l in logos:
+                value = (
+                    l.get("mainsnak", {})
+                    .get("datavalue", {})
+                    .get("value")
+                )
+                if isinstance(value, str) and value.strip():
+                    return value.strip().replace(" ", "_")
+            return None
+        except Exception:
+            return None
+
+    # Try the name directly first
+    queries = [name]
+    ticker_clean = re.sub(r"\.[A-Z]{1,3}$", "", ticker or "").strip()
+    if ticker_clean:
+        queries.append(f"{name} {ticker_clean}")
+    # Rebrand-friendly: check the short name ("TP" for Teleperformance)
+    short = re.sub(_SUFFIXES, "", name).strip()
+    if short and short.lower() != name.lower():
+        queries.append(short)
+
+    for q in queries:
+        results = wikidata_search(q)
+        for entry in results[:3]:
+            qid = entry.get("id")
+            if not qid:
+                continue
+            desc = (entry.get("description") or "").lower()
+            # Soft filter: avoid matching unrelated entries (persons, places)
+            if any(bad in desc for bad in ("human", "person", "surname", "given name", "village", "commune")):
+                continue
+            logo_file = entity_logo(qid)
+            if logo_file:
+                url = f"https://commons.wikimedia.org/wiki/Special:FilePath/{logo_file}"
+                # Special:FilePath 302→301 redirects down to upload.wikimedia.org
+                return [(url, "wikidata", 95)]
+    return []
+
 def src_openai_search(name, ticker=""):
     """Ask GPT-4o web search for a direct logo URL."""
     if not OPENAI_KEY:
@@ -482,9 +577,14 @@ def vision_verify(name: str, content: bytes, ct: str) -> dict:
                             f'}} '
                             f'REJECT if: photo of person, photo of building, stock photo, '
                             f'abstract art, screenshot, wrong company, generic social-media icon, '
-                            f'generic icon library, or the image clearly depicts something else. '
-                            f'ACCEPT if: wordmark, brand symbol, letter mark, or combined logo '
-                            f'that matches "{name}" (even if lowercased or styled).'
+                            f'generic icon library, PARTIAL/FRAGMENT of a logo (like just one '
+                            f'letter when the brand is a wordmark), broken/cropped image, '
+                            f'or the image clearly depicts something else. '
+                            f'ACCEPT if: complete wordmark, complete brand symbol, complete letter '
+                            f'mark, or complete combined logo that matches "{name}" (even if '
+                            f'lowercased or styled). The logo must be recognizable and identifiable '
+                            f'as belonging to "{name}" on its own — NOT a fragment that only makes '
+                            f'sense in context.'
                         ),
                     },
                     {"type": "image_url", "image_url": {"url": data_uri, "detail": "low"}},
@@ -505,21 +605,80 @@ def vision_verify(name: str, content: bytes, ct: str) -> dict:
     except Exception as e:
         return {"valid": False, "reason": f"vision err: {str(e)[:80]}"}
 
-# ── WebP 200×200 conversion ───────────────────────────────────────────────────
+# ── WebP 400×400 conversion ───────────────────────────────────────────────────
 
-def to_webp_200(content: bytes) -> bytes:
+def _rasterize_svg_to_webp(svg_bytes: bytes) -> Optional[bytes]:
+    """Rasterize SVG → trimmed + padded WebP bytes (cairosvg+PIL)."""
+    try:
+        import cairosvg  # type: ignore
+        png_bytes = cairosvg.svg2png(
+            bytestring=svg_bytes, output_width=800, output_height=800, dpi=300
+        )
+        img = Image.open(BytesIO(png_bytes))
+        if img.mode != "RGBA":
+            img = img.convert("RGBA")
+        img = _trim_and_pad(img)
+        buf = BytesIO()
+        img.save(buf, format="WEBP", quality=90, method=6)
+        return buf.getvalue()
+    except Exception:
+        return None
+
+def _trim_and_pad(img: "Image.Image") -> "Image.Image":
+    """Remove transparent/white whitespace, then add 8% padding for breathing room."""
+    try:
+        # Prefer alpha channel as the trim mask
+        if img.mode == "RGBA":
+            alpha = img.split()[-1]
+            bbox = alpha.getbbox()
+        else:
+            # Fallback: bbox against white background
+            bg = Image.new(img.mode, img.size, (255, 255, 255))
+            diff = Image.eval(Image.alpha_composite(bg.convert("RGBA"), img.convert("RGBA")), lambda p: 255 - p)
+            bbox = diff.getbbox()
+        if bbox:
+            img = img.crop(bbox)
+        # Cap at 400px on the longer side for consistent storage size
+        img.thumbnail((400, 400), Image.LANCZOS)
+        # Add 8% transparent padding on each side
+        pad_x = max(2, int(img.width * 0.08))
+        pad_y = max(2, int(img.height * 0.08))
+        new = Image.new("RGBA", (img.width + pad_x * 2, img.height + pad_y * 2), (0, 0, 0, 0))
+        new.paste(img, (pad_x, pad_y), img if img.mode == "RGBA" else None)
+        return new
+    except Exception:
+        return img
+
+def to_webp_200(content: bytes) -> Tuple[bytes, str]:
+    """
+    Convert any image payload to WebP bytes + return the final content-type.
+
+    Returns (bytes, content_type). Never silently returns SVG bytes under
+    content_type='image/webp' — a bug that bricked many logos in production.
+    """
+    # SVG short-circuit: rasterize instead of passing raw XML through PIL
+    if b"<svg" in content[:400].lower() or (
+        content[:20].lower().startswith(b"<?xml") and b"<svg" in content[:400].lower()
+    ):
+        rasterized = _rasterize_svg_to_webp(content)
+        if rasterized:
+            return rasterized, "image/webp"
+        # Fallback: store as SVG (correct content-type so browsers render it)
+        return content, "image/svg+xml"
+
+    # Raster image: trim + pad + convert via PIL
     try:
         img = Image.open(BytesIO(content))
         if img.mode == "P":
             img = img.convert("RGBA")
         elif img.mode not in ("RGB", "RGBA"):
             img = img.convert("RGBA")
-        img.thumbnail((200, 200), Image.LANCZOS)
+        img = _trim_and_pad(img)
         buf = BytesIO()
-        img.save(buf, format="WEBP", quality=85, method=6)
-        return buf.getvalue()
+        img.save(buf, format="WEBP", quality=90, method=6)
+        return buf.getvalue(), "image/webp"
     except Exception:
-        return content
+        return content, "application/octet-stream"
 
 # ── Vercel Blob upload ────────────────────────────────────────────────────────
 
@@ -567,7 +726,13 @@ def gather_candidates(name: str, ticker: str):
     all_domains = ([site] if site else []) + dom_urls
     all_domains = list(dict.fromkeys(all_domains))[:6]
 
-    # 3. Each domain → candidates from: scraping (best) + free APIs (fallbacks)
+    # 3. Wikidata P154 — canonical source for big companies (highest prio)
+    for t in src_wikidata_logo(name, ticker):
+        if t[0] not in seen:
+            seen.add(t[0])
+            cands.append(t)
+
+    # 4. Each domain → candidates from: scraping (best) + free APIs (fallbacks)
     for dom in all_domains:
         for fn in (src_scrape, src_logodev, src_iconhorse, src_google_favicon, src_duckduckgo):
             for t in (fn(dom, name) if fn is src_scrape else fn(dom)):
@@ -577,7 +742,7 @@ def gather_candidates(name: str, ticker: str):
                 seen.add(url)
                 cands.append(t)
 
-    # 4. OpenAI web search for direct logo URLs (best when scraping fails)
+    # 5. OpenAI web search for direct logo URLs (best when scraping fails)
     for t in src_openai_search(name, ticker):
         if t[0] not in seen:
             seen.add(t[0])
@@ -631,10 +796,10 @@ def process(company):
         tried.append((short_url, source, f"{v['reason']} [{v.get('confidence','?')}]"))
 
         if v["valid"] and v["confidence"] in ("high", "medium"):
-            # WebP it + upload
-            final_bytes = to_webp_200(content)
-            filename = f"{clean_slug(name)}.webp"
-            blob_url = blob_upload(filename, final_bytes, "image/webp")
+            final_bytes, final_ct = to_webp_200(content)
+            ext = "svg" if final_ct == "image/svg+xml" else "webp"
+            filename = f"{clean_slug(name)}.{ext}"
+            blob_url = blob_upload(filename, final_bytes, final_ct)
             if not blob_url:
                 return {"ok": False, "reason": "blob upload failed", "name": name}
             save_logo(company["id"], blob_url, source)

@@ -80,13 +80,17 @@
   --c-red-bg: rgba(232,54,74,0.08);
   --c-red-bd: rgba(232,54,74,0.18);
 
-  --c-amber:    #C8922A;
-  --c-amber-bg: rgba(200,146,42,0.08);
-  --c-amber-bd: rgba(200,146,42,0.18);
+  /* ── DA v3 2026-04 — stricte 3 couleurs ──
+   * Navy corporate + Gold + Papier, plus les 2 signaux financiers émeraude/crimson.
+   * Tout ce qui était violet/ambre est remappé vers navy/gold pour supprimer le
+   * "rainbow effect" et imposer un langage visuel cohérent. */
+  --c-amber:    #B8955A;                      /* was #C8922A → now gold */
+  --c-amber-bg: rgba(184,149,90,0.08);        /* was amber tint → gold */
+  --c-amber-bd: rgba(184,149,90,0.25);
 
-  --c-violet:    #7B6FF0;
-  --c-violet-bg: rgba(123,111,240,0.08);
-  --c-violet-bd: rgba(123,111,240,0.18);
+  --c-violet:    #17305C;                     /* was #7B6FF0 → now corporate navy */
+  --c-violet-bg: rgba(23,48,92,0.08);         /* was violet tint → navy */
+  --c-violet-bd: rgba(23,48,92,0.20);
 }
 
 /* ── DARK MODE ── */
@@ -364,8 +368,8 @@ body::before {
 .nav-badge {
   font-size: 0.52rem; font-weight: 800; letter-spacing: 0.06em;
   padding: 1px 5px; border-radius: 3px;
-  background: var(--signal-pos-bg); color: var(--signal-pos);
-  border: 1px solid var(--signal-pos-bd); line-height: 1.4;
+  background: var(--gold-bg); color: var(--gold);
+  border: 1px solid var(--gold-bd); line-height: 1.4;
 }
 
 .nav-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
@@ -568,12 +572,13 @@ body::before {
   background: linear-gradient(135deg, var(--tx-1) 0%, var(--tx-2) 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
+/* DA v3: all brand gradients use navy ↔ gold only. No more rainbow. */
 .text-gradient-brand {
-  background: linear-gradient(130deg, var(--gold-2) 0%, var(--gold) 60%, var(--c-emerald-2) 100%);
+  background: linear-gradient(130deg, var(--gold-2) 0%, var(--gold) 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .text-gradient-indigo {
-  background: linear-gradient(130deg, var(--c-indigo-2) 0%, var(--c-violet) 100%);
+  background: linear-gradient(130deg, var(--corporate-2) 0%, var(--corporate) 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 
@@ -1396,8 +1401,8 @@ input[type="search"], textarea, select {
 
 .app-footer-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1.1fr);
-  gap: 48px;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 40px;
   margin-bottom: 32px;
   padding-bottom: 28px;
   border-bottom: 1px solid var(--border);
@@ -1540,7 +1545,17 @@ input[type="search"], textarea, select {
 }
 
 /* Tablet — stack sources & narrow columns */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
+  .app-footer-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px 32px;
+  }
+  .app-footer-brand {
+    grid-column: span 3;
+  }
+}
+
+@media (max-width: 780px) {
   .app-footer-grid {
     grid-template-columns: 1fr 1fr;
     gap: 32px 40px;

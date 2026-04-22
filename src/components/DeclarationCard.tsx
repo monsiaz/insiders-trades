@@ -37,10 +37,10 @@ interface DeclarationCardProps {
 function getTradeStyle(nature?: string | null) {
   if (!nature) return null;
   const n = nature.toLowerCase();
-  if (n.includes("cession")) return { label: "Vente", icon: "▼", cls: "badge-sell", amountCls: "tx-neg" };
-  if (n.includes("acquisition")) return { label: "Achat", icon: "▲", cls: "badge-buy", amountCls: "tx-pos" };
-  if (n.includes("exercice") || n.includes("option")) return { label: "Options", icon: "◇", cls: "bg-gold-soft border bd-gold tx-gold", amountCls: "tx-gold" };
-  if (n.includes("attribution")) return { label: "Attribution", icon: "◆", cls: "bg-violet-soft border bd-violet tx-violet", amountCls: "tx-violet" };
+  if (n.includes("cession")) return { label: "Vente", icon: "▼", cls: "badge-sell", amountCls: "text-[var(--tx-1)]" };
+  if (n.includes("acquisition")) return { label: "Achat", icon: "▲", cls: "badge-buy", amountCls: "text-[var(--tx-1)]" };
+  if (n.includes("exercice") || n.includes("option")) return { label: "Options", icon: "◇", cls: "bg-gold-soft border bd-gold tx-gold", amountCls: "text-[var(--tx-1)]" };
+  if (n.includes("attribution")) return { label: "Attribution", icon: "◆", cls: "bg-violet-soft border bd-violet tx-violet", amountCls: "text-[var(--tx-1)]" };
   return { label: nature, icon: "●", cls: "badge-neutral", amountCls: "text-[var(--tx-2)]" };
 }
 
@@ -61,8 +61,8 @@ function fmtDate(d: Date): string {
 // Signal score → visual indicator (more prominent)
 function SignalBadge({ score }: { score: number }) {
   if (score >= 70) return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-pos-soft border bd-pos tx-pos shadow-sm shadow-emerald-400/10">
-Score fort · {score}
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-gold-soft border bd-gold tx-gold">
+      <span>★</span>Score fort · {score}
     </span>
   );
   if (score >= 45) return (

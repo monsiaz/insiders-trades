@@ -16,9 +16,8 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
     <div
       className="glass-card-static rounded-2xl p-5"
       style={{
-        borderColor: "var(--corporate-bd)",
-        background:
-          "linear-gradient(135deg, var(--corporate-bg) 0%, var(--gold-bg) 100%)",
+        borderColor: "var(--border-med)",
+        background: "var(--bg-surface)",
       }}
     >
       <div className="flex items-start justify-between gap-4">

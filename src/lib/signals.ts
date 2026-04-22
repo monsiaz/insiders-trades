@@ -1,48 +1,105 @@
 /**
- * Signal scoring engine.
+ * Signal scoring engine — v2 (recalibrated 2026-04 based on 3-year backtest).
+ *
+ * Empirical findings from scripts/strategy-backtest-v2.mjs on 15k retail-realistic
+ * backtests :
+ *   - Cluster signals (≥2 insiders ±30j) are the ONLY robust alpha (+2.8% CAGR,
+ *     Sharpe 0.27, MaxDD -18%). → WEIGHT INCREASED.
+ *   - Score filters ≥ 50 or ≥ 60 alone actually LOSE money (noise-heavy). → weight
+ *     redistributed toward Cluster + Role.
+ *   - Freshness alone is negative (fresh trades = small illiquid caps). → No direct
+ *     bonus, but signals > 14d old get a decay penalty.
+ *   - PDG/CFO role is predictive when combined with Cluster. → role weight increased.
+ *
  * Computes analytics fields for declarations:
- *  - pctOfMarketCap:   totalAmount / company.marketCap * 100
+ *  - pctOfMarketCap:   totalAmount / company.marketCap * 100 (capped at 100%)
  *  - pctOfInsiderFlow: totalAmount / SUM(all trades by same insider on same company) * 100
  *  - insiderCumNet:    cumulative buy-sell by this insider on this company up to this trade
  *  - isCluster:        ≥2 distinct insiders traded the same company within 30 days
  *  - signalScore:      composite 0-100 score
  *
- * ──────────── Budget ─────────────  total ≤ 100 pts
- *  28 pts  — % of market cap          (size of trade relative to company)
- *  16 pts  — % of insider own flow    (is this their biggest trade?)
- *  12 pts  — insider function         (CEO > Director > Admin)
- *   8 pts  — cluster strength         (multiple insiders within 30d)
- *   4 pts  — directional conviction   (net buyer on this stock)
- *  12 pts  — fundamentals             (analyst consensus + P/E + leverage)
- *  20 pts  — composite signals        (momentum + value + quality + …)
+ * ──────────── Budget v2 ─────────────  total ≤ 100 pts
+ *  22 pts  — % of market cap           (was 28 — downweighted: noisy on small caps)
+ *  12 pts  — % of insider own flow      (was 16 — downweighted)
+ *  16 pts  — insider function           (was 12 — upweighted: PDG/CFO matters)
+ *  18 pts  — cluster strength           (was 8  — ★ UPWEIGHTED: the real alpha)
+ *   4 pts  — directional conviction    (unchanged: net buyer on this stock)
+ *   8 pts  — fundamentals              (was 12 — downweighted: weak predictor)
+ *  20 pts  — composite signals          (unchanged: momentum/value/quality)
+ *  −5 pts — staleness penalty          (NEW: signals published > 14d ago get dinged)
  */
 
 import { prisma } from "./prisma";
 import { roleFunctionScore } from "./role-utils";
+
+/**
+ * Transaction natures that are NOT genuine market trades — corporate actions,
+ * intra-group reclassifications, loans, pledges, conversions, etc. These
+ * produce extreme %mcap values because they either:
+ *   - move 100%+ of the capital (apport en nature, reclassement);
+ *   - have a broken market cap (e.g. EDF during reprivatisation);
+ *   - don't represent a directional opinion by the insider.
+ * We still keep the rows in DB for display, but we do NOT use them for
+ * pctOfMarketCap computation nor give them a BUY/SELL-style signalScore.
+ */
+const NON_MARKET_NATURES = [
+  "apport en nature",
+  "reclassement",
+  "nantissement",
+  "conversion",
+  "souscription",
+  "reprise de la dotation",
+  "prêt",
+  "pret",
+  "transfert",
+  "donation",
+  "succession",
+];
+
+function isNonMarketNature(nature: string | null): boolean {
+  if (!nature) return false;
+  const n = nature.toLowerCase();
+  return NON_MARKET_NATURES.some((kw) => n.includes(kw));
+}
+
+/**
+ * Cap pctOfMarketCap to a sensible range. Anything > 100% means either the
+ * amount is wrong (OCR error) or the mcap is wrong (stale / pre-IPO). Either
+ * way, using that value in scoring would give a nonsensical 28 pts on a bug.
+ */
+function sanitizePctMcap(pct: number | null): number | null {
+  if (pct == null) return null;
+  if (!Number.isFinite(pct)) return null;
+  if (pct < 0) return null;
+  if (pct > 100) return null; // implausible for a single insider trade
+  return pct;
+}
 
 // ────────────────────────────────────────────────────────────────────────────
 // Core scoring helpers
 // ────────────────────────────────────────────────────────────────────────────
 
 function functionScore(fn: string | null): number {
-  // roleFunctionScore returns 0–15; rescale to 0–12
-  return Math.round((roleFunctionScore(fn) / 15) * 12);
+  // roleFunctionScore returns 0–15; rescale to 0–16 (upweighted)
+  return Math.round((roleFunctionScore(fn) / 15) * 16);
 }
 
 function pctMcapScore(pct: number): number {
-  // 0.001% → 1pt, 0.01% → 6pt, 0.1% → 16pt, 0.5% → 24pt, 1%+ → 28pt
+  // Recalibrated for max 22 pts (was 28):
+  // 0.001% → 1pt, 0.01% → 5pt, 0.1% → 13pt, 0.5% → 19pt, 1%+ → 22pt
   if (pct <= 0) return 0;
-  const s = Math.min(28, Math.log10(pct + 0.001) * 9.5 + 22);
+  const s = Math.min(22, Math.log10(pct + 0.001) * 7.5 + 17);
   return Math.max(0, Math.round(s));
 }
 
 function pctFlowScore(pct: number): number {
+  // Recalibrated for max 12 pts (was 16)
   if (pct <= 0) return 0;
-  const s = Math.min(16, (pct / 100) * 19);
+  const s = Math.min(12, (pct / 100) * 14);
   return Math.max(0, Math.round(s));
 }
 
-/** Analyst + valuation + leverage fundamentals (0–12 pts, can go -4) */
+/** Analyst + valuation + leverage fundamentals (max 8 pts, min -3) — recalibrated smaller */
 function fundamentalsScore(
   analystScore: number | null,   // 1=strong buy → 5=strong sell
   trailingPE: number | null,
@@ -50,28 +107,50 @@ function fundamentalsScore(
 ): number {
   let pts = 0;
   if (analystScore != null) {
-    // 1.0 → 6, 1.5 → 5, 2.0 → 4, 2.5 → 2, 3.0 → 0, >3 → negative
-    pts += Math.max(-4, Math.round((3.5 - analystScore) * 2.2));
+    // 1.0 → 4, 1.5 → 3, 2.0 → 2, 2.5 → 1, 3.0 → 0, >3 → negative
+    pts += Math.max(-3, Math.round((3.5 - analystScore) * 1.5));
   }
   if (trailingPE != null && trailingPE > 0 && trailingPE < 100) {
-    if (trailingPE < 10) pts += 3;
-    else if (trailingPE < 15) pts += 2;
-    else if (trailingPE < 20) pts += 1;
+    if (trailingPE < 10) pts += 2;
+    else if (trailingPE < 15) pts += 1;
   }
   if (debtToEquity != null) {
-    if (debtToEquity < 30) pts += 3;
-    else if (debtToEquity < 80) pts += 2;
-    else if (debtToEquity < 150) pts += 1;
+    if (debtToEquity < 30) pts += 2;
+    else if (debtToEquity < 80) pts += 1;
   }
-  return Math.min(12, Math.max(-4, pts));
+  return Math.min(8, Math.max(-3, pts));
 }
 
-/** Cluster strength bonus (0–8 pts): ≥4 → 8, 3 → 6, 2 → 4 */
+/**
+ * Cluster strength bonus (0–18 pts) — UPWEIGHTED in v2.
+ *  2 insiders → 12 pts  (entry level: worth a real look)
+ *  3 insiders → 15 pts
+ *  4+ insiders → 18 pts  (very strong signal, rarely wrong)
+ */
 function clusterStrengthScore(nearbyInsiderCount: number): number {
-  if (nearbyInsiderCount >= 4) return 8;
-  if (nearbyInsiderCount >= 3) return 6;
-  if (nearbyInsiderCount >= 2) return 4;
+  if (nearbyInsiderCount >= 4) return 18;
+  if (nearbyInsiderCount >= 3) return 15;
+  if (nearbyInsiderCount >= 2) return 12;
   return 0;
+}
+
+/**
+ * Staleness penalty — NEW in v2. Signals that have been sitting in the feed
+ * for a long time without the market digesting them (weird!) get a slight
+ * penalty, signaling they're probably not going to move.
+ *
+ *   0–7 days old  : 0 pts
+ *   8–14 days old : -1 pts
+ *   15–30 days old : -3 pts
+ *   30+ days old  : -5 pts (shouldn't be surfacing as a fresh signal)
+ *
+ * `daysOld` = (now - pubDate) in days.
+ */
+function stalenessPenalty(daysOld: number): number {
+  if (daysOld <= 7)  return 0;
+  if (daysOld <= 14) return -1;
+  if (daysOld <= 30) return -3;
+  return -5;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -198,6 +277,7 @@ function computeScore(
   debtToEquity?: number | null,
   nearbyInsiderCount?: number,
   compositePoints?: number,
+  pubDate?: Date | null,
 ): number {
   let score = 0;
   score += pctMcapScore(pctOfMarketCap ?? 0);
@@ -207,6 +287,13 @@ function computeScore(
   if ((insiderCumNet ?? 0) > 0) score += 4;
   score += fundamentalsScore(analystScore ?? null, trailingPE ?? null, debtToEquity ?? null);
   score += compositePoints ?? 0;
+
+  // Staleness penalty (only applied at display time — scoredAt ≠ signal age)
+  if (pubDate) {
+    const daysOld = (Date.now() - pubDate.getTime()) / 86400_000;
+    score += stalenessPenalty(daysOld);
+  }
+
   return Math.min(100, Math.max(0, score));
 }
 
@@ -309,9 +396,12 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
     for (const decl of decls) {
       const amount = decl.totalAmount ?? 0;
       const mcap = decl.company.marketCap ? Number(decl.company.marketCap) : null;
+      const isNonMarket = isNonMarketNature(decl.transactionNature);
 
-      // pctOfMarketCap
-      const pctOfMarketCap = mcap && mcap > 0 ? (amount / mcap) * 100 : null;
+      // pctOfMarketCap — skip for non-market natures (apport, reclassement, nantissement…)
+      // and clamp to a realistic range (0–100%) so OCR bugs don't propagate.
+      const rawPctMcap = mcap && mcap > 0 && !isNonMarket ? (amount / mcap) * 100 : null;
+      const pctOfMarketCap = sanitizePctMcap(rawPctMcap);
 
       // pctOfInsiderFlow
       const insiderKey = `${decl.companyId}::${decl.insiderName ?? "__unknown"}`;
@@ -384,6 +474,7 @@ export async function scoreDeclarations(force = false, batchSize = 200) {
         decl.company.debtToEquity,
         nearbyInsiderCount,
         composite.points,
+        decl.pubDate, // v2: staleness penalty
       );
 
       updates.push(

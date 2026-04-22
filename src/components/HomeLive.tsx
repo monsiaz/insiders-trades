@@ -115,7 +115,7 @@ function DataFreshnessBar({
           <>
             <span style={{ color: "var(--border-strong)", fontSize: "0.7rem" }}>·</span>
             <span style={{ color: "var(--tx-1)", fontWeight: 600 }}>
-              +{todayCount} aujourd&apos;hui
+              {`+${todayCount} aujourd'hui`}
             </span>
           </>
         )}

@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  ScatterChart, Scatter, Cell, ReferenceLine,
+  ScatterChart, Scatter, Cell, ReferenceLine, LabelList,
 } from "recharts";
 import {
   TrendingUp, Users, Calendar, Target, Building2, Layers,
@@ -130,17 +130,17 @@ function fmtDate(iso: string | null): string {
   return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "2-digit" });
 }
 function retColor(n: number | null | undefined): string {
-  if (n == null) return "var(--fg-muted)";
-  if (n >= 20) return "var(--color-mint)";
-  if (n >= 5)  return "var(--color-mint-soft, #5ddcb0)";
-  if (n >= 0)  return "var(--fg-secondary)";
-  return "var(--color-red)";
+  if (n == null) return "var(--tx-3)";
+  if (n >= 20) return "var(--signal-pos)";
+  if (n >= 5)  return "var(--signal-pos)";
+  if (n >= 0)  return "var(--tx-2)";
+  return "var(--signal-neg)";
 }
 function retClass(n: number | null | undefined): string {
   if (n == null) return "text-muted";
-  if (n >= 5)  return "text-mint";
+  if (n >= 5)  return "text-secondary";
   if (n >= 0)  return "text-secondary";
-  return "text-red";
+  return "text-muted";
 }
 function sharpeColor(s: number | null): string {
   // DA v3: green (excellent) → gold (average) → grey → red
@@ -159,7 +159,7 @@ function ReturnPill({ v }: { v: number | null }) {
     <span
       className="inline-block rounded px-1.5 py-0.5 text-xs font-mono font-semibold"
       style={{
-        background: v >= 5 ? "rgba(56,215,156,0.12)" : v >= 0 ? "rgba(148,163,184,0.1)" : "rgba(239,68,68,0.1)",
+        background: v >= 5 ? "var(--signal-pos-bg)" : v >= 0 ? "rgba(148,163,184,0.08)" : "var(--signal-neg-bg)",
         color: retColor(v),
       }}
     >
@@ -405,29 +405,69 @@ function GroupChart({
 
   if (!items.length) return <div className="text-muted text-sm py-4 text-center">Aucune donnée</div>;
 
+  const maxAbs = Math.max(...items.map((d) => Math.abs(d.value ?? 0)), 1);
+
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={items} layout="vertical" margin={{ left: 0, right: 32, top: 4, bottom: 4 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-        <XAxis type="number" tickFormatter={(v) => `${v > 0 ? "+" : ""}${v.toFixed(0)}%`} tick={{ fontSize: 11, fill: "var(--fg-muted)" }} />
-        <YAxis type="category" dataKey="key" width={110} tick={{ fontSize: 11, fill: "var(--fg-secondary)" }} />
+      <BarChart data={items} layout="vertical" margin={{ left: 0, right: 56, top: 4, bottom: 4 }}>
+        <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.04)" horizontal={false} />
+        <XAxis
+          type="number"
+          domain={[-maxAbs * 1.05, maxAbs * 1.05]}
+          tickFormatter={(v) => `${v > 0 ? "+" : ""}${v.toFixed(0)}%`}
+          tick={{ fontSize: 10, fill: "var(--tx-3)" }}
+          axisLine={{ stroke: "var(--border-med)" }}
+          tickLine={false}
+        />
+        <YAxis
+          type="category"
+          dataKey="key"
+          width={100}
+          tick={{ fontSize: 11, fill: "var(--tx-2)" }}
+          axisLine={false}
+          tickLine={false}
+        />
         <Tooltip
           formatter={(v) => {
             const n = typeof v === "number" ? v : 0;
             return [`${n >= 0 ? "+" : ""}${n.toFixed(1)}%`, "Retour moy."];
           }}
-          labelStyle={{ color: "var(--fg-primary)", fontSize: 12 }}
-          contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border-soft)", borderRadius: 8 }}
+          labelFormatter={(label, payload) => {
+            const p = payload?.[0]?.payload;
+            return `${label}${p?.count ? ` · n=${p.count}` : ""}`;
+          }}
+          labelStyle={{ color: "var(--tx-1)", fontSize: 12, fontWeight: 600, marginBottom: 4 }}
+          contentStyle={{
+            background: "var(--bg-raised)",
+            border: "1px solid var(--border-med)",
+            borderRadius: 10,
+            boxShadow: "0 8px 28px rgba(0,0,0,0.35)",
+            padding: "8px 12px",
+          }}
+          itemStyle={{ color: "var(--tx-2)", fontSize: 12 }}
         />
-        <ReferenceLine x={0} stroke="rgba(255,255,255,0.15)" />
-        <Bar dataKey="value" radius={[0, 4, 4, 0]} minPointSize={2}>
-          {items.map((entry) => (
-            <Cell
-              key={entry.key}
-              fill={(entry.value ?? 0) >= 0 ? "var(--color-mint)" : "var(--color-red)"}
-              fillOpacity={0.75}
-            />
-          ))}
+        <ReferenceLine x={0} stroke="rgba(255,255,255,0.18)" strokeWidth={1} />
+        <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={20} minPointSize={2}>
+          <LabelList
+            dataKey="value"
+            position="right"
+            formatter={(v: unknown) => {
+              const n = typeof v === "number" ? v : 0;
+              return `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
+            }}
+            style={{ fontSize: 10, fontFamily: "'JetBrains Mono', monospace", fill: "var(--tx-2)", fontWeight: 600 }}
+          />
+          {items.map((entry, idx) => {
+            const isPos = (entry.value ?? 0) >= 0;
+            const opacity = 1 - (idx / items.length) * 0.3;
+            return (
+              <Cell
+                key={entry.key}
+                fill={isPos ? "var(--signal-pos)" : "var(--signal-neg)"}
+                fillOpacity={opacity}
+              />
+            );
+          })}
         </Bar>
       </BarChart>
     </ResponsiveContainer>
@@ -690,7 +730,7 @@ function TopTradesTable({ trades }: { trades: StatsData["topTrades"] }) {
                       className="inline-block px-1.5 py-0.5 rounded text-xs font-bold font-mono"
                       style={{
                         background: t.signalScore >= 65 ? "rgba(56,215,156,0.12)" : "rgba(148,163,184,0.08)",
-                        color: t.signalScore >= 65 ? "var(--color-mint)" : "var(--fg-secondary)",
+                        color: t.signalScore >= 65 ? "var(--gold)" : "var(--tx-2)",
                       }}
                     >
                       {t.signalScore}
@@ -778,7 +818,7 @@ function FreemiumLock({ feature = "cet onglet", children }: { feature?: string; 
         zIndex: 10,
       }}>
         <div style={{
-          background: "var(--bg-card)", border: "1px solid var(--border-med)", borderRadius: "16px",
+          background: "var(--bg-surface)", border: "1px solid var(--border-med)", borderRadius: "16px",
           padding: "24px 32px", maxWidth: "360px", textAlign: "center", boxShadow: "var(--shadow-lg)",
         }}>
           <div style={{
@@ -1097,8 +1137,8 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
             <ResponsiveContainer width="100%" height={280}>
               <ScatterChart margin={{ top: 4, right: 20, bottom: 4, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="score" name="Score" tick={{ fontSize: 11, fill: "var(--fg-muted)" }} label={{ value: "Score", position: "insideBottom", offset: -4, fill: "var(--fg-muted)", fontSize: 11 }} />
-                <YAxis dataKey="return90d" name="T+90" tickFormatter={(v) => `${v > 0 ? "+" : ""}${v.toFixed(0)}%`} tick={{ fontSize: 11, fill: "var(--fg-muted)" }} />
+                <XAxis dataKey="score" name="Score" tick={{ fontSize: 11, fill: "var(--tx-3)" }} axisLine={{ stroke: "var(--border-med)" }} tickLine={false} label={{ value: "Score", position: "insideBottom", offset: -4, fill: "var(--tx-3)", fontSize: 11 }} />
+                <YAxis dataKey="return90d" name="T+90" tickFormatter={(v) => `${v > 0 ? "+" : ""}${v.toFixed(0)}%`} tick={{ fontSize: 11, fill: "var(--tx-3)" }} axisLine={{ stroke: "var(--border-med)" }} tickLine={false} />
                 <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" />
                 <Tooltip
                   cursor={{ strokeDasharray: "3 3" }}
@@ -1106,10 +1146,10 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
                     if (!active || !payload?.length) return null;
                     const d = payload[0].payload;
                     return (
-                      <div className="bg-elevated border border-soft rounded-lg p-2 text-xs shadow-lg">
-                        <div className="font-semibold text-primary">{d.company}</div>
-                        <div className="text-secondary">Score {d.score} · {d.role}</div>
-                        <div className={retClass(d.return90d)}>T+90 : {fmt(d.return90d)}</div>
+                      <div style={{ background: "var(--bg-raised)", border: "1px solid var(--border-med)", borderRadius: 10, padding: "8px 12px", fontSize: "0.75rem", boxShadow: "0 8px 28px rgba(0,0,0,0.35)" }}>
+                        <div style={{ fontWeight: 600, color: "var(--tx-1)", marginBottom: 2 }}>{d.company}</div>
+                        <div style={{ color: "var(--tx-2)" }}>Score {d.score} · {d.role}</div>
+                        <div style={{ color: retColor(d.return90d), fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 }}>T+90 : {fmt(d.return90d)}</div>
                       </div>
                     );
                   }}

@@ -1060,11 +1060,30 @@ input[type="search"], textarea, select {
 .text-secondary { color: var(--tx-2); }
 .text-muted     { color: var(--tx-3); }
 .text-tertiary  { color: var(--tx-4); }
+.text-mint      { color: var(--signal-pos); }
+.text-red       { color: var(--signal-neg); }
+.text-indigo    { color: var(--c-indigo-2); }
 
+.hover\:text-primary:hover { color: var(--tx-1); }
+.hover\:text-mint:hover    { color: var(--signal-pos); }
 .hover-tx-1:hover     { color: var(--tx-1); }
 .hover-tx-brand:hover { color: var(--c-indigo-2); }
 .hover-tx-pos:hover   { color: var(--signal-pos); }
 .hover-tx-neg:hover   { color: var(--signal-neg); }
+
+/* Background utilities for BacktestDashboard */
+.bg-surface  { background: var(--bg-surface); }
+.bg-raised   { background: var(--bg-raised); }
+.bg-elevated { background: var(--bg-elevated); }
+.bg-mint     { background: var(--signal-pos); }
+.bg-indigo   { background: var(--c-indigo); }
+.bg-red      { background: var(--signal-neg); }
+
+/* Border utilities */
+.border-soft   { border-color: var(--border-low, var(--border-med)); }
+.border-mint   { border-color: var(--signal-pos-bd); }
+.border-red    { border-color: var(--signal-neg-bd); }
+.border-indigo { border-color: var(--c-indigo-bd); }
 
 .bg-pos-soft    { background: var(--signal-pos-bg); }
 .bg-neg-soft    { background: var(--signal-neg-bg); }

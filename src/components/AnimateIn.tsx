@@ -1,24 +1,5 @@
 "use client";
 
-/**
- * AnimateIn – scroll-triggered staggered reveal for card grids.
- *
- * Grid mode (default):
- *   <AnimateIn className="grid grid-cols-3 gap-4" stagger={80}>
- *     <Card />  ← each child fades-up with increasing delay
- *     <Card />
- *   </AnimateIn>
- *
- * Single mode:
- *   <AnimateIn single>
- *     <Banner />  ← the wrapper div itself animates
- *   </AnimateIn>
- *
- * • Uses IntersectionObserver – no layout thrash, GPU-composited transform.
- * • Fires immediately if element is already in the viewport on mount.
- * • Respects prefers-reduced-motion via CSS.
- */
-
 import { useEffect, useRef } from "react";
 
 interface Props {
@@ -50,14 +31,26 @@ export function AnimateIn({
     const container = ref.current;
     if (!container) return;
 
-    // Respect prefers-reduced-motion at JS level too (CSS handles display).
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return; // CSS handles the no-animation case
 
+    // ── SINGLE mode ────────────────────────────────────────────────────────
     if (single) {
-      if (!reduced) {
-        container.classList.add("ai-single");
-        container.style.setProperty("--ai-delay", `${baseDelay}ms`);
+      const rect = container.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      const alreadyVisible = rect.top < vh * 0.85;
+
+      container.classList.add("ai-single");
+      container.style.setProperty("--ai-delay", alreadyVisible ? "0ms" : `${baseDelay}ms`);
+
+      if (alreadyVisible) {
+        // Already in view — run in the next two rAF ticks to avoid flash
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          container.classList.add("ai-single-in");
+        }));
+        return;
       }
+
       const obs = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
@@ -65,19 +58,34 @@ export function AnimateIn({
             obs.disconnect();
           }
         },
-        { threshold, rootMargin: "0px 0px -40px 0px" }
+        { threshold, rootMargin: "0px 0px -20px 0px" }
       );
       obs.observe(container);
       return () => obs.disconnect();
     }
 
-    // Grid mode: animate each direct child with stagger.
+    // ── GRID / STAGGER mode ───────────────────────────────────────────────
     const items = Array.from(container.children) as HTMLElement[];
-    if (!reduced) {
-      items.forEach((item, i) => {
-        item.classList.add("ai-item");
-        item.style.setProperty("--ai-delay", `${baseDelay + i * stagger}ms`);
-      });
+    if (items.length === 0) return;
+
+    const rect = container.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const alreadyVisible = rect.top < vh * 0.85;
+
+    items.forEach((item, i) => {
+      item.classList.add("ai-item");
+      // Above-fold items animate quickly (30ms between each), below-fold use full stagger
+      item.style.setProperty("--ai-delay", alreadyVisible
+        ? `${i * 30}ms`
+        : `${baseDelay + i * stagger}ms`
+      );
+    });
+
+    if (alreadyVisible) {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        items.forEach((item) => item.classList.add("ai-in"));
+      }));
+      return;
     }
 
     const obs = new IntersectionObserver(
@@ -87,7 +95,7 @@ export function AnimateIn({
           obs.disconnect();
         }
       },
-      { threshold, rootMargin: "0px 0px -40px 0px" }
+      { threshold, rootMargin: "0px 0px -20px 0px" }
     );
     obs.observe(container);
     return () => obs.disconnect();

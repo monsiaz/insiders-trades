@@ -13,6 +13,7 @@
  */
 
 import Link from "next/link";
+import { headers } from "next/headers";
 import { LogoMark } from "@/components/Logo";
 import { Endpoint, MethodBadge } from "./_components/Endpoint";
 import { CodeBlock, CodeTabs } from "./_components/CodeBlock";
@@ -20,11 +21,19 @@ import { TOC } from "./_components/TOC";
 
 export const revalidate = 3600;
 
-export const metadata = {
-  title: "Documentation API · Insiders Trades Sigma",
-  description:
-    "Référence complète de l'API REST publique d'Insiders Trades Sigma : déclarations AMF, signaux scorés, backtests, fondamentaux Yahoo. Exemples en cURL, Python, JavaScript.",
-};
+export async function generateMetadata() {
+  const hdrs = await headers();
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
+  const isFr = locale === "fr";
+  return {
+    title: isFr
+      ? "Documentation API · Insiders Trades Sigma"
+      : "API Documentation · Insiders Trades Sigma",
+    description: isFr
+      ? "Référence complète de l'API REST publique d'Insiders Trades Sigma : déclarations AMF, signaux scorés, backtests, fondamentaux Yahoo. Exemples en cURL, Python, JavaScript."
+      : "Complete reference for the Insiders Trades Sigma public REST API: AMF filings, scored signals, backtests, Yahoo fundamentals. Examples in cURL, Python, JavaScript.",
+  };
+}
 
 // ── Constants used across examples ───────────────────────────────────────────
 
@@ -33,7 +42,337 @@ const EX_KEY = "sit_live_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export default function DocsPage() {
+export default async function DocsPage() {
+  const hdrs = await headers();
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
+  const isFr = locale === "fr";
+
+  const T = isFr ? {
+    heroH1: <>Documentation <span style={{ fontStyle: "italic", color: "var(--gold)" }}>API</span></>,
+    heroBody: <>Accès programmatique à toutes les données publiques AMF enrichies :
+      déclarations de dirigeants, signaux scorés, backtests T+30 à T+730,
+      fondamentaux Yahoo. 14 endpoints REST, authentification par clé API,
+      métadonnées de fraîcheur sur chaque réponse.</>,
+    btnSwagger: "Swagger UI interactive ↗",
+    btnMcp: "Serveur MCP pour IA ↗",
+    btnApiKey: "Générer une clé API ↗",
+    btnOpenApi: "Spec OpenAPI JSON ↗",
+    quickstartEyebrow: "Démarrage",
+    quickstartTitle: "Quickstart",
+    quickstartIntro: "Trois étapes pour faire votre première requête :",
+    quickstartStep1: <>Créez un compte, puis rendez-vous sur{" "}<Link href="/account/api-keys" style={linkGold}>Mon compte → Clés API</Link>.</>,
+    quickstartStep2: <>Générez une clé nommée (ex : &laquo; Production bot &raquo;). Copiez-la immédiatement, elle ne sera plus affichée.</>,
+    quickstartStep3: <>Ajoutez le header <code style={codeInline}>Authorization: Bearer &lt;key&gt;</code> à chaque requête.</>,
+    authEyebrow: "Sécurité",
+    authTitle: "Authentification",
+    authBody: <>Chaque requête doit inclure <strong>exactement une</strong> clé API valide et non révoquée. Deux formats sont acceptés, au choix :</>,
+    authLi1: <><code style={codeInline}>Authorization: Bearer &lt;key&gt;</code> · standard, recommandé.</>,
+    authLi2: <><code style={codeInline}>X-Api-Key: &lt;key&gt;</code> · alternative si votre client HTTP ne gère pas bien le header Authorization.</>,
+    authCallout: <><strong>La clé est affichée une seule fois</strong> à la création. En cas de perte, révoquez-la et générez-en une nouvelle. Limite : 10 clés actives par compte. Les clés révoquées restent visibles en historique.</>,
+    authKeyFormatH4: "Format des clés",
+    authInvalidH4: "Clé invalide, expirée ou révoquée",
+    authInvalidBody: <>Toute erreur d&apos;authentification renvoie un <code style={codeInline}>HTTP 401</code> au format uniforme :</>,
+    conceptsEyebrow: "Fondamentaux",
+    conceptsTitle: "Concepts clés",
+    conceptsBaseUrlH4: "Base URL",
+    conceptsMetaH4: "Métadonnées universelles",
+    conceptsMetaBody: <>Chaque réponse 200 inclut un objet <code style={codeInline}>meta</code>. Il contient la latence serveur et un mini-dictionnaire <code style={codeInline}>dataFreshness</code> avec la date de dernière mise à jour de chaque bloc de données, permettant à votre client de décider s&apos;il doit invalider son cache.</>,
+    conceptsPagH4: "Pagination",
+    conceptsPagBody: <>Les endpoints listing supportent <code style={codeInline}>?limit</code> (défaut 50, max 200) et <code style={codeInline}>?offset</code> (défaut 0). Le champ <code style={codeInline}>total</code> retourné permet de paginer jusqu&apos;au bout.</>,
+    conceptsTsH4: "Format des timestamps",
+    conceptsTsBody: <>Tous les timestamps sont en <strong>ISO 8601</strong> UTC (<code style={codeInline}>2026-04-20T18:32:11.123Z</code>).</>,
+    conceptsNullH4: "Champs nullable",
+    conceptsNullBody: <>Un champ manquant dans la BDD est sérialisé en <code style={codeInline}>null</code> (jamais omis). Cela permet de distinguer &laquo; donnée absente &raquo; d&apos;une erreur de champ.</>,
+    conceptsBigIntH4: "BigInt (montants)",
+    conceptsBigIntBody: <>Les champs comme <code style={codeInline}>marketCap</code>,{" "}<code style={codeInline}>revenue</code>, <code style={codeInline}>totalAmount</code>{" "}peuvent dépasser la capacité du nombre flottant JS (2<sup>53</sup>). Ils sont retournés comme des <em>nombres</em>, mais pour les sommes globales (L&apos;Oréal à 195 Md€…) votre code client doit utiliser des BigInt si la précision vaut plus de 1 €.</>,
+    endpointsEyebrow: "API Reference",
+    endpointsTitle: "Endpoints",
+    endpointsIntro: "14 endpoints, tous en lecture seule. Groupés par domaine.",
+    groupAuth: "Authentification",
+    groupHealth: "Santé & stats",
+    groupCompanies: "Sociétés",
+    groupInsiders: "Dirigeants",
+    groupDeclarations: "Déclarations",
+    groupSignals: "Signaux",
+    groupBacktest: "Backtest",
+    groupSearch: "Recherche",
+    meSum: "Vérifier une clé et obtenir l'identité",
+    meDesc: "Renvoie les informations de l'utilisateur propriétaire de la clé + métadonnées de la clé elle-même. Utilisez-le comme ping pour valider qu'une clé est toujours active.",
+    healthSum: "État du système",
+    healthDesc: "Ping de la base de données (avec latence mesurée), horodatage de chaque étape de la pipeline. Utile pour détecter un arrêt du cron horaire ou du scoring.",
+    healthH5: "Réponse (extraits)",
+    statsSum: "Compteurs globaux",
+    statsDesc: "Nombre total de déclarations, de sociétés, d'initiés, de backtests, ventilations par fenêtre temporelle (24h / 7j / 30j), score moyen global.",
+    companiesSum: "Lister les sociétés",
+    companiesDesc: "Retourne les sociétés filtrées. 585 sociétés trackées au total.",
+    companiesH5: "Réponse (tronquée)",
+    companyDetailSum: "Détail d'une société (fondamentaux complets)",
+    companyDetailDesc: "Renvoie l'intégralité du profil : income statement, bilan, valorisation (P/E, P/B, beta), consensus analyste (reco, target mean/high/low), technicals (52-week, 50/200 DMA, dividend yield).",
+    companyDetailCallout: <>Les champs Yahoo (<code style={codeInline}>trailingPE</code>, <code style={codeInline}>analystReco</code>, <code style={codeInline}>targetMean</code>…) peuvent être <code style={codeInline}>null</code> pour les micro-caps non couvertes par les analystes.</>,
+    companyDeclSum: "Déclarations AMF d'une société",
+    companyDeclDesc: "Historique complet des transactions de dirigeants sur une société, triées par pubDate desc.",
+    insidersSum: "Lister les dirigeants",
+    insidersDesc: "2 091 dirigeants trackés. Recherche fuzzy par nom.",
+    insiderDetailSum: "Détail d'un dirigeant",
+    insiderDetailDesc: "Profil + sociétés auxquelles il/elle est rattaché(e) avec sa fonction + score moyen et max de ses déclarations.",
+    insiderDeclSum: "Historique transactions d'un dirigeant",
+    insiderDeclDesc: "Chaîne complète des trades, toutes sociétés confondues, triée par pubDate desc.",
+    declsSum: "Recherche avancée de déclarations",
+    declsDesc: "Endpoint généraliste avec 12 filtres combinables. C'est le point d'entrée principal pour exporter un corpus historique ou analyser par critère.",
+    declDetailSum: "Détail d'une déclaration (avec backtest)",
+    declDetailDesc: "Objet complet incluant le backtest T+30/60/90/160/365/730 si calculé. Inclut prix d'exécution, prix au T+X et retour %.",
+    declDetailH5: "Extrait du bloc backtest",
+    signalsSum: "Top signaux (achats / ventes)",
+    signalsDesc: "Raccourci pour obtenir les meilleurs scores sur une fenêtre glissante. Idéal pour un dashboard ou un bot de notification.",
+    backtestSum: "Statistiques backtest globales",
+    backtestDesc: "Retours moyens par horizon (T+30, T+60, T+90, T+160, T+365, T+730) et win rate à T+90. Filtrable par direction / score / période.",
+    backtestH5: "Réponse type",
+    searchSum: "Recherche cross-entités",
+    searchDesc: "Recherche fuzzy dans les sociétés + dirigeants en un seul appel. Utilisé par le autocomplete du site.",
+    dataModelEyebrow: "Schéma",
+    dataModelTitle: "Modèle de données",
+    dataModelIntro: <>Cinq entités principales. Voici les champs exposés dans l&apos;API (certains champs internes comme les index ou timestamps techniques ne sont pas inclus).</>,
+    errorsEyebrow: "Erreurs",
+    errorsTitle: "Gestion des erreurs",
+    errorsIntro: "Toutes les erreurs suivent un format uniforme (RFC-7807-like) :",
+    errorsH4: "Codes d'erreur",
+    errorRows: [
+      ["401", "missing_api_key", "Aucun header Authorization ni X-Api-Key"],
+      ["401", "invalid_api_key", "Clé mal formée, inconnue, ou révoquée. User banni = idem."],
+      ["404", "company_not_found", "Slug de société inexistant"],
+      ["404", "insider_not_found", "Slug de dirigeant inexistant"],
+      ["404", "declaration_not_found", "amfId inexistant"],
+      ["500", "internal_error", "Erreur serveur, remontez-nous l'URL + heure"],
+    ] as [string, string, string][],
+    errorsCallout: <>Retryez toute réponse ≥ 500 avec un back-off exponentiel (ex : 1 s, 2 s, 4 s max 5 tentatives). Ne retryez jamais 401 / 404.</>,
+    errorsTableHeaders: ["Status", "Code", "Quand"],
+    rateLimitsEyebrow: "Quotas",
+    rateLimitsTitle: "Rate limits & bonnes pratiques",
+    rateLimitsIntro: "Plafonds par défaut durant la phase beta :",
+    rateLimitsLi1: <><strong>5 000 requêtes / jour</strong> par clé (compteur reset 00:00 UTC).</>,
+    rateLimitsLi2: <><strong>10 req/seconde</strong> (burst) · suffisant pour la plupart des usages.</>,
+    rateLimitsLi3: <><strong>10 clés actives maximum</strong> par compte. Au-delà, révoquez-en une depuis <Link href="/account/api-keys" style={linkGold}>votre page de clés</Link>.</>,
+    rateLimitsLi4: <>Les compteurs d&apos;usage sont visibles en temps réel par l&apos;utilisateur (total + aujourd&apos;hui) et par l&apos;admin (avec Top consommateurs).</>,
+    rateLimitsBPH4: "Bonnes pratiques",
+    rateLimitsBP1: <><strong>Respectez la fraîcheur.</strong> Les données ne bougent pas toutes les secondes. Les cours Yahoo sont rafraîchis 1×/jour (4 h UTC), les déclarations AMF 1×/heure. Consultez <code style={codeInline}>meta.dataFreshness</code> pour adapter votre fréquence de polling.</>,
+    rateLimitsBP2: <><strong>Cachez agressivement.</strong> Un détail société change rarement, cachez-le côté client jusqu&apos;au <code style={codeInline}>priceAt + 1h</code>.</>,
+    rateLimitsBP3: <><strong>Paginez correctement.</strong> Utilisez <code style={codeInline}>limit</code>{" "}raisonnable (20-50) et <code style={codeInline}>offset</code> pour les gros datasets.</>,
+    rateLimitsBP4: <><strong>Retryez les 5xx.</strong> Avec back-off exponentiel, max 5 tentatives.</>,
+    rateLimitsBP5: <><strong>Stockez la clé en secret.</strong> Jamais en clair dans un repo Git, dans le frontend, ou dans les logs.</>,
+    samplesEyebrow: "Exemples",
+    samplesTitle: "Code samples",
+    samplesH4Top: "Récupérer les top signaux du jour",
+    samplesH4Csv: <>Export CSV de toutes les déclarations d&apos;une société</>,
+    changelogEyebrow: "Versioning",
+    changelogTitle: "Changelog",
+    changelogLi1: "Lancement de l'API publique.",
+    changelogLi2: "14 endpoints, authentification par clé API, métadonnées de fraîcheur.",
+    changelogLi3: <>Swagger UI interactive disponible sur <Link href="/api/docs" style={linkGold}>/api/docs</Link>.</>,
+    supportEyebrow: "Support",
+    supportTitle: "Aide, retours, SLA",
+    supportBody: <>L&apos;API est en <strong>beta privée</strong>. L&apos;accès est sur invitation. Aucun SLA contractuel n&apos;est fourni pendant la beta, mais l&apos;équipe veille quotidiennement à la fraîcheur des données (cron horaire AMF + quotidien Yahoo).</>,
+    supportLi1: <><strong>Demande d&apos;accès beta</strong> ou <strong>quota augmenté</strong> : contactez{" "}<a href="mailto:simon.azoulay.pro@gmail.com" style={linkGold}>simon.azoulay.pro@gmail.com</a>.</>,
+    supportLi2: <><strong>Bug / anomalie</strong> : mentionnez l&apos;URL exacte, l&apos;heure (UTC), et le <code style={codeInline}>prefix</code> de la clé utilisée.</>,
+    supportLi3: <><strong>Roadmap</strong> : endpoints POST pour notifications push, webhooks sur nouveaux signaux, scopes granulaires.</>,
+    supportCallout: <><strong>Usage éthique.</strong> Les données AMF sont publiques, mais le rate limit sert aussi à éviter de surcharger les serveurs amont (Yahoo Finance, BDIF). Les patterns abusifs entraînent la révocation immédiate de la clé.</>,
+    ctaH2: <>Prêt à intégrer <span style={{ fontStyle: "italic", color: "var(--gold)" }}>le signal des initiés</span> ?</>,
+    ctaBody: <>Générez une clé en 10 secondes, copiez l&apos;exemple cURL du quickstart, et explorez les endpoints en direct avec Swagger.</>,
+    ctaBtn1: "Générer ma clé →",
+    ctaBtn2: "Ouvrir Swagger ↗",
+    tocSections: [
+      { id: "quickstart", label: "Quickstart" },
+      { id: "auth", label: "Authentification" },
+      { id: "concepts", label: "Concepts clés" },
+      {
+        id: "endpoints", label: "Endpoints",
+        children: [
+          { id: "me",                     label: "GET /me" },
+          { id: "health",                 label: "GET /health" },
+          { id: "stats",                  label: "GET /stats" },
+          { id: "companies-list",         label: "GET /companies" },
+          { id: "company-detail",         label: "GET /companies/{slug}" },
+          { id: "company-declarations",   label: "GET /companies/{slug}/declarations" },
+          { id: "insiders-list",          label: "GET /insiders" },
+          { id: "insider-detail",         label: "GET /insiders/{slug}" },
+          { id: "insider-declarations",   label: "GET /insiders/{slug}/decls" },
+          { id: "declarations-list",      label: "GET /declarations" },
+          { id: "declaration-detail",     label: "GET /declarations/{amfId}" },
+          { id: "signals",                label: "GET /signals" },
+          { id: "backtest",               label: "GET /backtest" },
+          { id: "search",                 label: "GET /search" },
+        ],
+      },
+      { id: "data-model",  label: "Modèle de données" },
+      { id: "errors",      label: "Erreurs" },
+      { id: "rate-limits", label: "Rate limits" },
+      { id: "samples",     label: "Code samples" },
+      { id: "changelog",   label: "Changelog" },
+      { id: "support",     label: "Support" },
+    ] as typeof TOC_SECTIONS,
+  } : {
+    heroH1: <>API <span style={{ fontStyle: "italic", color: "var(--gold)" }}>Documentation</span></>,
+    heroBody: <>Programmatic access to all enriched public AMF data:
+      executive filings, scored signals, T+30 to T+730 backtests,
+      Yahoo fundamentals. 14 REST endpoints, API key authentication,
+      freshness metadata on every response.</>,
+    btnSwagger: "Interactive Swagger UI ↗",
+    btnMcp: "MCP server for AI ↗",
+    btnApiKey: "Generate an API key ↗",
+    btnOpenApi: "OpenAPI JSON spec ↗",
+    quickstartEyebrow: "Getting started",
+    quickstartTitle: "Quickstart",
+    quickstartIntro: "Three steps to make your first request:",
+    quickstartStep1: <>Create an account, then go to{" "}<Link href="/account/api-keys" style={linkGold}>My account → API keys</Link>.</>,
+    quickstartStep2: <>Generate a named key (e.g. &quot;Production bot&quot;). Copy it immediately — it won&apos;t be shown again.</>,
+    quickstartStep3: <>Add the header <code style={codeInline}>Authorization: Bearer &lt;key&gt;</code> to every request.</>,
+    authEyebrow: "Security",
+    authTitle: "Authentication",
+    authBody: <>Every request must include <strong>exactly one</strong> valid, non-revoked API key. Two formats are accepted:</>,
+    authLi1: <><code style={codeInline}>Authorization: Bearer &lt;key&gt;</code> · standard, recommended.</>,
+    authLi2: <><code style={codeInline}>X-Api-Key: &lt;key&gt;</code> · alternative if your HTTP client doesn&apos;t handle the Authorization header well.</>,
+    authCallout: <><strong>The key is shown only once</strong> at creation. If lost, revoke it and generate a new one. Limit: 10 active keys per account. Revoked keys remain visible in history.</>,
+    authKeyFormatH4: "Key format",
+    authInvalidH4: "Invalid, expired or revoked key",
+    authInvalidBody: <>Any authentication error returns an <code style={codeInline}>HTTP 401</code> in a uniform format:</>,
+    conceptsEyebrow: "Fundamentals",
+    conceptsTitle: "Key concepts",
+    conceptsBaseUrlH4: "Base URL",
+    conceptsMetaH4: "Universal metadata",
+    conceptsMetaBody: <>Every 200 response includes a <code style={codeInline}>meta</code> object. It contains the server latency and a <code style={codeInline}>dataFreshness</code> mini-dictionary with the last update date of each data block, letting your client decide whether to invalidate its cache.</>,
+    conceptsPagH4: "Pagination",
+    conceptsPagBody: <>Listing endpoints support <code style={codeInline}>?limit</code> (default 50, max 200) and <code style={codeInline}>?offset</code> (default 0). The returned <code style={codeInline}>total</code> field allows paginating through all results.</>,
+    conceptsTsH4: "Timestamp format",
+    conceptsTsBody: <>All timestamps are in <strong>ISO 8601</strong> UTC (<code style={codeInline}>2026-04-20T18:32:11.123Z</code>).</>,
+    conceptsNullH4: "Nullable fields",
+    conceptsNullBody: <>A missing field in the database is serialised as <code style={codeInline}>null</code> (never omitted). This lets you distinguish between &quot;absent data&quot; and a field error.</>,
+    conceptsBigIntH4: "BigInt (amounts)",
+    conceptsBigIntBody: <>Fields like <code style={codeInline}>marketCap</code>,{" "}<code style={codeInline}>revenue</code>, <code style={codeInline}>totalAmount</code>{" "}can exceed JS float capacity (2<sup>53</sup>). They are returned as <em>numbers</em>, but for large totals (L&apos;Oréal at €195bn…) your client code should use BigInt if precision matters below €1.</>,
+    endpointsEyebrow: "API Reference",
+    endpointsTitle: "Endpoints",
+    endpointsIntro: "14 endpoints, all read-only. Grouped by domain.",
+    groupAuth: "Authentication",
+    groupHealth: "Health & stats",
+    groupCompanies: "Companies",
+    groupInsiders: "Executives",
+    groupDeclarations: "Filings",
+    groupSignals: "Signals",
+    groupBacktest: "Backtest",
+    groupSearch: "Search",
+    meSum: "Verify a key and retrieve identity",
+    meDesc: "Returns the information of the key owner + metadata about the key itself. Use it as a ping to validate that a key is still active.",
+    healthSum: "System status",
+    healthDesc: "Pings the database (with measured latency), timestamps each pipeline stage. Useful for detecting a stopped hourly cron or scoring job.",
+    healthH5: "Response (excerpt)",
+    statsSum: "Global counters",
+    statsDesc: "Total number of filings, companies, insiders, backtests, breakdowns by time window (24h / 7d / 30d), global average score.",
+    companiesSum: "List companies",
+    companiesDesc: "Returns filtered companies. 585 companies tracked in total.",
+    companiesH5: "Response (truncated)",
+    companyDetailSum: "Company detail (full fundamentals)",
+    companyDetailDesc: "Returns the complete profile: income statement, balance sheet, valuation (P/E, P/B, beta), analyst consensus (reco, target mean/high/low), technicals (52-week, 50/200 DMA, dividend yield).",
+    companyDetailCallout: <>Yahoo fields (<code style={codeInline}>trailingPE</code>, <code style={codeInline}>analystReco</code>, <code style={codeInline}>targetMean</code>…) may be <code style={codeInline}>null</code> for micro-caps not covered by analysts.</>,
+    companyDeclSum: "AMF filings for a company",
+    companyDeclDesc: "Complete transaction history of executives for a company, sorted by pubDate desc.",
+    insidersSum: "List executives",
+    insidersDesc: "2,091 executives tracked. Fuzzy name search.",
+    insiderDetailSum: "Executive detail",
+    insiderDetailDesc: "Profile + companies they are associated with and their role + average and max score of their filings.",
+    insiderDeclSum: "Transaction history for an executive",
+    insiderDeclDesc: "Complete trade chain, all companies combined, sorted by pubDate desc.",
+    declsSum: "Advanced filing search",
+    declsDesc: "General-purpose endpoint with 12 combinable filters. The main entry point for exporting a historical corpus or analysing by criterion.",
+    declDetailSum: "Filing detail (with backtest)",
+    declDetailDesc: "Complete object including the T+30/60/90/160/365/730 backtest if computed. Includes execution price, price at T+X and return %.",
+    declDetailH5: "Backtest block excerpt",
+    signalsSum: "Top signals (buys / sells)",
+    signalsDesc: "Shortcut to get the best scores over a rolling window. Ideal for a dashboard or notification bot.",
+    backtestSum: "Global backtest statistics",
+    backtestDesc: "Average returns by horizon (T+30, T+60, T+90, T+160, T+365, T+730) and win rate at T+90. Filterable by direction / score / period.",
+    backtestH5: "Sample response",
+    searchSum: "Cross-entity search",
+    searchDesc: "Fuzzy search across companies + executives in one call. Used by the site autocomplete.",
+    dataModelEyebrow: "Schema",
+    dataModelTitle: "Data model",
+    dataModelIntro: <>Five main entities. Here are the fields exposed in the API (some internal fields such as indexes or technical timestamps are not included).</>,
+    errorsEyebrow: "Errors",
+    errorsTitle: "Error handling",
+    errorsIntro: "All errors follow a uniform format (RFC-7807-like):",
+    errorsH4: "Error codes",
+    errorRows: [
+      ["401", "missing_api_key", "No Authorization or X-Api-Key header"],
+      ["401", "invalid_api_key", "Malformed, unknown, or revoked key. Banned user = same."],
+      ["404", "company_not_found", "Non-existent company slug"],
+      ["404", "insider_not_found", "Non-existent executive slug"],
+      ["404", "declaration_not_found", "Non-existent amfId"],
+      ["500", "internal_error", "Server error — please share the URL + time with us"],
+    ] as [string, string, string][],
+    errorsCallout: <>Retry any response ≥ 500 with exponential back-off (e.g. 1 s, 2 s, 4 s, max 5 attempts). Never retry 401 / 404.</>,
+    errorsTableHeaders: ["Status", "Code", "When"],
+    rateLimitsEyebrow: "Quotas",
+    rateLimitsTitle: "Rate limits & best practices",
+    rateLimitsIntro: "Default limits during the beta phase:",
+    rateLimitsLi1: <><strong>5,000 requests / day</strong> per key (counter resets at 00:00 UTC).</>,
+    rateLimitsLi2: <><strong>10 req/second</strong> (burst) · sufficient for most use cases.</>,
+    rateLimitsLi3: <><strong>10 active keys maximum</strong> per account. Beyond that, revoke one from <Link href="/account/api-keys" style={linkGold}>your keys page</Link>.</>,
+    rateLimitsLi4: <>Usage counters are visible in real-time by the user (total + today) and by the admin (with top consumers).</>,
+    rateLimitsBPH4: "Best practices",
+    rateLimitsBP1: <><strong>Respect freshness.</strong> Data doesn&apos;t change every second. Yahoo prices are refreshed 1×/day (4 AM UTC), AMF filings 1×/hour. Check <code style={codeInline}>meta.dataFreshness</code> to adapt your polling frequency.</>,
+    rateLimitsBP2: <><strong>Cache aggressively.</strong> A company detail rarely changes — cache it client-side until <code style={codeInline}>priceAt + 1h</code>.</>,
+    rateLimitsBP3: <><strong>Paginate correctly.</strong> Use a reasonable <code style={codeInline}>limit</code>{" "}(20–50) and <code style={codeInline}>offset</code> for large datasets.</>,
+    rateLimitsBP4: <><strong>Retry 5xx.</strong> With exponential back-off, max 5 attempts.</>,
+    rateLimitsBP5: <><strong>Store your key securely.</strong> Never in plain text in a Git repo, in the frontend, or in logs.</>,
+    samplesEyebrow: "Examples",
+    samplesTitle: "Code samples",
+    samplesH4Top: "Fetch today's top signals",
+    samplesH4Csv: "CSV export of all filings for a company",
+    changelogEyebrow: "Versioning",
+    changelogTitle: "Changelog",
+    changelogLi1: "Public API launch.",
+    changelogLi2: "14 endpoints, API key authentication, freshness metadata.",
+    changelogLi3: <>Interactive Swagger UI available at <Link href="/api/docs" style={linkGold}>/api/docs</Link>.</>,
+    supportEyebrow: "Support",
+    supportTitle: "Help, feedback, SLA",
+    supportBody: <>The API is in <strong>private beta</strong>. Access is by invitation. No contractual SLA is provided during the beta, but the team monitors data freshness daily (hourly AMF cron + daily Yahoo).</>,
+    supportLi1: <><strong>Beta access request</strong> or <strong>quota increase</strong>: contact{" "}<a href="mailto:simon.azoulay.pro@gmail.com" style={linkGold}>simon.azoulay.pro@gmail.com</a>.</>,
+    supportLi2: <><strong>Bug / anomaly</strong>: include the exact URL, the time (UTC), and the <code style={codeInline}>prefix</code> of the key used.</>,
+    supportLi3: <><strong>Roadmap</strong>: POST endpoints for push notifications, webhooks on new signals, granular scopes.</>,
+    supportCallout: <><strong>Ethical use.</strong> AMF data is public, but the rate limit also prevents overloading upstream servers (Yahoo Finance, BDIF). Abusive patterns result in immediate key revocation.</>,
+    ctaH2: <>Ready to integrate <span style={{ fontStyle: "italic", color: "var(--gold)" }}>the insider signal</span>?</>,
+    ctaBody: <>Generate a key in 10 seconds, copy the cURL example from the quickstart, and explore the endpoints live with Swagger.</>,
+    ctaBtn1: "Generate my key →",
+    ctaBtn2: "Open Swagger ↗",
+    tocSections: [
+      { id: "quickstart", label: "Quickstart" },
+      { id: "auth", label: "Authentication" },
+      { id: "concepts", label: "Key concepts" },
+      {
+        id: "endpoints", label: "Endpoints",
+        children: [
+          { id: "me",                     label: "GET /me" },
+          { id: "health",                 label: "GET /health" },
+          { id: "stats",                  label: "GET /stats" },
+          { id: "companies-list",         label: "GET /companies" },
+          { id: "company-detail",         label: "GET /companies/{slug}" },
+          { id: "company-declarations",   label: "GET /companies/{slug}/declarations" },
+          { id: "insiders-list",          label: "GET /insiders" },
+          { id: "insider-detail",         label: "GET /insiders/{slug}" },
+          { id: "insider-declarations",   label: "GET /insiders/{slug}/decls" },
+          { id: "declarations-list",      label: "GET /declarations" },
+          { id: "declaration-detail",     label: "GET /declarations/{amfId}" },
+          { id: "signals",                label: "GET /signals" },
+          { id: "backtest",               label: "GET /backtest" },
+          { id: "search",                 label: "GET /search" },
+        ],
+      },
+      { id: "data-model",  label: "Data model" },
+      { id: "errors",      label: "Errors" },
+      { id: "rate-limits", label: "Rate limits" },
+      { id: "samples",     label: "Code samples" },
+      { id: "changelog",   label: "Changelog" },
+      { id: "support",     label: "Support" },
+    ] as typeof TOC_SECTIONS,
+  };
+
   return (
     <div className="content-wrapper" style={{ maxWidth: "1280px" }}>
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
@@ -60,7 +399,7 @@ export default function DocsPage() {
             marginBottom: "14px",
           }}
         >
-          Documentation <span style={{ fontStyle: "italic", color: "var(--gold)" }}>API</span>
+          {T.heroH1}
         </h1>
         <p
           style={{
@@ -71,16 +410,13 @@ export default function DocsPage() {
             lineHeight: 1.65,
           }}
         >
-          Accès programmatique à toutes les données publiques AMF enrichies :
-          déclarations de dirigeants, signaux scorés, backtests T+30 à T+730,
-          fondamentaux Yahoo. 14 endpoints REST, authentification par clé API,
-          métadonnées de fraîcheur sur chaque réponse.
+          {T.heroBody}
         </p>
         <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
-          <Link href="/api/docs" style={btnGold}>Swagger UI interactive ↗</Link>
-          <Link href="/docs/mcp" style={btnGhost}>Serveur MCP pour IA ↗</Link>
-          <Link href="/account/api-keys" style={btnGhost}>Générer une clé API ↗</Link>
-          <Link href="/api/openapi.json" style={btnGhost}>Spec OpenAPI JSON ↗</Link>
+          <Link href="/api/docs" style={btnGold}>{T.btnSwagger}</Link>
+          <Link href="/docs/mcp" style={btnGhost}>{T.btnMcp}</Link>
+          <Link href="/account/api-keys" style={btnGhost}>{T.btnApiKey}</Link>
+          <Link href="/api/openapi.json" style={btnGhost}>{T.btnOpenApi}</Link>
         </div>
       </section>
 
@@ -88,16 +424,16 @@ export default function DocsPage() {
       <div className="docs-layout">
         {/* Sidebar TOC · desktop only */}
         <aside className="docs-sidebar">
-          <TOC sections={TOC_SECTIONS} />
+          <TOC sections={T.tocSections} />
         </aside>
 
         {/* Main content */}
         <main className="docs-content">
 
           {/* ── QUICKSTART ──────────────────────────────────────────────── */}
-          <Section id="quickstart" eyebrow="Démarrage" title="Quickstart">
+          <Section id="quickstart" eyebrow={T.quickstartEyebrow} title={T.quickstartTitle}>
             <p style={pBody}>
-              Trois étapes pour faire votre première requête :
+              {T.quickstartIntro}
             </p>
             <ol
               style={{
@@ -108,18 +444,9 @@ export default function DocsPage() {
                 lineHeight: 1.8,
               }}
             >
-              <li>
-                Créez un compte, puis rendez-vous sur{" "}
-                <Link href="/account/api-keys" style={linkGold}>Mon compte → Clés API</Link>.
-              </li>
-              <li>
-                Générez une clé nommée (ex : &laquo; Production bot &raquo;). Copiez-la
-                immédiatement, elle ne sera plus affichée.
-              </li>
-              <li>
-                Ajoutez le header <code style={codeInline}>Authorization: Bearer &lt;key&gt;</code> à
-                chaque requête.
-              </li>
+              <li>{T.quickstartStep1}</li>
+              <li>{T.quickstartStep2}</li>
+              <li>{T.quickstartStep3}</li>
             </ol>
             <CodeTabs
               tabs={[
@@ -156,46 +483,31 @@ print(r.json())`,
           </Section>
 
           {/* ── AUTH ─────────────────────────────────────────────────────── */}
-          <Section id="auth" eyebrow="Sécurité" title="Authentification">
-            <p style={pBody}>
-              Chaque requête doit inclure <strong>exactement une</strong> clé API valide et non
-              révoquée. Deux formats sont acceptés, au choix :
-            </p>
+          <Section id="auth" eyebrow={T.authEyebrow} title={T.authTitle}>
+            <p style={pBody}>{T.authBody}</p>
             <ul style={ulBody}>
-              <li>
-                <code style={codeInline}>Authorization: Bearer &lt;key&gt;</code> · standard,
-                recommandé.
-              </li>
-              <li>
-                <code style={codeInline}>X-Api-Key: &lt;key&gt;</code> · alternative si votre
-                client HTTP ne gère pas bien le header Authorization.
-              </li>
+              <li>{T.authLi1}</li>
+              <li>{T.authLi2}</li>
             </ul>
 
-            <Callout tone="warn">
-              <strong>La clé est affichée une seule fois</strong> à la création.
-              En cas de perte, révoquez-la et générez-en une nouvelle.
-              Limite : 10 clés actives par compte. Les clés révoquées restent visibles en historique.
-            </Callout>
+            <Callout tone="warn">{T.authCallout}</Callout>
 
-            <h4 style={h4}>Format des clés</h4>
+            <h4 style={h4}>{T.authKeyFormatH4}</h4>
             <CodeBlock
               language="text"
-              code={`sit_live_<32 caractères base62>
-
-Exemple de préfixe visible (safe pour logs) : sit_live_Ab1C
-La clé complète fait ~40 caractères. Stockée hashée (SHA-256) côté serveur,
-jamais retrouvable en clair.`}
+              code={isFr
+                ? `sit_live_<32 caractères base62>\n\nExemple de préfixe visible (safe pour logs) : sit_live_Ab1C\nLa clé complète fait ~40 caractères. Stockée hashée (SHA-256) côté serveur,\njamais retrouvable en clair.`
+                : `sit_live_<32 base62 characters>\n\nExample visible prefix (safe for logs): sit_live_Ab1C\nThe full key is ~40 characters. Stored hashed (SHA-256) server-side,\nnever retrievable in plain text.`}
             />
 
-            <h4 style={h4}>Clé invalide, expirée ou révoquée</h4>
-            <p style={pBody}>Toute erreur d&apos;authentification renvoie un <code style={codeInline}>HTTP 401</code> au format uniforme :</p>
+            <h4 style={h4}>{T.authInvalidH4}</h4>
+            <p style={pBody}>{T.authInvalidBody}</p>
             <CodeBlock
               language="json"
               code={`{
   "error": {
     "code": "invalid_api_key",
-    "message": "Clé API invalide, inconnue ou révoquée. Générez une nouvelle clé depuis votre compte.",
+    "message": "${isFr ? "Clé API invalide, inconnue ou révoquée. Générez une nouvelle clé depuis votre compte." : "Invalid, unknown or revoked API key. Generate a new key from your account."}",
     "status": 401
   }
 }`}
@@ -203,17 +515,12 @@ jamais retrouvable en clair.`}
           </Section>
 
           {/* ── CONCEPTS ─────────────────────────────────────────────────── */}
-          <Section id="concepts" eyebrow="Fondamentaux" title="Concepts clés">
-            <h4 style={h4}>Base URL</h4>
+          <Section id="concepts" eyebrow={T.conceptsEyebrow} title={T.conceptsTitle}>
+            <h4 style={h4}>{T.conceptsBaseUrlH4}</h4>
             <CodeBlock language="text" code={BASE_URL} />
 
-            <h4 style={h4}>Métadonnées universelles</h4>
-            <p style={pBody}>
-              Chaque réponse 200 inclut un objet <code style={codeInline}>meta</code>. Il contient la
-              latence serveur et un mini-dictionnaire <code style={codeInline}>dataFreshness</code>
-              avec la date de dernière mise à jour de chaque bloc de données, permettant à votre
-              client de décider s&apos;il doit invalider son cache.
-            </p>
+            <h4 style={h4}>{T.conceptsMetaH4}</h4>
+            <p style={pBody}>{T.conceptsMetaBody}</p>
             <CodeBlock
               language="json"
               code={`{
@@ -229,51 +536,31 @@ jamais retrouvable en clair.`}
 }`}
             />
 
-            <h4 style={h4}>Pagination</h4>
-            <p style={pBody}>
-              Les endpoints listing supportent <code style={codeInline}>?limit</code> (défaut 50,
-              max 200) et <code style={codeInline}>?offset</code> (défaut 0). Le champ
-              <code style={codeInline}>total</code> retourné permet de paginer jusqu&apos;au bout.
-            </p>
+            <h4 style={h4}>{T.conceptsPagH4}</h4>
+            <p style={pBody}>{T.conceptsPagBody}</p>
 
-            <h4 style={h4}>Format des timestamps</h4>
-            <p style={pBody}>
-              Tous les timestamps sont en <strong>ISO 8601</strong> UTC
-              (<code style={codeInline}>2026-04-20T18:32:11.123Z</code>).
-            </p>
+            <h4 style={h4}>{T.conceptsTsH4}</h4>
+            <p style={pBody}>{T.conceptsTsBody}</p>
 
-            <h4 style={h4}>Champs nullable</h4>
-            <p style={pBody}>
-              Un champ manquant dans la BDD est sérialisé en <code style={codeInline}>null</code>
-              (jamais omis). Cela permet de distinguer &laquo; donnée absente &raquo; d&apos;une
-              erreur de champ.
-            </p>
+            <h4 style={h4}>{T.conceptsNullH4}</h4>
+            <p style={pBody}>{T.conceptsNullBody}</p>
 
-            <h4 style={h4}>BigInt (montants)</h4>
-            <p style={pBody}>
-              Les champs comme <code style={codeInline}>marketCap</code>,{" "}
-              <code style={codeInline}>revenue</code>, <code style={codeInline}>totalAmount</code>{" "}
-              peuvent dépasser la capacité du nombre flottant JS (2<sup>53</sup>). Ils sont
-              retournés comme des <em>nombres</em>, mais pour les sommes globales (L&apos;Oréal à
-              195 Md€…) votre code client doit utiliser des BigInt si la précision vaut plus de 1
-              €.
-            </p>
+            <h4 style={h4}>{T.conceptsBigIntH4}</h4>
+            <p style={pBody}>{T.conceptsBigIntBody}</p>
           </Section>
 
           {/* ── ENDPOINTS ───────────────────────────────────────────────── */}
-          <Section id="endpoints" eyebrow="API Reference" title="Endpoints">
-            <p style={pBody}>
-              14 endpoints, tous en lecture seule. Groupés par domaine.
-            </p>
+          <Section id="endpoints" eyebrow={T.endpointsEyebrow} title={T.endpointsTitle}>
+            <p style={pBody}>{T.endpointsIntro}</p>
 
             {/* Authentication group */}
-            <GroupHeader id="auth-endpoints" label="Authentification" />
+            <GroupHeader id="auth-endpoints" label={T.groupAuth} />
             <Endpoint
               id="me"
               method="GET"
               path="/api/v1/me"
-              summary="Vérifier une clé et obtenir l'identité"
-              description="Renvoie les informations de l'utilisateur propriétaire de la clé + métadonnées de la clé elle-même. Utilisez-le comme ping pour valider qu'une clé est toujours active."
+              summary={T.meSum}
+              description={T.meDesc}
             >
               <CodeTabs
                 tabs={[
@@ -300,19 +587,19 @@ jamais retrouvable en clair.`}
             </Endpoint>
 
             {/* Health group */}
-            <GroupHeader id="health-endpoints" label="Santé & stats" />
+            <GroupHeader id="health-endpoints" label={T.groupHealth} />
             <Endpoint
               id="health"
               method="GET"
               path="/api/v1/health"
-              summary="État du système"
-              description="Ping de la base de données (avec latence mesurée), horodatage de chaque étape de la pipeline. Utile pour détecter un arrêt du cron horaire ou du scoring."
+              summary={T.healthSum}
+              description={T.healthDesc}
             >
               <CodeBlock
                 language="bash"
                 code={`curl ${BASE_URL}/api/v1/health -H "Authorization: Bearer ${EX_KEY}"`}
               />
-              <h5 style={h5}>Réponse (extraits)</h5>
+              <h5 style={h5}>{T.healthH5}</h5>
               <CodeBlock
                 language="json"
                 code={`{
@@ -332,8 +619,8 @@ jamais retrouvable en clair.`}
               id="stats"
               method="GET"
               path="/api/v1/stats"
-              summary="Compteurs globaux"
-              description="Nombre total de déclarations, de sociétés, d'initiés, de backtests, ventilations par fenêtre temporelle (24h / 7j / 30j), score moyen global."
+              summary={T.statsSum}
+              description={T.statsDesc}
             >
               <CodeBlock
                 language="bash"
@@ -342,22 +629,22 @@ jamais retrouvable en clair.`}
             </Endpoint>
 
             {/* Companies group */}
-            <GroupHeader id="companies-endpoints" label="Sociétés" />
+            <GroupHeader id="companies-endpoints" label={T.groupCompanies} />
             <Endpoint
               id="companies-list"
               method="GET"
               path="/api/v1/companies"
-              summary="Lister les sociétés"
-              description="Retourne les sociétés filtrées. 585 sociétés trackées au total."
+              summary={T.companiesSum}
+              description={T.companiesDesc}
               queryParams={[
-                { name: "q",       type: "string",  description: "Recherche insensitive sur le nom" },
-                { name: "isin",    type: "string",  description: "Filtre exact par ISIN" },
-                { name: "market",  type: "string",  description: "Filtre marché (ex : Euronext Paris)" },
-                { name: "hasLogo", type: "boolean", description: "Ne retourne que celles avec (true) ou sans (false) logo" },
+                { name: "q",       type: "string",  description: isFr ? "Recherche insensitive sur le nom" : "Case-insensitive name search" },
+                { name: "isin",    type: "string",  description: isFr ? "Filtre exact par ISIN" : "Exact ISIN filter" },
+                { name: "market",  type: "string",  description: isFr ? "Filtre marché (ex : Euronext Paris)" : "Market filter (e.g. Euronext Paris)" },
+                { name: "hasLogo", type: "boolean", description: isFr ? "Ne retourne que celles avec (true) ou sans (false) logo" : "Return only companies with (true) or without (false) a logo" },
                 { name: "sort",    type: "enum",    default: "name", description: "name | marketCap | recent" },
                 { name: "order",   type: "enum",    default: "asc",  description: "asc | desc" },
                 { name: "limit",   type: "integer", default: "50",   description: "1 → 200" },
-                { name: "offset",  type: "integer", default: "0",    description: "Pagination" },
+                { name: "offset",  type: "integer", default: "0",    description: isFr ? "Pagination" : "Pagination offset" },
               ]}
             >
               <CodeBlock
@@ -365,7 +652,7 @@ jamais retrouvable en clair.`}
                 code={`curl "${BASE_URL}/api/v1/companies?q=lvmh&limit=3" \\
   -H "Authorization: Bearer ${EX_KEY}"`}
               />
-              <h5 style={h5}>Réponse (tronquée)</h5>
+              <h5 style={h5}>{T.companiesH5}</h5>
               <CodeBlock
                 language="json"
                 code={`{
@@ -397,34 +684,30 @@ jamais retrouvable en clair.`}
               id="company-detail"
               method="GET"
               path="/api/v1/companies/{slug}"
-              summary="Détail d'une société (fondamentaux complets)"
-              description="Renvoie l'intégralité du profil : income statement, bilan, valorisation (P/E, P/B, beta), consensus analyste (reco, target mean/high/low), technicals (52-week, 50/200 DMA, dividend yield)."
-              pathParams={[{ name: "slug", type: "string", required: true, description: "Identifiant URL unique de la société (présent dans la liste)" }]}
+              summary={T.companyDetailSum}
+              description={T.companyDetailDesc}
+              pathParams={[{ name: "slug", type: "string", required: true, description: isFr ? "Identifiant URL unique de la société (présent dans la liste)" : "Unique URL identifier for the company (present in the list)" }]}
             >
               <CodeBlock
                 language="bash"
                 code={`curl ${BASE_URL}/api/v1/companies/bouygues-1454 \\
   -H "Authorization: Bearer ${EX_KEY}"`}
               />
-              <Callout tone="info">
-                Les champs Yahoo (<code style={codeInline}>trailingPE</code>, <code style={codeInline}>analystReco</code>,
-                <code style={codeInline}>targetMean</code>…) peuvent être <code style={codeInline}>null</code> pour les micro-caps
-                non couvertes par les analystes.
-              </Callout>
+              <Callout tone="info">{T.companyDetailCallout}</Callout>
             </Endpoint>
 
             <Endpoint
               id="company-declarations"
               method="GET"
               path="/api/v1/companies/{slug}/declarations"
-              summary="Déclarations AMF d'une société"
-              description="Historique complet des transactions de dirigeants sur une société, triées par pubDate desc."
-              pathParams={[{ name: "slug", type: "string", required: true, description: "Slug société" }]}
+              summary={T.companyDeclSum}
+              description={T.companyDeclDesc}
+              pathParams={[{ name: "slug", type: "string", required: true, description: isFr ? "Slug société" : "Company slug" }]}
               queryParams={[
-                { name: "direction", type: "enum",    description: "BUY | SELL (défaut: toutes)" },
-                { name: "minScore",  type: "number",  description: "Seuil signalScore" },
+                { name: "direction", type: "enum",    description: isFr ? "BUY | SELL (défaut: toutes)" : "BUY | SELL (default: all)" },
+                { name: "minScore",  type: "number",  description: isFr ? "Seuil signalScore" : "signalScore threshold" },
                 { name: "limit",     type: "integer", default: "50", description: "1 → 200" },
-                { name: "offset",    type: "integer", default: "0",  description: "Pagination" },
+                { name: "offset",    type: "integer", default: "0",  description: isFr ? "Pagination" : "Pagination offset" },
               ]}
             >
               <CodeBlock
@@ -435,17 +718,17 @@ jamais retrouvable en clair.`}
             </Endpoint>
 
             {/* Insiders group */}
-            <GroupHeader id="insiders-endpoints" label="Dirigeants" />
+            <GroupHeader id="insiders-endpoints" label={T.groupInsiders} />
             <Endpoint
               id="insiders-list"
               method="GET"
               path="/api/v1/insiders"
-              summary="Lister les dirigeants"
-              description="2 091 dirigeants trackés. Recherche fuzzy par nom."
+              summary={T.insidersSum}
+              description={T.insidersDesc}
               queryParams={[
-                { name: "q",      type: "string",  description: "Recherche insensitive sur le nom" },
+                { name: "q",      type: "string",  description: isFr ? "Recherche insensitive sur le nom" : "Case-insensitive name search" },
                 { name: "limit",  type: "integer", default: "50", description: "1 → 200" },
-                { name: "offset", type: "integer", default: "0",  description: "Pagination" },
+                { name: "offset", type: "integer", default: "0",  description: isFr ? "Pagination" : "Pagination offset" },
               ]}
             >
               <CodeBlock
@@ -459,9 +742,9 @@ jamais retrouvable en clair.`}
               id="insider-detail"
               method="GET"
               path="/api/v1/insiders/{slug}"
-              summary="Détail d'un dirigeant"
-              description="Profil + sociétés auxquelles il/elle est rattaché(e) avec sa fonction + score moyen et max de ses déclarations."
-              pathParams={[{ name: "slug", type: "string", required: true, description: "Slug dirigeant" }]}
+              summary={T.insiderDetailSum}
+              description={T.insiderDetailDesc}
+              pathParams={[{ name: "slug", type: "string", required: true, description: isFr ? "Slug dirigeant" : "Executive slug" }]}
             >
               <CodeBlock
                 language="bash"
@@ -474,12 +757,12 @@ jamais retrouvable en clair.`}
               id="insider-declarations"
               method="GET"
               path="/api/v1/insiders/{slug}/declarations"
-              summary="Historique transactions d'un dirigeant"
-              description="Chaîne complète des trades, toutes sociétés confondues, triée par pubDate desc."
-              pathParams={[{ name: "slug", type: "string", required: true, description: "Slug dirigeant" }]}
+              summary={T.insiderDeclSum}
+              description={T.insiderDeclDesc}
+              pathParams={[{ name: "slug", type: "string", required: true, description: isFr ? "Slug dirigeant" : "Executive slug" }]}
               queryParams={[
                 { name: "limit",  type: "integer", default: "50", description: "Max 200" },
-                { name: "offset", type: "integer", default: "0",  description: "Pagination" },
+                { name: "offset", type: "integer", default: "0",  description: isFr ? "Pagination" : "Pagination offset" },
               ]}
             >
               <CodeBlock
@@ -490,33 +773,33 @@ jamais retrouvable en clair.`}
             </Endpoint>
 
             {/* Declarations group */}
-            <GroupHeader id="declarations-endpoints" label="Déclarations" />
+            <GroupHeader id="declarations-endpoints" label={T.groupDeclarations} />
             <Endpoint
               id="declarations-list"
               method="GET"
               path="/api/v1/declarations"
-              summary="Recherche avancée de déclarations"
-              description="Endpoint généraliste avec 12 filtres combinables. C'est le point d'entrée principal pour exporter un corpus historique ou analyser par critère."
+              summary={T.declsSum}
+              description={T.declsDesc}
               queryParams={[
-                { name: "from",      type: "ISO date", description: "Filtre pubDate >= from" },
-                { name: "to",        type: "ISO date", description: "Filtre pubDate <= to" },
-                { name: "minScore",  type: "number",   description: "Seuil signalScore minimum" },
-                { name: "maxScore",  type: "number",   description: "Seuil signalScore maximum" },
+                { name: "from",      type: "ISO date", description: isFr ? "Filtre pubDate >= from" : "Filter pubDate >= from" },
+                { name: "to",        type: "ISO date", description: isFr ? "Filtre pubDate <= to" : "Filter pubDate <= to" },
+                { name: "minScore",  type: "number",   description: isFr ? "Seuil signalScore minimum" : "Minimum signalScore threshold" },
+                { name: "maxScore",  type: "number",   description: isFr ? "Seuil signalScore maximum" : "Maximum signalScore threshold" },
                 { name: "direction", type: "enum",     description: "BUY | SELL" },
-                { name: "cluster",   type: "boolean",  description: "true = uniquement trades groupés" },
-                { name: "minAmount", type: "number",   description: "Montant minimum en €" },
-                { name: "company",   type: "string",   description: "Recherche nom société" },
-                { name: "insider",   type: "string",   description: "Recherche nom dirigeant" },
-                { name: "isin",      type: "string",   description: "Filtre ISIN exact" },
+                { name: "cluster",   type: "boolean",  description: isFr ? "true = uniquement trades groupés" : "true = cluster trades only" },
+                { name: "minAmount", type: "number",   description: isFr ? "Montant minimum en €" : "Minimum amount in €" },
+                { name: "company",   type: "string",   description: isFr ? "Recherche nom société" : "Company name search" },
+                { name: "insider",   type: "string",   description: isFr ? "Recherche nom dirigeant" : "Executive name search" },
+                { name: "isin",      type: "string",   description: isFr ? "Filtre ISIN exact" : "Exact ISIN filter" },
                 { name: "sort",      type: "enum",     default: "pubDate", description: "pubDate | signalScore | amount" },
                 { name: "order",     type: "enum",     default: "desc",    description: "asc | desc" },
                 { name: "limit",     type: "integer",  default: "50",      description: "1 → 200" },
-                { name: "offset",    type: "integer",  default: "0",       description: "Pagination" },
+                { name: "offset",    type: "integer",  default: "0",       description: isFr ? "Pagination" : "Pagination offset" },
               ]}
             >
               <CodeBlock
                 language="bash"
-                code={`# Top 20 signaux d'achat scorés >= 60 sur les 30 derniers jours
+                code={`# ${isFr ? "Top 20 signaux d'achat scorés >= 60 sur les 30 derniers jours" : "Top 20 buy signals scored >= 60 over the last 30 days"}
 curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&sort=signalScore&order=desc&limit=20" \\
   -H "Authorization: Bearer ${EX_KEY}"`}
               />
@@ -526,16 +809,16 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
               id="declaration-detail"
               method="GET"
               path="/api/v1/declarations/{amfId}"
-              summary="Détail d'une déclaration (avec backtest)"
-              description="Objet complet incluant le backtest T+30/60/90/160/365/730 si calculé. Inclut prix d'exécution, prix au T+X et retour %."
-              pathParams={[{ name: "amfId", type: "string", required: true, description: "Identifiant AMF (ex: 2026DD1108988)" }]}
+              summary={T.declDetailSum}
+              description={T.declDetailDesc}
+              pathParams={[{ name: "amfId", type: "string", required: true, description: isFr ? "Identifiant AMF (ex: 2026DD1108988)" : "AMF identifier (e.g. 2026DD1108988)" }]}
             >
               <CodeBlock
                 language="bash"
                 code={`curl ${BASE_URL}/api/v1/declarations/2026DD1108988 \\
   -H "Authorization: Bearer ${EX_KEY}"`}
               />
-              <h5 style={h5}>Extrait du bloc backtest</h5>
+              <h5 style={h5}>{T.declDetailH5}</h5>
               <CodeBlock
                 language="json"
                 code={`"backtest": {
@@ -553,17 +836,17 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
             </Endpoint>
 
             {/* Signals group */}
-            <GroupHeader id="signals-endpoints" label="Signaux" />
+            <GroupHeader id="signals-endpoints" label={T.groupSignals} />
             <Endpoint
               id="signals"
               method="GET"
               path="/api/v1/signals"
-              summary="Top signaux (achats / ventes)"
-              description="Raccourci pour obtenir les meilleurs scores sur une fenêtre glissante. Idéal pour un dashboard ou un bot de notification."
+              summary={T.signalsSum}
+              description={T.signalsDesc}
               queryParams={[
                 { name: "direction",    type: "enum",    default: "BUY", description: "BUY | SELL" },
-                { name: "lookbackDays", type: "integer", default: "7",   description: "Fenêtre (1 → 90)" },
-                { name: "minScore",     type: "integer", default: "40",  description: "Score minimum (0 → 100)" },
+                { name: "lookbackDays", type: "integer", default: "7",   description: isFr ? "Fenêtre (1 → 90)" : "Window (1 → 90)" },
+                { name: "minScore",     type: "integer", default: "40",  description: isFr ? "Score minimum (0 → 100)" : "Minimum score (0 → 100)" },
                 { name: "limit",        type: "integer", default: "20",  description: "Max 100" },
               ]}
             >
@@ -575,18 +858,18 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
             </Endpoint>
 
             {/* Backtest group */}
-            <GroupHeader id="backtest-endpoints" label="Backtest" />
+            <GroupHeader id="backtest-endpoints" label={T.groupBacktest} />
             <Endpoint
               id="backtest"
               method="GET"
               path="/api/v1/backtest"
-              summary="Statistiques backtest globales"
-              description="Retours moyens par horizon (T+30, T+60, T+90, T+160, T+365, T+730) et win rate à T+90. Filtrable par direction / score / période."
+              summary={T.backtestSum}
+              description={T.backtestDesc}
               queryParams={[
-                { name: "direction", type: "enum",    description: "BUY | SELL (défaut : les deux)" },
-                { name: "minScore",  type: "number",  description: "Filtre sur signalScore de la déclaration sous-jacente" },
-                { name: "from",      type: "ISO",     description: "Filtre pubDate >= from" },
-                { name: "to",        type: "ISO",     description: "Filtre pubDate <= to" },
+                { name: "direction", type: "enum",    description: isFr ? "BUY | SELL (défaut : les deux)" : "BUY | SELL (default: both)" },
+                { name: "minScore",  type: "number",  description: isFr ? "Filtre sur signalScore de la déclaration sous-jacente" : "Filter on the underlying declaration's signalScore" },
+                { name: "from",      type: "ISO",     description: isFr ? "Filtre pubDate >= from" : "Filter pubDate >= from" },
+                { name: "to",        type: "ISO",     description: isFr ? "Filtre pubDate <= to" : "Filter pubDate <= to" },
               ]}
             >
               <CodeBlock
@@ -594,7 +877,7 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
                 code={`curl "${BASE_URL}/api/v1/backtest?direction=BUY&minScore=60" \\
   -H "Authorization: Bearer ${EX_KEY}"`}
               />
-              <h5 style={h5}>Réponse type</h5>
+              <h5 style={h5}>{T.backtestH5}</h5>
               <CodeBlock
                 language="json"
                 code={`{
@@ -615,16 +898,16 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
             </Endpoint>
 
             {/* Search group */}
-            <GroupHeader id="search-endpoints" label="Recherche" />
+            <GroupHeader id="search-endpoints" label={T.groupSearch} />
             <Endpoint
               id="search"
               method="GET"
               path="/api/v1/search"
-              summary="Recherche cross-entités"
-              description="Recherche fuzzy dans les sociétés + dirigeants en un seul appel. Utilisé par le autocomplete du site."
+              summary={T.searchSum}
+              description={T.searchDesc}
               queryParams={[
-                { name: "q",     type: "string",  required: true, description: "Requête (min 2 caractères)" },
-                { name: "limit", type: "integer", default: "8",   description: "Max par bucket (1 → 50)" },
+                { name: "q",     type: "string",  required: true, description: isFr ? "Requête (min 2 caractères)" : "Query (min 2 characters)" },
+                { name: "limit", type: "integer", default: "8",   description: isFr ? "Max par bucket (1 → 50)" : "Max per bucket (1 → 50)" },
               ]}
             >
               <CodeBlock
@@ -636,28 +919,25 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
           </Section>
 
           {/* ── DATA MODEL ──────────────────────────────────────────────── */}
-          <Section id="data-model" eyebrow="Schéma" title="Modèle de données">
-            <p style={pBody}>
-              Cinq entités principales. Voici les champs exposés dans l&apos;API (certains champs
-              internes comme les index ou timestamps techniques ne sont pas inclus).
-            </p>
+          <Section id="data-model" eyebrow={T.dataModelEyebrow} title={T.dataModelTitle}>
+            <p style={pBody}>{T.dataModelIntro}</p>
 
             <h4 style={h4}>Company</h4>
             <EntityCard
               color="var(--gold)"
               rows={[
-                ["slug", "string", "Identifiant URL, ex: bouygues-1454"],
-                ["name", "string", "Raison sociale (source AMF)"],
+                ["slug", "string", isFr ? "Identifiant URL, ex: bouygues-1454" : "URL identifier, e.g. bouygues-1454"],
+                ["name", "string", isFr ? "Raison sociale (source AMF)" : "Company name (AMF source)"],
                 ["isin", "string | null", "International Securities ID Number"],
-                ["market", "string | null", "Ex: Euronext Paris"],
-                ["yahooSymbol", "string | null", "Ticker Yahoo pour prix / fondamentaux"],
-                ["marketCap", "number | null", "Capitalisation en €"],
-                ["currentPrice", "number | null", "Dernier cours connu"],
-                ["trailingPE, forwardPE, priceToBook, beta", "number | null", "Valorisation Yahoo"],
-                ["analystReco, analystScore, targetMean, targetHigh, targetLow", "mixed", "Consensus analystes"],
+                ["market", "string | null", isFr ? "Ex: Euronext Paris" : "E.g. Euronext Paris"],
+                ["yahooSymbol", "string | null", isFr ? "Ticker Yahoo pour prix / fondamentaux" : "Yahoo ticker for prices / fundamentals"],
+                ["marketCap", "number | null", isFr ? "Capitalisation en €" : "Market capitalisation in €"],
+                ["currentPrice", "number | null", isFr ? "Dernier cours connu" : "Latest known price"],
+                ["trailingPE, forwardPE, priceToBook, beta", "number | null", isFr ? "Valorisation Yahoo" : "Yahoo valuation metrics"],
+                ["analystReco, analystScore, targetMean, targetHigh, targetLow", "mixed", isFr ? "Consensus analystes" : "Analyst consensus"],
                 ["dividendYield, fiftyTwoWeekHigh/Low, fiftyDayAverage, twoHundredDayAverage", "number | null", "Technicals"],
                 ["logoUrl", "string | null", "CDN Vercel Blob"],
-                ["priceAt, financialsAt, analystAt", "ISO date-time", "Fraîcheur par bloc"],
+                ["priceAt, financialsAt, analystAt", "ISO date-time", isFr ? "Fraîcheur par bloc" : "Freshness per data block"],
               ]}
             />
 
@@ -665,11 +945,11 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
             <EntityCard
               color="var(--c-indigo-2)"
               rows={[
-                ["slug", "string", "Identifiant URL"],
-                ["name", "string", "Nom du dirigeant (source AMF)"],
-                ["gender", "string | null", "M / F inféré par IA"],
-                ["declarationsCount", "integer", "Nombre de transactions totales"],
-                ["companies", "Company[]", "Sociétés liées avec fonction occupée"],
+                ["slug", "string", isFr ? "Identifiant URL" : "URL identifier"],
+                ["name", "string", isFr ? "Nom du dirigeant (source AMF)" : "Executive name (AMF source)"],
+                ["gender", "string | null", isFr ? "M / F inféré par IA" : "M / F inferred by AI"],
+                ["declarationsCount", "integer", isFr ? "Nombre de transactions totales" : "Total number of transactions"],
+                ["companies", "Company[]", isFr ? "Sociétés liées avec fonction occupée" : "Associated companies with held role"],
               ]}
             />
 
@@ -677,10 +957,10 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
             <EntityCard
               color="var(--c-emerald)"
               rows={[
-                ["amfId", "string", "Identifiant AMF unique (ex: 2026DD1108988)"],
-                ["pubDate", "ISO date-time", "Date publication AMF"],
-                ["transactionDate", "ISO date-time | null", "Date effective de la transaction"],
-                ["pdfUrl", "string", "Lien vers le PDF officiel AMF"],
+                ["amfId", "string", isFr ? "Identifiant AMF unique (ex: 2026DD1108988)" : "Unique AMF identifier (e.g. 2026DD1108988)"],
+                ["pubDate", "ISO date-time", isFr ? "Date publication AMF" : "AMF publication date"],
+                ["transactionDate", "ISO date-time | null", isFr ? "Date effective de la transaction" : "Effective transaction date"],
+                ["pdfUrl", "string", isFr ? "Lien vers le PDF officiel AMF" : "Link to official AMF PDF"],
                 ["transaction", "object", "nature, instrument, isin, unitPrice, volume, totalAmount, currency, venue"],
                 ["insider", "object", "name, slug, function"],
                 ["company", "object", "name, slug, yahooSymbol, marketCap"],
@@ -688,65 +968,56 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
               ]}
             />
 
-            <h4 style={h4}>BacktestResult (imbriqué dans Declaration.backtest)</h4>
+            <h4 style={h4}>{isFr ? "BacktestResult (imbriqué dans Declaration.backtest)" : "BacktestResult (nested in Declaration.backtest)"}</h4>
             <EntityCard
               color="var(--c-violet)"
               rows={[
                 ["direction", "string", "BUY | SELL | OTHER"],
-                ["priceAtTrade", "number | null", "Prix d'exécution (cours Yahoo le plus proche)"],
-                ["price30d / price60d / price90d / price160d / price365d / price730d", "number | null", "Cours aux 6 horizons"],
-                ["return30d / return60d / return90d / return160d / return365d / return730d", "number | null", "Retour % correspondant"],
-                ["computedAt", "ISO date-time", "Quand le calcul a eu lieu"],
+                ["priceAtTrade", "number | null", isFr ? "Prix d'exécution (cours Yahoo le plus proche)" : "Execution price (nearest Yahoo price)"],
+                ["price30d / price60d / price90d / price160d / price365d / price730d", "number | null", isFr ? "Cours aux 6 horizons" : "Price at 6 horizons"],
+                ["return30d / return60d / return90d / return160d / return365d / return730d", "number | null", isFr ? "Retour % correspondant" : "Corresponding % return"],
+                ["computedAt", "ISO date-time", isFr ? "Quand le calcul a eu lieu" : "When the computation ran"],
               ]}
             />
 
-            <h4 style={h4}>Signal (composant de scoring, calculé à la volée)</h4>
+            <h4 style={h4}>{isFr ? "Signal (composant de scoring, calculé à la volée)" : "Signal (scoring component, computed on the fly)"}</h4>
             <EntityCard
               color="var(--gold)"
               rows={[
-                ["score", "number (0-100)", "Score composite"],
-                ["pctOfMarketCap", "number | null", "Ratio montant / capitalisation (%)"],
-                ["pctOfInsiderFlow", "number | null", "Part dans le flux total du dirigeant"],
-                ["insiderCumNet", "number | null", "Net cumulé (buy - sell) jusqu'au trade"],
-                ["isCluster", "boolean", "≥ 2 dirigeants ±30j"],
+                ["score", "number (0-100)", isFr ? "Score composite" : "Composite score"],
+                ["pctOfMarketCap", "number | null", isFr ? "Ratio montant / capitalisation (%)" : "Amount / market cap ratio (%)"],
+                ["pctOfInsiderFlow", "number | null", isFr ? "Part dans le flux total du dirigeant" : "Share of the executive's total flow"],
+                ["insiderCumNet", "number | null", isFr ? "Net cumulé (buy - sell) jusqu'au trade" : "Cumulative net (buy - sell) up to this trade"],
+                ["isCluster", "boolean", isFr ? "≥ 2 dirigeants ±30j" : "≥ 2 executives ±30d"],
               ]}
             />
           </Section>
 
           {/* ── ERRORS ──────────────────────────────────────────────────── */}
-          <Section id="errors" eyebrow="Erreurs" title="Gestion des erreurs">
-            <p style={pBody}>
-              Toutes les erreurs suivent un format uniforme (RFC-7807-like) :
-            </p>
+          <Section id="errors" eyebrow={T.errorsEyebrow} title={T.errorsTitle}>
+            <p style={pBody}>{T.errorsIntro}</p>
             <CodeBlock
               language="json"
               code={`{
   "error": {
     "code":    "<machine_readable_slug>",
-    "message": "<human-readable French description>",
+    "message": "${isFr ? "<human-readable French description>" : "<human-readable description>"}",
     "status":  <http_status>
   }
 }`}
             />
-            <h4 style={h4}>Codes d&apos;erreur</h4>
+            <h4 style={h4}>{T.errorsH4}</h4>
             <div style={{ overflowX: "auto" }}>
               <table style={tableStyle}>
                 <thead>
                   <tr>
-                    <th style={th}>Status</th>
-                    <th style={th}>Code</th>
-                    <th style={th}>Quand</th>
+                    {T.errorsTableHeaders.map((h) => (
+                      <th key={h} style={th}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    ["401", "missing_api_key", "Aucun header Authorization ni X-Api-Key"],
-                    ["401", "invalid_api_key", "Clé mal formée, inconnue, ou révoquée. User banni = idem."],
-                    ["404", "company_not_found", "Slug de société inexistant"],
-                    ["404", "insider_not_found", "Slug de dirigeant inexistant"],
-                    ["404", "declaration_not_found", "amfId inexistant"],
-                    ["500", "internal_error", "Erreur serveur, remontez-nous l'URL + heure"],
-                  ].map((r, i) => (
+                  {T.errorRows.map((r, i) => (
                     <tr key={i} style={{ borderBottom: "1px solid var(--border)" }}>
                       <td style={td}><code style={codeInline}>{r[0]}</code></td>
                       <td style={td}><code style={codeInline}>{r[1]}</code></td>
@@ -756,58 +1027,31 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
                 </tbody>
               </table>
             </div>
-            <Callout tone="info">
-              Retryez toute réponse ≥ 500 avec un back-off exponentiel (ex : 1 s, 2 s, 4 s max 5 tentatives).
-              Ne retryez jamais 401 / 404.
-            </Callout>
+            <Callout tone="info">{T.errorsCallout}</Callout>
           </Section>
 
           {/* ── RATE LIMITS ─────────────────────────────────────────────── */}
-          <Section id="rate-limits" eyebrow="Quotas" title="Rate limits & bonnes pratiques">
-            <p style={pBody}>
-              Plafonds par défaut durant la phase beta :
-            </p>
+          <Section id="rate-limits" eyebrow={T.rateLimitsEyebrow} title={T.rateLimitsTitle}>
+            <p style={pBody}>{T.rateLimitsIntro}</p>
             <ul style={ulBody}>
-              <li><strong>5 000 requêtes / jour</strong> par clé (compteur reset 00:00 UTC).</li>
-              <li><strong>10 req/seconde</strong> (burst) · suffisant pour la plupart des usages.</li>
-              <li>
-                <strong>10 clés actives maximum</strong> par compte. Au-delà, révoquez-en une
-                depuis <Link href="/account/api-keys" style={linkGold}>votre page de clés</Link>.
-              </li>
-              <li>
-                Les compteurs d&apos;usage sont visibles en temps réel par l&apos;utilisateur
-                (total + aujourd&apos;hui) et par l&apos;admin (avec Top consommateurs).
-              </li>
+              <li>{T.rateLimitsLi1}</li>
+              <li>{T.rateLimitsLi2}</li>
+              <li>{T.rateLimitsLi3}</li>
+              <li>{T.rateLimitsLi4}</li>
             </ul>
-            <h4 style={h4}>Bonnes pratiques</h4>
+            <h4 style={h4}>{T.rateLimitsBPH4}</h4>
             <ul style={ulBody}>
-              <li>
-                <strong>Respectez la fraîcheur.</strong> Les données ne bougent pas toutes les
-                secondes. Les cours Yahoo sont rafraîchis 1×/jour (4 h UTC), les déclarations
-                AMF 1×/heure. Consultez <code style={codeInline}>meta.dataFreshness</code> pour
-                adapter votre fréquence de polling.
-              </li>
-              <li>
-                <strong>Cachez agressivement.</strong> Un détail société change rarement, cachez-le
-                côté client jusqu&apos;au <code style={codeInline}>priceAt + 1h</code>.
-              </li>
-              <li>
-                <strong>Paginez correctement.</strong> Utilisez <code style={codeInline}>limit</code>{" "}
-                raisonnable (20-50) et <code style={codeInline}>offset</code> pour les gros datasets.
-              </li>
-              <li>
-                <strong>Retryez les 5xx.</strong> Avec back-off exponentiel, max 5 tentatives.
-              </li>
-              <li>
-                <strong>Stockez la clé en secret.</strong> Jamais en clair dans un repo Git, dans
-                le frontend, ou dans les logs.
-              </li>
+              <li>{T.rateLimitsBP1}</li>
+              <li>{T.rateLimitsBP2}</li>
+              <li>{T.rateLimitsBP3}</li>
+              <li>{T.rateLimitsBP4}</li>
+              <li>{T.rateLimitsBP5}</li>
             </ul>
           </Section>
 
           {/* ── CODE SAMPLES ────────────────────────────────────────────── */}
-          <Section id="samples" eyebrow="Exemples" title="Code samples">
-            <h4 style={h4}>Récupérer les top signaux du jour</h4>
+          <Section id="samples" eyebrow={T.samplesEyebrow} title={T.samplesTitle}>
+            <h4 style={h4}>{T.samplesH4Top}</h4>
             <CodeTabs
               tabs={[
                 {
@@ -875,7 +1119,7 @@ if __name__ == "__main__":
               ]}
             />
 
-            <h4 style={h4}>Export CSV de toutes les déclarations d&apos;une société</h4>
+            <h4 style={h4}>{T.samplesH4Csv}</h4>
             <CodeTabs
               tabs={[
                 {
@@ -967,7 +1211,7 @@ console.log(\`Wrote \${rows.length} rows\`);`,
           </Section>
 
           {/* ── CHANGELOG ────────────────────────────────────────────────── */}
-          <Section id="changelog" eyebrow="Versioning" title="Changelog">
+          <Section id="changelog" eyebrow={T.changelogEyebrow} title={T.changelogTitle}>
             <div
               style={{
                 background: "var(--bg-surface)",
@@ -987,42 +1231,22 @@ console.log(\`Wrote \${rows.length} rows\`);`,
                 </span>
               </div>
               <ul style={{ margin: 0, paddingLeft: "1.3em" }}>
-                <li>Lancement de l&apos;API publique.</li>
-                <li>14 endpoints, authentification par clé API, métadonnées de fraîcheur.</li>
-                <li>Swagger UI interactive disponible sur <Link href="/api/docs" style={linkGold}>/api/docs</Link>.</li>
+                <li>{T.changelogLi1}</li>
+                <li>{T.changelogLi2}</li>
+                <li>{T.changelogLi3}</li>
               </ul>
             </div>
           </Section>
 
           {/* ── SUPPORT ─────────────────────────────────────────────────── */}
-          <Section id="support" eyebrow="Support" title="Aide, retours, SLA">
-            <p style={pBody}>
-              L&apos;API est en <strong>beta privée</strong>. L&apos;accès est sur invitation.
-              Aucun SLA contractuel n&apos;est fourni pendant la beta, mais l&apos;équipe veille
-              quotidiennement à la fraîcheur des données (cron horaire AMF + quotidien Yahoo).
-            </p>
+          <Section id="support" eyebrow={T.supportEyebrow} title={T.supportTitle}>
+            <p style={pBody}>{T.supportBody}</p>
             <ul style={ulBody}>
-              <li>
-                <strong>Demande d&apos;accès beta</strong> ou <strong>quota augmenté</strong> :
-                contactez{" "}
-                <a href="mailto:simon.azoulay.pro@gmail.com" style={linkGold}>
-                  simon.azoulay.pro@gmail.com
-                </a>.
-              </li>
-              <li>
-                <strong>Bug / anomalie</strong> : mentionnez l&apos;URL exacte, l&apos;heure (UTC),
-                et le <code style={codeInline}>prefix</code> de la clé utilisée.
-              </li>
-              <li>
-                <strong>Roadmap</strong> : endpoints POST pour notifications push, webhooks sur
-                nouveaux signaux, scopes granulaires.
-              </li>
+              <li>{T.supportLi1}</li>
+              <li>{T.supportLi2}</li>
+              <li>{T.supportLi3}</li>
             </ul>
-            <Callout tone="warn">
-              <strong>Usage éthique.</strong> Les données AMF sont publiques, mais le rate limit
-              sert aussi à éviter de surcharger les serveurs amont (Yahoo Finance, BDIF).
-              Les patterns abusifs entraînent la révocation immédiate de la clé.
-            </Callout>
+            <Callout tone="warn">{T.supportCallout}</Callout>
           </Section>
 
           {/* ── FINAL CTA ───────────────────────────────────────────────── */}
@@ -1048,7 +1272,7 @@ console.log(\`Wrote \${rows.length} rows\`);`,
                 lineHeight: 1.15,
               }}
             >
-              Prêt à intégrer <span style={{ fontStyle: "italic", color: "var(--gold)" }}>le signal des initiés</span> ?
+              {T.ctaH2}
             </h2>
             <p
               style={{
@@ -1059,12 +1283,11 @@ console.log(\`Wrote \${rows.length} rows\`);`,
                 lineHeight: 1.6,
               }}
             >
-              Générez une clé en 10 secondes, copiez l&apos;exemple cURL du quickstart, et
-              explorez les endpoints en direct avec Swagger.
+              {T.ctaBody}
             </p>
             <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
-              <Link href="/account/api-keys" style={btnGold}>Générer ma clé →</Link>
-              <Link href="/api/docs" style={btnGhost}>Ouvrir Swagger ↗</Link>
+              <Link href="/account/api-keys" style={btnGold}>{T.ctaBtn1}</Link>
+              <Link href="/api/docs" style={btnGhost}>{T.ctaBtn2}</Link>
             </div>
           </section>
         </main>

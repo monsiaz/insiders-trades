@@ -1,11 +1,12 @@
 import { Suspense } from "react";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { getBacktestBase, applyBacktestMasking } from "@/lib/backtest-compute";
 import dynamic from "next/dynamic";
 
 const BacktestDashboard = dynamic(() => import("@/components/BacktestDashboard"), {
-  loading: () => <div style={{ minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.85rem" }}>Chargement du dashboard…</div>,
+  loading: () => <div style={{ minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.85rem" }}>Loading dashboard…</div>,
 });
 import { unstable_cache } from "next/cache";
 
@@ -36,10 +37,16 @@ const getBacktestMeta = unstable_cache(
 );
 
 export async function generateMetadata() {
+  const hdrs = await headers();
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
+  const isFr = locale === "fr";
   const { total, earliestYear } = await getBacktestMeta();
+  const fmt = isFr ? "fr-FR" : "en-US";
   return {
-    title: "Backtest & Signaux · InsiderTrades",
-    description: `Analyse quantitative de ${total.toLocaleString("fr-FR")}+ transactions d'initiés sur 6 horizons de temps (T+30 à T+2ans) depuis ${earliestYear}.`,
+    title: isFr ? "Backtest & Signaux · InsiderTrades" : "Backtest & Signals · InsiderTrades",
+    description: isFr
+      ? `Analyse quantitative de ${total.toLocaleString(fmt)}+ transactions d'initiés sur 6 horizons de temps (T+30 à T+2ans) depuis ${earliestYear}.`
+      : `Quantitative analysis of ${total.toLocaleString(fmt)}+ insider transactions across 6 time horizons (T+30 to T+2y) since ${earliestYear}.`,
   };
 }
 
@@ -73,6 +80,11 @@ function DashboardSkeleton() {
 }
 
 export default async function BacktestPage() {
+  const hdrs = await headers();
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
+  const isFr = locale === "fr";
+  const fmt = isFr ? "fr-FR" : "en-US";
+
   const { total, totalBuys, earliestYear } = await getBacktestMeta();
   const totalSells = total - totalBuys;
 
@@ -80,10 +92,10 @@ export default async function BacktestPage() {
     <div className="content-wrapper">
       <div className="mb-8">
         <div className="masthead-dateline">
-          <span className="masthead-folio">Backtest · Source AMF</span>
+          <span className="masthead-folio">Backtest · {isFr ? "Source AMF" : "AMF source"}</span>
           <span className="masthead-rule" aria-hidden="true" />
           <span className="masthead-count">
-            {total.toLocaleString("fr-FR")} trades · depuis {earliestYear}
+            {total.toLocaleString(fmt)} {isFr ? "trades · depuis" : "trades · since"} {earliestYear}
           </span>
         </div>
         <h1 style={{
@@ -97,7 +109,7 @@ export default async function BacktestPage() {
           overflowWrap: "break-word",
           hyphens: "auto",
         }}>
-          Backtest <span style={{ fontStyle: "italic", color: "var(--gold)" }}>& signaux</span>
+          Backtest <span style={{ fontStyle: "italic", color: "var(--gold)" }}>{isFr ? "& signaux" : "& signals"}</span>
         </h1>
         <p style={{
           fontSize: "0.92rem",
@@ -106,13 +118,27 @@ export default async function BacktestPage() {
           lineHeight: 1.6,
           fontFamily: "var(--font-inter), sans-serif",
         }}>
-          Analyse quantitative de{" "}
-          <strong style={{ color: "var(--tx-1)" }}>
-            {total.toLocaleString("fr-FR")}{" "}transactions d&apos;initiés
-          </strong>
-          {" "}· {totalBuys.toLocaleString("fr-FR")} achats, {totalSells.toLocaleString("fr-FR")} ventes · sur 6 horizons{" "}(<span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.82rem" }}>
-            T+30 · T+60 · T+90 · T+160 · T+365 · T+2ans
-          </span>).
+          {isFr ? (
+            <>
+              Analyse quantitative de{" "}
+              <strong style={{ color: "var(--tx-1)" }}>
+                {total.toLocaleString(fmt)}{" "}transactions d&apos;initiés
+              </strong>
+              {" "}· {totalBuys.toLocaleString(fmt)} achats, {totalSells.toLocaleString(fmt)} ventes · sur 6 horizons{" "}(<span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.82rem" }}>
+                T+30 · T+60 · T+90 · T+160 · T+365 · T+2ans
+              </span>).
+            </>
+          ) : (
+            <>
+              Quantitative analysis of{" "}
+              <strong style={{ color: "var(--tx-1)" }}>
+                {total.toLocaleString(fmt)}{" "}insider transactions
+              </strong>
+              {" "}· {totalBuys.toLocaleString(fmt)} buys, {totalSells.toLocaleString(fmt)} sells · across 6 horizons{" "}(<span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.82rem" }}>
+                T+30 · T+60 · T+90 · T+160 · T+365 · T+2y
+              </span>).
+            </>
+          )}
         </p>
       </div>
       <Suspense fallback={<DashboardSkeleton />}>

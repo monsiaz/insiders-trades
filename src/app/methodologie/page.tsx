@@ -4,16 +4,23 @@
  * Tout est basé sur des données publiques (AMF France + Yahoo Finance) et des
  * calculs déterministes. Pas de boîte noire.
  */
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
-export const revalidate = 3600; // refresh stats every 1h
+export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Méthodologie · InsiderTrades",
-  description:
-    "Comment nous collectons les déclarations AMF, calculons les signaux, backtestons les performances et gérons les périodes temporelles. Transparence totale.",
-};
+export async function generateMetadata() {
+  const hdrs = await headers();
+  const isFr = (hdrs.get("x-locale") ?? "en") === "fr";
+  return isFr ? {
+    title: "Méthodologie · InsiderTrades",
+    description: "Comment nous collectons les déclarations AMF, calculons les signaux, backtestons les performances et gérons les périodes temporelles. Transparence totale.",
+  } : {
+    title: "Methodology · InsiderTrades",
+    description: "How we collect AMF filings, calculate signals, backtest performance and handle time periods. Full transparency.",
+  };
+}
 
 async function getLiveStats() {
   try {
@@ -329,12 +336,14 @@ function SignalCard({
   threshold,
   points,
   badge,
+  isFr = true,
 }: {
   name: string;
   desc: string;
   threshold: string;
   points: string;
   badge: string;
+  isFr?: boolean;
 }) {
   return (
     <div
@@ -389,7 +398,7 @@ function SignalCard({
             letterSpacing: "0.04em",
           }}
         >
-          Seuil · {threshold}
+          {isFr ? "Seuil · " : "Threshold · "}{threshold}
         </span>
         <span style={{ color: "var(--border-strong)" }}>·</span>
         <span
@@ -413,19 +422,24 @@ function SignalCard({
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function MethodologiePage() {
+  const hdrs = await headers();
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
+  const isFr = locale === "fr";
+  const numLocale = isFr ? "fr-FR" : "en-US";
+
   const stats = await getLiveStats();
-  const fmtDateFr = (d: Date | null) =>
-    d ? d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }) : "·";
+  const fmtDate = (d: Date | null) =>
+    d ? d.toLocaleDateString(isFr ? "fr-FR" : "en-GB", { day: "2-digit", month: "long", year: "numeric" }) : "·";
 
   return (
     <div className="content-wrapper">
       {/* ── Masthead ─────────────────────────── */}
       <div className="mb-10">
         <div className="masthead-dateline">
-          <span className="masthead-folio">Méthodologie</span>
+          <span className="masthead-folio">{isFr ? "Méthodologie" : "Methodology"}</span>
           <span className="masthead-rule" aria-hidden="true" />
           <span className="masthead-count">
-            Dernière mise à jour scoring · {fmtDateFr(stats?.lastScoredAt ?? null)}
+            {isFr ? "Dernière mise à jour scoring · " : "Last scoring update · "}{fmtDate(stats?.lastScoredAt ?? null)}
           </span>
         </div>
         <h1
@@ -438,7 +452,11 @@ export default async function MethodologiePage() {
             color: "var(--tx-1)",
           }}
         >
-          Données, agrégation <span style={{ fontStyle: "italic", color: "var(--gold)" }}>& signaux</span>
+          {isFr ? (
+            <>Données, agrégation <span style={{ fontStyle: "italic", color: "var(--gold)" }}>& signaux</span></>
+          ) : (
+            <>Data, aggregation <span style={{ fontStyle: "italic", color: "var(--gold)" }}>& signals</span></>
+          )}
         </h1>
         <p
           style={{
@@ -450,10 +468,17 @@ export default async function MethodologiePage() {
             fontFamily: "var(--font-inter), sans-serif",
           }}
         >
-          Transparence totale sur ce que nous collectons, comment nous l&apos;agrégeons
-          et comment nous traduisons les déclarations AMF en signaux
-          actionnables. Tous les calculs sont déterministes, reproductibles
-          et documentés ci-dessous.
+          {isFr ? (
+            <>Transparence totale sur ce que nous collectons, comment nous l&apos;agrégeons
+            et comment nous traduisons les déclarations AMF en signaux
+            actionnables. Tous les calculs sont déterministes, reproductibles
+            et documentés ci-dessous.</>
+          ) : (
+            <>Full transparency on what we collect, how we aggregate it,
+            and how we turn AMF filings into actionable signals.
+            All calculations are deterministic, reproducible,
+            and documented below.</>
+          )}
         </p>
       </div>
 
@@ -468,28 +493,28 @@ export default async function MethodologiePage() {
             }}
           >
             <Stat
-              value={stats.totalDecl.toLocaleString("fr-FR")}
-              label="Déclarations AMF"
-              sub={`depuis ${stats.earliestYear}`}
+              value={stats.totalDecl.toLocaleString(numLocale)}
+              label={isFr ? "Déclarations AMF" : "AMF filings"}
+              sub={isFr ? `depuis ${stats.earliestYear}` : `since ${stats.earliestYear}`}
             />
             <Stat
-              value={stats.totalCompanies.toLocaleString("fr-FR")}
-              label="Sociétés suivies"
-              sub="avec déclarations DD"
+              value={stats.totalCompanies.toLocaleString(numLocale)}
+              label={isFr ? "Sociétés suivies" : "Companies tracked"}
+              sub={isFr ? "avec déclarations DD" : "with insider filings"}
             />
             <Stat
-              value={stats.withFinancials.toLocaleString("fr-FR")}
-              label="Avec fondamentaux"
-              sub={`${Math.round((stats.withFinancials / stats.totalCompanies) * 100)}% de couverture`}
+              value={stats.withFinancials.toLocaleString(numLocale)}
+              label={isFr ? "Avec fondamentaux" : "With fundamentals"}
+              sub={`${Math.round((stats.withFinancials / stats.totalCompanies) * 100)}% ${isFr ? "de couverture" : "coverage"}`}
             />
             <Stat
-              value={stats.withAnalyst.toLocaleString("fr-FR")}
-              label="Consensus analyste"
-              sub="objectif cours, reco"
+              value={stats.withAnalyst.toLocaleString(numLocale)}
+              label={isFr ? "Consensus analyste" : "Analyst consensus"}
+              sub={isFr ? "objectif cours, reco" : "price target, rating"}
             />
             <Stat
-              value={stats.totalBacktest.toLocaleString("fr-FR")}
-              label="Transactions backtestées"
+              value={stats.totalBacktest.toLocaleString(numLocale)}
+              label={isFr ? "Transactions backtestées" : "Backtested transactions"}
               sub="T+30 · T+90 · T+365"
             />
           </div>
@@ -499,9 +524,11 @@ export default async function MethodologiePage() {
       {/* ── Section 1 · Sources ─────────────── */}
       <section className="mb-16">
         <SectionTitle
-          eyebrow="1. Sources"
-          title="D'où viennent les données"
-          sub="Deux sources officielles uniquement. Pas de données fabriquées ni de scraping agressif. Tout est horodaté et traçable."
+          eyebrow={isFr ? "1. Sources" : "1. Sources"}
+          title={isFr ? "D'où viennent les données" : "Where the data comes from"}
+          sub={isFr
+            ? "Deux sources officielles uniquement. Pas de données fabriquées ni de scraping agressif. Tout est horodaté et traçable."
+            : "Two official sources only. No fabricated data or aggressive scraping. Everything is timestamped and traceable."}
         />
         <div
           style={{
@@ -530,7 +557,7 @@ export default async function MethodologiePage() {
                 marginBottom: "10px",
               }}
             >
-              Source primaire
+              {isFr ? "Source primaire" : "Primary source"}
             </div>
             <h3
               style={{
@@ -543,10 +570,16 @@ export default async function MethodologiePage() {
               AMF · BDIF
             </h3>
             <p style={{ fontSize: "0.86rem", color: "var(--tx-2)", lineHeight: 1.6, marginBottom: "12px" }}>
-              Base de Données des Informations Financières de l&apos;Autorité des
-              Marchés Financiers. Publications quotidiennes des déclarations
-              imposées par le règlement européen{" "}
-              <strong style={{ color: "var(--tx-1)" }}>MAR 596/2014</strong> (Article 19).
+              {isFr ? (
+                <>Base de Données des Informations Financières de l&apos;Autorité des
+                Marchés Financiers. Publications quotidiennes des déclarations
+                imposées par le règlement européen{" "}
+                <strong style={{ color: "var(--tx-1)" }}>MAR 596/2014</strong> (Article 19).</>
+              ) : (
+                <>Financial Information Database of the French Financial Markets Authority.
+                Daily publications of disclosures required by European regulation{" "}
+                <strong style={{ color: "var(--tx-1)" }}>MAR 596/2014</strong> (Article 19).</>
+              )}
             </p>
             <ul
               style={{
@@ -557,10 +590,21 @@ export default async function MethodologiePage() {
                 paddingLeft: "18px",
               }}
             >
-              <li>Type extrait : <code className="mono">DIRIGEANTS</code> (transactions d&apos;initiés)</li>
-              <li>Format : PDF officiel + notices d&apos;information</li>
-              <li>Fréquence de synchronisation : plusieurs fois par jour</li>
-              <li>Délai réglementaire de publication : T+3 ouvrés maximum</li>
+              {isFr ? (
+                <>
+                  <li>Type extrait : <code className="mono">DIRIGEANTS</code> (transactions d&apos;initiés)</li>
+                  <li>Format : PDF officiel + notices d&apos;information</li>
+                  <li>Fréquence de synchronisation : plusieurs fois par jour</li>
+                  <li>Délai réglementaire de publication : T+3 ouvrés maximum</li>
+                </>
+              ) : (
+                <>
+                  <li>Extracted type: <code className="mono">DIRIGEANTS</code> (insider transactions)</li>
+                  <li>Format: official PDF + information notices</li>
+                  <li>Sync frequency: several times per day</li>
+                  <li>Regulatory filing deadline: T+3 business days maximum</li>
+                </>
+              )}
             </ul>
           </div>
 
@@ -584,7 +628,7 @@ export default async function MethodologiePage() {
                 marginBottom: "10px",
               }}
             >
-              Enrichissement
+              {isFr ? "Enrichissement" : "Enrichment"}
             </div>
             <h3
               style={{
@@ -597,8 +641,9 @@ export default async function MethodologiePage() {
               Yahoo Finance
             </h3>
             <p style={{ fontSize: "0.86rem", color: "var(--tx-2)", lineHeight: 1.6, marginBottom: "12px" }}>
-              Cours de bourse, fondamentaux, consensus analystes. Trois
-              endpoints utilisés, chacun sur un périmètre dédié :
+              {isFr
+                ? "Cours de bourse, fondamentaux, consensus analystes. Trois endpoints utilisés, chacun sur un périmètre dédié :"
+                : "Stock prices, fundamentals, analyst consensus. Three endpoints used, each for a dedicated scope:"}
             </p>
             <ul
               style={{
@@ -609,9 +654,19 @@ export default async function MethodologiePage() {
                 paddingLeft: "18px",
               }}
             >
-              <li><code className="mono">v8/chart</code> · prix historique quotidien (20 ans)</li>
-              <li><code className="mono">fundamentals-timeseries</code> · compte de résultat annuel</li>
-              <li><code className="mono">quoteSummary</code> · valorisation, ratios, targets analystes</li>
+              {isFr ? (
+                <>
+                  <li><code className="mono">v8/chart</code> · prix historique quotidien (20 ans)</li>
+                  <li><code className="mono">fundamentals-timeseries</code> · compte de résultat annuel</li>
+                  <li><code className="mono">quoteSummary</code> · valorisation, ratios, targets analystes</li>
+                </>
+              ) : (
+                <>
+                  <li><code className="mono">v8/chart</code> · daily historical price (20 years)</li>
+                  <li><code className="mono">fundamentals-timeseries</code> · annual income statement</li>
+                  <li><code className="mono">quoteSummary</code> · valuation, ratios, analyst targets</li>
+                </>
+              )}
             </ul>
           </div>
         </div>
@@ -620,28 +675,36 @@ export default async function MethodologiePage() {
       {/* ── Section 2 · Pipeline ──────────────── */}
       <section className="mb-16">
         <SectionTitle
-          eyebrow="2. Pipeline"
-          title="Du PDF au signal"
-          sub="Chaque déclaration AMF passe par 5 étapes déterministes avant d'apparaître sur le site."
+          eyebrow={isFr ? "2. Pipeline" : "2. Pipeline"}
+          title={isFr ? "Du PDF au signal" : "From PDF to signal"}
+          sub={isFr
+            ? "Chaque déclaration AMF passe par 5 étapes déterministes avant d'apparaître sur le site."
+            : "Each AMF filing goes through 6 deterministic steps before appearing on the site."}
         />
         <div>
           <PipelineStep
             num="01"
-            title="Collecte"
-            desc={
+            title={isFr ? "Collecte" : "Collection"}
+            desc={isFr ? (
               <>
                 Polling de l&apos;AMF plusieurs fois par jour. Chaque notice
                 reçoit un identifiant unique <code className="mono">amfId</code> et son PDF est
                 téléchargé. Les nouvelles sociétés non référencées sont
                 créées à la volée.
               </>
-            }
-            tags={["API AMF", "amfId unique", "déduplication"]}
+            ) : (
+              <>
+                Polling the AMF several times per day. Each notice receives a unique
+                <code className="mono">amfId</code> identifier and its PDF is downloaded.
+                New unlisted companies are created on the fly.
+              </>
+            )}
+            tags={isFr ? ["API AMF", "amfId unique", "déduplication"] : ["API AMF", "unique amfId", "deduplication"]}
           />
           <PipelineStep
             num="02"
             title="Parsing PDF"
-            desc={
+            desc={isFr ? (
               <>
                 Extraction texte via <code className="mono">pdftotext (Poppler)</code>, puis
                 regex dédiées : date de transaction, nature (acquisition /
@@ -651,13 +714,23 @@ export default async function MethodologiePage() {
                 reclassification des acquisitions à prix nul en
                 &laquo; attributions gratuites &raquo;).
               </>
-            }
-            tags={["pdftotext", "regex", "validation dates"]}
+            ) : (
+              <>
+                Text extraction via <code className="mono">pdftotext (Poppler)</code>, then
+                dedicated regex: transaction date, nature (acquisition /
+                disposal / grant), volume, unit price, total amount,
+                ISIN, executive name and role. Consistency validation
+                (plausible dates, strictly positive amounts,
+                reclassification of zero-price acquisitions as
+                &ldquo;free attributions&rdquo;).
+              </>
+            )}
+            tags={["pdftotext", "regex", isFr ? "validation dates" : "date validation"]}
           />
           <PipelineStep
             num="03"
-            title="Normalisation & rôles"
-            desc={
+            title={isFr ? "Normalisation & rôles" : "Normalisation & roles"}
+            desc={isFr ? (
               <>
                 La fonction du dirigeant est normalisée selon une table
                 couvrant les intitulés français et anglais, avec variantes
@@ -667,13 +740,23 @@ export default async function MethodologiePage() {
                 <code className="mono">Directeur</code>, etc. Cette
                 normalisation conditionne le scoring.
               </>
-            }
+            ) : (
+              <>
+                The executive role is normalised against a table covering
+                French and English titles with variants and abbreviations:
+                <code className="mono">PDG/DG</code>,{" "}
+                <code className="mono">CFO/DAF</code>,{" "}
+                <code className="mono">CA/Board</code>,{" "}
+                <code className="mono">Directeur</code>, etc. This
+                normalisation drives the scoring.
+              </>
+            )}
             tags={["role-utils", "normalizeRole", "normalizeDisplay"]}
           />
           <PipelineStep
             num="04"
-            title="Enrichissement fondamentaux"
-            desc={
+            title={isFr ? "Enrichissement fondamentaux" : "Fundamentals enrichment"}
+            desc={isFr ? (
               <>
                 Résolution du ticker Yahoo (ISIN → search), puis
                 récupération de 30+ champs : capitalisation, cours courant,
@@ -682,7 +765,15 @@ export default async function MethodologiePage() {
                 dirigeants, short ratio, consensus analystes et objectifs
                 cours.
               </>
-            }
+            ) : (
+              <>
+                Yahoo ticker resolution (ISIN → search), then
+                fetching 30+ fields: market cap, current price,
+                52-week high/low, 50/200-day moving averages, P/E, P/B,
+                beta, D/E, ROE, ROA, margin, institutional and insider
+                ownership, short ratio, analyst consensus and price targets.
+              </>
+            )}
             tags={[
               "yahoo-finance2",
               "quoteSummary",
@@ -691,8 +782,8 @@ export default async function MethodologiePage() {
           />
           <PipelineStep
             num="05"
-            title="Scoring & signaux"
-            desc={
+            title={isFr ? "Scoring & signaux" : "Scoring & signals"}
+            desc={isFr ? (
               <>
                 Pour chaque déclaration d&apos;acquisition parsée avec
                 montant : calcul de <code className="mono">pctOfMarketCap</code>,{" "}
@@ -701,13 +792,22 @@ export default async function MethodologiePage() {
                 <code className="mono">isCluster</code> (fenêtre 30 jours),
                 puis du score composite <code className="mono">signalScore ∈ [0;100]</code>.
               </>
-            }
+            ) : (
+              <>
+                For each parsed acquisition with an amount: calculation of{" "}
+                <code className="mono">pctOfMarketCap</code>,{" "}
+                <code className="mono">pctOfInsiderFlow</code>,{" "}
+                <code className="mono">insiderCumNet</code>,{" "}
+                <code className="mono">isCluster</code> (30-day window),
+                then the composite <code className="mono">signalScore ∈ [0;100]</code>.
+              </>
+            )}
             tags={["signalScore", "isCluster", "recoScore"]}
           />
           <PipelineStep
             num="06"
             title="Backtest"
-            desc={
+            desc={isFr ? (
               <>
                 Pour chaque acquisition historique : fetch du prix
                 d&apos;exécution puis des prix à T+30, T+60, T+90, T+160,
@@ -715,8 +815,15 @@ export default async function MethodologiePage() {
                 correspondants. Les performances futures ne peuvent jamais
                 polluer un score historique (look-ahead bias évité).
               </>
-            }
-            tags={["T+30", "T+90", "T+365", "priceNear ±12j"]}
+            ) : (
+              <>
+                For each historical acquisition: fetch the execution price then
+                prices at T+30, T+60, T+90, T+160, T+365 and T+730 calendar days.
+                Corresponding returns are stored. Future performance can never
+                contaminate a historical score (look-ahead bias avoided).
+              </>
+            )}
+            tags={["T+30", "T+90", "T+365", "priceNear ±12d"]}
           />
         </div>
       </section>
@@ -724,59 +831,97 @@ export default async function MethodologiePage() {
       {/* ── Section 3 · Signal score breakdown ── */}
       <section className="mb-16">
         <SectionTitle
-          eyebrow="3. Signal score"
-          title="Décomposition des 100 points"
-          sub="Le signalScore est calculé par signals.ts à partir de la transaction elle-même et des fondamentaux Yahoo de la société. Il est recalculé à chaque évolution des données."
+          eyebrow={isFr ? "3. Signal score" : "3. Signal score"}
+          title={isFr ? "Décomposition des 100 points" : "Breakdown of the 100 points"}
+          sub={isFr
+            ? "Le signalScore est calculé par signals.ts à partir de la transaction elle-même et des fondamentaux Yahoo de la société. Il est recalculé à chaque évolution des données."
+            : "The signalScore is computed by signals.ts from the transaction itself and the company's Yahoo fundamentals. It is recalculated on every data update."}
         />
         <ScoreTable
-          rows={[
+          rows={isFr ? [
             {
               label: "% capitalisation",
               pts: "0–28",
-              desc:
-                "montant du trade / market cap, barème logarithmique. 0.001% → 1pt, 0.1% → 16pts, 1%+ → 28pts.",
+              desc: "montant du trade / market cap, barème logarithmique. 0.001% → 1pt, 0.1% → 16pts, 1%+ → 28pts.",
               accent: "var(--gold)",
             },
             {
               label: "% flux du dirigeant",
               pts: "0–16",
-              desc:
-                "part de ce trade dans le flux total de cet insider sur cette société. 100% (seul trade) → 16pts.",
+              desc: "part de ce trade dans le flux total de cet insider sur cette société. 100% (seul trade) → 16pts.",
               accent: "var(--gold)",
             },
             {
               label: "Fonction",
               pts: "0–12",
-              desc:
-                "PDG/DG → 12, CFO/DAF → 11, Directeur → 8, CA/Board → 6, Autre → 2.",
+              desc: "PDG/DG → 12, CFO/DAF → 11, Directeur → 8, CA/Board → 6, Autre → 2.",
               accent: "var(--c-indigo-2)",
             },
             {
               label: "Force du cluster",
               pts: "0–8",
-              desc:
-                "nombre de dirigeants distincts ayant tradé sur la même société en ±30 jours. 2→4pts, 3→6pts, 4+→8pts.",
+              desc: "nombre de dirigeants distincts ayant tradé sur la même société en ±30 jours. 2→4pts, 3→6pts, 4+→8pts.",
               accent: "var(--c-indigo-2)",
             },
             {
               label: "Conviction directionnelle",
               pts: "0–4",
-              desc:
-                "bonus si l'insider est net acheteur cumulé sur ce titre avant la transaction.",
+              desc: "bonus si l'insider est net acheteur cumulé sur ce titre avant la transaction.",
               accent: "var(--gold)",
             },
             {
               label: "Fondamentaux de base",
               pts: "-4 à 12",
-              desc:
-                "consensus analyste (1.0 → +6, 3.0 → 0), P/E (<10 → +3, <20 → +1), dette/equity (<30 → +3).",
+              desc: "consensus analyste (1.0 → +6, 3.0 → 0), P/E (<10 → +3, <20 → +1), dette/equity (<30 → +3).",
               accent: "var(--c-indigo-2)",
             },
             {
               label: "Signaux composites",
               pts: "0–20",
-              desc:
-                "Bonus additionnel construit sur 8 signaux Yahoo (momentum, value, qualité, upside, etc.). Voir section suivante.",
+              desc: "Bonus additionnel construit sur 8 signaux Yahoo (momentum, value, qualité, upside, etc.). Voir section suivante.",
+              accent: "var(--gold)",
+            },
+          ] : [
+            {
+              label: "% market cap",
+              pts: "0–28",
+              desc: "trade amount / market cap, logarithmic scale. 0.001% → 1pt, 0.1% → 16pts, 1%+ → 28pts.",
+              accent: "var(--gold)",
+            },
+            {
+              label: "% insider flow",
+              pts: "0–16",
+              desc: "share of this trade in the insider's total flow for this company. 100% (only trade) → 16pts.",
+              accent: "var(--gold)",
+            },
+            {
+              label: "Role",
+              pts: "0–12",
+              desc: "CEO/MD → 12, CFO → 11, Director → 8, Board → 6, Other → 2.",
+              accent: "var(--c-indigo-2)",
+            },
+            {
+              label: "Cluster strength",
+              pts: "0–8",
+              desc: "number of distinct executives who traded the same company within ±30 days. 2→4pts, 3→6pts, 4+→8pts.",
+              accent: "var(--c-indigo-2)",
+            },
+            {
+              label: "Directional conviction",
+              pts: "0–4",
+              desc: "bonus if the insider is a net cumulative buyer on this stock before the transaction.",
+              accent: "var(--gold)",
+            },
+            {
+              label: "Basic fundamentals",
+              pts: "-4 to 12",
+              desc: "analyst consensus (1.0 → +6, 3.0 → 0), P/E (<10 → +3, <20 → +1), debt/equity (<30 → +3).",
+              accent: "var(--c-indigo-2)",
+            },
+            {
+              label: "Composite signals",
+              pts: "0–20",
+              desc: "Additional bonus built on 8 Yahoo signals (momentum, value, quality, upside, etc.). See next section.",
               accent: "var(--gold)",
             },
           ]}
@@ -795,18 +940,26 @@ export default async function MethodologiePage() {
             fontFamily: "var(--font-inter), sans-serif",
           }}
         >
-          <strong style={{ color: "var(--tx-1)" }}>Total cappé à 100.</strong> La somme brute
-          peut dépasser 100 lorsque plusieurs signaux forts s&apos;alignent :
-          le score final est alors tronqué. Un score négatif est impossible.
+          {isFr ? (
+            <><strong style={{ color: "var(--tx-1)" }}>Total cappé à 100.</strong> La somme brute
+            peut dépasser 100 lorsque plusieurs signaux forts s&apos;alignent :
+            le score final est alors tronqué. Un score négatif est impossible.</>
+          ) : (
+            <><strong style={{ color: "var(--tx-1)" }}>Total capped at 100.</strong> The raw sum
+            can exceed 100 when several strong signals align —
+            the final score is then truncated. A negative score is impossible.</>
+          )}
         </div>
       </section>
 
       {/* ── Section 4 · Composite signals (NEW) ── */}
       <section className="mb-16">
         <SectionTitle
-          eyebrow="4. Signaux composites"
-          title="Huit signaux Yahoo qui se combinent"
-          sub="En plus de la transaction elle-même, nous analysons 8 dimensions de la société pour affiner le score. Chacun émet un flag visible sur les cartes et contribue au bonus final (cap +20 pts)."
+          eyebrow={isFr ? "4. Signaux composites" : "4. Composite signals"}
+          title={isFr ? "Huit signaux Yahoo qui se combinent" : "Eight Yahoo signals that combine"}
+          sub={isFr
+            ? "En plus de la transaction elle-même, nous analysons 8 dimensions de la société pour affiner le score. Chacun émet un flag visible sur les cartes et contribue au bonus final (cap +20 pts)."
+            : "In addition to the transaction itself, we analyse 8 dimensions of the company to refine the score. Each emits a visible flag on the cards and contributes to the final bonus (cap +20 pts)."}
         />
         <div
           className="grid"
@@ -816,57 +969,81 @@ export default async function MethodologiePage() {
           }}
         >
           <SignalCard
-            name="Près plus bas 52s"
-            desc="Achat d'un dirigeant alors que le cours est proche du plus bas sur 52 semaines, contrarian classique."
-            threshold="position < 20% du range 52s"
+            isFr={isFr}
+            name={isFr ? "Près plus bas 52s" : "Near 52-week low"}
+            desc={isFr
+              ? "Achat d'un dirigeant alors que le cours est proche du plus bas sur 52 semaines, contrarian classique."
+              : "Executive buy when the price is near its 52-week low — classic contrarian setup."}
+            threshold={isFr ? "position < 20% du range 52s" : "position < 20% of 52w range"}
             points="+3 pts"
-            badge="Près plus bas 52s"
+            badge={isFr ? "Près plus bas 52s" : "Near 52w low"}
           />
           <SignalCard
-            name="Momentum long terme"
-            desc="Cours au-dessus de sa moyenne mobile 200 jours : tendance de fond haussière, conforté par l'achat dirigeant."
+            isFr={isFr}
+            name={isFr ? "Momentum long terme" : "Long-term momentum"}
+            desc={isFr
+              ? "Cours au-dessus de sa moyenne mobile 200 jours : tendance de fond haussière, conforté par l'achat dirigeant."
+              : "Price above its 200-day moving average: underlying uptrend, reinforced by the insider buy."}
             threshold="prix ≥ MA200 × 1.05"
             points="+2 pts"
             badge="Momentum"
           />
           <SignalCard
+            isFr={isFr}
             name="Upside ≥ 25%"
-            desc="Objectif cours moyen analystes supérieur de 25%+ au cours actuel. Consensus bullish chiffré."
+            desc={isFr
+              ? "Objectif cours moyen analystes supérieur de 25%+ au cours actuel. Consensus bullish chiffré."
+              : "Average analyst price target more than 25% above the current price. Quantified bullish consensus."}
             threshold="(target − prix) / prix ≥ 25%"
             points="+3 pts"
             badge="Upside ≥25%"
           />
           <SignalCard
-            name="Strong Buy analystes"
-            desc="Consensus moyen ≤ 1.75 (échelle Yahoo 1 = Strong Buy, 5 = Strong Sell). Minimum 3 analystes."
+            isFr={isFr}
+            name={isFr ? "Strong Buy analystes" : "Analyst Strong Buy"}
+            desc={isFr
+              ? "Consensus moyen ≤ 1.75 (échelle Yahoo 1 = Strong Buy, 5 = Strong Sell). Minimum 3 analystes."
+              : "Average consensus ≤ 1.75 (Yahoo scale: 1 = Strong Buy, 5 = Strong Sell). Minimum 3 analysts."}
             threshold="analystScore ≤ 1.75"
             points="+2 pts"
             badge="Strong Buy"
           />
           <SignalCard
+            isFr={isFr}
             name="Value combo"
-            desc="P/E < 15, P/B < 2, free cash flow positif. Aligné avec l'école Graham / Buffett."
+            desc={isFr
+              ? "P/E < 15, P/B < 2, free cash flow positif. Aligné avec l'école Graham / Buffett."
+              : "P/E < 15, P/B < 2, positive free cash flow. Aligned with the Graham / Buffett school."}
             threshold="P/E<15 & P/B<2 & FCF>0"
             points="+2 pts"
             badge="Value"
           />
           <SignalCard
-            name="Qualité combo"
-            desc="ROE ≥ 15%, marge nette ≥ 10%, D/E < 80. Société capable de générer du rendement durable."
-            threshold="ROE≥15% & marge≥10% & D/E<80"
+            isFr={isFr}
+            name={isFr ? "Qualité combo" : "Quality combo"}
+            desc={isFr
+              ? "ROE ≥ 15%, marge nette ≥ 10%, D/E < 80. Société capable de générer du rendement durable."
+              : "ROE ≥ 15%, net margin ≥ 10%, D/E < 80. A company capable of generating durable returns."}
+            threshold={isFr ? "ROE≥15% & marge≥10% & D/E<80" : "ROE≥15% & margin≥10% & D/E<80"}
             points="+3 pts"
-            badge="Qualité"
+            badge={isFr ? "Qualité" : "Quality"}
           />
           <SignalCard
-            name="Détention dirigeants ≥ 20%"
-            desc="Les dirigeants possèdent déjà une part significative du capital. Achat = renforcement d'un alignement existant."
+            isFr={isFr}
+            name={isFr ? "Détention dirigeants ≥ 20%" : "Insider ownership ≥ 20%"}
+            desc={isFr
+              ? "Les dirigeants possèdent déjà une part significative du capital. Achat = renforcement d'un alignement existant."
+              : "Executives already own a significant share of the capital. The buy reinforces an existing alignment."}
             threshold="heldByInsiders ≥ 20%"
             points="+2 pts"
-            badge="Dirigeants ≥20%"
+            badge={isFr ? "Dirigeants ≥20%" : "Insiders ≥20%"}
           />
           <SignalCard
-            name="Short squeeze potentiel"
-            desc="Short ratio élevé + achat dirigeant = setup contrarian avec catalyseur de couverture possible."
+            isFr={isFr}
+            name={isFr ? "Short squeeze potentiel" : "Potential short squeeze"}
+            desc={isFr
+              ? "Short ratio élevé + achat dirigeant = setup contrarian avec catalyseur de couverture possible."
+              : "High short ratio + insider buy = contrarian setup with possible short-covering catalyst."}
             threshold="shortRatio ≥ 5"
             points="+2 pts"
             badge="Short squeeze"
@@ -877,12 +1054,14 @@ export default async function MethodologiePage() {
       {/* ── Section 5 · Reco score ──────────── */}
       <section className="mb-16">
         <SectionTitle
-          eyebrow="5. Score de recommandation"
-          title="De l'observation à l'action"
-          sub="Le recoScore utilisé sur la page Recommandations combine le signalScore avec les performances historiques de profils similaires dans notre backtest."
+          eyebrow={isFr ? "5. Score de recommandation" : "5. Recommendation score"}
+          title={isFr ? "De l'observation à l'action" : "From observation to action"}
+          sub={isFr
+            ? "Le recoScore utilisé sur la page Recommandations combine le signalScore avec les performances historiques de profils similaires dans notre backtest."
+            : "The recoScore used on the Recommendations page combines the signalScore with historical performance of similar profiles in our backtest."}
         />
         <ScoreTable
-          rows={[
+          rows={isFr ? [
             {
               label: "Score signal (brut)",
               pts: "30",
@@ -913,6 +1092,37 @@ export default async function MethodologiePage() {
               desc: "bonus cluster (10), % mcap ≥ 2% (9), ≥ 0.5% (6), montant ≥ 500k€ (4).",
               accent: "var(--gold)",
             },
+          ] : [
+            {
+              label: "Signal score (raw)",
+              pts: "30",
+              desc: "Raw signal intensity: signalScore / 100 × 30.",
+              accent: "var(--gold)",
+            },
+            {
+              label: "Historical win rate",
+              pts: "25",
+              desc: "% of winning trades at T+90 for this signal type (role + company size).",
+              accent: "var(--gold)",
+            },
+            {
+              label: "Estimated T+90 return",
+              pts: "20",
+              desc: "Average T+90 return for this historical profile. Cap at 20% = 20pts.",
+              accent: "var(--signal-pos)",
+            },
+            {
+              label: "Recency",
+              pts: "15",
+              desc: "Exponential decay since the filing date. Half-life of 21 days.",
+              accent: "var(--c-indigo-2)",
+            },
+            {
+              label: "Conviction",
+              pts: "10",
+              desc: "cluster bonus (10), % mcap ≥ 2% (9), ≥ 0.5% (6), amount ≥ €500k (4).",
+              accent: "var(--gold)",
+            },
           ]}
         />
         <div
@@ -923,23 +1133,34 @@ export default async function MethodologiePage() {
             lineHeight: 1.65,
           }}
         >
-          Nous ne présentons une reco d&apos;achat que si le retour estimé
-          T+90 historique est <strong style={{ color: "var(--tx-1)" }}>supérieur à +4%</strong>. Les
-          profils sans historique suffisant ou au rendement attendu faible
-          sont écartés d&apos;office.
+          {isFr ? (
+            <>Nous ne présentons une reco d&apos;achat que si le retour estimé
+            T+90 historique est <strong style={{ color: "var(--tx-1)" }}>supérieur à +4%</strong>. Les
+            profils sans historique suffisant ou au rendement attendu faible
+            sont écartés d&apos;office.</>
+          ) : (
+            <>We only show a buy recommendation if the estimated historical T+90 return is{" "}
+            <strong style={{ color: "var(--tx-1)" }}>above +4%</strong>. Profiles without sufficient
+            history or with low expected return are excluded outright.</>
+          )}
         </div>
       </section>
 
       {/* ── Section 6 · Backtest methodology ── */}
       <section className="mb-16">
         <SectionTitle
-          eyebrow="6. Backtest"
-          title="Comment on mesure la performance"
+          eyebrow={isFr ? "6. Backtest" : "6. Backtest"}
+          title={isFr ? "Comment on mesure la performance" : "How we measure performance"}
         />
         <Paragraph>
-          Pour chaque déclaration d&apos;acquisition parsée dans les 10+
-          dernières années, nous calculons le rendement du titre à 6
-          horizons fixes depuis la date d&apos;exécution :
+          {isFr ? (
+            <>Pour chaque déclaration d&apos;acquisition parsée dans les 10+
+            dernières années, nous calculons le rendement du titre à 6
+            horizons fixes depuis la date d&apos;exécution :</>
+          ) : (
+            <>For each parsed acquisition filing over the last 10+ years, we calculate
+            the stock&apos;s return at 6 fixed horizons from the execution date:</>
+          )}
         </Paragraph>
         <div
           style={{
@@ -950,14 +1171,21 @@ export default async function MethodologiePage() {
             marginBottom: "18px",
           }}
         >
-          {[
+          {(isFr ? [
             { h: "T+30", v: "1 mois" },
             { h: "T+60", v: "2 mois" },
             { h: "T+90", v: "~1 trimestre" },
             { h: "T+160", v: "~6 mois" },
             { h: "T+365", v: "1 an" },
             { h: "T+730", v: "2 ans" },
-          ].map((x) => (
+          ] : [
+            { h: "T+30", v: "1 month" },
+            { h: "T+60", v: "2 months" },
+            { h: "T+90", v: "~1 quarter" },
+            { h: "T+160", v: "~6 months" },
+            { h: "T+365", v: "1 year" },
+            { h: "T+730", v: "2 years" },
+          ]).map((x) => (
             <div
               key={x.h}
               style={{
@@ -995,27 +1223,43 @@ export default async function MethodologiePage() {
           ))}
         </div>
         <Paragraph>
-          Prix fournis par <code className="mono">Yahoo v8/chart</code> avec une fenêtre de
-          tolérance de <strong style={{ color: "var(--tx-1)" }}>±12 jours</strong> calendaires
-          autour de chaque cible (week-ends, jours fériés, suspensions de
-          cotation). Si aucun prix n&apos;est disponible dans cette fenêtre,
-          le return correspondant est laissé nul, jamais extrapolé.
+          {isFr ? (
+            <>Prix fournis par <code className="mono">Yahoo v8/chart</code> avec une fenêtre de
+            tolérance de <strong style={{ color: "var(--tx-1)" }}>±12 jours</strong> calendaires
+            autour de chaque cible (week-ends, jours fériés, suspensions de
+            cotation). Si aucun prix n&apos;est disponible dans cette fenêtre,
+            le return correspondant est laissé nul, jamais extrapolé.</>
+          ) : (
+            <>Prices provided by <code className="mono">Yahoo v8/chart</code> with a tolerance window of{" "}
+            <strong style={{ color: "var(--tx-1)" }}>±12 calendar days</strong> around each target
+            (weekends, public holidays, trading suspensions). If no price is available in this window,
+            the corresponding return is left null, never extrapolated.</>
+          )}
         </Paragraph>
         <Paragraph>
-          Le <em>win rate</em> est le pourcentage de trades dont le return
-          à l&apos;horizon considéré est strictement positif. L&apos;agrégation
-          par <em>bucket</em> (fonction × taille société) nous permet de
-          comparer des profils comparables et d&apos;éviter les biais de
-          composition.
+          {isFr ? (
+            <>Le <em>win rate</em> est le pourcentage de trades dont le return
+            à l&apos;horizon considéré est strictement positif. L&apos;agrégation
+            par <em>bucket</em> (fonction × taille société) nous permet de
+            comparer des profils comparables et d&apos;éviter les biais de
+            composition.</>
+          ) : (
+            <>The <em>win rate</em> is the percentage of trades whose return at the
+            given horizon is strictly positive. Aggregation by <em>bucket</em>{" "}
+            (role × company size) lets us compare comparable profiles and
+            avoid composition bias.</>
+          )}
         </Paragraph>
       </section>
 
       {/* ── Section 7 · Period handling ───────── */}
       <section className="mb-16">
         <SectionTitle
-          eyebrow="7. Gestion des périodes"
-          title="Pas de confusion temporelle"
-          sub="Les erreurs les plus fréquentes en analyse d'insider trading viennent d'un mauvais appariement entre la date du trade et les données fondamentales. Voici comment on s'en prémunit."
+          eyebrow={isFr ? "7. Gestion des périodes" : "7. Period handling"}
+          title={isFr ? "Pas de confusion temporelle" : "No temporal confusion"}
+          sub={isFr
+            ? "Les erreurs les plus fréquentes en analyse d'insider trading viennent d'un mauvais appariement entre la date du trade et les données fondamentales. Voici comment on s'en prémunit."
+            : "The most common errors in insider trading analysis come from mismatching the trade date with fundamental data. Here's how we prevent that."}
         />
         <div style={{ overflowX: "auto" }}>
         <div
@@ -1026,7 +1270,7 @@ export default async function MethodologiePage() {
             minWidth: "420px",
           }}
         >
-          {[
+          {(isFr ? [
             {
               k: "transactionDate",
               v: "Date réelle de la transaction sur le marché. Référence pour les calculs de cluster, de flux et pour les prix historiques du backtest.",
@@ -1051,7 +1295,32 @@ export default async function MethodologiePage() {
               k: "analystAt",
               v: "Date de récupération du consensus analyste (reco, target). Refreshé quotidiennement avec les technicals.",
             },
-          ].map((row, i, arr) => (
+          ] : [
+            {
+              k: "transactionDate",
+              v: "Actual date of the market transaction. Reference for cluster, flow calculations and historical backtest prices.",
+            },
+            {
+              k: "pubDate",
+              v: "AMF filing date (can be 1 to 3 days after the transaction). Used as fallback when transactionDate is missing.",
+            },
+            {
+              k: "scoredAt",
+              v: "Timestamp of the last signalScore calculation. A re-scoring is only triggered when the company's fundamentals have been refreshed.",
+            },
+            {
+              k: "financialsAt",
+              v: "Date the Yahoo income statement (annual) was fetched. We do not re-fetch more than once per week per company.",
+            },
+            {
+              k: "priceAt",
+              v: "Date technicals were fetched (current price, moving averages, 52w high/low). Refreshed daily.",
+            },
+            {
+              k: "analystAt",
+              v: "Date analyst consensus was fetched (rating, target). Refreshed daily alongside technicals.",
+            },
+          ]).map((row, i, arr) => (
             <div
               key={row.k}
               style={{
@@ -1078,25 +1347,38 @@ export default async function MethodologiePage() {
         </div>
         </div>
         <Paragraph>
-          <strong style={{ color: "var(--tx-1)" }}>Look-ahead bias.</strong> Le backtest
-          utilise uniquement les prix disponibles à la date de la
-          transaction : aucune information future ne peut influencer le
-          score historique d&apos;un trade.
+          {isFr ? (
+            <><strong style={{ color: "var(--tx-1)" }}>Look-ahead bias.</strong> Le backtest
+            utilise uniquement les prix disponibles à la date de la
+            transaction : aucune information future ne peut influencer le
+            score historique d&apos;un trade.</>
+          ) : (
+            <><strong style={{ color: "var(--tx-1)" }}>Look-ahead bias.</strong> The backtest
+            uses only prices available at the transaction date — no future
+            information can influence a trade&apos;s historical score.</>
+          )}
         </Paragraph>
         <Paragraph>
-          <strong style={{ color: "var(--tx-1)" }}>Recommandations.</strong> Nous n&apos;affichons
-          que des transactions publiées dans les 90 derniers jours. La
-          market cap courante est donc très proche de la market cap au
-          moment du trade : l&apos;écart reste sous 5% dans la vaste
-          majorité des cas.
+          {isFr ? (
+            <><strong style={{ color: "var(--tx-1)" }}>Recommandations.</strong> Nous n&apos;affichons
+            que des transactions publiées dans les 90 derniers jours. La
+            market cap courante est donc très proche de la market cap au
+            moment du trade : l&apos;écart reste sous 5% dans la vaste
+            majorité des cas.</>
+          ) : (
+            <><strong style={{ color: "var(--tx-1)" }}>Recommendations.</strong> We only display
+            transactions filed within the last 90 days. The current market cap is
+            therefore very close to the market cap at the time of the trade — the gap
+            stays under 5% in the vast majority of cases.</>
+          )}
         </Paragraph>
       </section>
 
       {/* ── Section 8 · Limits ────────────────── */}
       <section className="mb-16">
         <SectionTitle
-          eyebrow="8. Limites"
-          title="Ce que le site ne sait pas faire"
+          eyebrow={isFr ? "8. Limites" : "8. Limits"}
+          title={isFr ? "Ce que le site ne sait pas faire" : "What the site cannot do"}
         />
         <ul
           style={{
@@ -1107,34 +1389,66 @@ export default async function MethodologiePage() {
             lineHeight: 1.75,
           }}
         >
-          <li>
-            <strong style={{ color: "var(--tx-1)" }}>Performance passée ≠ performance future.</strong>{" "}
-            Un signal historiquement gagnant peut cesser de l&apos;être
-            lorsque les conditions de marché changent.
-          </li>
-          <li>
-            <strong style={{ color: "var(--tx-1)" }}>Bruit de marché.</strong> Les prix T+30 à T+730
-            reflètent tout, pas uniquement l&apos;effet du signal.
-            Le backtest mesure une corrélation, pas une causalité.
-          </li>
-          <li>
-            <strong style={{ color: "var(--tx-1)" }}>Couverture fondamentale.</strong> Pour les
-            sociétés récemment cotées ou de très petite capitalisation,
-            les données Yahoo sont parfois incomplètes : dans ce cas les
-            signaux composites non disponibles ne pénalisent pas le score
-            (règle d&apos;abstention).
-          </li>
-          <li>
-            <strong style={{ color: "var(--tx-1)" }}>Transactions hors AMF.</strong> Les achats
-            réalisés via dérivés (options, CFD), dans des véhicules tiers
-            non déclarés ou à l&apos;étranger ne sont pas capturés.
-          </li>
-          <li>
-            <strong style={{ color: "var(--tx-1)" }}>Informations non publiques.</strong> Les
-            restructurations capitalistiques, plans de stock-options et
-            autres événements corporate peuvent expliquer un achat : le
-            signal brut ne le saurait pas toujours.
-          </li>
+          {isFr ? (
+            <>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>Performance passée ≠ performance future.</strong>{" "}
+                Un signal historiquement gagnant peut cesser de l&apos;être
+                lorsque les conditions de marché changent.
+              </li>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>Bruit de marché.</strong> Les prix T+30 à T+730
+                reflètent tout, pas uniquement l&apos;effet du signal.
+                Le backtest mesure une corrélation, pas une causalité.
+              </li>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>Couverture fondamentale.</strong> Pour les
+                sociétés récemment cotées ou de très petite capitalisation,
+                les données Yahoo sont parfois incomplètes : dans ce cas les
+                signaux composites non disponibles ne pénalisent pas le score
+                (règle d&apos;abstention).
+              </li>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>Transactions hors AMF.</strong> Les achats
+                réalisés via dérivés (options, CFD), dans des véhicules tiers
+                non déclarés ou à l&apos;étranger ne sont pas capturés.
+              </li>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>Informations non publiques.</strong> Les
+                restructurations capitalistiques, plans de stock-options et
+                autres événements corporate peuvent expliquer un achat : le
+                signal brut ne le saurait pas toujours.
+              </li>
+            </>
+          ) : (
+            <>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>Past performance ≠ future performance.</strong>{" "}
+                A historically winning signal can stop working when market conditions change.
+              </li>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>Market noise.</strong> Prices from T+30 to T+730
+                reflect everything, not just the signal&apos;s effect.
+                The backtest measures a correlation, not a causation.
+              </li>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>Fundamental coverage.</strong> For recently listed
+                companies or very small caps, Yahoo data is sometimes incomplete — in that case,
+                unavailable composite signals do not penalise the score
+                (abstention rule).
+              </li>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>Transactions outside AMF.</strong> Purchases
+                made via derivatives (options, CFDs), undisclosed third-party vehicles,
+                or abroad are not captured.
+              </li>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>Non-public information.</strong> Capital
+                restructurings, stock-option plans, and other corporate events can explain a buy —
+                the raw signal won&apos;t always know that.
+              </li>
+            </>
+          )}
         </ul>
       </section>
 
@@ -1161,16 +1475,16 @@ export default async function MethodologiePage() {
             lineHeight: 1.55,
           }}
         >
-          Ces informations sont fournies à titre pédagogique et ne
-          constituent pas un conseil en investissement. Investir comporte
-          un risque de perte en capital.
+          {isFr
+            ? "Ces informations sont fournies à titre pédagogique et ne constituent pas un conseil en investissement. Investir comporte un risque de perte en capital."
+            : "This information is provided for educational purposes and does not constitute investment advice. Investing involves a risk of capital loss."}
         </p>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
           <Link href="/recommendations" className="btn btn-primary" style={{ fontSize: "0.82rem", minHeight: "44px" }}>
-            Voir les recommandations
+            {isFr ? "Voir les recommandations" : "View recommendations"}
           </Link>
           <Link href="/backtest" className="btn btn-outline" style={{ fontSize: "0.82rem", minHeight: "44px" }}>
-            Explorer le backtest
+            {isFr ? "Explorer le backtest" : "Explore the backtest"}
           </Link>
         </div>
       </section>

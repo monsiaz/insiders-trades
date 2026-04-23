@@ -140,7 +140,7 @@ export function AppNav() {
         <div className="nav-inner">
 
           {/* Logo · full wordmark on desktop, mark-only on mobile */}
-          <Link href="/" className="nav-logo" aria-label="InsiderTrades Sigma accueil">
+          <Link href={locale === "fr" ? "/fr" : "/"} className="nav-logo" aria-label={locale === "fr" ? "InsiderTrades Sigma accueil" : "InsiderTrades Sigma home"}>
             <span className="nav-logo-desktop">
               <LogoWordmark height={36} />
             </span>
@@ -249,7 +249,7 @@ export function AppNav() {
                       <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </span>
-                  <span>Source AMF</span>
+                  <span>{locale === "fr" ? "Source AMF" : "AMF Source"}</span>
                 </a>
               </div>
             </nav>
@@ -259,7 +259,7 @@ export function AppNav() {
           <button
             className="nav-backdrop"
             onClick={() => setMenuOpen(false)}
-            aria-label="Fermer le menu"
+            aria-label={locale === "fr" ? "Fermer le menu" : "Close menu"}
             tabIndex={-1}
           />
         </>

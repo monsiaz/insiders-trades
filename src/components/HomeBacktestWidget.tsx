@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface BacktestSnapshot {
   total: number;
@@ -9,6 +10,8 @@ interface BacktestSnapshot {
 }
 
 export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot }) {
+  const pathname = usePathname();
+  const isFr = pathname.startsWith("/fr");
   const { total, avg90d, winRate90d } = snapshot;
   const sign = avg90d >= 0 ? "+" : "";
 
@@ -23,12 +26,12 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
       <div className="flex flex-col sm:flex-row sm:items-start gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-3">
-            <h2
-              className="text-sm font-semibold"
-              style={{ color: "var(--tx-1)" }}
-            >
-              Performance historique
-            </h2>
+          <h2
+            className="text-sm font-semibold"
+            style={{ color: "var(--tx-1)" }}
+          >
+            {isFr ? "Performance historique" : "Historical performance"}
+          </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             <div>
@@ -36,10 +39,10 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
                 className="text-xl font-bold tabular-nums"
                 style={{ color: "var(--tx-1)" }}
               >
-                {total.toLocaleString("fr-FR")}
+                {total.toLocaleString(isFr ? "fr-FR" : "en-US")}
               </div>
               <div className="text-xs mt-0.5" style={{ color: "var(--tx-3)" }}>
-                Trades analysés
+                {isFr ? "Trades analysés" : "Analysed trades"}
               </div>
             </div>
             <div>
@@ -53,7 +56,7 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
                 {avg90d.toFixed(1)}%
               </div>
               <div className="text-xs mt-0.5" style={{ color: "var(--tx-3)" }}>
-                Rendement moyen T+90
+                {isFr ? "Rendement moyen T+90" : "Avg. return T+90"}
               </div>
             </div>
             <div>
@@ -64,7 +67,7 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
                 {winRate90d.toFixed(0)}%
               </div>
               <div className="text-xs mt-0.5" style={{ color: "var(--tx-3)" }}>
-                Taux de réussite
+                {isFr ? "Taux de réussite" : "Win rate"}
               </div>
             </div>
           </div>

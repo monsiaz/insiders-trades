@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 // ── Signal data (realistic French market data) ─────────────────────────────
 
@@ -128,6 +129,8 @@ export function HeroAnimated({ winRate, totalDeclarations }: {
   winRate?: number;
   totalDeclarations?: number;
 }) {
+  const pathname = usePathname();
+  const isFr = pathname.startsWith("/fr");
   const [activeIndex, setActiveIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const [phase, setPhase] = useState<"in" | "stay" | "out">("in");
@@ -218,7 +221,7 @@ export function HeroAnimated({ winRate, totalDeclarations }: {
                 {(totalDeclarations / 1000).toFixed(0)}k+
               </div>
               <div style={{ fontFamily: "'Inter', system-ui", fontSize: "0.58rem", color: "var(--tx-4)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                déclarations
+                {isFr ? "déclarations" : "declarations"}
               </div>
             </div>
           )}
@@ -241,7 +244,7 @@ export function HeroAnimated({ winRate, totalDeclarations }: {
               textTransform: "uppercase",
               color: sig.color,
             }}>
-              ↑ Achat
+              {isFr ? "↑ Achat" : "↑ Buy"}
             </span>
             {sig.cluster >= 2 && (
               <span style={{
@@ -281,21 +284,21 @@ export function HeroAnimated({ winRate, totalDeclarations }: {
           borderRadius: "8px",
           background: "var(--bg-raised)",
         }}>
-          <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.72rem", color: "var(--tx-3)", fontWeight: 500 }}>Montant déclaré</span>
+          <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.72rem", color: "var(--tx-3)", fontWeight: 500 }}>{isFr ? "Montant déclaré" : "Declared amount"}</span>
           <span style={{ fontFamily: "'Banana Grotesk', monospace", fontSize: "0.88rem", fontWeight: 700, color: "var(--tx-1)", letterSpacing: "-0.02em" }}>{sig.amount}</span>
         </div>
 
         {/* Score */}
         <div style={{ marginBottom: "8px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-            <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.68rem", color: "var(--tx-3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Score de conviction</span>
+            <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.68rem", color: "var(--tx-3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>{isFr ? "Score de conviction" : "Conviction score"}</span>
           </div>
           <ScoreBar score={sig.score} color={sig.color} animated={visible && phase !== "out"} />
         </div>
 
         {/* Return */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.7rem", color: "var(--tx-3)" }}>Retour attendu {sig.horizon}</span>
+          <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.7rem", color: "var(--tx-3)" }}>{isFr ? "Retour attendu" : "Expected return"} {sig.horizon}</span>
           <span style={{
             fontFamily: "'Banana Grotesk', monospace",
             fontSize: "1rem",
@@ -349,7 +352,7 @@ export function HeroAnimated({ winRate, totalDeclarations }: {
         letterSpacing: "0.02em",
         paddingTop: "2px",
       }}>
-        Données AMF · Règlement MAR · Mis à jour quotidiennement
+        {isFr ? "Données AMF · Règlement MAR · Mis à jour quotidiennement" : "AMF Data · MAR Regulation · Updated daily"}
       </div>
     </div>
   );

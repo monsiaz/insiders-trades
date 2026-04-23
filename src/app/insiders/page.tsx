@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
+import { headers } from "next/headers";
 import { InsidersClient, type InsiderRow } from "@/components/InsidersClient";
 
 export const revalidate = 300; // Revalidate every 5 min
@@ -31,6 +32,10 @@ const getInsiders = unstable_cache(
 );
 
 export default async function InsidersPage() {
+  const hdrs = await headers();
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
+  const isFr = locale === "fr";
+
   const raw = await getInsiders();
 
   // Normalize + serialize for the client component (small prop shape)
@@ -60,10 +65,10 @@ export default async function InsidersPage() {
     <div className="content-wrapper">
       <div className="mb-8">
         <div className="masthead-dateline">
-          <span className="masthead-folio">Registre</span>
+          <span className="masthead-folio">{isFr ? "Registre" : "Registry"}</span>
           <span className="masthead-rule" aria-hidden="true" />
           <span className="masthead-count">
-            {insiders.length.toLocaleString("fr-FR")}{" "}dirigeants
+            {insiders.length.toLocaleString(isFr ? "fr-FR" : "en-GB")}{" "}{isFr ? "dirigeants" : "executives"}
           </span>
         </div>
         <h1
@@ -76,7 +81,7 @@ export default async function InsidersPage() {
             color: "var(--tx-1)",
           }}
         >
-          Dirigeants
+          {isFr ? "Dirigeants" : "Executives"}
         </h1>
         <p
           style={{
@@ -87,8 +92,9 @@ export default async function InsidersPage() {
             lineHeight: 1.6,
           }}
         >
-          L&apos;ensemble des dirigeants français déclarant des transactions
-          auprès de l&apos;AMF.
+          {isFr
+            ? <>L&apos;ensemble des dirigeants français déclarant des transactions auprès de l&apos;AMF.</>
+            : "All French executives declaring transactions to the AMF."}
         </p>
       </div>
 

@@ -65,7 +65,7 @@ export function AppFooter() {
     ? "Usage informatif · ne constitue pas un conseil en investissement"
     : "Informational use only · not investment advice";
   const amfData = locale === "fr" ? "Données AMF publiques" : "Public AMF data";
-  const marReg = "Règlement MAR 596/2014";
+  const marReg = locale === "fr" ? "Règlement MAR 596/2014" : "MAR Regulation 596/2014";
 
   return (
     <footer className="app-footer">

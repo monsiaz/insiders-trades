@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { DeclarationCard } from "./DeclarationCard";
 import { CompanyAvatar } from "./CompanyBadge";
 import { FileText, Building2, User, TrendingUp, TrendingDown } from "lucide-react";
@@ -11,9 +12,11 @@ import { FileText, Building2, User, TrendingUp, TrendingDown } from "lucide-reac
 function DataFreshnessBar({
   lastAmfDate,
   todayCount,
+  isFr,
 }: {
   lastAmfDate: string | null;
   todayCount: number;
+  isFr: boolean;
 }) {
   const [now, setNow] = useState(() => new Date());
 
@@ -31,8 +34,10 @@ function DataFreshnessBar({
 
   // Freshness status · gold-scale (not green) to reserve green for performance signals
   let freshnessColor = "var(--gold)";
-  let freshnessLabel = "À jour";
+  let freshnessLabel = isFr ? "À jour" : "Up to date";
   let freshnessAge = "";
+
+  const timeLocale = isFr ? "fr-FR" : "en-US";
 
   if (lastAmfDate) {
     const ageMs = now.getTime() - new Date(lastAmfDate).getTime();
@@ -41,30 +46,36 @@ function DataFreshnessBar({
 
     if (ageH < 4) {
       freshnessColor = "var(--gold)";
-      freshnessLabel = "À jour";
+      freshnessLabel = isFr ? "À jour" : "Up to date";
     } else if (ageD < 1.5) {
       freshnessColor = "var(--tx-3)";
-      freshnessLabel = "Récent";
+      freshnessLabel = isFr ? "Récent" : "Recent";
     } else if (ageD < 3.5) {
       freshnessColor = "var(--tx-3)";
-      freshnessLabel = "Week-end";
+      freshnessLabel = isFr ? "Week-end" : "Weekend";
     } else {
       freshnessColor = "var(--c-crimson)";
-      freshnessLabel = "Ancien";
+      freshnessLabel = isFr ? "Ancien" : "Old";
     }
 
     const d = new Date(lastAmfDate);
     const isToday = d.toDateString() === now.toDateString();
     const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
     const isYesterday = d.toDateString() === yesterday.toDateString();
+    const timeStr = d.toLocaleTimeString(timeLocale, { hour: "2-digit", minute: "2-digit" });
 
     if (isToday) {
-      freshnessAge = `aujourd'hui à ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+      freshnessAge = isFr
+        ? `aujourd'hui à ${timeStr}`
+        : `today at ${timeStr}`;
     } else if (isYesterday) {
-      freshnessAge = `hier à ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+      freshnessAge = isFr
+        ? `hier à ${timeStr}`
+        : `yesterday at ${timeStr}`;
     } else {
-      freshnessAge = d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }) +
-        ` à ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+      freshnessAge = isFr
+        ? d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }) + ` à ${timeStr}`
+        : d.toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short" }) + ` at ${timeStr}`;
     }
   }
 
@@ -103,11 +114,11 @@ function DataFreshnessBar({
         {/* Last data timestamp */}
         {lastAmfDate ? (
           <span style={{ color: "var(--tx-3)" }}>
-            Dernière donnée AMF :{" "}
+            {isFr ? "Dernière donnée AMF" : "Latest AMF data"} :{" "}
             <span style={{ color: "var(--tx-2)", fontWeight: 500 }}>{freshnessAge}</span>
           </span>
         ) : (
-          <span style={{ color: "var(--tx-4)" }}>Aucune donnée</span>
+          <span style={{ color: "var(--tx-4)" }}>{isFr ? "Aucune donnée" : "No data"}</span>
         )}
 
         {/* Today count */}
@@ -115,7 +126,7 @@ function DataFreshnessBar({
           <>
             <span style={{ color: "var(--border-strong)", fontSize: "0.7rem" }}>·</span>
             <span style={{ color: "var(--tx-1)", fontWeight: 600 }}>
-              {`+${todayCount} aujourd'hui`}
+              {isFr ? `+${todayCount} aujourd'hui` : `+${todayCount} today`}
             </span>
           </>
         )}
@@ -123,9 +134,11 @@ function DataFreshnessBar({
 
       {/* Right: next sync */}
       <span style={{ color: "var(--tx-4)", fontSize: "0.78rem" }}>
-        Prochain refresh :{" "}
+        {isFr ? "Prochain refresh" : "Next refresh"} :{" "}
         <span style={{ color: "var(--tx-3)", fontWeight: 500 }}>
-          {minUntilSync <= 1 ? "moins d'1 min" : `dans ${minUntilSync} min`}
+          {isFr
+            ? (minUntilSync <= 1 ? "moins d'1 min" : `dans ${minUntilSync} min`)
+            : (minUntilSync <= 1 ? "less than 1 min" : `in ${minUntilSync} min`)}
         </span>
       </span>
     </div>
@@ -187,13 +200,13 @@ function fmtMcap(n: number | null | undefined): string {
   return "";
 }
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, isFr = true): string {
   const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (seconds < 60) return `il y a ${seconds}s`;
+  if (seconds < 60) return isFr ? `il y a ${seconds}s` : `${seconds}s ago`;
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `il y a ${minutes}min`;
+  if (minutes < 60) return isFr ? `il y a ${minutes}min` : `${minutes}min ago`;
   const hours = Math.floor(minutes / 60);
-  return `il y a ${hours}h`;
+  return isFr ? `il y a ${hours}h` : `${hours}h ago`;
 }
 
 const REFRESH_INTERVAL = 60_000; // 60 seconds
@@ -201,6 +214,8 @@ const REFRESH_INTERVAL = 60_000; // 60 seconds
 // ── Main component ─────────────────────────────────────────────────────────
 
 export function HomeLive({ initial }: { initial: HomeData }) {
+  const pathname = usePathname();
+  const isFr = pathname.startsWith("/fr");
   const [data, setData] = useState<HomeData>(initial);
   const [loading, setLoading] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(initial.updatedAt);
@@ -237,15 +252,16 @@ export function HomeLive({ initial }: { initial: HomeData }) {
       <DataFreshnessBar
         lastAmfDate={lastAmfDate}
         todayCount={todayCount}
+        isFr={isFr}
       />
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-14 animate-fade-in-delay">
-        <StatTile label="Déclarations" value={stats.totalDeclarations.toLocaleString("fr-FR")} icon={<FileText size={15} strokeWidth={1.8} />} accent="indigo" />
-        <StatTile label="Sociétés" value={stats.totalCompanies.toLocaleString("fr-FR")} icon={<Building2 size={15} strokeWidth={1.8} />} accent="violet" />
-        <StatTile label="Dirigeants" value={stats.totalInsiders.toLocaleString("fr-FR")} icon={<User size={15} strokeWidth={1.8} />} accent="slate" className="hidden sm:flex" />
-        <StatTile label="Achats" value={stats.totalBuys.toLocaleString("fr-FR")} icon={<TrendingUp size={15} strokeWidth={1.8} />} accent="emerald" />
-        <StatTile label="Ventes" value={stats.totalSells.toLocaleString("fr-FR")} icon={<TrendingDown size={15} strokeWidth={1.8} />} accent="rose" />
+        <StatTile label={isFr ? "Déclarations" : "Declarations"} value={stats.totalDeclarations.toLocaleString(isFr ? "fr-FR" : "en-US")} icon={<FileText size={15} strokeWidth={1.8} />} accent="indigo" />
+        <StatTile label={isFr ? "Sociétés" : "Companies"} value={stats.totalCompanies.toLocaleString(isFr ? "fr-FR" : "en-US")} icon={<Building2 size={15} strokeWidth={1.8} />} accent="violet" />
+        <StatTile label={isFr ? "Dirigeants" : "Insiders"} value={stats.totalInsiders.toLocaleString(isFr ? "fr-FR" : "en-US")} icon={<User size={15} strokeWidth={1.8} />} accent="slate" className="hidden sm:flex" />
+        <StatTile label={isFr ? "Achats" : "Buys"} value={stats.totalBuys.toLocaleString(isFr ? "fr-FR" : "en-US")} icon={<TrendingUp size={15} strokeWidth={1.8} />} accent="emerald" />
+        <StatTile label={isFr ? "Ventes" : "Sells"} value={stats.totalSells.toLocaleString(isFr ? "fr-FR" : "en-US")} icon={<TrendingDown size={15} strokeWidth={1.8} />} accent="rose" />
       </div>
 
       {/* Rankings */}
@@ -254,11 +270,11 @@ export function HomeLive({ initial }: { initial: HomeData }) {
         <section className="glass-card-static rounded-2xl p-4 sm:p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">Sociétés les + actives</h2>
-              <p className="text-xs text-[var(--tx-3)] mt-0.5">Volume déclaré, 90 derniers jours</p>
+              <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">{isFr ? "Sociétés les + actives" : "Most active companies"}</h2>
+              <p className="text-xs text-[var(--tx-3)] mt-0.5">{isFr ? "Volume déclaré, 90 derniers jours" : "Volume declared, last 90 days"}</p>
             </div>
             <Link href="/companies" className="text-xs tx-brand hover:tx-brand transition-colors font-medium">
-              Voir tout →
+              {isFr ? "Voir tout →" : "See all →"}
             </Link>
           </div>
           <ol className="space-y-0.5">
@@ -297,11 +313,11 @@ export function HomeLive({ initial }: { initial: HomeData }) {
         <section className="glass-card-static rounded-2xl p-4 sm:p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">Dirigeants les + actifs</h2>
-              <p className="text-xs text-[var(--tx-3)] mt-0.5">Volume total déclaré, tous temps</p>
+              <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">{isFr ? "Dirigeants les + actifs" : "Most active insiders"}</h2>
+              <p className="text-xs text-[var(--tx-3)] mt-0.5">{isFr ? "Volume total déclaré, tous temps" : "Total volume declared, all time"}</p>
             </div>
             <Link href="/insiders" className="text-xs tx-brand hover:tx-brand transition-colors font-medium">
-              Voir tout →
+              {isFr ? "Voir tout →" : "See all →"}
             </Link>
           </div>
           <ol className="space-y-0.5">
@@ -336,13 +352,13 @@ export function HomeLive({ initial }: { initial: HomeData }) {
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-[var(--tx-1)] tracking-tight">
-              Dernières transactions
+              {isFr ? "Dernières transactions" : "Latest transactions"}
             </h2>
             <Link
               href="/companies"
               className="text-sm tx-brand hover:tx-brand transition-colors font-medium"
             >
-              Toutes les sociétés →
+              {isFr ? "Toutes les sociétés →" : "All companies →"}
             </Link>
           </div>
           <div className="space-y-2">

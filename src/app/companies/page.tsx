@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Suspense } from "react";
 import { unstable_cache } from "next/cache";
+import { headers } from "next/headers";
 import { SyncButton } from "@/components/SyncButton";
 import { CompaniesClient, type CompanyRow } from "@/components/CompaniesClient";
 
@@ -126,6 +127,10 @@ export default async function CompaniesPage({ searchParams }: Props) {
   const { all, q } = await searchParams;
   const showAll = all === "1";
 
+  const hdrs = await headers();
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
+  const isFr = locale === "fr";
+
   const counts = await getCompanyCounts();
   const displayCount = showAll ? counts.all : counts.withDecl;
 
@@ -133,10 +138,10 @@ export default async function CompaniesPage({ searchParams }: Props) {
     <div className="content-wrapper">
       <div className="mb-8">
         <div className="masthead-dateline">
-          <span className="masthead-folio">Cotation</span>
+          <span className="masthead-folio">{isFr ? "Cotation" : "Market"}</span>
           <span className="masthead-rule" aria-hidden="true" />
           <span className="masthead-count">
-            {displayCount.toLocaleString("fr-FR")}{" "}sociétés
+            {displayCount.toLocaleString(isFr ? "fr-FR" : "en-GB")}{" "}{isFr ? "sociétés" : "companies"}
           </span>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -151,12 +156,16 @@ export default async function CompaniesPage({ searchParams }: Props) {
                 color: "var(--tx-1)",
               }}
             >
-              Sociétés
+              {isFr ? "Sociétés" : "Companies"}
             </h1>
             <p style={{ color: "var(--tx-2)", fontSize: "0.9rem", marginTop: "6px", lineHeight: 1.6, maxWidth: "480px" }}>
-              {!showAll
-                ? "Toutes les sociétés cotées ayant fait l'objet d'une déclaration de dirigeant à l'AMF."
-                : "L'ensemble des sociétés françaises référencées dans la base."}
+              {isFr
+                ? (!showAll
+                  ? "Toutes les sociétés cotées ayant fait l'objet d'une déclaration de dirigeant à l'AMF."
+                  : "L'ensemble des sociétés françaises référencées dans la base.")
+                : (!showAll
+                  ? "All listed companies with at least one insider declaration filed with the AMF."
+                  : "All French companies referenced in the database.")}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -187,7 +196,7 @@ export default async function CompaniesPage({ searchParams }: Props) {
                   color: !showAll ? "var(--gold)" : "var(--tx-3)",
                 }}
               >
-                Avec décl.
+                {isFr ? "Avec décl." : "With decl."}
               </Link>
               <Link
                 href="/companies?all=1"
@@ -205,12 +214,12 @@ export default async function CompaniesPage({ searchParams }: Props) {
                   color: showAll ? "var(--gold)" : "var(--tx-3)",
                 }}
               >
-                Toutes
+                {isFr ? "Toutes" : "All"}
               </Link>
             </div>
             <SyncButton />
             <Link href="/companies/add" className="btn btn-primary" style={{ fontSize: "0.8rem" }}>
-              + Ajouter
+              {isFr ? "+ Ajouter" : "+ Add"}
             </Link>
           </div>
         </div>

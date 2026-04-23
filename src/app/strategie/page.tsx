@@ -12,6 +12,7 @@
  * DA Sigma strict : navy + gold + signaux vert/rouge uniquement.
  */
 
+import { headers } from "next/headers";
 import Link from "next/link";
 import Image from "next/image";
 import { LogoMark } from "@/components/Logo";
@@ -23,13 +24,19 @@ import {
   type YearlyProof,
 } from "@/lib/winning-strategy";
 
-export const revalidate = 900; // 15 min
+export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Stratégie Sigma · bat le CAC 40 chaque année · Insiders Trades",
-  description:
-    "La stratégie Sigma découverte par grid-search sur 583 200 combinaisons de filtres. Bat le CAC 40 chaque année depuis 2022 : +16.3% annualisé, Sharpe 1.00, alpha +10.4 pts/an. Signaux live.",
-};
+export async function generateMetadata() {
+  const hdrs = await headers();
+  const isFr = (hdrs.get("x-locale") ?? "en") === "fr";
+  return isFr ? {
+    title: "Stratégie Sigma · bat le CAC 40 chaque année · Insiders Trades",
+    description: "La stratégie Sigma découverte par grid-search sur 583 200 combinaisons de filtres. Bat le CAC 40 chaque année depuis 2022 : +16.3% annualisé, Sharpe 1.00, alpha +10.4 pts/an. Signaux live.",
+  } : {
+    title: "Sigma Strategy · beats the CAC 40 every year · Insiders Trades",
+    description: "The Sigma strategy discovered by grid-search on 583,200 filter combinations. Beats the CAC 40 every year since 2022: +16.3% annualised, Sharpe 1.00, alpha +10.4 pts/yr. Live signals.",
+  };
+}
 
 const fmtPct = (n: number, d = 1) => (n > 0 ? "+" : "") + n.toFixed(d) + "%";
 const fmtEur = (n: number | null | undefined) => {
@@ -41,6 +48,10 @@ const fmtEur = (n: number | null | undefined) => {
 };
 
 export default async function StrategiePage() {
+  const hdrs = await headers();
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
+  const isFr = locale === "fr";
+
   const liveSignals = await getWinningStrategySignals({ lookbackDays: 90, limit: 15 });
   const proof = STRATEGY_PROOF;
   const maxAbsReturn = Math.max(
@@ -61,7 +72,9 @@ export default async function StrategiePage() {
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
           <LogoMark size={48} />
         </div>
-        <div style={eyebrowStyle}>Stratégie Sigma · v1 · avril 2026</div>
+        <div style={eyebrowStyle}>
+          {isFr ? "Stratégie Sigma · v1 · avril 2026" : "Sigma Strategy · v1 · April 2026"}
+        </div>
         <h1
           style={{
             fontFamily: "var(--font-dm-serif), Georgia, serif",
@@ -73,9 +86,9 @@ export default async function StrategiePage() {
             marginBottom: "14px",
           }}
         >
-          Battre le CAC 40<br />
+          {isFr ? "Battre le CAC 40" : "Beating the CAC 40"}<br />
           <span style={{ fontStyle: "italic", color: "var(--gold)" }}>
-            chaque année depuis 2022
+            {isFr ? "chaque année depuis 2022" : "every year since 2022"}
           </span>
         </h1>
         <p
@@ -87,9 +100,15 @@ export default async function StrategiePage() {
             lineHeight: 1.65,
           }}
         >
-          Nous avons testé <strong>583 200 combinaisons de filtres</strong> sur 15 171 backtests
-          historiques. Une seule combinaison bat le CAC 40 chaque année de 2022 à 2025.
-          Voici la recette exacte, les résultats, et les signaux qui la matchent <em>aujourd&apos;hui</em>.
+          {isFr ? (
+            <>Nous avons testé <strong>583 200 combinaisons de filtres</strong> sur 15 171 backtests
+            historiques. Une seule combinaison bat le CAC 40 chaque année de 2022 à 2025.
+            Voici la recette exacte, les résultats, et les signaux qui la matchent <em>aujourd&apos;hui</em>.</>
+          ) : (
+            <>We tested <strong>583,200 filter combinations</strong> on 15,171 historical backtests.
+            Only one combination beats the CAC 40 every year from 2022 to 2025.
+            Here is the exact recipe, the results, and the signals matching it <em>today</em>.</>
+          )}
         </p>
 
         {/* 4 headline stats */}
@@ -103,15 +122,15 @@ export default async function StrategiePage() {
           }}
         >
           <HeadlineStat
-            label="Alpha moyen"
+            label={isFr ? "Alpha moyen" : "Average Alpha"}
             value={`+${proof.avgAlpha.toFixed(1)} pts`}
-            sub="par an vs CAC 40"
+            sub={isFr ? "par an vs CAC 40" : "per year vs CAC 40"}
             color="var(--gold)"
           />
           <HeadlineStat
-            label="Rendement annuel"
+            label={isFr ? "Rendement annuel" : "Annual Return"}
             value={fmtPct(proof.avgReturn)}
-            sub="équipondéré, frais 1% inclus"
+            sub={isFr ? "équipondéré, frais 1% inclus" : "equal-weighted, 1% fees included"}
             color="var(--signal-pos)"
           />
           <HeadlineStat
@@ -121,7 +140,7 @@ export default async function StrategiePage() {
             color="var(--gold)"
           />
           <HeadlineStat
-            label="Années gagnées"
+            label={isFr ? "Années gagnées" : "Winning Years"}
             value={`${proof.years.filter((y) => y.beats).length}/${proof.years.length}`}
             sub="2022 → 2025"
             color="var(--tx-1)"
@@ -130,11 +149,21 @@ export default async function StrategiePage() {
       </section>
 
       {/* ── YEAR BY YEAR ──────────────────────────────────────────────────── */}
-      <Section id="yearly" eyebrow="1 · Preuve historique" title="Année par année">
+      <Section
+        id="yearly"
+        eyebrow={isFr ? "1 · Preuve historique" : "1 · Historical Proof"}
+        title={isFr ? "Année par année" : "Year by Year"}
+      >
         <p style={pBody}>
-          Chaque année, on prend <strong>tous les signaux qui matchaient la stratégie</strong>, on
-          compose un portefeuille équipondéré, on garde 3 mois, on applique 1% de frais aller-retour.
-          Voici ce qu&apos;un investisseur aurait gagné :
+          {isFr ? (
+            <>Chaque année, on prend <strong>tous les signaux qui matchaient la stratégie</strong>, on
+            compose un portefeuille équipondéré, on garde 3 mois, on applique 1% de frais aller-retour.
+            Voici ce qu&apos;un investisseur aurait gagné :</>
+          ) : (
+            <>Each year, we take <strong>all signals matching the strategy</strong>, build an
+            equal-weighted portfolio, hold for 3 months, and apply 1% round-trip fees.
+            Here is what an investor would have earned:</>
+          )}
         </p>
 
         <div style={{ margin: "22px 0" }}>
@@ -147,11 +176,11 @@ export default async function StrategiePage() {
           <table style={tableStyle}>
             <thead>
               <tr style={{ background: "var(--bg-raised)", borderBottom: "1px solid var(--border-med)" }}>
-                <th style={th}>Année</th>
-                <th style={{ ...th, textAlign: "right" }}>Stratégie Sigma</th>
+                <th style={th}>{isFr ? "Année" : "Year"}</th>
+                <th style={{ ...th, textAlign: "right" }}>{isFr ? "Stratégie Sigma" : "Sigma Strategy"}</th>
                 <th style={{ ...th, textAlign: "right" }}>CAC 40</th>
                 <th style={{ ...th, textAlign: "right" }}>Alpha</th>
-                <th style={{ ...th, textAlign: "right" }}>Signaux</th>
+                <th style={{ ...th, textAlign: "right" }}>{isFr ? "Signaux" : "Signals"}</th>
               </tr>
             </thead>
             <tbody>
@@ -179,16 +208,27 @@ export default async function StrategiePage() {
         </div>
 
         <Callout tone="info">
-          <strong>Note :</strong> l&apos;année 2026 n&apos;est pas encore affichée · nous avons
-          moins de 5 mois de données et peu de signaux ont eu le temps de se matérialiser à
-          T+90. Nous actualiserons cette page trimestriellement.
+          {isFr ? (
+            <><strong>Note :</strong> l&apos;année 2026 n&apos;est pas encore affichée · nous avons
+            moins de 5 mois de données et peu de signaux ont eu le temps de se matérialiser à
+            T+90. Nous actualiserons cette page trimestriellement.</>
+          ) : (
+            <><strong>Note:</strong> 2026 is not yet shown · we have less than 5 months of data
+            and few signals have had time to materialise at T+90. We will update this page quarterly.</>
+          )}
         </Callout>
       </Section>
 
       {/* ── STRATEGY CRITERIA ─────────────────────────────────────────────── */}
-      <Section id="critères" eyebrow="2 · La recette" title="Les 6 filtres de la stratégie">
+      <Section
+        id="critères"
+        eyebrow={isFr ? "2 · La recette" : "2 · The Recipe"}
+        title={isFr ? "Les 6 filtres de la stratégie" : "The 6 Strategy Filters"}
+      >
         <p style={pBody}>
-          Après avoir testé plus d&apos;un demi-million de combinaisons de filtres (score × cluster × rôle × montant × taille × fraîcheur × horizon), une seule ressort avec un alpha positif chaque année :
+          {isFr
+            ? "Après avoir testé plus d\u2019un demi-million de combinaisons de filtres (score × cluster × rôle × montant × taille × fraîcheur × horizon), une seule ressort avec un alpha positif chaque année :"
+            : "After testing more than half a million filter combinations (score × cluster × role × amount × size × freshness × horizon), only one yields a positive alpha every year:"}
         </p>
 
         <div
@@ -201,81 +241,128 @@ export default async function StrategiePage() {
         >
           <CriteriaCard
             n={1}
-            title="Acquisition pure"
-            detail={
+            title={isFr ? "Acquisition pure" : "Pure Acquisition"}
+            detail={isFr ? (
               <>
                 Uniquement <code style={codeInline}>transactionNature = Acquisition</code>. On exclut
                 les exercices de stock-options (qui sont des options, pas un signal), les apports en nature,
                 conversions, souscriptions.
               </>
-            }
+            ) : (
+              <>
+                Only <code style={codeInline}>transactionNature = Acquisition</code>. Excludes
+                stock-option exercises (options, not a signal), in-kind contributions,
+                conversions, and subscriptions.
+              </>
+            )}
           />
           <CriteriaCard
             n={2}
-            title="Cluster actif"
-            detail={
+            title={isFr ? "Cluster actif" : "Active Cluster"}
+            detail={isFr ? (
               <>
                 Au moins <strong>2 dirigeants distincts</strong> ont acheté la société dans une fenêtre
                 de ±30 jours. Seul signal <em>empiriquement</em> robuste, c&apos;est la conviction collective
                 qui prédit le mouvement.
               </>
-            }
+            ) : (
+              <>
+                At least <strong>2 distinct executives</strong> bought the company within a ±30-day window.
+                The only <em>empirically</em> robust signal — collective conviction predicts the move.
+              </>
+            )}
           />
           <CriteriaCard
             n={3}
-            title="Pas de CA / Board"
-            detail={
+            title={isFr ? "Pas de CA / Board" : "No CA / Board"}
+            detail={isFr ? (
               <>
                 Exclusion des trades des administrateurs et membres du conseil de surveillance
                 (souvent symboliques / conformité). On garde <strong>PDG, CFO, directeurs opérationnels</strong>.
               </>
-            }
+            ) : (
+              <>
+                Excludes trades by board members and supervisory council members
+                (often symbolic / compliance). We keep <strong>CEO, CFO, operational directors</strong>.
+              </>
+            )}
           />
           <CriteriaCard
             n={4}
-            title={`Publié ≤ ${WINNING_STRATEGY.maxPubDelayDays} jours`}
-            detail={
+            title={isFr ? `Publié ≤ ${WINNING_STRATEGY.maxPubDelayDays} jours` : `Filed ≤ ${WINNING_STRATEGY.maxPubDelayDays} days`}
+            detail={isFr ? (
               <>
                 Délai entre la transaction et sa publication AMF ≤ 7 jours ouvrés. Les déclarations
                 tardives sont souvent sur des positions anciennes, moins actionnables.
               </>
-            }
+            ) : (
+              <>
+                Delay between the transaction and its AMF filing ≤ 7 business days. Late filings
+                are often on older positions, less actionable.
+              </>
+            )}
           />
           <CriteriaCard
             n={5}
-            title="Mid-cap (200 M€ – 1 B€)"
-            detail={
+            title={isFr ? "Mid-cap (200 M€ – 1 B€)" : "Mid-cap (€200M – €1B)"}
+            detail={isFr ? (
               <>
                 <strong>Sweet spot</strong> : assez gros pour la liquidité (on peut trader sans slippage),
                 assez petit pour que les insiders aient une info significative. Les large-caps sont sur-suivies,
                 les small-caps trop volatiles.
               </>
-            }
+            ) : (
+              <>
+                <strong>Sweet spot</strong>: large enough for liquidity (tradable without slippage),
+                small enough for insiders to have meaningful information. Large-caps are over-followed,
+                small-caps too volatile.
+              </>
+            )}
           />
           <CriteriaCard
             n={6}
             title={`Score ≥ ${WINNING_STRATEGY.minScore}`}
-            detail={
+            detail={isFr ? (
               <>
                 Notre scoring composite (0–100) sert de filtre bas. Les autres filtres ci-dessus
                 font l&apos;essentiel du tri, inutile d&apos;exiger score ≥ 70.
               </>
-            }
+            ) : (
+              <>
+                Our composite score (0–100) acts as a floor filter. The other filters above
+                do most of the sorting — no need to require score ≥ 70.
+              </>
+            )}
           />
         </div>
 
         <Callout tone="warn">
-          <strong>Horizon : T+90 jours.</strong> On achète à <code style={codeInline}>pubDate + 1</code>,
-          on revend 3 mois plus tard. Rebalancement trimestriel. L&apos;horizon court suffit ·
-          pas besoin de tenir 1 an.
+          {isFr ? (
+            <><strong>Horizon : T+90 jours.</strong> On achète à <code style={codeInline}>pubDate + 1</code>,
+            on revend 3 mois plus tard. Rebalancement trimestriel. L&apos;horizon court suffit ·
+            pas besoin de tenir 1 an.</>
+          ) : (
+            <><strong>Horizon: T+90 days.</strong> We buy at <code style={codeInline}>pubDate + 1</code>,
+            sell 3 months later. Quarterly rebalancing. The short horizon suffices ·
+            no need to hold for 1 year.</>
+          )}
         </Callout>
       </Section>
 
       {/* ── LIVE SIGNALS ──────────────────────────────────────────────────── */}
-      <Section id="live" eyebrow="3 · Signaux actuels" title={`Ce qui match en ce moment (${liveSignals.length})`}>
+      <Section
+        id="live"
+        eyebrow={isFr ? "3 · Signaux actuels" : "3 · Current Signals"}
+        title={isFr ? `Ce qui match en ce moment (${liveSignals.length})` : `Matching right now (${liveSignals.length})`}
+      >
         <p style={pBody}>
-          Les déclarations des 90 derniers jours qui matchent <strong>tous les 6 critères</strong>.
-          Triées par score descendant. Mis à jour toutes les 15 minutes.
+          {isFr ? (
+            <>Les déclarations des 90 derniers jours qui matchent <strong>tous les 6 critères</strong>.
+            Triées par score descendant. Mis à jour toutes les 15 minutes.</>
+          ) : (
+            <>Filings from the last 90 days matching <strong>all 6 criteria</strong>.
+            Sorted by descending score. Updated every 15 minutes.</>
+          )}
         </p>
 
         {liveSignals.length === 0 ? (
@@ -290,20 +377,25 @@ export default async function StrategiePage() {
               borderRadius: "4px",
             }}
           >
-            Aucun signal ne match tous les critères en ce moment. Revenez dans quelques jours ·
-            le marché produit 3 à 10 matches par mois en moyenne.
+            {isFr
+              ? "Aucun signal ne match tous les critères en ce moment. Revenez dans quelques jours · le marché produit 3 à 10 matches par mois en moyenne."
+              : "No signal matches all criteria right now. Check back in a few days · the market produces 3 to 10 matches per month on average."}
           </div>
         ) : (
           <div style={{ display: "grid", gap: "10px" }}>
-            {liveSignals.map((s) => <SignalCard key={s.declarationId} s={s} />)}
+            {liveSignals.map((s) => <SignalCard key={s.declarationId} s={s} isFr={isFr} />)}
           </div>
         )}
       </Section>
 
       {/* ── HOW TO APPLY ──────────────────────────────────────────────────── */}
-      <Section id="appliquer" eyebrow="4 · Guide" title="Comment appliquer la stratégie en 3 étapes">
+      <Section
+        id="appliquer"
+        eyebrow={isFr ? "4 · Guide" : "4 · Guide"}
+        title={isFr ? "Comment appliquer la stratégie en 3 étapes" : "How to Apply the Strategy in 3 Steps"}
+      >
         <ol style={{ padding: 0, margin: 0, listStyle: "none", counterReset: "step" }}>
-          {[
+          {(isFr ? [
             {
               title: "Attendez un signal qualifié",
               body: "3 à 10 par mois en moyenne. Si rien ne match, laissez le cash. La discipline de ne PAS trader quand rien n'est optimal est 50 % de l'alpha.",
@@ -316,7 +408,20 @@ export default async function StrategiePage() {
               title: "Revendez à T+90",
               body: "3 mois après l'entrée, vendez sans sentimentalisme. Si vous aimez le titre, rachetez-le comme une position autonome, mais sortez le PnL de la stratégie.",
             },
-          ].map((step, i) => (
+          ] : [
+            {
+              title: "Wait for a qualified signal",
+              body: "3 to 10 per month on average. If nothing matches, stay in cash. The discipline of NOT trading when nothing is optimal is 50% of the alpha.",
+            },
+            {
+              title: "Buy at pubDate + 1",
+              body: "As soon as the filing appears on the site, buy the next morning at open. Don't wait for technical confirmation · every day of delay eats into the edge.",
+            },
+            {
+              title: "Sell at T+90",
+              body: "3 months after entry, sell without sentimentality. If you like the stock, re-buy it as a standalone position, but close the PnL out of the strategy.",
+            },
+          ]).map((step, i) => (
             <li
               key={i}
               style={{
@@ -366,39 +471,79 @@ export default async function StrategiePage() {
         </ol>
 
         <Callout tone="info">
-          <strong>Capital minimum recommandé :</strong> 20 000 € pour que les frais de courtage
-          ne grignotent pas l&apos;alpha. Avec 5 à 10 signaux en portefeuille, c&apos;est
-          2 000 à 4 000 € par position.
+          {isFr ? (
+            <><strong>Capital minimum recommandé :</strong> 20 000 € pour que les frais de courtage
+            ne grignotent pas l&apos;alpha. Avec 5 à 10 signaux en portefeuille, c&apos;est
+            2 000 à 4 000 € par position.</>
+          ) : (
+            <><strong>Minimum recommended capital:</strong> €20,000 so that brokerage fees
+            don&apos;t eat into the alpha. With 5 to 10 signals in portfolio, that&apos;s
+            €2,000 to €4,000 per position.</>
+          )}
         </Callout>
       </Section>
 
       {/* ── DISCLAIMER ────────────────────────────────────────────────────── */}
-      <Section id="disclaimer" eyebrow="Transparence" title="Ce que ça ne garantit pas">
+      <Section
+        id="disclaimer"
+        eyebrow={isFr ? "Transparence" : "Transparency"}
+        title={isFr ? "Ce que ça ne garantit pas" : "What This Doesn't Guarantee"}
+      >
         <ul style={ulBody}>
-          <li>
-            <strong>Backtest ≠ futur.</strong> Ces résultats sont historiques. Le régime de marché,
-            la réglementation ou le comportement des insiders peut changer.
-          </li>
-          <li>
-            <strong>Look-ahead bias minimal mais non-zéro.</strong> Nos filtres ont été optimisés
-            sur cette période · par construction, ils&nbsp;<em>s&apos;ajustent</em> à 2022-2025.
-            Un test out-of-sample sur 2026-2027 sera le vrai juge.
-          </li>
-          <li>
-            <strong>Slippage non modélisé.</strong> Sur les mid-caps, l&apos;écart bid-ask peut
-            atteindre 0.3-0.8%. Nos frais de 1% aller-retour incluent une estimation conservatrice
-            mais pas de slippage au-delà.
-          </li>
-          <li>
-            <strong>Petit échantillon sur certains segments.</strong> 2022 et 2023 n&apos;ont respectivement
-            que 35 et 25 signaux matching · statistiquement maigre. Les années 2024 (71) et 2025 (118)
-            sont plus solides.
-          </li>
-          <li>
-            <strong>Pas un conseil en investissement.</strong> Ce site est un outil
-            d&apos;information. Pas un robo-advisor. Pas un gestionnaire. Vos décisions restent
-            les vôtres, et les pertes aussi.
-          </li>
+          {isFr ? (
+            <>
+              <li>
+                <strong>Backtest ≠ futur.</strong> Ces résultats sont historiques. Le régime de marché,
+                la réglementation ou le comportement des insiders peut changer.
+              </li>
+              <li>
+                <strong>Look-ahead bias minimal mais non-zéro.</strong> Nos filtres ont été optimisés
+                sur cette période · par construction, ils&nbsp;<em>s&apos;ajustent</em> à 2022-2025.
+                Un test out-of-sample sur 2026-2027 sera le vrai juge.
+              </li>
+              <li>
+                <strong>Slippage non modélisé.</strong> Sur les mid-caps, l&apos;écart bid-ask peut
+                atteindre 0.3-0.8%. Nos frais de 1% aller-retour incluent une estimation conservatrice
+                mais pas de slippage au-delà.
+              </li>
+              <li>
+                <strong>Petit échantillon sur certains segments.</strong> 2022 et 2023 n&apos;ont respectivement
+                que 35 et 25 signaux matching · statistiquement maigre. Les années 2024 (71) et 2025 (118)
+                sont plus solides.
+              </li>
+              <li>
+                <strong>Pas un conseil en investissement.</strong> Ce site est un outil
+                d&apos;information. Pas un robo-advisor. Pas un gestionnaire. Vos décisions restent
+                les vôtres, et les pertes aussi.
+              </li>
+            </>
+          ) : (
+            <>
+              <li>
+                <strong>Backtest ≠ future.</strong> These results are historical. Market regimes,
+                regulation, or insider behaviour can change.
+              </li>
+              <li>
+                <strong>Minimal but non-zero look-ahead bias.</strong> Our filters were optimised
+                on this period · by construction, they <em>fit</em> 2022-2025.
+                An out-of-sample test on 2026-2027 will be the real judge.
+              </li>
+              <li>
+                <strong>Slippage not modelled.</strong> On mid-caps, the bid-ask spread can
+                reach 0.3-0.8%. Our 1% round-trip fees include a conservative estimate
+                but no additional slippage.
+              </li>
+              <li>
+                <strong>Small sample on some segments.</strong> 2022 and 2023 have respectively
+                only 35 and 25 matching signals · statistically thin. Years 2024 (71) and 2025 (118)
+                are more robust.
+              </li>
+              <li>
+                <strong>Not investment advice.</strong> This site is an information tool.
+                Not a robo-advisor. Not a fund manager. Your decisions remain yours, and so do the losses.
+              </li>
+            </>
+          )}
         </ul>
       </Section>
 
@@ -425,8 +570,13 @@ export default async function StrategiePage() {
             lineHeight: 1.15,
           }}
         >
-          Recevez chaque signal Sigma<br />
-          <span style={{ fontStyle: "italic", color: "var(--gold)" }}>dès sa publication</span>
+          {isFr ? (
+            <>Recevez chaque signal Sigma<br />
+            <span style={{ fontStyle: "italic", color: "var(--gold)" }}>dès sa publication</span></>
+          ) : (
+            <>Receive every Sigma signal<br />
+            <span style={{ fontStyle: "italic", color: "var(--gold)" }}>as soon as it&apos;s published</span></>
+          )}
         </h2>
         <p
           style={{
@@ -437,18 +587,19 @@ export default async function StrategiePage() {
             lineHeight: 1.6,
           }}
         >
-          Alertes email quotidiennes filtrées sur les 6 critères de la stratégie gagnante.
-          Vous recevez uniquement ce qui compte · 3 à 10 signaux par mois en moyenne.
+          {isFr
+            ? "Alertes email quotidiennes filtrées sur les 6 critères de la stratégie gagnante. Vous recevez uniquement ce qui compte · 3 à 10 signaux par mois en moyenne."
+            : "Daily email alerts filtered on the 6 criteria of the winning strategy. You only receive what matters · 3 to 10 signals per month on average."}
         </p>
         <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
           <Link href="/recommendations?mode=winning" style={btnGold}>
-            Voir les recommandations →
+            {isFr ? "Voir les recommandations →" : "View recommendations →"}
           </Link>
           <Link href="/performance" style={btnGhost}>
-            Performance globale ↗
+            {isFr ? "Performance globale ↗" : "Global performance ↗"}
           </Link>
           <Link href="/fonctionnement" style={btnGhost}>
-            Comment ça marche ↗
+            {isFr ? "Comment ça marche ↗" : "How it works ↗"}
           </Link>
         </div>
       </section>
@@ -688,8 +839,9 @@ function CriteriaCard({ n, title, detail }: { n: number; title: string; detail: 
   );
 }
 
-function SignalCard({ s }: { s: WinningSignal }) {
+function SignalCard({ s, isFr }: { s: WinningSignal; isFr: boolean }) {
   const amount = s.transaction.amount;
+  const dateLocale = isFr ? "fr-FR" : "en-GB";
   return (
     <Link
       href={`/company/${s.company.slug}`}
@@ -778,14 +930,16 @@ function SignalCard({ s }: { s: WinningSignal }) {
         </div>
         <div style={{ fontSize: "0.78rem", color: "var(--tx-2)", lineHeight: 1.5 }}>
           {s.signal.insiderCount > 1
-            ? `${s.signal.insiderCount} dirigeants · cluster confirmé`
+            ? `${s.signal.insiderCount} ${isFr ? "dirigeants · cluster confirmé" : "insiders · confirmed cluster"}`
             : `${s.insider.name ?? "·"} · ${s.insider.role ?? s.insider.function ?? "·"}`
           }
           {s.transaction.pctOfMarketCap != null && (
-            <> · <strong>{s.transaction.pctOfMarketCap.toFixed(3)}%</strong> du mcap</>
+            <> · <strong>{s.transaction.pctOfMarketCap.toFixed(3)}%</strong> {isFr ? "du mcap" : "of mcap"}</>
           )}
           {s.pubDelayDays != null && (
-            <> · publié {s.pubDelayDays.toFixed(0)}j après</>
+            isFr
+              ? <> · publié {s.pubDelayDays.toFixed(0)}j après</>
+              : <> · filed {s.pubDelayDays.toFixed(0)}d after</>
           )}
         </div>
       </div>
@@ -803,7 +957,7 @@ function SignalCard({ s }: { s: WinningSignal }) {
           <span style={{ color: "var(--signal-pos)", marginRight: "4px" }}>▲</span>{fmtEur(amount)}
         </div>
         <div style={{ fontSize: "0.7rem", color: "var(--tx-4)", fontFamily: "'JetBrains Mono', monospace" }}>
-          {new Date(s.pubDate).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}
+          {new Date(s.pubDate).toLocaleDateString(dateLocale, { day: "2-digit", month: "short" })}
         </div>
       </div>
     </Link>

@@ -3,7 +3,7 @@
 import {
   useState, useEffect, useRef, useCallback, KeyboardEvent,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -123,6 +123,9 @@ function useDebounce<T>(value: T, ms: number): T {
 
 export function NavSearch() {
   const router = useRouter();
+  const pathname = usePathname();
+  const locale: "fr" | "en" = (pathname === "/fr" || pathname.startsWith("/fr/")) ? "fr" : "en";
+  const prefix = locale === "fr" ? "/fr" : "";
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -190,8 +193,8 @@ export function NavSearch() {
     addRecent(item);
     setOpen(false);
     setQuery("");
-    router.push(item.type === "company" ? `/company/${item.slug}` : `/insider/${item.slug}`);
-  }, [router]);
+    router.push(item.type === "company" ? `${prefix}/company/${item.slug}` : `${prefix}/insider/${item.slug}`);
+  }, [router, prefix]);
 
   // Keyboard handler
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -209,7 +212,7 @@ export function NavSearch() {
         navigate(dropdownItems[activeIndex]);
       } else if (query.trim()) {
         setOpen(false);
-        router.push(`/companies?all=1&q=${encodeURIComponent(query.trim())}`);
+        router.push(`${prefix}/companies?all=1&q=${encodeURIComponent(query.trim())}`);
       }
     } else if (e.key === "Escape") {
       setOpen(false);
@@ -249,7 +252,7 @@ export function NavSearch() {
           onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Société ou dirigeant…"
+          placeholder={locale === "fr" ? "Société ou dirigeant…" : "Company or executive…"}
           autoComplete="off"
           spellCheck={false}
           style={{
@@ -301,13 +304,14 @@ export function NavSearch() {
                 textTransform: "uppercase", color: "var(--tx-4)",
                 fontFamily: "'Inter', system-ui",
               }}>
-                Récents
+                {locale === "fr" ? "Récents" : "Recent"}
               </div>
               {recent.map((item, i) => (
                 <ResultRow
                   key={`recent-${i}`}
                   item={item}
                   query=""
+                  locale={locale}
                   active={i === activeIndex}
                   isRecent
                   onSelect={() => navigate(item)}
@@ -324,7 +328,7 @@ export function NavSearch() {
                   fontFamily: "'Inter', system-ui",
                 }}
               >
-                Effacer l'historique
+                {locale === "fr" ? "Effacer l'historique" : "Clear history"}
               </button>
             </div>
           )}
@@ -355,10 +359,12 @@ export function NavSearch() {
                 </svg>
               </div>
               <p style={{ fontFamily: "'Inter', system-ui", fontSize: "0.84rem", fontWeight: 600, color: "var(--tx-2)", marginBottom: "4px" }}>
-                Aucun résultat
+                {locale === "fr" ? "Aucun résultat" : "No results"}
               </p>
               <p style={{ fontFamily: "'Inter', system-ui", fontSize: "0.75rem", color: "var(--tx-4)" }}>
-                Aucune société ou dirigeant pour &ldquo;{query}&rdquo;
+                {locale === "fr"
+                  ? <>Aucune société ou dirigeant pour &ldquo;{query}&rdquo;</>
+                  : <>No company or executive for &ldquo;{query}&rdquo;</>}
               </p>
             </div>
           )}
@@ -369,12 +375,13 @@ export function NavSearch() {
               {/* Companies section */}
               {results.companies.length > 0 && (
                 <>
-                  <SectionLabel icon={<IconBuilding />} label="Sociétés" count={results.companies.length} />
+                  <SectionLabel icon={<IconBuilding />} label={locale === "fr" ? "Sociétés" : "Companies"} count={results.companies.length} />
                   {results.companies.map((c, i) => (
                     <ResultRow
                       key={`co-${c.slug}`}
                       item={{ ...c, type: "company" }}
                       query={query}
+                      locale={locale}
                       active={i === activeIndex}
                       onSelect={() => navigate({ ...c, type: "company" })}
                       onHover={() => setActiveIndex(i)}
@@ -389,7 +396,7 @@ export function NavSearch() {
                   {results.companies.length > 0 && (
                     <div style={{ height: "1px", background: "var(--border)", margin: "4px 0" }} />
                   )}
-                  <SectionLabel icon={<IconPerson />} label="Dirigeants" count={results.insiders.length} />
+                  <SectionLabel icon={<IconPerson />} label={locale === "fr" ? "Dirigeants" : "Executives"} count={results.insiders.length} />
                   {results.insiders.map((ins, i) => {
                     const globalIdx = results.companies.length + i;
                     return (
@@ -397,6 +404,7 @@ export function NavSearch() {
                         key={`ins-${ins.slug}`}
                         item={{ ...ins, type: "insider" }}
                         query={query}
+                        locale={locale}
                         active={globalIdx === activeIndex}
                         onSelect={() => navigate({ ...ins, type: "insider" })}
                         onHover={() => setActiveIndex(globalIdx)}
@@ -409,7 +417,7 @@ export function NavSearch() {
               {/* See all results */}
               {(results.companies.length >= 6 || results.insiders.length >= 6) && (
                 <button
-                  onClick={() => { setOpen(false); router.push(`/companies?all=1&q=${encodeURIComponent(query)}`); }}
+                  onClick={() => { setOpen(false); router.push(`${prefix}/companies?all=1&q=${encodeURIComponent(query)}`); }}
                   style={{
                     display: "flex", alignItems: "center", justifyContent: "center",
                     gap: "6px", width: "100%", padding: "10px 14px",
@@ -423,7 +431,9 @@ export function NavSearch() {
                   onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-hover)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
                 >
-                  Voir tous les résultats pour &ldquo;{query}&rdquo;
+                  {locale === "fr"
+                    ? <>Voir tous les résultats pour &ldquo;{query}&rdquo;</>
+                    : <>View all results for &ldquo;{query}&rdquo;</>}
                   <IconArrow />
                 </button>
               )}
@@ -439,7 +449,10 @@ export function NavSearch() {
               background: "var(--bg-raised)",
               borderRadius: "0 0 14px 14px",
             }}>
-              {[["↑↓", "naviguer"], ["↵", "ouvrir"], ["Esc", "fermer"]].map(([key, label]) => (
+              {(locale === "fr"
+                ? [["↑↓", "naviguer"], ["↵", "ouvrir"], ["Esc", "fermer"]]
+                : [["↑↓", "navigate"], ["↵", "open"], ["Esc", "close"]]
+              ).map(([key, label]) => (
                 <span key={key} style={{ display: "flex", alignItems: "center", gap: "4px", fontFamily: "'Inter', system-ui", fontSize: "0.62rem", color: "var(--tx-4)" }}>
                   <kbd style={{ padding: "1px 5px", borderRadius: "4px", background: "var(--bg-active)", border: "1px solid var(--border-med)", fontFamily: "monospace", fontSize: "0.65rem", color: "var(--tx-3)" }}>{key}</kbd>
                   {label}
@@ -486,6 +499,7 @@ function SectionLabel({ icon, label, count }: { icon: React.ReactNode; label: st
 function ResultRow({
   item,
   query,
+  locale,
   active,
   isRecent = false,
   onSelect,
@@ -493,6 +507,7 @@ function ResultRow({
 }: {
   item: SearchResult;
   query: string;
+  locale: "fr" | "en";
   active: boolean;
   isRecent?: boolean;
   onSelect: () => void;
@@ -502,10 +517,13 @@ function ResultRow({
   const co = isCompany ? (item as CompanyResult) : null;
   const ins = !isCompany ? (item as InsiderResult) : null;
 
+  const declShort = locale === "fr" ? "décl." : "decl.";
+  const declFull = locale === "fr" ? "déclarations" : "declarations";
+
   const meta = isCompany && co
-    ? [co.yahooSymbol, fmtMcap(co.marketCap), co.declarationCount ? `${co.declarationCount} décl.` : null].filter(Boolean).join(" · ")
+    ? [co.yahooSymbol, fmtMcap(co.marketCap), co.declarationCount ? `${co.declarationCount} ${declShort}` : null].filter(Boolean).join(" · ")
     : ins?.declarationCount
-    ? `${ins.declarationCount} déclarations`
+    ? `${ins.declarationCount} ${declFull}`
     : "";
 
   return (

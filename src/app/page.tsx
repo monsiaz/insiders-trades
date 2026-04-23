@@ -9,8 +9,23 @@ import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
 import { unstable_cache } from "next/cache";
+import { headers } from "next/headers";
 
 export const revalidate = 60; // Revalidate home every 60s (ISR)
+
+export async function generateMetadata() {
+  const hdrs = await headers();
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
+  const isFr = locale === "fr";
+  return {
+    title: isFr
+      ? "InsidersTrades · Transactions dirigeants AMF"
+      : "InsidersTrades · French Insider Trades",
+    description: isFr
+      ? "Suivez chaque déclaration AMF, détectez les signaux d'accumulation et analysez les patterns historiques des insiders français."
+      : "Track every AMF declaration, detect accumulation signals and analyse the historical trading patterns of French insiders.",
+  };
+}
 
 // ── Fast SQL-aggregate backtest snapshot (was loading 20k rows → now 1 aggregate query) ─
 const getBacktestSnapshot = unstable_cache(
@@ -192,27 +207,34 @@ async function HeroBacktestBadge({ totalDeclarations }: { totalDeclarations: num
   );
 }
 
-async function FeatureStripSection({ earliestYear }: { earliestYear: number }) {
+async function FeatureStripSection({ earliestYear, locale }: { earliestYear: number; locale: "en" | "fr" }) {
+  const isFr = locale === "fr";
   const snap = await getBacktestSnapshot();
   return (
     <section className="mb-16">
       <AnimateIn className="grid grid-cols-1 md:grid-cols-3 gap-4" stagger={100}>
         <FeatureCard
           icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.8"/><path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>}
-          title="Détection des signaux"
-          body="Scoring composite sur 100 points : taille de l'achat, conviction du dirigeant, rôle, capitalisation. Seuls les signaux vraiment significatifs remontent."
+          title={isFr ? "Détection des signaux" : "Signal detection"}
+          body={isFr
+            ? "Scoring composite sur 100 points : taille de l'achat, conviction du dirigeant, rôle, capitalisation. Seuls les signaux vraiment significatifs remontent."
+            : "Composite scoring on 100 points: buy size, insider conviction, role, market cap. Only the truly significant signals surface."}
           accent="var(--gold)"
         />
         <FeatureCard
           icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="17 6 23 6 23 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          title="Backtesting historique"
-          body={`Performance réelle de ${snap ? snap.total.toLocaleString("fr-FR") : "22 000"}+ transactions depuis ${earliestYear}. Win rate, Sharpe, retour médian à T+30, T+90, T+365. Données vérifiées sur Yahoo Finance.`}
+          title={isFr ? "Backtesting historique" : "Historical backtesting"}
+          body={isFr
+            ? `Performance réelle de ${snap ? snap.total.toLocaleString("fr-FR") : "22 000"}+ transactions depuis ${earliestYear}. Win rate, Sharpe, retour médian à T+30, T+90, T+365. Données vérifiées sur Yahoo Finance.`
+            : `Real performance across ${snap ? snap.total.toLocaleString("en-US") : "22,000"}+ transactions since ${earliestYear}. Win rate, Sharpe, median return at T+30, T+90, T+365. Data verified on Yahoo Finance.`}
           accent="var(--corporate)"
         />
         <FeatureCard
           icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="22 4 12 14.01 9 11.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          title="Recommandations actionnables"
-          body="Top 10 signaux d'achat générés chaque jour. Personnalisé si vous avez un portefeuille. Alertes email sur les nouvelles opportunités."
+          title={isFr ? "Recommandations actionnables" : "Actionable recommendations"}
+          body={isFr
+            ? "Top 10 signaux d'achat générés chaque jour. Personnalisé si vous avez un portefeuille. Alertes email sur les nouvelles opportunités."
+            : "Top 10 buy signals generated every day. Personalised if you have a portfolio. Email alerts on new opportunities."}
           accent="var(--gold)"
         />
       </AnimateIn>
@@ -220,20 +242,23 @@ async function FeatureStripSection({ earliestYear }: { earliestYear: number }) {
   );
 }
 
-async function HighScoreSection() {
+async function HighScoreSection({ locale }: { locale: "en" | "fr" }) {
+  const isFr = locale === "fr";
   const sigs = await getHighScoreSignals();
   if (sigs.length === 0) return null;
   return (
     <section className="mb-16">
       <SectionHeader
-        title="Signaux du moment"
-        sub="Achats avec score ≥ 65 · Les plus récents · Triés par conviction"
+        title={isFr ? "Signaux du moment" : "Latest signals"}
+        sub={isFr
+          ? "Achats avec score ≥ 65 · Les plus récents · Triés par conviction"
+          : "Buys with score ≥ 65 · Most recent · Sorted by conviction"}
         eyebrow="Intelligence"
-        action={{ label: "Voir toutes les recommandations →", href: "/recommendations" }}
+        action={{ label: isFr ? "Voir toutes les recommandations →" : "See all recommendations →", href: "/recommendations" }}
       />
       <AnimateIn className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mt-5" stagger={75}>
         {sigs.slice(0, 6).map((sig) => (
-          <SignalCard key={sig.id} sig={sig} />
+          <SignalCard key={sig.id} sig={sig} locale={locale} />
         ))}
       </AnimateIn>
     </section>
@@ -296,6 +321,9 @@ function HomeLiveSkeleton() {
 
 export default async function HomePage() {
   // Only fetch the fast header stats for SSR · everything else streams below
+  const hdrs = await headers();
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
+  const isFr = locale === "fr";
   const stats = await getHeaderStats();
   const buyPct = stats.totalBuys + stats.totalSells > 0
     ? Math.round((stats.totalBuys / (stats.totalBuys + stats.totalSells)) * 100)
@@ -314,7 +342,7 @@ export default async function HomePage() {
             {/* Eyebrow tag */}
             <div className="hero-tag mb-6 sm:mb-7">
               <span className="live-dot" />
-              Données AMF · Temps réel · Règlement MAR
+              {isFr ? "Données AMF · Temps réel · Règlement MAR" : "AMF Data · Real-time · MAR Regulation"}
             </div>
 
             {/* Main headline · Banana Grotesk, très grand */}
@@ -338,10 +366,10 @@ export default async function HomePage() {
                 color: "var(--gold)",
                 letterSpacing: "-0.015em",
               }}>
-                dirigeants
+                {isFr ? "dirigeants" : "insiders"}
               </span>
               <br/>
-              <span style={{ color: "var(--tx-2)", fontSize: "0.65em", fontWeight: 600, letterSpacing: "-0.02em" }}>décodées.</span>
+              <span style={{ color: "var(--tx-2)", fontSize: "0.65em", fontWeight: 600, letterSpacing: "-0.02em" }}>{isFr ? "décodées." : "decoded."}</span>
             </h1>
 
             <p style={{
@@ -355,7 +383,9 @@ export default async function HomePage() {
               fontWeight: 400,
               overflowWrap: "break-word",
             }}>
-              Suivez chaque déclaration AMF, détectez les signaux d&apos;accumulation et analysez les patterns historiques des insiders français.
+              {isFr
+                ? <>Suivez chaque déclaration AMF, détectez les signaux d&apos;accumulation et analysez les patterns historiques des insiders français.</>
+                : "Track every AMF declaration, detect accumulation signals and analyse the historical patterns of French insiders."}
             </p>
 
             {/* CTA row */}
@@ -364,13 +394,13 @@ export default async function HomePage() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M3 3h18v4H3zM3 10h11v4H3zM3 17h7v4H3z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                Explorer les sociétés
+                {isFr ? "Explorer les sociétés" : "Explore companies"}
               </Link>
               <Link href="/recommendations" className="btn btn-glass hero-cta">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                Top signaux
+                {isFr ? "Top signaux" : "Top signals"}
               </Link>
               <Link href="/backtest" className="btn btn-outline hero-cta">
                 Backtesting →
@@ -379,9 +409,9 @@ export default async function HomePage() {
 
             {/* Trust indicators */}
             <div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
-              <TrustBadge icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>} label="Données AMF officielles" />
-              <TrustBadge icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M8 21h8M12 17v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>} label={`${stats.totalDeclarations.toLocaleString("fr-FR")} déclarations`} />
-              <TrustBadge icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><polyline points="12 6 12 12 16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>} label="Mis à jour quotidiennement" />
+              <TrustBadge icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>} label={isFr ? "Données AMF officielles" : "Official AMF data"} />
+              <TrustBadge icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M8 21h8M12 17v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>} label={isFr ? `${stats.totalDeclarations.toLocaleString("fr-FR")} déclarations` : `${stats.totalDeclarations.toLocaleString("en-US")} declarations`} />
+              <TrustBadge icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/><polyline points="12 6 12 12 16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>} label={isFr ? "Mis à jour quotidiennement" : "Updated daily"} />
             </div>
           </div>
 
@@ -398,9 +428,9 @@ export default async function HomePage() {
       <section className="mb-16">
         <AnimateIn className="grid grid-cols-2 lg:grid-cols-4 gap-3" stagger={90} baseDelay={120}>
           <KpiCard
-            value={stats.totalDeclarations.toLocaleString("fr-FR")}
-            label="Déclarations totales"
-            sub={`depuis ${stats.earliestYear}`}
+            value={stats.totalDeclarations.toLocaleString(isFr ? "fr-FR" : "en-US")}
+            label={isFr ? "Déclarations totales" : "Total declarations"}
+            sub={isFr ? `depuis ${stats.earliestYear}` : `since ${stats.earliestYear}`}
             accent="gold"
             icon={
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -410,9 +440,9 @@ export default async function HomePage() {
             }
           />
           <KpiCard
-            value={stats.totalCompanies.toLocaleString("fr-FR")}
-            label="Sociétés suivies"
-            sub="cotées françaises"
+            value={stats.totalCompanies.toLocaleString(isFr ? "fr-FR" : "en-US")}
+            label={isFr ? "Sociétés suivies" : "Tracked companies"}
+            sub={isFr ? "cotées françaises" : "French-listed"}
             accent="gold"
             icon={
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -423,8 +453,10 @@ export default async function HomePage() {
           />
           <KpiCard
             value={`${buyPct}%`}
-            label="Ratio achats/ventes"
-            sub={`${stats.totalBuys.toLocaleString("fr-FR")} achats`}
+            label={isFr ? "Ratio achats/ventes" : "Buy/sell ratio"}
+            sub={isFr
+              ? `${stats.totalBuys.toLocaleString("fr-FR")} achats`
+              : `${stats.totalBuys.toLocaleString("en-US")} buys`}
             accent="gold"
             icon={
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -434,8 +466,8 @@ export default async function HomePage() {
             }
           />
           <KpiCard
-            value={stats.totalInsiders.toLocaleString("fr-FR")}
-            label="Dirigeants identifiés"
+            value={stats.totalInsiders.toLocaleString(isFr ? "fr-FR" : "en-US")}
+            label={isFr ? "Dirigeants identifiés" : "Identified insiders"}
             sub="PDG, DG, CA…"
             accent="gold"
             icon={
@@ -450,7 +482,7 @@ export default async function HomePage() {
 
       {/* ── FEATURE STRIP · 3 valeurs (streams in with backtest total) ── */}
       <Suspense fallback={<FeatureStripSkeleton />}>
-        <FeatureStripSection earliestYear={stats.earliestYear} />
+        <FeatureStripSection earliestYear={stats.earliestYear} locale={locale} />
       </Suspense>
 
       {/* ── STRATÉGIE SIGMA (hero banner) ────────────────────────────── */}
@@ -482,7 +514,7 @@ export default async function HomePage() {
                   marginBottom: "8px",
                 }}
               >
-                ★ Stratégie Sigma · disponible
+                {isFr ? "★ Stratégie Sigma · disponible" : "★ Sigma Strategy · available"}
               </div>
               <h2
                 style={{
@@ -495,8 +527,8 @@ export default async function HomePage() {
                   marginBottom: "8px",
                 }}
               >
-                Une stratégie qui a battu le CAC 40<br />
-                <span style={{ fontStyle: "italic", color: "var(--gold)" }}>chaque année depuis 2022</span>
+                {isFr ? "Une stratégie qui a battu le CAC 40" : "A strategy that has beaten the CAC 40"}<br />
+                <span style={{ fontStyle: "italic", color: "var(--gold)" }}>{isFr ? "chaque année depuis 2022" : "every year since 2022"}</span>
               </h2>
               <div style={{ display: "flex", gap: "18px", flexWrap: "wrap", alignItems: "baseline", marginTop: "14px" }}>
                 <div>
@@ -504,7 +536,7 @@ export default async function HomePage() {
                     +16.3%
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--tx-3)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                    rendement annuel moyen
+                    {isFr ? "rendement annuel moyen" : "average annual return"}
                   </div>
                 </div>
                 <div>
@@ -520,7 +552,7 @@ export default async function HomePage() {
                     1.00
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--tx-3)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                    ratio de Sharpe
+                    {isFr ? "ratio de Sharpe" : "Sharpe ratio"}
                   </div>
                 </div>
                 <div>
@@ -528,7 +560,7 @@ export default async function HomePage() {
                     4 / 4
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--tx-3)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                    années gagnées
+                    {isFr ? "années gagnées" : "winning years"}
                   </div>
                 </div>
               </div>
@@ -548,7 +580,7 @@ export default async function HomePage() {
                 alignSelf: "flex-start",
               }}
             >
-              Voir la preuve →
+              {isFr ? "Voir la preuve →" : "See the proof →"}
             </div>
           </div>
         </Link>
@@ -557,7 +589,7 @@ export default async function HomePage() {
 
       {/* ── SIGNALS DU MOMENT (streamed) ─────────────────────────────── */}
       <Suspense fallback={<SectionSkeleton height={280} />}>
-        <HighScoreSection />
+        <HighScoreSection locale={locale} />
       </Suspense>
 
       {/* ── BACKTEST TEASER (streamed) ──────────────────────────────── */}
@@ -570,9 +602,11 @@ export default async function HomePage() {
         <AnimateIn single>
           <div>
             <SectionHeader
-              title="Comment ça marche"
-              sub="De la déclaration AMF au signal actionnable en temps réel"
-              eyebrow="Méthodologie"
+              title={isFr ? "Comment ça marche" : "How it works"}
+              sub={isFr
+                ? "De la déclaration AMF au signal actionnable en temps réel"
+                : "From AMF declaration to actionable signal in real time"}
+              eyebrow={isFr ? "Méthodologie" : "Methodology"}
             />
             <div className="mt-6">
               <HowItWorksAnimations />
@@ -592,7 +626,8 @@ export default async function HomePage() {
 
 // ── Win-rate sparkline card ───────────────────────────────────────────────────
 
-function WinRateSparkline({ winRate, avg90d }: { winRate: number; avg90d: number }) {
+function WinRateSparkline({ winRate, avg90d, locale = "en" }: { winRate: number; avg90d: number; locale?: "en" | "fr" }) {
+  const isFr = locale === "fr";
   const seed = [0.62, 0.58, 0.67, 0.55, 0.71, 0.64, 0.69, 0.60, 0.73, 0.66, 0.70, winRate / 100];
   const W = 280, H = 90;
   const min = Math.min(...seed) - 0.04;
@@ -619,7 +654,7 @@ function WinRateSparkline({ winRate, avg90d }: { winRate: number; avg90d: number
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
         <div style={{ fontSize: "0.65rem", fontFamily: "'Inter', system-ui", fontWeight: 600, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--tx-3)" }}>
-          Win rate · T+90 · 12 mois
+          {isFr ? "Win rate · T+90 · 12 mois" : "Win rate · T+90 · 12 months"}
         </div>
         <div className="badge badge-amber">Live</div>
       </div>
@@ -657,14 +692,14 @@ function WinRateSparkline({ winRate, avg90d }: { winRate: number; avg90d: number
           <div style={{ fontFamily: "'Banana Grotesk', 'Inter', system-ui", fontSize: "1.75rem", fontWeight: 700, letterSpacing: "-0.05em", color: "var(--tx-1)", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
             {winRate.toFixed(0)}%
           </div>
-          <div style={{ fontFamily: "'Inter', system-ui", fontSize: "0.63rem", color: "var(--tx-3)", fontWeight: 600, marginTop: "2px", textTransform: "uppercase", letterSpacing: "0.06em" }}>trades gagnants</div>
+          <div style={{ fontFamily: "'Inter', system-ui", fontSize: "0.63rem", color: "var(--tx-3)", fontWeight: 600, marginTop: "2px", textTransform: "uppercase", letterSpacing: "0.06em" }}>{isFr ? "trades gagnants" : "winning trades"}</div>
         </div>
         <div style={{ height: "32px", width: "1px", background: "var(--border-med)" }} />
         <div style={{ textAlign: "right" }}>
           <div style={{ fontFamily: "'Banana Grotesk', 'Inter', system-ui", fontSize: "1.25rem", fontWeight: 700, letterSpacing: "-0.04em", color: (avg90d > 0 ? "var(--c-emerald)" : "var(--c-crimson)"), lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
             {avg90d >= 0 ? "+" : ""}{avg90d.toFixed(1)}%
           </div>
-          <div style={{ fontFamily: "'Inter', system-ui", fontSize: "0.63rem", color: "var(--tx-3)", fontWeight: 600, marginTop: "2px", textTransform: "uppercase", letterSpacing: "0.06em" }}>retour moy.</div>
+          <div style={{ fontFamily: "'Inter', system-ui", fontSize: "0.63rem", color: "var(--tx-3)", fontWeight: 600, marginTop: "2px", textTransform: "uppercase", letterSpacing: "0.06em" }}>{isFr ? "retour moy." : "avg. return"}</div>
         </div>
       </div>
     </div>
@@ -853,7 +888,7 @@ type Signal = {
   pubDate: string;
 };
 
-function SignalCard({ sig }: { sig: Signal }) {
+function SignalCard({ sig, locale = "en" }: { sig: Signal; locale?: "en" | "fr" }) {
   const score = Math.round(sig.signalScore ?? 0);
 
   const amtStr = sig.totalAmount
@@ -862,7 +897,10 @@ function SignalCard({ sig }: { sig: Signal }) {
     : `${sig.totalAmount.toFixed(0)} €`
     : null;
 
-  const pubDate = new Date(sig.pubDate).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+  const pubDate = new Date(sig.pubDate).toLocaleDateString(
+    locale === "fr" ? "fr-FR" : "en-US",
+    { day: "2-digit", month: "short" }
+  );
   const pctMcapStr =
     sig.pctOfMarketCap != null && sig.pctOfMarketCap > 0
       ? sig.pctOfMarketCap < 0.1

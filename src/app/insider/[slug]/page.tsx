@@ -154,13 +154,13 @@ export default async function InsiderPage({ params, searchParams }: Props) {
   const initials = insider.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
 
   const fmt = (v: number | null | undefined) =>
-    v ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0, notation: v >= 1_000_000 ? "compact" : "standard" }).format(v) : "·";
+    v ? new Intl.NumberFormat(isFr ? "fr-FR" : "en-GB", { style: "currency", currency: "EUR", maximumFractionDigits: 0, notation: v >= 1_000_000 ? "compact" : "standard" }).format(v) : "·";
 
   return (
     <div className="content-wrapper">
       {/* Back */}
       <Link href="/insiders" className="inline-flex items-center gap-1.5 text-sm text-[var(--tx-3)] hover:text-[var(--tx-2)] transition-colors mb-6 animate-fade-in">
-        ← Dirigeants
+        {isFr ? "← Dirigeants" : "← Executives"}
       </Link>
 
       {/* Hero */}
@@ -195,19 +195,23 @@ export default async function InsiderPage({ params, searchParams }: Props) {
       <AnimateIn className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7" stagger={80} baseDelay={80}>
         <div className="glass-card-static rounded-2xl p-4 bg-gradient-to-br from-indigo-500/8 to-transparent border-indigo-500/12">
           <div className="text-xl font-bold text-[var(--tx-1)]">{insider._count.declarations}</div>
-          <div className="text-xs text-[var(--tx-3)] mt-1">Déclarations totales</div>
+          <div className="text-xs text-[var(--tx-3)] mt-1">{isFr ? "Déclarations totales" : "Total declarations"}</div>
         </div>
         <div className="glass-card-static rounded-2xl p-4 bg-gradient-to-br from-sky-500/8 to-transparent border-sky-500/12">
           <div className="text-xl font-bold text-[var(--tx-1)]">{insider.companies.length}</div>
-          <div className="text-xs text-[var(--tx-3)] mt-1">Société{insider.companies.length > 1 ? "s" : ""}</div>
+          <div className="text-xs text-[var(--tx-3)] mt-1">
+            {isFr
+              ? <>Société{insider.companies.length > 1 ? "s" : ""}</>
+              : <>{insider.companies.length > 1 ? "Companies" : "Company"}</>}
+          </div>
         </div>
         <div className="glass-card-static rounded-2xl p-4 bg-gradient-to-br from-emerald-500/8 to-transparent border-emerald-500/12">
           <div className="text-xl font-bold tx-pos">{fmt(buyAgg._sum.totalAmount)}</div>
-          <div className="text-xs text-[var(--tx-3)] mt-1">▲ Achats ({buyAgg._count} opér.)</div>
+          <div className="text-xs text-[var(--tx-3)] mt-1">▲ {isFr ? `Achats (${buyAgg._count} opér.)` : `Purchases (${buyAgg._count} ops.)`}</div>
         </div>
         <div className="glass-card-static rounded-2xl p-4 bg-gradient-to-br from-rose-500/8 to-transparent border-rose-500/12">
           <div className="text-xl font-bold tx-neg">{fmt(sellAgg._sum.totalAmount)}</div>
-          <div className="text-xs text-[var(--tx-3)] mt-1">▼ Ventes ({sellAgg._count} opér.)</div>
+          <div className="text-xs text-[var(--tx-3)] mt-1">▼ {isFr ? `Ventes (${sellAgg._count} opér.)` : `Sales (${sellAgg._count} ops.)`}</div>
         </div>
       </AnimateIn>
 
@@ -215,7 +219,7 @@ export default async function InsiderPage({ params, searchParams }: Props) {
       <AnimateIn className="space-y-2" stagger={22}>
         {declarations.length === 0 ? (
           <div className="glass-card rounded-2xl p-12 text-center text-[var(--tx-3)]">
-            Aucune déclaration
+            {isFr ? "Aucune déclaration" : "No declarations"}
           </div>
         ) : (
           declarations.map((decl) => <DeclarationCard key={decl.id} declaration={decl} />)
@@ -227,19 +231,21 @@ export default async function InsiderPage({ params, searchParams }: Props) {
         <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
           {pageNum > 1 && (
             <Link href={`/insider/${slug}?page=${pageNum - 1}`} className="btn-glass px-4 py-2 rounded-xl text-sm font-medium">
-              ← Précédent
+              {isFr ? "← Précédent" : "← Previous"}
             </Link>
           )}
           <span className="text-sm text-[var(--tx-3)]">Page {pageNum} / {totalPages}</span>
           {pageNum < totalPages && (
             <Link href={`/insider/${slug}?page=${pageNum + 1}`} className="btn-glass px-4 py-2 rounded-xl text-sm font-medium">
-              Suivant →
+              {isFr ? "Suivant →" : "Next →"}
             </Link>
           )}
         </div>
       )}
       <div className="mt-4 text-center text-xs" style={{ color: "var(--tx-3)" }}>
-        {totalCount} déclaration{totalCount !== 1 ? "s" : ""} au total
+        {isFr
+          ? <>{totalCount} déclaration{totalCount !== 1 ? "s" : ""} au total</>
+          : <>{totalCount} declaration{totalCount !== 1 ? "s" : ""} total</>}
       </div>
 
       {/* AI-generated insider description */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 interface DailyCount {
   day: string;
@@ -13,20 +14,20 @@ interface FreshnessData {
   dailyCounts: DailyCount[];
 }
 
-function formatDay(isoDay: string): string {
+function formatDay(isoDay: string, locale: "fr" | "en"): string {
   const d = new Date(isoDay);
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const diffDays = Math.round((todayStart.getTime() - dayStart.getTime()) / 86400_000);
 
-  if (diffDays === 0) return "Aujourd'hui";
-  if (diffDays === 1) return "Hier";
-  return d.toLocaleDateString("fr-FR", { weekday: "long" });
+  if (diffDays === 0) return locale === "fr" ? "Aujourd'hui" : "Today";
+  if (diffDays === 1) return locale === "fr" ? "Hier" : "Yesterday";
+  return d.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", { weekday: "long" });
 }
 
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("fr-FR", {
+function formatTime(iso: string, locale: "fr" | "en"): string {
+  return new Date(iso).toLocaleTimeString(locale === "fr" ? "fr-FR" : "en-GB", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "Europe/Paris",
@@ -34,6 +35,8 @@ function formatTime(iso: string): string {
 }
 
 export function DataTicker() {
+  const pathname = usePathname();
+  const locale: "fr" | "en" = (pathname === "/fr" || pathname.startsWith("/fr/")) ? "fr" : "en";
   const [data, setData] = useState<FreshnessData | null>(null);
 
   useEffect(() => {
@@ -49,26 +52,38 @@ export function DataTicker() {
   const segments: string[] = [];
 
   if (data.total != null) {
-    segments.push(`${data.total.toLocaleString("fr-FR")} déclarations AMF en base`);
+    segments.push(
+      locale === "fr"
+        ? `${data.total.toLocaleString("fr-FR")} déclarations AMF en base`
+        : `${data.total.toLocaleString("en-GB")} AMF declarations in database`
+    );
   }
 
   if (data.lastScrape) {
-    const time = formatTime(data.lastScrape.at);
+    const time = formatTime(data.lastScrape.at, locale);
     const co = data.lastScrape.company ?? "";
-    segments.push(`Dernière ingestion ${time}${co ? ` · ${co}` : ""}`);
+    segments.push(
+      locale === "fr"
+        ? `Dernière ingestion ${time}${co ? ` · ${co}` : ""}`
+        : `Last ingestion ${time}${co ? ` · ${co}` : ""}`
+    );
   }
 
   // Up to 4 recent days
   data.dailyCounts.slice(0, 4).forEach((dc) => {
-    const label = formatDay(dc.day);
-    segments.push(`${label} : ${dc.count} nouvelles`);
+    const label = formatDay(dc.day, locale);
+    segments.push(
+      locale === "fr"
+        ? `${label} : ${dc.count} nouvelles`
+        : `${label}: ${dc.count} new`
+    );
   });
 
   // Duplicate for seamless loop
   const allSegments = [...segments, ...segments];
 
   return (
-    <div className="data-ticker" aria-label="Fraîcheur des données AMF" role="marquee">
+    <div className="data-ticker" aria-label={locale === "fr" ? "Fraîcheur des données AMF" : "AMF data freshness"} role="marquee">
       <span className="data-ticker-badge">
         <span className="data-ticker-dot" />
         Live

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 // ── Pure CSS/SVG animations · no canvas, fully theme-aware via CSS vars ─────
 
 // ── Step 1: AMF Data Stream ──────────────────────────────────────────────────
 
-function AnimCollecte() {
+function AnimCollecte({ isFr }: { isFr: boolean }) {
   const rows = [
     { ticker: "SCHNEIDER ELEC.", amount: "4 200 000 €", ok: true,  delay: 0 },
     { ticker: "LVMH SA",         amount: "12 500 000 €", ok: true,  delay: 0.4 },
@@ -60,7 +61,7 @@ function AnimCollecte() {
       {/* Bottom labels */}
       <div style={{ position: "absolute", bottom: "12px", left: "18px", right: "18px", display: "flex", justifyContent: "space-between" }}>
         <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--tx-4)", letterSpacing: "0.06em" }}>AMF</span>
-        <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--tx-4)", letterSpacing: "0.06em" }}>BASE DE DONNÉES</span>
+        <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--tx-4)", letterSpacing: "0.06em" }}>{isFr ? "BASE DE DONNÉES" : "DATABASE"}</span>
       </div>
 
       <style>{`
@@ -73,12 +74,14 @@ function AnimCollecte() {
 
 // ── Step 2: Scoring Gauge ────────────────────────────────────────────────────
 
-function AnimScoring() {
+function AnimScoring({ isFr }: { isFr: boolean }) {
   const [score, setScore] = useState(0);
   const [bars, setBars] = useState([0, 0, 0, 0, 0]);
   const target = 87;
   const barTargets = [92, 85, 78, 65, 72];
-  const barLabels = ["Montant/Mcap", "Rôle dirigeant", "Backtest", "Cluster", "Historique"];
+  const barLabels = isFr
+    ? ["Montant/Mcap", "Rôle dirigeant", "Backtest", "Cluster", "Historique"]
+    : ["Amount/Mcap", "Insider role", "Backtest", "Cluster", "Historical"];
   // DA v3: monochrome gold scale · no rainbow
   const barColors = ["var(--gold)", "var(--gold-2)", "var(--corporate)", "var(--corporate-2)", "var(--gold)"];
 
@@ -162,7 +165,7 @@ function AnimScoring() {
 
 // ── Step 3: Backtest Equity Curve ────────────────────────────────────────────
 
-function AnimBacktest() {
+function AnimBacktest({ isFr }: { isFr: boolean }) {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -213,7 +216,7 @@ function AnimBacktest() {
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: "0.8rem", fontWeight: 800, fontFamily: "monospace", color: "var(--gold)" }}>{perfPct}</div>
-            <div style={{ fontSize: "0.58rem", color: "var(--tx-4)", letterSpacing: "0.04em" }}>retour</div>
+            <div style={{ fontSize: "0.58rem", color: "var(--tx-4)", letterSpacing: "0.04em" }}>{isFr ? "retour" : "return"}</div>
           </div>
         </div>
       </div>
@@ -274,7 +277,7 @@ function AnimBacktest() {
 
       {/* Legend */}
       <div style={{ display: "flex", gap: "14px", marginTop: "6px" }}>
-        {[{color:"var(--gold)",label:"Gain"},{color:"var(--c-crimson)",label:"Perte"}].map(l => (
+        {[{color:"var(--gold)",label:"Gain"},{color:"var(--c-crimson)",label: isFr ? "Perte" : "Loss"}].map(l => (
           <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
             <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: l.color }} />
             <span style={{ fontSize: "0.65rem", color: "var(--tx-3)" }}>{l.label}</span>
@@ -287,7 +290,7 @@ function AnimBacktest() {
 
 // ── Step 4: Signal Card ──────────────────────────────────────────────────────
 
-function AnimSignal() {
+function AnimSignal({ isFr }: { isFr: boolean }) {
   const [phase, setPhase] = useState(0);
   const [scoreVal, setScoreVal] = useState(0);
 
@@ -322,7 +325,7 @@ function AnimSignal() {
             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
             </svg>
-            SIGNAL ACHAT FORT
+            {isFr ? "SIGNAL ACHAT FORT" : "STRONG BUY SIGNAL"}
           </span>
         </div>
       )}
@@ -343,7 +346,7 @@ function AnimSignal() {
           <span style={{ fontFamily: "monospace", fontSize: "1.2rem", fontWeight: 700, color: "var(--tx-1)", letterSpacing: "-0.02em" }}>
             4 200 000 €
           </span>
-          <span style={{ fontSize: "0.7rem", color: "var(--tx-3)", marginLeft: "6px" }}>déclaré</span>
+          <span style={{ fontSize: "0.7rem", color: "var(--tx-3)", marginLeft: "6px" }}>{isFr ? "déclaré" : "declared"}</span>
         </div>
       )}
 
@@ -351,7 +354,7 @@ function AnimSignal() {
       {show(60) && (
         <div style={{ opacity: alpha(60) }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-            <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--tx-3)", letterSpacing: "0.06em" }}>SCORE CONVICTION</span>
+            <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--tx-3)", letterSpacing: "0.06em" }}>{isFr ? "SCORE CONVICTION" : "CONVICTION SCORE"}</span>
             <span style={{ fontSize: "0.72rem", fontWeight: 800, fontFamily: "monospace", color: "var(--gold)" }}>{scoreVal}/100</span>
           </div>
           <div style={{ height: "8px", borderRadius: "4px", background: "var(--border-med)", overflow: "hidden" }}>
@@ -364,7 +367,7 @@ function AnimSignal() {
             }} />
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "5px" }}>
-            <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--gold)" }}>+21.4% attendu T+90</span>
+            <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--gold)" }}>{isFr ? "+21.4% attendu T+90" : "+21.4% expected T+90"}</span>
           </div>
         </div>
       )}
@@ -444,38 +447,53 @@ function AnimPanel({ step, accentColor, pill, title, body, children }: {
 // ── Main export ────────────────────────────────────────────────────────────────
 
 export function HowItWorksAnimations() {
+  const pathname = usePathname();
+  const isFr = pathname.startsWith("/fr");
+
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(270px, 100%), 1fr))", gap: "16px" }}>
       <AnimPanel
-        step="01" accentColor="var(--corporate-2)" pill="01 · Collecte"
-        title="Déclarations AMF en temps réel"
-        body="Chaque déclaration BDIF est récupérée, parsée et enrichie automatiquement chaque jour. Prix, capitalisation, rôle, montant exact."
+        step="01" accentColor="var(--corporate-2)"
+        pill={isFr ? "01 · Collecte" : "01 · Collection"}
+        title={isFr ? "Déclarations AMF en temps réel" : "Real-time AMF declarations"}
+        body={isFr
+          ? "Chaque déclaration BDIF est récupérée, parsée et enrichie automatiquement chaque jour. Prix, capitalisation, rôle, montant exact."
+          : "Every BDIF declaration is fetched, parsed and automatically enriched each day. Price, market cap, role, exact amount."}
       >
-        <AnimCollecte />
+        <AnimCollecte isFr={isFr} />
       </AnimPanel>
 
       <AnimPanel
-        step="02" accentColor="var(--gold)" pill="02 · Scoring"
-        title="Score de conviction algorithmique"
-        body="100 points composites : taille vs capitalisation, rôle du dirigeant, performances historiques de la catégorie, signaux cluster."
+        step="02" accentColor="var(--gold)"
+        pill="02 · Scoring"
+        title={isFr ? "Score de conviction algorithmique" : "Algorithmic conviction score"}
+        body={isFr
+          ? "100 points composites : taille vs capitalisation, rôle du dirigeant, performances historiques de la catégorie, signaux cluster."
+          : "100 composite points: size vs market cap, insider role, historical category performance, cluster signals."}
       >
-        <AnimScoring />
+        <AnimScoring isFr={isFr} />
       </AnimPanel>
 
       <AnimPanel
-        step="03" accentColor="var(--corporate-2)" pill="03 · Backtest"
-        title="Validation sur données historiques"
-        body="Chaque pattern est backtesté sur 22 000+ transactions depuis 2021. Win rate, Sharpe, retour médian T+90 / T+365 vérifiés."
+        step="03" accentColor="var(--corporate-2)"
+        pill="03 · Backtest"
+        title={isFr ? "Validation sur données historiques" : "Validation on historical data"}
+        body={isFr
+          ? "Chaque pattern est backtesté sur 22 000+ transactions depuis 2021. Win rate, Sharpe, retour médian T+90 / T+365 vérifiés."
+          : "Every pattern is backtested on 22,000+ transactions since 2021. Win rate, Sharpe, median return at T+90 / T+365 verified."}
       >
-        <AnimBacktest />
+        <AnimBacktest isFr={isFr} />
       </AnimPanel>
 
       <AnimPanel
-        step="04" accentColor="var(--gold)" pill="04 · Signal"
-        title="Recommandation actionnable"
-        body="Les meilleurs signaux remontent en Top 10 quotidien. Score, retour attendu, historique du dirigeant · tout en un clic."
+        step="04" accentColor="var(--gold)"
+        pill={isFr ? "04 · Signal" : "04 · Signal"}
+        title={isFr ? "Recommandation actionnable" : "Actionable recommendation"}
+        body={isFr
+          ? "Les meilleurs signaux remontent en Top 10 quotidien. Score, retour attendu, historique du dirigeant · tout en un clic."
+          : "The best signals surface in a daily Top 10. Score, expected return, insider history — all in one click."}
       >
-        <AnimSignal />
+        <AnimSignal isFr={isFr} />
       </AnimPanel>
     </div>
   );

@@ -6,22 +6,31 @@
 
 import type React from "react";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { LogoMark } from "@/components/Logo";
 import { computePerformanceData } from "@/lib/performance-data";
 import { getBacktestBase } from "@/lib/backtest-compute";
 
 export const revalidate = 3600;
 
-export const metadata = {
-  title: "Le Pitch · Insiders Trades Sigma",
-  description:
-    "InsiderTrades Sigma en chiffres : signaux T+90 et T+365 réels, méthode AMF, comparaison CAC 40, guide pratique.",
-};
+export async function generateMetadata() {
+  const hdrs = await headers();
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
+  const isFr = locale === "fr";
+  return {
+    title: isFr
+      ? "Le Pitch · Insiders Trades Sigma"
+      : "The Pitch · Insiders Trades Sigma",
+    description: isFr
+      ? "InsiderTrades Sigma en chiffres : signaux T+90 et T+365 réels, méthode AMF, comparaison CAC 40, guide pratique."
+      : "Insiders Trades Sigma by the numbers: real T+90 and T+365 signals, AMF methodology, CAC 40 comparison, practical guide.",
+  };
+}
 
 const fmt = {
   pct:  (n: number | null | undefined, d = 1) =>
           n == null ? "·" : (n > 0 ? "+" : "") + n.toFixed(d) + "%",
-  num:  (n: number | null | undefined) => n?.toLocaleString("fr-FR") ?? "·",
+  num:  (n: number | null | undefined, locale = "fr-FR") => n?.toLocaleString(locale) ?? "·",
   pos:  (n: number | null | undefined, d = 1) =>
           n == null ? "·" : "+" + Math.abs(n).toFixed(d) + "%",
 };
@@ -114,6 +123,11 @@ function Overline({ children }: { children: React.ReactNode }) {
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default async function PitchPage() {
+  const hdrs = await headers();
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
+  const isFr = locale === "fr";
+  const numLocale = isFr ? "fr-FR" : "en-US";
+
   const [d, base] = await Promise.all([
     computePerformanceData(),
     getBacktestBase(),
@@ -121,6 +135,220 @@ export default async function PitchPage() {
 
   const startYear = d.universe.periodStart.slice(0, 4);
   const endYear   = d.universe.periodEnd.slice(0, 4);
+
+  const T = isFr ? {
+    heroPitch: "Insiders Trades Sigma — Pitch investisseur",
+    heroH1Line1: "Suivre les dirigeants qui achètent",
+    heroH1Line2: "leurs propres titres en bourse.",
+    heroSub1: "déclarations AMF scorées",
+    heroSub2: "backtests",
+    heroBadges: ["Données AMF officielles", "Règlement MAR 596/2014", "Backtest retail-view", "Accès beta"],
+    kpiOverline: "01 · Les chiffres clés",
+    kpiH2: "Ce que montrent les backtests, en clair",
+    kpiTile1Label: "Médiane T+90 — cluster",
+    kpiTile1Sub: "Retour médian à 3 mois sur les signaux cluster, vue retail (pubDate+1)",
+    kpiTile2Label: "Moyenne T+365 — cluster",
+    kpiTile2Sub: "Rendement moyen sur 12 mois · médiane ≈ moyenne → distribution saine",
+    kpiTile3Label: "Win rate T+90 — cluster",
+    kpiTile3Sub: "% de trades cluster avec un retour positif à 3 mois",
+    kpiTile4Label: "CAC 40 CAGR · benchmark",
+    clusterLabels: ["Cluster 2+ insiders", "Deep cluster 3+", "Cascade 4+ insiders"],
+    clusterStat1: "Médiane T+90",
+    clusterStat2: "Médiane T+365",
+    clusterStat3: "Win rate",
+    clusterTradesLabel: "trades · n T+365 =",
+    chartOverline: "02 · Visualisation",
+    chartH2: "Retour moyen T+90 par type de signal",
+    chartDesc: "Toutes les barres sont mesurées depuis pubDate+1 — c\u0027est-à-dire le lendemain de la publication AMF, pas la date d\u0027achat interne. Plus le signal est qualifié (cluster, profondeur), plus le retour est élevé et la distribution plus symétrique.",
+    legendSigma: "Signaux Sigma (or)",
+    legendGlobal: "Signal AMF global",
+    legendCac: "CAC 40 (référence)",
+    chartNote: "Retours moyens bruts par trade, non annualisés, frais non déduits à ce stade (1% A/R déduit dans la simulation de portefeuille — section suivante). Le CAC 40 est projeté sur la même fenêtre de 90 jours pour comparaison.",
+    methodOverline: "03 · La méthode",
+    methodH2: "Pourquoi ce signal est exploitable",
+    methodCards: [
+      { n: "01", title: "Obligation légale, pas une opinion", body: "MAR 596/2014 oblige tout dirigeant à déclarer toute transaction sur ses propres titres dans les 3 jours ouvrés. Ce n'est pas du storytelling — c'est de l'argent réel engagé." },
+      { n: "02", title: "Signal cluster : conviction collective", body: "Quand 2+ dirigeants achètent indépendamment la même société en 30 jours, ils lisent les mêmes indicateurs internes. C'est un signal de conviction non orchestré — notre variable alpha n°1." },
+      { n: "03", title: "Score composite v2 (0–100 pts)", body: "Rôle (PDG/CFO > board), montant en % market cap, cluster, DCA, délai tx→pub. Un score ≥ 65 + cluster = condition d'entrée. Les simulations montrent que ce filtre donne un profil risque/rendement supérieur." },
+      { n: "04", title: "Vue retail honnête (pubDate+1)", body: "Nos retours sont calculés depuis le lendemain de la publication AMF — le moment où vous pouvez réagir. Pas depuis la date d'achat interne (qui capture l'alpha que vous ne pouvez pas capturer)." },
+    ],
+    combosOverline: "04 · Meilleures combinaisons de signaux",
+    combosH2: "Les signaux qui battent clairement le marché",
+    combosDesc: "Classement par Sharpe T+90 (rendement / volatilité). Seules les combinaisons avec n ≥ 5 trades sont présentées. Ces données viennent directement des backtests sur la période",
+    tableHeaders: ["Signal", "n", "Médiane T+90", "Moy. T+90", "Moy. T+365", "Win %", "Sharpe"],
+    tableNote: "Médiane T+90 = retour médian retail à 3 mois (pubDate+1). Moy. T+365 = rendement moyen à 12 mois. Sharpe = rendement moyen / écart-type · mesure la qualité du rendement par unité de risque.",
+    simOverline: "05 · Simulation portefeuille",
+    simH2: "Stratégies filtrées vs CAC 40 buy & hold",
+    simDesc: "Simulation top-20 par score, rebalancement mensuel, holding 3 mois, frais 1% A/R inclus, entrée pubDate+1. Seules les stratégies avec CAGR positif sont présentées.",
+    simTableHeaders: ["Stratégie", "Signaux", "CAGR net", "Sharpe", "Max DD", "Win mois", "Bat CAC"],
+    simCacLabel: "CAC 40 · buy & hold",
+    simCacSub: "benchmark passif · dividendes réinvestis",
+    simCacPassif: "passif",
+    simNote: "CAGR net = retour annualisé après frais 1% A/R. Max DD = max drawdown simulé (pire perte cumulée). Win mois = % de mois positifs. Seules les stratégies avec un CAGR > 0 sont présentées ici.",
+    appOverline: "06 · Application pratique",
+    appH2: "Combien de sociétés, combien de trades, quel capital",
+    capitalCards: [
+      {
+        amount: "10 000 €", tag: "Débutant", featured: false,
+        rows: [
+          ["Positions simultanées", "4 sociétés · 2 500 € chacune"],
+          ["Filtre recommandé", "Cluster uniquement · score ≥ 70"],
+          ["Horizon de détention", "6 à 12 mois par position"],
+          ["Signaux étudiés / an", "~20–30 évalués · 4–6 retenus"],
+          ["Frais A/R estimés", "~200 € / an (1% × 4 positions × 2)"],
+        ],
+        note: "À ce capital, concentrez-vous sur les 4 signaux les plus forts par an. Qualité > fréquence.",
+      },
+      {
+        amount: "50 000 €", tag: "Sweet spot", featured: true,
+        rows: [
+          ["Allocation recommandée", "30 000 € ETF · 20 000 € Sigma"],
+          ["Positions Sigma", "5 sociétés · 4 000 € chacune"],
+          ["Filtre recommandé", "Score ≥ 65 · PDG/CFO · cluster prioritaire"],
+          ["Horizon de détention", "6 mois min · 12 mois si conviction forte"],
+          ["Signaux étudiés / an", "~50–80 évalués · 5–10 retenus"],
+        ],
+        note: "Le noyau ETF (60%) capte la performance indicielle. Les 40% Sigma sont la poche d'alpha. Logique asymétrique : le downside est limité, l'upside potentiel est significatif.",
+      },
+      {
+        amount: "200 000 €", tag: "Avancé", featured: false,
+        rows: [
+          ["Allocation recommandée", "120 000 € multi-ETF · 80 000 € Sigma"],
+          ["Positions Sigma", "15–20 sociétés · 4–5 000 € chacune"],
+          ["Filtre recommandé", "Score ≥ 60 · tous rôles · cluster prioritaire"],
+          ["Horizon de détention", "Rebalancement trimestriel"],
+          ["Volume min de liquidité", "200 000 € / jour pour ne pas déplacer le cours"],
+        ],
+        note: "Attention liquidité : évitez les small-caps sous 200 000 €/j de volume quotidien à ces montants.",
+      },
+    ],
+    transOverline: "07 · Transparence",
+    transH2: "Ce que ces backtests ne prouvent pas",
+    transRows: [
+      ["Historique de 4 ans seulement", `${startYear}–${endYear} couvre un cycle majoritairement haussier (CAC ATH en 2024). Les académiques requièrent 10–15 ans pour valider un système. Nos résultats peuvent surestimer la performance sur un cycle baissier.`],
+      ["Survivorship bias partiel", "La base ne contient que les sociétés encore cotées. Les sociétés radiées, en faillite ou rachetées ne sont pas comptabilisées, ce qui peut surestimer la performance de 0,5 à 1 point de CAGR."],
+      ["Slippage non modélisé", "Les backtests supposent une exécution au prix de clôture pubDate+1. Sur les small-caps françaises (bid-ask parfois 1 à 3%), votre prix réel sera moins favorable. Retirez mentalement 0,5 à 1 point par an."],
+      ["Pas un substitut à l'analyse fondamentale", "Sigma identifie les dossiers méritant une analyse. Il ne remplace pas la lecture du bilan, des résultats, et de la valorisation. Un signal fort sur une société surendettée reste un signal sur une société surendettée."],
+      ["Pas un conseil en investissement", "Ce site est un outil d'information réglementée (données AMF publiques). Il ne constitue pas un conseil en investissement. Vos décisions sont vos responsabilités."],
+    ],
+    ctaH2: "Accès beta sur invitation",
+    ctaSub1: "déclarations scorées",
+    ctaSub2: "backtests calculés",
+    ctaSub3: "Nouvelles déclarations ingérées dans l\u0027heure suivant leur publication AMF",
+    ctaBtn1: "Dashboard backtest",
+    ctaBtn2: "Voir les signaux actifs",
+    ctaBtn3: "Méthodologie complète",
+    ctaDisclaimer: "Usage informatif · données AMF publiques · ne constitue pas un conseil en investissement",
+    chartBarLabels: ["CAC 40", "Tous achats", "PDG/DG", "CFO/DAF", "Cluster 2+", "Cluster 3+", "Cascade 4+"],
+    chartBarSubs: ["buy & hold"],
+    simMoisLabel: "mois couverts",
+  } : {
+    heroPitch: "Insiders Trades Sigma — Investor pitch",
+    heroH1Line1: "Following executives who buy",
+    heroH1Line2: "their own company\u2019s stock.",
+    heroSub1: "scored AMF filings",
+    heroSub2: "backtests",
+    heroBadges: ["Official AMF data", "MAR Regulation 596/2014", "Retail-view backtest", "Beta access"],
+    kpiOverline: "01 · Key figures",
+    kpiH2: "What the backtests show, plainly",
+    kpiTile1Label: "Median T+90 — cluster",
+    kpiTile1Sub: "Median return at 3 months on cluster signals, retail view (pubDate+1)",
+    kpiTile2Label: "Mean T+365 — cluster",
+    kpiTile2Sub: "Average return over 12 months · median ≈ mean → healthy distribution",
+    kpiTile3Label: "Win rate T+90 — cluster",
+    kpiTile3Sub: "% of cluster trades with a positive return at 3 months",
+    kpiTile4Label: "CAC 40 CAGR · benchmark",
+    clusterLabels: ["Cluster 2+ insiders", "Deep cluster 3+", "Cascade 4+ insiders"],
+    clusterStat1: "Median T+90",
+    clusterStat2: "Median T+365",
+    clusterStat3: "Win rate",
+    clusterTradesLabel: "trades · n T+365 =",
+    chartOverline: "02 · Visualisation",
+    chartH2: "Average T+90 return by signal type",
+    chartDesc: "All bars are measured from pubDate+1 — the day after AMF publication, not the internal purchase date. The more qualified the signal (cluster, depth), the higher the return and the more symmetric the distribution.",
+    legendSigma: "Sigma signals (gold)",
+    legendGlobal: "Global AMF signal",
+    legendCac: "CAC 40 (reference)",
+    chartNote: "Gross average returns per trade, not annualised, fees not deducted at this stage (1% round-trip deducted in the portfolio simulation — next section). The CAC 40 is projected over the same 90-day window for comparison.",
+    methodOverline: "03 · The method",
+    methodH2: "Why this signal is exploitable",
+    methodCards: [
+      { n: "01", title: "A legal obligation, not an opinion", body: "MAR 596/2014 requires every executive to report any transaction in their own company\u2019s securities within 3 business days. This is not storytelling \u2014 it is real money committed." },
+      { n: "02", title: "Cluster signal: collective conviction", body: "When 2+ executives independently buy the same company within 30 days, they are reading the same internal indicators. This is an unorchestrated conviction signal \u2014 our #1 alpha variable." },
+      { n: "03", title: "Composite score v2 (0\u2013100 pts)", body: "Role (CEO/CFO > board), amount as % of market cap, cluster, DCA, tx\u2192pub delay. A score \u2265 65 + cluster = entry condition. Simulations show this filter yields a superior risk/return profile." },
+      { n: "04", title: "Honest retail view (pubDate+1)", body: "Our returns are calculated from the day after AMF publication \u2014 when you can act. Not from the internal purchase date (which captures alpha you cannot capture)." },
+    ],
+    combosOverline: "04 · Best signal combinations",
+    combosH2: "Signals that clearly beat the market",
+    combosDesc: "Ranked by Sharpe T+90 (return / volatility). Only combinations with n \u2265 5 trades are shown. This data comes directly from backtests over the period",
+    tableHeaders: ["Signal", "n", "Median T+90", "Avg T+90", "Avg T+365", "Win %", "Sharpe"],
+    tableNote: "Median T+90 = retail median return at 3 months (pubDate+1). Avg T+365 = mean return at 12 months. Sharpe = mean return / std dev \u00b7 measures return quality per unit of risk.",
+    simOverline: "05 · Portfolio simulation",
+    simH2: "Filtered strategies vs CAC 40 buy & hold",
+    simDesc: "Top-20 by score simulation, monthly rebalancing, 3-month holding, 1% round-trip fees included, entry at pubDate+1. Only strategies with positive CAGR are shown.",
+    simTableHeaders: ["Strategy", "Signals", "Net CAGR", "Sharpe", "Max DD", "Win months", "Beat CAC"],
+    simCacLabel: "CAC 40 · buy & hold",
+    simCacSub: "passive benchmark · dividends reinvested",
+    simCacPassif: "passive",
+    simNote: "Net CAGR = annualised return after 1% round-trip fees. Max DD = simulated max drawdown (worst cumulative loss). Win months = % of positive months. Only strategies with CAGR > 0 are shown.",
+    appOverline: "06 · Practical application",
+    appH2: "How many companies, how many trades, how much capital",
+    capitalCards: [
+      {
+        amount: "€10,000", tag: "Beginner", featured: false,
+        rows: [
+          ["Simultaneous positions", "4 companies \u00b7 €2,500 each"],
+          ["Recommended filter", "Cluster only \u00b7 score \u2265 70"],
+          ["Holding horizon", "6 to 12 months per position"],
+          ["Signals reviewed / year", "~20\u201330 evaluated \u00b7 4\u20136 retained"],
+          ["Estimated round-trip fees", "~€200 / year (1% \u00d7 4 positions \u00d7 2)"],
+        ],
+        note: "At this capital level, focus on the 4 strongest signals per year. Quality over frequency.",
+      },
+      {
+        amount: "€50,000", tag: "Sweet spot", featured: true,
+        rows: [
+          ["Recommended allocation", "€30,000 ETF \u00b7 €20,000 Sigma"],
+          ["Sigma positions", "5 companies \u00b7 €4,000 each"],
+          ["Recommended filter", "Score \u2265 65 \u00b7 CEO/CFO \u00b7 cluster priority"],
+          ["Holding horizon", "6 months min \u00b7 12 months if strong conviction"],
+          ["Signals reviewed / year", "~50\u201380 evaluated \u00b7 5\u201310 retained"],
+        ],
+        note: "The ETF core (60%) captures index performance. The 40% Sigma is the alpha pocket. Asymmetric logic: downside is limited, potential upside is significant.",
+      },
+      {
+        amount: "€200,000", tag: "Advanced", featured: false,
+        rows: [
+          ["Recommended allocation", "€120,000 multi-ETF \u00b7 €80,000 Sigma"],
+          ["Sigma positions", "15\u201320 companies \u00b7 €4\u20135,000 each"],
+          ["Recommended filter", "Score \u2265 60 \u00b7 all roles \u00b7 cluster priority"],
+          ["Holding horizon", "Quarterly rebalancing"],
+          ["Min liquidity volume", "€200,000 / day to avoid moving the price"],
+        ],
+        note: "Watch liquidity: avoid small-caps below €200,000/day in daily volume at these amounts.",
+      },
+    ],
+    transOverline: "07 · Transparency",
+    transH2: "What these backtests do not prove",
+    transRows: [
+      ["4-year history only", `${startYear}–${endYear} covers a predominantly bullish cycle (CAC ATH in 2024). Academics require 10–15 years to validate a system. Our results may overstate performance in a bear cycle.`],
+      ["Partial survivorship bias", "The dataset only contains companies still listed. Delisted, bankrupt or acquired companies are not counted, which may overstate performance by 0.5 to 1 CAGR point."],
+      ["Slippage not modelled", "Backtests assume execution at the pubDate+1 closing price. On French small-caps (bid-ask sometimes 1–3%), your actual price will be less favourable. Mentally subtract 0.5 to 1 point per year."],
+      ["Not a substitute for fundamental analysis", "Sigma identifies cases worth analysing. It does not replace reading the balance sheet, results, and valuation. A strong signal on an overleveraged company is still a signal on an overleveraged company."],
+      ["Not investment advice", "This site is an information tool based on regulated public data (public AMF filings). It does not constitute investment advice. Your decisions are your responsibility."],
+    ],
+    ctaH2: "Beta access by invitation",
+    ctaSub1: "scored filings",
+    ctaSub2: "backtests computed",
+    ctaSub3: "New filings ingested within one hour of AMF publication",
+    ctaBtn1: "Backtest dashboard",
+    ctaBtn2: "View active signals",
+    ctaBtn3: "Full methodology",
+    ctaDisclaimer: "Informational use · public AMF data · does not constitute investment advice",
+    chartBarLabels: ["CAC 40", "All buys", "CEO/MD", "CFO", "Cluster 2+", "Cluster 3+", "Cascade 4+"],
+    chartBarSubs: ["buy & hold"],
+    simMoisLabel: "months covered",
+  };
 
   // ── Extract the rich signal stats from the cached base ────────────────────
   const overall     = base?.overall;
@@ -153,44 +381,46 @@ export default async function PitchPage() {
   const medT365Cluster = clusterStats?.medianReturn365d;
   const avgT365Cluster = clusterStats?.avgReturn365d;
 
+  const fmtNum = (n: number | null | undefined) => fmt.num(n, numLocale);
+
   // Chart bars: T+90 average return by signal type
   const chartBars = [
     {
-      label: "CAC 40",
-      sub: "buy & hold",
+      label: T.chartBarLabels[0],
+      sub: T.chartBarSubs[0],
       value: cacT90 ?? d.cacBenchmark.cagrPct / 4,
       grey: true,
     },
     {
-      label: "Tous achats",
-      sub: `n=${fmt.num(overall?.count)}`,
+      label: T.chartBarLabels[1],
+      sub: `n=${fmtNum(overall?.count)}`,
       value: overall?.avgReturn90d ?? 5,
     },
     {
-      label: "PDG/DG",
-      sub: `n=${fmt.num(pdgStats?.count)}`,
+      label: T.chartBarLabels[2],
+      sub: `n=${fmtNum(pdgStats?.count)}`,
       value: pdgStats?.avgReturn90d ?? 8,
     },
     {
-      label: "CFO/DAF",
-      sub: `n=${fmt.num(cfoStats?.count)}`,
+      label: T.chartBarLabels[3],
+      sub: `n=${fmtNum(cfoStats?.count)}`,
       value: cfoStats?.avgReturn90d ?? 10,
     },
     {
-      label: "Cluster 2+",
-      sub: `n=${fmt.num(clusterStats?.count)}`,
+      label: T.chartBarLabels[4],
+      sub: `n=${fmtNum(clusterStats?.count)}`,
       value: avgT90Cluster ?? 14,
       gold: true,
     },
     {
-      label: "Cluster 3+",
-      sub: `n=${fmt.num(deepCluster?.count)}`,
+      label: T.chartBarLabels[5],
+      sub: `n=${fmtNum(deepCluster?.count)}`,
       value: deepCluster?.avgReturn90d ?? 18,
       gold: true,
     },
     {
-      label: "Cascade 4+",
-      sub: `n=${fmt.num(cascade?.count)}`,
+      label: T.chartBarLabels[6],
+      sub: `n=${fmtNum(cascade?.count)}`,
       value: cascade?.avgReturn90d ?? 22,
       gold: true,
     },
@@ -203,7 +433,7 @@ export default async function PitchPage() {
       <section className="pitch-hero">
         <LogoMark size={44} />
         <div className="pitch-overline-el" style={{ color: "var(--gold)", fontSize: "0.62rem", letterSpacing: "0.18em" }}>
-          Insiders Trades Sigma — Pitch investisseur
+          {T.heroPitch}
         </div>
         <h1 style={{
           fontFamily: "var(--font-dm-serif), Georgia, serif",
@@ -211,16 +441,16 @@ export default async function PitchPage() {
           letterSpacing: "-0.015em", lineHeight: 1.1, color: "var(--tx-1)",
           textAlign: "center",
         }}>
-          Suivre les dirigeants qui achètent<br />
-          <em style={{ color: "var(--gold)", fontStyle: "italic" }}>leurs propres titres en bourse.</em>
+          {T.heroH1Line1}<br />
+          <em style={{ color: "var(--gold)", fontStyle: "italic" }}>{T.heroH1Line2}</em>
         </h1>
         <p style={{ fontSize: "0.84rem", color: "var(--tx-3)", lineHeight: 1.6, textAlign: "center", maxWidth: 520 }}>
-          {fmt.num(d.universe.totalDeclarations)} déclarations AMF scorées &middot;{" "}
-          {fmt.num(d.universe.totalBacktests)} backtests &middot; {startYear}–{endYear}
-          &middot; retours mesurés depuis pubDate+1 (vue retail)
+          {fmtNum(d.universe.totalDeclarations)} {T.heroSub1} &middot;{" "}
+          {fmtNum(d.universe.totalBacktests)} {T.heroSub2} &middot; {startYear}–{endYear}
+          &middot; {isFr ? "retours mesurés depuis pubDate+1 (vue retail)" : "returns measured from pubDate+1 (retail view)"}
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
-          {["Données AMF officielles", "Règlement MAR 596/2014", "Backtest retail-view", "Accès beta"].map((t, i) => (
+          {T.heroBadges.map((t, i) => (
             <span key={t} style={{
               padding: "4px 11px", fontSize: "0.7rem", fontWeight: 600,
               border: `1px solid ${i === 3 ? "var(--gold)" : "var(--border-med)"}`,
@@ -235,91 +465,91 @@ export default async function PitchPage() {
 
       {/* ── KPIs HERO ──────────────────────────────────────────────────────── */}
       <section style={{ padding: "40px 0 0" }}>
-        <Overline>01 · Les chiffres clés</Overline>
+        <Overline>{T.kpiOverline}</Overline>
         <h2 style={{
           fontFamily: "var(--font-dm-serif), Georgia, serif",
           fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 400,
           letterSpacing: "-0.012em", color: "var(--tx-1)", marginBottom: 20,
         }}>
-          Ce que montrent les backtests, en clair
+          {T.kpiH2}
         </h2>
 
         <div className="pitch-scroll-x pitch-kpi-grid" style={{ gap: 8, marginBottom: 32 }}>
           <KpiTile
             value={fmt.pos(medT90Cluster)}
-            label="Médiane T+90 — cluster"
-            sub="Retour médian à 3 mois sur les signaux cluster, vue retail (pubDate+1)"
-            n={fmt.num(clusterStats?.count)}
+            label={T.kpiTile1Label}
+            sub={T.kpiTile1Sub}
+            n={fmtNum(clusterStats?.count)}
           />
           <KpiTile
             value={fmt.pos(avgT365Cluster)}
-            label="Moyenne T+365 — cluster"
-            sub="Rendement moyen sur 12 mois · médiane ≈ moyenne → distribution saine"
-            n={fmt.num(clusterStats?.countReturn365d)}
+            label={T.kpiTile2Label}
+            sub={T.kpiTile2Sub}
+            n={fmtNum(clusterStats?.countReturn365d)}
           />
           <KpiTile
             value={(winRateCluster != null ? winRateCluster.toFixed(0) : "·") + "%"}
-            label="Win rate T+90 — cluster"
-            sub="% de trades cluster avec un retour positif à 3 mois"
-            n={fmt.num(clusterStats?.count)}
+            label={T.kpiTile3Label}
+            sub={T.kpiTile3Sub}
+            n={fmtNum(clusterStats?.count)}
           />
           <KpiTile
             value={d.cacBenchmark.cagrPct != null ? "+" + d.cacBenchmark.cagrPct.toFixed(1) + "%" : "·"}
-            label="CAC 40 CAGR · benchmark"
-            sub={`Dividendes réinvestis · ${fmt.num(d.cacBenchmark.monthsCovered)} mois · même période`}
+            label={T.kpiTile4Label}
+            sub={`${isFr ? "Dividendes réinvestis" : "Dividends reinvested"} · ${fmtNum(d.cacBenchmark.monthsCovered)} ${T.simMoisLabel} · ${isFr ? "même période" : "same period"}`}
             grey
           />
         </div>
 
         {/* Signal zoom — cluster depth */}
         <div className="pitch-scroll-x pitch-cluster-grid" style={{ gap: 8, marginBottom: 16 }}>
-          {[
-            { label: "Cluster 2+ insiders", stats: clusterStats, highlight: true },
-            { label: "Deep cluster 3+",     stats: deepCluster,  highlight: true },
-            { label: "Cascade 4+ insiders", stats: cascade,      highlight: false },
-          ].map(({ label, stats, highlight }) => stats ? (
-            <div key={label} style={{
-              padding: "16px 16px",
-              background: highlight ? "var(--gold-bg)" : "var(--bg-surface)",
-              border: `1px solid ${highlight ? "var(--gold)" : "var(--border-med)"}`,
-              display: "flex", flexDirection: "column", gap: 10,
-            }}>
-              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--tx-3)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
-                {label}
+          {T.clusterLabels.map((label, idx) => {
+            const statsMap = [clusterStats, deepCluster, cascade];
+            const stats = statsMap[idx];
+            const highlight = idx < 2;
+            return stats ? (
+              <div key={label} style={{
+                padding: "16px 16px",
+                background: highlight ? "var(--gold-bg)" : "var(--bg-surface)",
+                border: `1px solid ${highlight ? "var(--gold)" : "var(--border-med)"}`,
+                display: "flex", flexDirection: "column", gap: 10,
+              }}>
+                <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--tx-3)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
+                  {label}
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6 }}>
+                  {[
+                    { v: fmt.pos(stats.medianReturn90d), s: T.clusterStat1 },
+                    { v: fmt.pos(stats.medianReturn365d), s: T.clusterStat2 },
+                    { v: (stats.winRate90d?.toFixed(0) ?? "·") + "%", s: T.clusterStat3 },
+                  ].map(({ v, s }) => (
+                    <div key={s}>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 800, letterSpacing: "-0.03em", color: highlight ? "var(--gold)" : "var(--tx-1)", fontFamily: "'Banana Grotesk', sans-serif" }}>{v}</div>
+                      <div style={{ fontSize: "0.62rem", color: "var(--tx-3)", marginTop: 1 }}>{s}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontSize: "0.7rem", color: "var(--tx-3)" }}>
+                  {fmtNum(stats.count)} {T.clusterTradesLabel} {fmtNum(stats.countReturn365d)}
+                </div>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6 }}>
-                {[
-                  { v: fmt.pos(stats.medianReturn90d), s: "Médiane T+90" },
-                  { v: fmt.pos(stats.medianReturn365d), s: "Médiane T+365" },
-                  { v: (stats.winRate90d?.toFixed(0) ?? "·") + "%", s: "Win rate" },
-                ].map(({ v, s }) => (
-                  <div key={s}>
-                    <div style={{ fontSize: "1.1rem", fontWeight: 800, letterSpacing: "-0.03em", color: highlight ? "var(--gold)" : "var(--tx-1)", fontFamily: "'Banana Grotesk', sans-serif" }}>{v}</div>
-                    <div style={{ fontSize: "0.62rem", color: "var(--tx-3)", marginTop: 1 }}>{s}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ fontSize: "0.7rem", color: "var(--tx-3)" }}>
-                {fmt.num(stats.count)} trades · n T+365 = {fmt.num(stats.countReturn365d)}
-              </div>
-            </div>
-          ) : null)}
+            ) : null;
+          })}
         </div>
       </section>
 
       {/* ── BAR CHART ──────────────────────────────────────────────────────── */}
       <section style={{ padding: "40px 0 0", borderTop: "1px solid var(--border)" }}>
-        <Overline>02 · Visualisation</Overline>
+        <Overline>{T.chartOverline}</Overline>
         <h2 style={{
           fontFamily: "var(--font-dm-serif), Georgia, serif",
           fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 400,
           letterSpacing: "-0.012em", color: "var(--tx-1)", marginBottom: 6,
         }}>
-          Retour moyen T+90 par type de signal
+          {T.chartH2}
         </h2>
         <p style={{ fontSize: "0.84rem", color: "var(--tx-3)", lineHeight: 1.6, marginBottom: 20, maxWidth: 680 }}>
-          Toutes les barres sont mesurées depuis pubDate+1 — c&apos;est-à-dire le lendemain de la publication AMF, pas la date d&apos;achat interne.
-          Plus le signal est qualifié (cluster, profondeur), plus le retour est élevé et la distribution plus symétrique.
+          {T.chartDesc}
         </p>
 
         <div style={{
@@ -330,15 +560,15 @@ export default async function PitchPage() {
           <div style={{ display: "flex", gap: 16, marginTop: 12, justifyContent: "flex-end", flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.68rem", color: "var(--tx-3)" }}>
               <div style={{ width: 12, height: 12, background: "var(--gold)", borderRadius: 2 }} />
-              Signaux Sigma (or)
+              {T.legendSigma}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.68rem", color: "var(--tx-3)" }}>
               <div style={{ width: 12, height: 12, background: "var(--c-indigo-2)", borderRadius: 2 }} />
-              Signal AMF global
+              {T.legendGlobal}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.68rem", color: "var(--tx-3)" }}>
               <div style={{ width: 12, height: 12, background: "var(--bg-elevated)", borderRadius: 2, border: "1px solid var(--border-med)" }} />
-              CAC 40 (référence)
+              {T.legendCac}
             </div>
           </div>
         </div>
@@ -348,42 +578,24 @@ export default async function PitchPage() {
           background: "var(--bg-surface)", border: "1px solid var(--border)",
           fontSize: "0.76rem", color: "var(--tx-3)", lineHeight: 1.6,
         }}>
-          <strong style={{ color: "var(--tx-2)" }}>Note :</strong>{" "}
-          Retours moyens bruts par trade, non annualisés, frais non déduits à ce stade (1% A/R déduit dans la simulation de portefeuille — section suivante).
-          Le CAC 40 est projeté sur la même fenêtre de 90 jours pour comparaison.
-          Période {startYear}–{endYear}.
+          <strong style={{ color: "var(--tx-2)" }}>{isFr ? "Note :" : "Note:"}</strong>{" "}
+          {T.chartNote}{" "}
+          {isFr ? "Période" : "Period"} {startYear}–{endYear}.
         </div>
       </section>
 
       {/* ── MÉTHODE ────────────────────────────────────────────────────────── */}
       <section style={{ padding: "40px 0 0", borderTop: "1px solid var(--border)" }}>
-        <Overline>03 · La méthode</Overline>
+        <Overline>{T.methodOverline}</Overline>
         <h2 style={{
           fontFamily: "var(--font-dm-serif), Georgia, serif",
           fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 400,
           letterSpacing: "-0.012em", color: "var(--tx-1)", marginBottom: 20,
         }}>
-          Pourquoi ce signal est exploitable
+          {T.methodH2}
         </h2>
         <div className="pitch-scroll-x pitch-method-grid" style={{ gap: 10, marginBottom: 16 }}>
-          {[
-            {
-              n: "01", title: "Obligation légale, pas une opinion",
-              body: "MAR 596/2014 oblige tout dirigeant à déclarer toute transaction sur ses propres titres dans les 3 jours ouvrés. Ce n'est pas du storytelling — c'est de l'argent réel engagé.",
-            },
-            {
-              n: "02", title: "Signal cluster : conviction collective",
-              body: "Quand 2+ dirigeants achètent indépendamment la même société en 30 jours, ils lisent les mêmes indicateurs internes. C'est un signal de conviction non orchestré — notre variable alpha n°1.",
-            },
-            {
-              n: "03", title: "Score composite v2 (0–100 pts)",
-              body: "Rôle (PDG/CFO > board), montant en % market cap, cluster, DCA, délai tx→pub. Un score ≥ 65 + cluster = condition d'entrée. Les simulations montrent que ce filtre donne un profil risque/rendement supérieur.",
-            },
-            {
-              n: "04", title: "Vue retail honnête (pubDate+1)",
-              body: "Nos retours sont calculés depuis le lendemain de la publication AMF — le moment où vous pouvez réagir. Pas depuis la date d'achat interne (qui capture l'alpha que vous ne pouvez pas capturer).",
-            },
-          ].map((c) => (
+          {T.methodCards.map((c) => (
             <div key={c.n} style={{
               background: "var(--bg-surface)", border: "1px solid var(--border-med)",
               borderTop: "2px solid var(--gold)", padding: "18px 16px",
@@ -398,17 +610,16 @@ export default async function PitchPage() {
 
       {/* ── TOP COMBOS ─────────────────────────────────────────────────────── */}
       <section style={{ padding: "40px 0 0", borderTop: "1px solid var(--border)" }}>
-        <Overline>04 · Meilleures combinaisons de signaux</Overline>
+        <Overline>{T.combosOverline}</Overline>
         <h2 style={{
           fontFamily: "var(--font-dm-serif), Georgia, serif",
           fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 400,
           letterSpacing: "-0.012em", color: "var(--tx-1)", marginBottom: 8,
         }}>
-          Les signaux qui battent clairement le marché
+          {T.combosH2}
         </h2>
         <p style={{ fontSize: "0.84rem", color: "var(--tx-3)", lineHeight: 1.6, marginBottom: 20, maxWidth: 700 }}>
-          Classement par Sharpe T+90 (rendement / volatilité). Seules les combinaisons avec n ≥ 5 trades sont présentées.
-          Ces données viennent directement des backtests sur la période {startYear}–{endYear}.
+          {T.combosDesc} {startYear}–{endYear}.
         </p>
 
         {/* Top signal combos table */}
@@ -416,7 +627,7 @@ export default async function PitchPage() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.84rem" }}>
             <thead>
               <tr style={{ background: "var(--bg-raised)", borderBottom: "1px solid var(--border-med)" }}>
-                {["Signal", "n", "Médiane T+90", "Moy. T+90", "Moy. T+365", "Win %", "Sharpe"].map((h, i) => (
+                {T.tableHeaders.map((h, i) => (
                   <th key={h} style={{
                     padding: "10px 12px", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.08em",
                     textTransform: "uppercase", color: "var(--tx-3)", fontFamily: "'JetBrains Mono', monospace",
@@ -444,7 +655,7 @@ export default async function PitchPage() {
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: "10px 12px", textAlign: "center", color: "var(--tx-3)", fontSize: "0.78rem" }}>{fmt.num(c.count)}</td>
+                    <td style={{ padding: "10px 12px", textAlign: "center", color: "var(--tx-3)", fontSize: "0.78rem" }}>{fmtNum(c.count)}</td>
                     <td style={{ padding: "10px 12px", textAlign: "center", fontWeight: 700, color: (c.medianReturn90d ?? 0) > 0 ? "var(--signal-pos)" : "var(--tx-2)", fontFamily: "'Banana Grotesk', sans-serif", fontSize: "0.95rem" }}>
                       {fmt.pct(c.medianReturn90d)}
                     </td>
@@ -471,34 +682,32 @@ export default async function PitchPage() {
           padding: "10px 14px", background: "var(--bg-surface)", border: "1px solid var(--border)",
           fontSize: "0.76rem", color: "var(--tx-3)", lineHeight: 1.6,
         }}>
-          <strong style={{ color: "var(--tx-2)" }}>Lecture :</strong>{" "}
-          Médiane T+90 = retour médian retail à 3 mois (pubDate+1). Moy. T+365 = rendement moyen à 12 mois.
-          Sharpe = rendement moyen / écart-type · mesure la qualité du rendement par unité de risque.
-          Période {startYear}–{endYear}.
+          <strong style={{ color: "var(--tx-2)" }}>{isFr ? "Lecture :" : "Key:"}</strong>{" "}
+          {T.tableNote}{" "}
+          {isFr ? "Période" : "Period"} {startYear}–{endYear}.
         </div>
       </section>
 
       {/* ── SIMULATION PORTEFEUILLE ─────────────────────────────────────────── */}
       {goodStrategies.length > 0 && (
         <section style={{ padding: "40px 0 0", borderTop: "1px solid var(--border)" }}>
-          <Overline>05 · Simulation portefeuille</Overline>
+          <Overline>{T.simOverline}</Overline>
           <h2 style={{
             fontFamily: "var(--font-dm-serif), Georgia, serif",
             fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 400,
             letterSpacing: "-0.012em", color: "var(--tx-1)", marginBottom: 8,
           }}>
-            Stratégies filtrées vs CAC 40 buy &amp; hold
+            {T.simH2}
           </h2>
           <p style={{ fontSize: "0.84rem", color: "var(--tx-3)", lineHeight: 1.6, marginBottom: 20, maxWidth: 700 }}>
-            Simulation top-20 par score, rebalancement mensuel, holding 3 mois, frais 1% A/R inclus, entrée pubDate+1.
-            Seules les stratégies avec CAGR positif sont présentées.
+            {T.simDesc}
           </p>
 
           <div style={{ overflowX: "auto", border: "1px solid var(--border-med)", marginBottom: 12 }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.84rem" }}>
               <thead>
                 <tr style={{ background: "var(--bg-raised)", borderBottom: "1px solid var(--border-med)" }}>
-                  {["Stratégie", "Signaux", "CAGR net", "Sharpe", "Max DD", "Win mois", "Bat CAC"].map((h, i) => (
+                  {T.simTableHeaders.map((h, i) => (
                     <th key={h} style={{
                       padding: "10px 12px", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.08em",
                       textTransform: "uppercase", color: "var(--tx-3)", fontFamily: "'JetBrains Mono', monospace",
@@ -519,7 +728,7 @@ export default async function PitchPage() {
                       </div>
                       <div style={{ fontSize: "0.7rem", color: "var(--tx-3)", marginTop: 2, lineHeight: 1.4 }}>{s.description}</div>
                     </td>
-                    <td style={{ padding: "10px 12px", textAlign: "center", color: "var(--tx-3)", fontSize: "0.78rem" }}>{fmt.num(s.matching)}</td>
+                    <td style={{ padding: "10px 12px", textAlign: "center", color: "var(--tx-3)", fontSize: "0.78rem" }}>{fmtNum(s.matching)}</td>
                     <td style={{ padding: "10px 12px", textAlign: "center", fontWeight: 700, fontFamily: "'Banana Grotesk', sans-serif", fontSize: "1rem", color: "var(--signal-pos)" }}>
                       {s.cagr != null ? "+" + s.cagr.toFixed(2) + "%" : "·"}
                     </td>
@@ -539,10 +748,10 @@ export default async function PitchPage() {
                 ))}
                 <tr style={{ background: "var(--bg-raised)", borderTop: "2px solid var(--border-med)" }}>
                   <td style={{ padding: "10px 12px" }}>
-                    <div style={{ fontWeight: 600, color: "var(--tx-2)", fontSize: "0.84rem" }}>CAC 40 · buy &amp; hold</div>
-                    <div style={{ fontSize: "0.7rem", color: "var(--tx-3)", marginTop: 2 }}>benchmark passif · dividendes réinvestis</div>
+                    <div style={{ fontWeight: 600, color: "var(--tx-2)", fontSize: "0.84rem" }}>{T.simCacLabel}</div>
+                    <div style={{ fontSize: "0.7rem", color: "var(--tx-3)", marginTop: 2 }}>{T.simCacSub}</div>
                   </td>
-                  <td style={{ padding: "10px 12px", textAlign: "center", color: "var(--tx-3)", fontSize: "0.78rem" }}>passif</td>
+                  <td style={{ padding: "10px 12px", textAlign: "center", color: "var(--tx-3)", fontSize: "0.78rem" }}>{T.simCacPassif}</td>
                   <td style={{ padding: "10px 12px", textAlign: "center", fontWeight: 700, fontFamily: "'Banana Grotesk', sans-serif", fontSize: "1rem", color: "var(--gold)" }}>
                     {d.cacBenchmark.cagrPct != null ? "+" + d.cacBenchmark.cagrPct.toFixed(2) + "%" : "·"}
                   </td>
@@ -550,7 +759,7 @@ export default async function PitchPage() {
                     {d.cacBenchmark.sharpe?.toFixed(2) ?? "·"}
                   </td>
                   <td colSpan={3} style={{ padding: "10px 12px", textAlign: "center", color: "var(--tx-4)", fontSize: "0.72rem" }}>
-                    {fmt.num(d.cacBenchmark.monthsCovered)} mois couverts
+                    {fmtNum(d.cacBenchmark.monthsCovered)} {T.simMoisLabel}
                   </td>
                 </tr>
               </tbody>
@@ -561,60 +770,25 @@ export default async function PitchPage() {
             padding: "10px 14px", background: "var(--bg-surface)", border: "1px solid var(--border)",
             fontSize: "0.76rem", color: "var(--tx-3)", lineHeight: 1.6,
           }}>
-            <strong style={{ color: "var(--tx-2)" }}>Note :</strong>{" "}
-            CAGR net = retour annualisé après frais 1% A/R. Max DD = max drawdown simulé (pire perte cumulée).
-            Win mois = % de mois positifs. Seules les stratégies avec un CAGR &gt; 0 sont présentées ici.
+            <strong style={{ color: "var(--tx-2)" }}>{isFr ? "Note :" : "Note:"}</strong>{" "}
+            {T.simNote}
           </div>
         </section>
       )}
 
       {/* ── MODE D'EMPLOI ──────────────────────────────────────────────────── */}
       <section style={{ padding: "40px 0 0", borderTop: "1px solid var(--border)" }}>
-        <Overline>06 · Application pratique</Overline>
+        <Overline>{T.appOverline}</Overline>
         <h2 style={{
           fontFamily: "var(--font-dm-serif), Georgia, serif",
           fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 400,
           letterSpacing: "-0.012em", color: "var(--tx-1)", marginBottom: 20,
         }}>
-          Combien de sociétés, combien de trades, quel capital
+          {T.appH2}
         </h2>
 
         <div className="pitch-scroll-x pitch-capital-grid" style={{ gap: 10 }}>
-          {[
-            {
-              amount: "10 000 €", tag: "Débutant", featured: false,
-              rows: [
-                ["Positions simultanées", "4 sociétés · 2 500 € chacune"],
-                ["Filtre recommandé", "Cluster uniquement · score ≥ 70"],
-                ["Horizon de détention", "6 à 12 mois par position"],
-                ["Signaux étudiés / an", "~20–30 évalués · 4–6 retenus"],
-                ["Frais A/R estimés", "~200 € / an (1% × 4 positions × 2)"],
-              ],
-              note: "À ce capital, concentrez-vous sur les 4 signaux les plus forts par an. Qualité > fréquence.",
-            },
-            {
-              amount: "50 000 €", tag: "Sweet spot", featured: true,
-              rows: [
-                ["Allocation recommandée", "30 000 € ETF · 20 000 € Sigma"],
-                ["Positions Sigma", "5 sociétés · 4 000 € chacune"],
-                ["Filtre recommandé", "Score ≥ 65 · PDG/CFO · cluster prioritaire"],
-                ["Horizon de détention", "6 mois min · 12 mois si conviction forte"],
-                ["Signaux étudiés / an", "~50–80 évalués · 5–10 retenus"],
-              ],
-              note: "Le noyau ETF (60%) capte la performance indicielle. Les 40% Sigma sont la poche d'alpha. Logique asymétrique : le downside est limité, l'upside potentiel est significatif.",
-            },
-            {
-              amount: "200 000 €", tag: "Avancé", featured: false,
-              rows: [
-                ["Allocation recommandée", "120 000 € multi-ETF · 80 000 € Sigma"],
-                ["Positions Sigma", "15–20 sociétés · 4–5 000 € chacune"],
-                ["Filtre recommandé", "Score ≥ 60 · tous rôles · cluster prioritaire"],
-                ["Horizon de détention", "Rebalancement trimestriel"],
-                ["Volume min de liquidité", "200 000 € / jour pour ne pas déplacer le cours"],
-              ],
-              note: "Attention liquidité : évitez les small-caps sous 200 000 €/j de volume quotidien à ces montants.",
-            },
-          ].map((c) => (
+          {T.capitalCards.map((c) => (
             <div key={c.amount} style={{
               background: c.featured ? "var(--gold-bg)" : "var(--bg-surface)",
               border: `${c.featured ? 2 : 1}px solid ${c.featured ? "var(--gold)" : "var(--border-med)"}`,
@@ -651,22 +825,16 @@ export default async function PitchPage() {
 
       {/* ── TRANSPARENCE ───────────────────────────────────────────────────── */}
       <section style={{ padding: "40px 0 0", borderTop: "1px solid var(--border)" }}>
-        <Overline>07 · Transparence</Overline>
+        <Overline>{T.transOverline}</Overline>
         <h2 style={{
           fontFamily: "var(--font-dm-serif), Georgia, serif",
           fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 400,
           letterSpacing: "-0.012em", color: "var(--tx-1)", marginBottom: 20,
         }}>
-          Ce que ces backtests ne prouvent pas
+          {T.transH2}
         </h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-          {[
-            ["Historique de 4 ans seulement", `${startYear}–${endYear} couvre un cycle majoritairement haussier (CAC ATH en 2024). Les académiques requièrent 10–15 ans pour valider un système. Nos résultats peuvent surestimer la performance sur un cycle baissier.`],
-            ["Survivorship bias partiel", "La base ne contient que les sociétés encore cotées. Les sociétés radiées, en faillite ou rachetées ne sont pas comptabilisées, ce qui peut surestimer la performance de 0,5 à 1 point de CAGR."],
-            ["Slippage non modélisé", "Les backtests supposent une exécution au prix de clôture pubDate+1. Sur les small-caps françaises (bid-ask parfois 1 à 3%), votre prix réel sera moins favorable. Retirez mentalement 0,5 à 1 point par an."],
-            ["Pas un substitut à l'analyse fondamentale", "Sigma identifie les dossiers méritant une analyse. Il ne remplace pas la lecture du bilan, des résultats, et de la valorisation. Un signal fort sur une société surendettée reste un signal sur une société surendettée."],
-            ["Pas un conseil en investissement", "Ce site est un outil d'information réglementée (données AMF publiques). Il ne constitue pas un conseil en investissement. Vos décisions sont vos responsabilités."],
-          ].map(([title, body]) => (
+          {T.transRows.map(([title, body]) => (
             <div key={title} className="pitch-transparency-row">
               <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--tx-1)" }}>{title}</div>
               <div style={{ fontSize: "0.84rem", color: "var(--tx-2)", lineHeight: 1.65 }}>{body}</div>
@@ -688,12 +856,12 @@ export default async function PitchPage() {
           fontSize: "clamp(1.6rem, 3.5vw, 2.3rem)", fontWeight: 400,
           letterSpacing: "-0.015em", color: "var(--tx-1)", lineHeight: 1.1,
         }}>
-          Accès beta sur invitation
+          {T.ctaH2}
         </h2>
         <p style={{ fontSize: "0.9rem", color: "var(--tx-2)", lineHeight: 1.65, maxWidth: 580 }}>
-          {fmt.num(d.universe.totalDeclarations)} déclarations scorées &middot;{" "}
-          {fmt.num(d.universe.totalBacktests)} backtests calculés &middot;
-          Nouvelles déclarations ingérées dans l&apos;heure suivant leur publication AMF
+          {fmtNum(d.universe.totalDeclarations)} {T.ctaSub1} &middot;{" "}
+          {fmtNum(d.universe.totalBacktests)} {T.ctaSub2} &middot;
+          {T.ctaSub3}
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
           <Link href="/backtest" style={{
@@ -702,7 +870,7 @@ export default async function PitchPage() {
             fontWeight: 700, fontSize: "0.88rem", textDecoration: "none",
             letterSpacing: "0.01em", boxShadow: "0 4px 14px rgba(184,149,90,0.28)",
           }}>
-            Dashboard backtest
+            {T.ctaBtn1}
           </Link>
           <Link href="/recommendations" style={{
             display: "inline-flex", alignItems: "center", minHeight: 44,
@@ -710,7 +878,7 @@ export default async function PitchPage() {
             fontWeight: 700, fontSize: "0.88rem", textDecoration: "none",
             boxShadow: "0 4px 14px rgba(184,149,90,0.28)",
           }}>
-            Voir les signaux actifs
+            {T.ctaBtn2}
           </Link>
           <Link href="/methodologie" style={{
             display: "inline-flex", alignItems: "center", minHeight: 44,
@@ -718,11 +886,11 @@ export default async function PitchPage() {
             color: "var(--tx-2)", fontWeight: 600, fontSize: "0.88rem",
             textDecoration: "none", background: "transparent",
           }}>
-            Méthodologie complète
+            {T.ctaBtn3}
           </Link>
         </div>
         <p style={{ fontSize: "0.72rem", color: "var(--tx-3)" }}>
-          Usage informatif · données AMF publiques · ne constitue pas un conseil en investissement
+          {T.ctaDisclaimer}
         </p>
       </section>
 

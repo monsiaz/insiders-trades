@@ -11,11 +11,11 @@ import { AnimateIn } from "@/components/AnimateIn";
 import { headers } from "next/headers";
 
 const StockChart = dynamic(() => import("@/components/StockChart").then(m => ({ default: m.StockChart })), {
-  loading: () => <div style={{ height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.8rem" }}>Chargement du graphique…</div>,
+  loading: () => <div style={{ height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.8rem" }}>Loading chart…</div>,
 });
 
 const CompanyBacktestWidget = dynamic(() => import("@/components/CompanyBacktestWidget").then(m => ({ default: m.CompanyBacktestWidget })), {
-  loading: () => <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.8rem" }}>Chargement des statistiques…</div>,
+  loading: () => <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.8rem" }}>Loading statistics…</div>,
 });
 import { CompanyNews } from "@/components/CompanyNews";
 import { DeclarationType } from "@prisma/client";
@@ -203,7 +203,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
 
   const formatAmount = (v: number | null | undefined) =>
     v
-      ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0, notation: v >= 1_000_000 ? "compact" : "standard" }).format(v)
+      ? new Intl.NumberFormat(isFr ? "fr-FR" : "en-GB", { style: "currency", currency: "EUR", maximumFractionDigits: 0, notation: v >= 1_000_000 ? "compact" : "standard" }).format(v)
       : "·";
 
   return (
@@ -211,7 +211,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
       {/* Back */}
       <Link href="/companies" className="inline-flex items-center gap-1.5 text-sm transition-colors mb-6 animate-fade-in"
         style={{ color: "var(--tx-3)" }}>
-        ← Sociétés
+        {isFr ? "← Sociétés" : "← Companies"}
       </Link>
 
       {/* Company hero */}
@@ -269,18 +269,18 @@ export default async function CompanyPage({ params, searchParams }: Props) {
 
       {/* Stats row */}
       <AnimateIn className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6" stagger={80} baseDelay={80}>
-        <MiniStat label="Déclarations DD" value={(typeMap["DIRIGEANTS"] || 0).toLocaleString("fr-FR")} />
-        <MiniStat label="Seuils" value={(typeMap["SEUILS"] || 0).toLocaleString("fr-FR")} />
+        <MiniStat label={isFr ? "Déclarations DD" : "Insider Decl."} value={(typeMap["DIRIGEANTS"] || 0).toLocaleString(isFr ? "fr-FR" : "en-GB")} />
+        <MiniStat label={isFr ? "Seuils" : "Thresholds"} value={(typeMap["SEUILS"] || 0).toLocaleString(isFr ? "fr-FR" : "en-GB")} />
         <MiniStat
-          label="Volume achat"
+          label={isFr ? "Volume achat" : "Buy Volume"}
           value={formatAmount(buyTotal._sum.totalAmount)}
-          sub={`${buyTotal._count} opér.`}
+          sub={`${buyTotal._count} ${isFr ? "opér." : "ops."}`}
           sentiment="positive"
         />
         <MiniStat
-          label="Volume vente"
+          label={isFr ? "Volume vente" : "Sell Volume"}
           value={formatAmount(sellTotal._sum.totalAmount)}
-          sub={`${sellTotal._count} opér.`}
+          sub={`${sellTotal._count} ${isFr ? "opér." : "ops."}`}
           sentiment="negative"
         />
       </AnimateIn>
@@ -345,19 +345,19 @@ export default async function CompanyPage({ params, searchParams }: Props) {
       {/* Last declaration date */}
       {lastDecl && (
         <div className="mb-6 text-xs text-right" style={{ color: "var(--tx-3)" }}>
-          Dernière déclaration le{" "}
-          {new Date(lastDecl.pubDate).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+          {isFr ? "Dernière déclaration le" : "Last declaration on"}{" "}
+          {new Date(lastDecl.pubDate).toLocaleDateString(isFr ? "fr-FR" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}
         </div>
       )}
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 mb-5">
         {[
-          { value: undefined, label: "Toutes" },
-          { value: "DIRIGEANTS", label: "Dirigeants" },
-          { value: "SEUILS", label: "Seuils" },
+          { value: undefined, label: isFr ? "Toutes" : "All" },
+          { value: "DIRIGEANTS", label: isFr ? "Dirigeants" : "Executives" },
+          { value: "SEUILS", label: isFr ? "Seuils" : "Thresholds" },
           { value: "PROSPECTUS", label: "Prospectus" },
-          { value: "OTHER", label: "Autre" },
+          { value: "OTHER", label: isFr ? "Autre" : "Other" },
         ].map((f) => (
           <Link
             key={f.label}
@@ -380,7 +380,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
       <AnimateIn className="space-y-2" stagger={22}>
         {declarations.length === 0 ? (
           <div className="glass-card rounded-2xl p-12 text-center" style={{ color: "var(--tx-3)" }}>
-            Aucune déclaration trouvée
+            {isFr ? "Aucune déclaration trouvée" : "No declarations found"}
           </div>
         ) : (
           declarations.map((decl) => (
@@ -397,7 +397,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
               href={`/company/${slug}?${new URLSearchParams({ ...(filterType ? { type: filterType } : {}), page: String(pageNum - 1) })}`}
               className="btn-glass px-4 py-2 rounded-xl text-sm font-medium"
             >
-              ← Précédent
+              {isFr ? "← Précédent" : "← Previous"}
             </Link>
           )}
           <span className="text-sm" style={{ color: "var(--tx-3)" }}>
@@ -408,14 +408,16 @@ export default async function CompanyPage({ params, searchParams }: Props) {
               href={`/company/${slug}?${new URLSearchParams({ ...(filterType ? { type: filterType } : {}), page: String(pageNum + 1) })}`}
               className="btn-glass px-4 py-2 rounded-xl text-sm font-medium"
             >
-              Suivant →
+              {isFr ? "Suivant →" : "Next →"}
             </Link>
           )}
         </div>
       )}
 
       <div className="mt-4 text-center text-xs" style={{ color: "var(--tx-3)" }}>
-        {totalCount} déclaration{totalCount !== 1 ? "s" : ""} au total
+        {isFr
+          ? <>{totalCount} déclaration{totalCount !== 1 ? "s" : ""} au total</>
+          : <>{totalCount} declaration{totalCount !== 1 ? "s" : ""} total</>}
       </div>
 
       {/* AI-generated company description */}

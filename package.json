@@ -11,7 +11,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:seed": "ts-node --esm prisma/seed.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "deploy": "bash scripts/deploy.sh"
   },
   "prisma": {
     "seed": "ts-node --esm prisma/seed.ts"

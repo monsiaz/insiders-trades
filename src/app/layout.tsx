@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppNav } from "@/components/AppNav";
 import { AppFooter } from "@/components/AppFooter";
 import { DataTicker } from "@/components/DataTicker";
-import { PageProgress } from "@/components/PageProgress";
+import { PageTransition } from "@/components/PageTransition";
 
 // Self-hosted, preloaded, non-blocking Google Fonts via next/font
 const inter = Inter({
@@ -88,8 +88,8 @@ export default function RootLayout({
           {/* Top navigation */}
           <AppNav />
 
-          {/* Gold progress bar — shows on every internal navigation */}
-          <PageProgress />
+          {/* Page transition overlay — shows on every internal navigation */}
+          <PageTransition />
 
           {/* Page content */}
           <main className="page-main">

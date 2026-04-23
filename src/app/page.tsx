@@ -307,8 +307,9 @@ export default async function HomePage() {
       <section className="mb-16 sm:mb-20 animate-fade-in" style={{ position: "relative" }}>
         <div className="flex flex-col xl:flex-row items-start gap-8 xl:gap-16">
 
-          {/* Left column */}
-          <div style={{ flex: "1 1 0", minWidth: 0 }}>
+          {/* Left column — explicit width:100% required on mobile because
+              items-start (flex-col) would otherwise shrink to content width */}
+          <div style={{ flex: "1 1 0", minWidth: 0, width: "100%" }}>
             {/* Eyebrow tag */}
             <div className="hero-tag mb-6 sm:mb-7">
               <span className="live-dot" />
@@ -346,10 +347,12 @@ export default async function HomePage() {
               fontFamily: "var(--font-inter), system-ui, sans-serif",
               fontSize: "clamp(0.95rem, 2.4vw, 1.0625rem)",
               color: "var(--tx-2)",
+              width: "100%",
               maxWidth: "500px",
               lineHeight: 1.65,
               marginBottom: "1.75rem",
               fontWeight: 400,
+              overflowWrap: "break-word",
             }}>
               Suivez chaque déclaration AMF, détectez les signaux d&apos;accumulation et analysez les patterns historiques des insiders français.
             </p>

@@ -77,6 +77,10 @@ const PUBLIC_PREFIXES: string[] = [
   "/api/score-signals",
   "/api/backtest/compute",
   "/api/admin/fetch-logos",
+  "/api/version",
+  "/api/freshness",
+  "/api/home-data",
+  "/api/health",
 ];
 
 /** Exact pathnames that are always public (file-extension routes). */

@@ -295,43 +295,54 @@ body::before {
 @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.8); } }
 @keyframes pulse     { 0%,100% { opacity:1; } 50% { opacity:0.45; } }
 @keyframes spin      { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes shimmer   { from { background-position:-600px 0; } to { background-position:600px 0; } }
+@keyframes shimmer   { from { background-position:-800px 0; } to { background-position:800px 0; } }
 
 /* ── Skeleton system ──────────────────────────────────────────────────────── */
 .skel {
   border-radius: 3px;
+  /* Dark mode: use explicit colors that are clearly visible above --bg-surface (#0E1420) */
   background: linear-gradient(
     105deg,
-    var(--bg-raised)    0%,
-    var(--bg-elevated)  35%,
-    var(--bg-raised)    65%,
-    var(--bg-elevated)  80%,
-    var(--bg-raised)    100%
+    #1A2438  0%,
+    #2A3850  35%,
+    #2A3850  65%,
+    #1A2438  100%
   );
   background-size: 800px 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
+  animation: shimmer 1.4s ease-in-out infinite;
 }
-.skel-r { border-radius: 100px; }   /* pill / avatar */
-.skel-h { border-radius: 2px; }     /* heading bar */
+.light .skel {
+  background: linear-gradient(
+    105deg,
+    #E4E0D7  0%,
+    #F0EDE7  35%,
+    #F0EDE7  65%,
+    #E4E0D7  100%
+  );
+  background-size: 800px 100%;
+}
+.skel-r { border-radius: 100px; }
+.skel-h { border-radius: 2px; }
 
 /* Loading page wrapper */
 .loading-wrap {
   display: flex; flex-direction: column; gap: 14px;
   min-height: 60vh;
-  padding-top: 4px;
+  padding-top: 8px;
+  animation: fadeIn 0.2s ease;
 }
-/* Loading page eyebrow bar (gold accent line) */
+/* Loading page gold accent bar */
 .loading-gold-bar {
-  width: 56px; height: 2px;
+  width: 48px; height: 3px;
   background: var(--gold);
   border-radius: 2px;
-  margin-bottom: 8px;
-  box-shadow: 0 0 8px rgba(180,152,90,0.35);
-  animation: loading-gold-pulse 1.6s ease-in-out infinite;
+  margin-bottom: 4px;
+  box-shadow: 0 0 12px rgba(184,149,90,0.55), 0 0 4px rgba(184,149,90,0.3);
+  animation: loading-gold-pulse 1.4s ease-in-out infinite;
 }
 @keyframes loading-gold-pulse {
-  0%, 100% { opacity: 1; width: 56px; }
-  50%       { opacity: 0.7; width: 72px; }
+  0%, 100% { opacity: 1;   width: 48px; }
+  50%       { opacity: 0.8; width: 80px; }
 }
 @keyframes ambient   { from { transform:translate(0,0) scale(1); } to { transform:translate(-3%,5%) scale(1.08); } }
 @keyframes draw-line { from { stroke-dashoffset: 600; } to { stroke-dashoffset: 0; } }

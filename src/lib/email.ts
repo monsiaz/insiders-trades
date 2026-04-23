@@ -647,34 +647,3 @@ function digestFooterCta(): string {
     </table>
   `;
 }
-
-// ── Backward-compat: keep the old interface in case any code still calls it ──
-
-interface SignalAlert {
-  company: string;
-  insider: string;
-  role: string;
-  action: "BUY" | "SELL";
-  amount: string;
-  score: number;
-  expectedReturn: string;
-  winRate: string;
-  badges: string[];
-  pubDate: string;
-  companySlug: string;
-}
-
-/** @deprecated Prefer {@link sendDailyDigestEmail}. */
-export async function sendSignalAlertEmail(
-  email: string,
-  _name: string,
-  _signals: SignalAlert[],
-  _mode: "general" | "personal" = "general"
-) {
-  // Thin shim · redirect callers through the new digest with empty portfolio
-  // alerts and the old signals mapped as buy recos. The cron path has been
-  // rewritten to call sendDailyDigestEmail directly; this stub exists for any
-  // legacy code still referencing the old function.
-  console.warn("[email] sendSignalAlertEmail is deprecated; use sendDailyDigestEmail");
-  return { delivered: false, reason: "deprecated" as const, to: email };
-}

@@ -48,7 +48,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   });
   if (!company) return {};
   const hdrs = await headers();
-  const isFr = hdrs.get("x-locale") === "fr";
+  const metaPath = hdrs.get("x-original-path") ?? "/";
+  const isFr = metaPath === "/fr" || metaPath.startsWith("/fr/");
   const title = isFr
     ? `${company.name} · Transactions dirigeants | Sigma`
     : `${company.name} · Insider Transactions | Sigma`;
@@ -144,9 +145,10 @@ export default async function CompanyPage({ params, searchParams }: Props) {
   const offset = (pageNum - 1) * limit;
   const filterType = type as DeclarationType | undefined;
 
-  // Detect locale from middleware-injected header
+  // Detect locale from x-original-path (ground truth URL, not x-locale which can be stale in cache)
   const headersList = await headers();
-  const locale = headersList.get("x-locale") ?? "en";
+  const originalPath = headersList.get("x-original-path") ?? "/";
+  const locale = (originalPath === "/fr" || originalPath.startsWith("/fr/")) ? "fr" : "en";
   const isFr = locale === "fr";
 
   const cached = await getCompanyData(slug);

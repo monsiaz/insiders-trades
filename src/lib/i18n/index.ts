@@ -1,4 +1,43 @@
 export type Locale = "en" | "fr";
+
+// ── French AMF role → English translation table ────────────────────────────
+const FR_TO_EN_ROLES: [string, string][] = [
+  ["Président-directeur général",                 "Chairman & CEO"],
+  ["Président du Conseil d'administration",       "Chairman of the Board"],
+  ["Vice-Président du Conseil d'administration",  "Vice-Chairman of the Board"],
+  ["Membre du Conseil d'administration",          "Board Member"],
+  ["Administrateur indépendant",                  "Independent Director"],
+  ["Administrateur référent",                     "Lead Independent Director"],
+  ["Administrateur",                              "Director"],
+  ["Président du Directoire",                     "Management Board Chairman"],
+  ["Membre du Directoire",                        "Management Board Member"],
+  ["Président du Conseil de Surveillance",        "Supervisory Board Chairman"],
+  ["Vice-Président du Conseil de Surveillance",   "Supervisory Board Vice-Chair"],
+  ["Membre du Conseil de Surveillance",           "Supervisory Board Member"],
+  ["Directeur général délégué",                   "Deputy CEO"],
+  ["Directeur général adjoint",                   "Deputy Chief Executive"],
+  ["Directeur général",                           "Chief Executive Officer"],
+  ["Directeur financier",                         "Chief Financial Officer"],
+  ["Directeur des opérations",                    "Chief Operating Officer"],
+  ["Directeur technique",                         "Chief Technology Officer"],
+  ["Secrétaire général",                          "General Secretary"],
+  ["Censeur",                                     "Non-Voting Board Observer"],
+  ["Personne étroitement liée",                   "Closely associated person"],
+  ["Actionnaire",                                 "Shareholder"],
+];
+
+/**
+ * Translate a French AMF insider role label to English.
+ * Returns the original string if no match is found or if locale is "fr".
+ */
+export function translateRole(role: string | null | undefined, locale: string): string | null | undefined {
+  if (locale === "fr" || !role) return role;
+  const lower = role.toLowerCase();
+  for (const [fr, en] of FR_TO_EN_ROLES) {
+    if (lower.includes(fr.toLowerCase())) return en;
+  }
+  return role;
+}
 export const locales: Locale[] = ["en", "fr"];
 export const defaultLocale: Locale = "en";
 

@@ -71,21 +71,23 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const headersList = await headers();
-  const locale = (headersList.get("x-locale") ?? "en") as Locale;
+  // x-original-path = the URL the browser actually requested (set by middleware).
+  // Use it as the single source of truth for locale, canonical and hreflang.
+  // This is more reliable than x-locale which can be stale in the Next.js RSC router cache.
   const originalPath = headersList.get("x-original-path") ?? "/";
+  const isFrPath = originalPath === "/fr" || originalPath.startsWith("/fr/");
+  const locale: Locale = isFrPath ? "fr" : "en";
 
-  // Strip locale prefix to get the canonical path for hreflang
-  const canonicalPath = originalPath.startsWith("/fr")
+  // Strip /fr prefix to get the language-neutral path
+  const basePath = isFrPath
     ? (originalPath.slice(3) || "/")
     : originalPath;
-  // Strip query string, then ensure trailing slash on every path except root
-  let canonicalPathClean = canonicalPath.split("?")[0];
+  // Strip query string, ensure trailing slash on every path except root
+  let canonicalPathClean = basePath.split("?")[0];
   if (canonicalPathClean !== "/" && !canonicalPathClean.endsWith("/")) {
     canonicalPathClean = canonicalPathClean + "/";
   }
 
-  // Home  → https://insiders-trades-sigma.vercel.app/
-  // Other → https://insiders-trades-sigma.vercel.app/companies/  etc.
   const hreflangEn = canonicalPathClean === "/"
     ? `${BASE_URL}/`
     : `${BASE_URL}${canonicalPathClean}`;

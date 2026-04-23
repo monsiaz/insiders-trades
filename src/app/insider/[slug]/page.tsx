@@ -6,6 +6,7 @@ import { RelatedEntities } from "@/components/RelatedEntities";
 import { AnimateIn } from "@/components/AnimateIn";
 import { unstable_cache } from "next/cache";
 import { headers } from "next/headers";
+import { translateRole } from "@/lib/i18n";
 
 export const revalidate = 300;
 
@@ -19,7 +20,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   });
   if (!insider) return {};
   const hdrs = await headers();
-  const isFr = hdrs.get("x-locale") === "fr";
+  const metaPath = hdrs.get("x-original-path") ?? "/";
+  const isFr = metaPath === "/fr" || metaPath.startsWith("/fr/");
   const title = `${insider.name}${insider.primaryRole ? ` · ${insider.primaryRole}` : ""} | Sigma`;
   const desc = (isFr ? insider.descriptionFr : insider.descriptionEn)?.slice(0, 160)
     ?? (isFr
@@ -98,7 +100,8 @@ export default async function InsiderPage({ params, searchParams }: Props) {
   const offset = (pageNum - 1) * limit;
 
   const headersList = await headers();
-  const locale = headersList.get("x-locale") ?? "en";
+  const originalPath = headersList.get("x-original-path") ?? "/";
+  const locale = (originalPath === "/fr" || originalPath.startsWith("/fr/")) ? "fr" : "en";
   const isFr = locale === "fr";
 
   const cached = await getInsiderData(slug);
@@ -174,7 +177,9 @@ export default async function InsiderPage({ params, searchParams }: Props) {
             <div className="min-w-0">
             <h1 className="text-xl sm:text-2xl font-bold text-[var(--tx-1)] tracking-tight" style={{ overflowWrap: "break-word", wordBreak: "break-word" }}>{insider.name}</h1>
             {insiderSeo?.primaryRole && (
-              <div className="text-sm mt-1" style={{ color: "var(--tx-3)" }}>{insiderSeo.primaryRole}</div>
+              <div className="text-sm mt-1" style={{ color: "var(--tx-3)" }}>
+                {translateRole(insiderSeo.primaryRole, locale)}
+              </div>
             )}
             <div className="flex flex-wrap gap-1.5 mt-2">
               {insider.companies.map((ci) => (

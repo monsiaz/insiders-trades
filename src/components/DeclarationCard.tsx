@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { DeclarationType } from "@prisma/client";
 import { CompanyAvatar } from "@/components/CompanyBadge";
+import { translateRole } from "@/lib/i18n";
 
 interface DeclarationCardProps {
   declaration: {
@@ -166,7 +167,9 @@ export function DeclarationCard({ declaration, showCompany = true, locale = "en"
               </div>
               <span className="text-sm font-medium" style={{ color: "var(--tx-1)" }}>{declaration.insiderName}</span>
               {declaration.insiderFunction && (
-                <span className="text-xs truncate" style={{ color: "var(--tx-3)" }}>{declaration.insiderFunction}</span>
+                <span className="text-xs truncate" style={{ color: "var(--tx-3)" }}>
+                  {translateRole(declaration.insiderFunction, locale ?? "en")}
+                </span>
               )}
             </div>
           )}

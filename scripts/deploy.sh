@@ -37,11 +37,28 @@ echo ""
 echo "▶ 3/4  Syncing commit to GitHub (history only)..."
 git push origin main
 
-# ── 4. Verify what's live ─────────────────────────────────────────────────────
+# ── 4. Verify + warmup cold-start ─────────────────────────────────────────────
 echo ""
-echo "▶ 4/4  Verifying production..."
-sleep 5
+echo "▶ 4/4  Verifying production + warming up serverless functions..."
+sleep 8
+
 LIVE_SHA=$(curl -sf "${PROD_URL}/api/version/" 2>/dev/null | grep -o '"sha":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
+
+# Ping heavy server pages in background to warm up Vercel cold-starts.
+# These pages use DB queries on first call — pre-warm them so users don't see errors.
+WARMUP_PAGES=(
+  "${PROD_URL}/strategie/"
+  "${PROD_URL}/performance/"
+  "${PROD_URL}/backtest/"
+  "${PROD_URL}/fonctionnement/"
+  "${PROD_URL}/pitch/"
+)
+echo "   Warming up ${#WARMUP_PAGES[@]} pages..."
+for page in "${WARMUP_PAGES[@]}"; do
+  curl -sf -o /dev/null "$page" 2>/dev/null &
+done
+wait
+echo "   ✓ Warmup complete"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

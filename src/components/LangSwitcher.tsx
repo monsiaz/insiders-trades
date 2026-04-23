@@ -1,8 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { localePath, localeNames, localeFlags, locales, type Locale } from "@/lib/i18n";
 
 interface LangSwitcherProps {
@@ -51,16 +50,27 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
     return localePath(base, targetLocale);
   }
 
+  // Hard navigation is required because the middleware rewrites /fr/* → /* internally.
+  // The Next.js App Router client-side router sees both as the same route and reuses
+  // the cached RSC payload, so a soft <Link> navigation would NOT re-render Server
+  // Components with the new x-locale header. A full reload solves this cleanly.
+  const navigateTo = useCallback((targetLocale: Locale) => {
+    setOpen(false);
+    if (targetLocale === currentLocale) return;
+    window.location.href = getSisterPath(targetLocale);
+  }, [currentLocale, pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (variant === "full") {
     return (
       <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
         {locales.map((loc) => {
           const isActive = loc === currentLocale;
           return (
-            <Link
+            <a
               key={loc}
               href={getSisterPath(loc)}
               aria-current={isActive ? "page" : undefined}
+              onClick={(e) => { e.preventDefault(); navigateTo(loc); }}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -75,12 +85,13 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
                 background: isActive ? "var(--gold-bg)" : "transparent",
                 color: isActive ? "var(--gold)" : "var(--tx-3)",
                 textDecoration: "none",
+                cursor: "pointer",
                 transition: "all 0.15s ease",
               }}
             >
               <span>{localeFlags[loc]}</span>
               <span>{localeNames[loc]}</span>
-            </Link>
+            </a>
           );
         })}
       </div>
@@ -151,12 +162,12 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
           {locales.map((loc) => {
             const isActive = loc === currentLocale;
             return (
-              <Link
+              <a
                 key={loc}
                 href={getSisterPath(loc)}
                 role="option"
                 aria-selected={isActive}
-                onClick={() => setOpen(false)}
+                onClick={(e) => { e.preventDefault(); navigateTo(loc); }}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -167,6 +178,7 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
                   color: isActive ? "var(--gold)" : "var(--tx-1)",
                   background: isActive ? "var(--gold-bg)" : "transparent",
                   textDecoration: "none",
+                  cursor: "pointer",
                   transition: "background 0.1s ease",
                   borderBottom: "1px solid var(--border)",
                   touchAction: "manipulation",
@@ -185,7 +197,7 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
                     <polyline points="20 6 9 17 4 12" stroke="var(--gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 )}
-              </Link>
+              </a>
             );
           })}
         </div>

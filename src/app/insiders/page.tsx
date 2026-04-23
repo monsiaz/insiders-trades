@@ -3,7 +3,7 @@ import { unstable_cache } from "next/cache";
 import { headers } from "next/headers";
 import { InsidersClient, type InsiderRow } from "@/components/InsidersClient";
 
-export const revalidate = 300; // Revalidate every 5 min
+export const dynamic = "force-dynamic"; // locale-aware: prevents FR/EN cache conflict
 
 // Cache the Prisma query · invalidated every 5min or on demand
 const getInsiders = unstable_cache(

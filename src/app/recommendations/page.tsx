@@ -17,7 +17,7 @@ import { unstable_cache } from "next/cache";
 
 const FREE_VISIBLE = 3; // number of reco cards visible to non-authenticated users
 
-export const revalidate = 600; // Revalidate every 10 min
+export const dynamic = "force-dynamic"; // locale-aware: prevents FR/EN cache conflict
 
 export async function generateMetadata() {
   const hdrs = await headers();

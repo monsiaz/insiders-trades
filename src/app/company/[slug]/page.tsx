@@ -4,13 +4,13 @@ import Link from "next/link";
 import { DeclarationCard } from "@/components/DeclarationCard";
 import { CompanySyncButton } from "@/components/CompanySyncButton";
 import { EnrichButton } from "@/components/EnrichButton";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { CompanyFinancials } from "@/components/CompanyFinancials";
 import { RelatedEntities } from "@/components/RelatedEntities";
 import { AnimateIn } from "@/components/AnimateIn";
 import { headers } from "next/headers";
 
-const StockChart = dynamic(() => import("@/components/StockChart").then(m => ({ default: m.StockChart })), {
+const StockChart = nextDynamic(() => import("@/components/StockChart").then(m => ({ default: m.StockChart })), {
   loading: () => (
     <div className="card p-5" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       <div className="skeleton" style={{ height: 14, width: 120 }} />
@@ -19,7 +19,7 @@ const StockChart = dynamic(() => import("@/components/StockChart").then(m => ({ 
   ),
 });
 
-const CompanyBacktestWidget = dynamic(() => import("@/components/CompanyBacktestWidget").then(m => ({ default: m.CompanyBacktestWidget })), {
+const CompanyBacktestWidget = nextDynamic(() => import("@/components/CompanyBacktestWidget").then(m => ({ default: m.CompanyBacktestWidget })), {
   loading: () => (
     <div className="card p-5" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
       <div className="skeleton" style={{ height: 16, width: 180 }} />
@@ -36,7 +36,10 @@ import { DeclarationType } from "@prisma/client";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import { unstable_cache } from "next/cache";
 
-export const revalidate = 300;
+// force-dynamic: prevents Next.js router cache from serving stale FR version on EN route.
+// The page uses headers() for locale detection — caching by route alone ignores the locale header.
+// Expensive DB queries are still server-cached via unstable_cache().
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
 

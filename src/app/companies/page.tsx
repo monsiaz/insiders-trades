@@ -6,7 +6,7 @@ import { headers } from "next/headers";
 import { SyncButton } from "@/components/SyncButton";
 import { CompaniesClient, type CompanyRow } from "@/components/CompaniesClient";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic"; // locale-aware: prevents FR/EN cache conflict on shared internal route
 
 // Single aggregated SQL query · one round trip, DB-side aggregate, no N+1.
 // Returns: one row per company with pre-computed count and latest declaration.

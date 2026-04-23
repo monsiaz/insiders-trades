@@ -11,7 +11,7 @@ import { LogoMark } from "@/components/Logo";
 import { computePerformanceData } from "@/lib/performance-data";
 import { getBacktestBase } from "@/lib/backtest-compute";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic"; // locale-aware
 
 export async function generateMetadata() {
   const hdrs = await headers();

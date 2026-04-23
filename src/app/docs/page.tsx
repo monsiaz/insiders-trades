@@ -19,7 +19,7 @@ import { Endpoint, MethodBadge } from "./_components/Endpoint";
 import { CodeBlock, CodeTabs } from "./_components/CodeBlock";
 import { TOC } from "./_components/TOC";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic"; // locale-aware
 
 export async function generateMetadata() {
   const hdrs = await headers();

@@ -3,14 +3,14 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { getBacktestBase, applyBacktestMasking } from "@/lib/backtest-compute";
-import dynamic from "next/dynamic";
-
-const BacktestDashboard = dynamic(() => import("@/components/BacktestDashboard"), {
-  loading: () => <div style={{ minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.85rem" }}>Loading dashboard…</div>,
-});
+import nextDynamic from "next/dynamic";
 import { unstable_cache } from "next/cache";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic"; // locale-aware: prevents FR/EN cache conflict on shared internal route
+
+const BacktestDashboard = nextDynamic(() => import("@/components/BacktestDashboard"), {
+  loading: () => <div style={{ minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.85rem" }}>Loading dashboard…</div>,
+});
 
 const getBacktestMeta = unstable_cache(
   async () => {

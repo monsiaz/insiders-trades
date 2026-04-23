@@ -14,7 +14,7 @@ import { ScoringWheel } from "./_components/ScoringWheel";
 import { BacktestCurve } from "./_components/BacktestCurve";
 import { SignalRadar } from "./_components/SignalRadar";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic"; // locale-aware: prevents FR/EN cache conflict on shared internal route
 
 export async function generateMetadata() {
   const hdrs = await headers();

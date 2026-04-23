@@ -8,7 +8,8 @@ import { unstable_cache } from "next/cache";
 import { headers } from "next/headers";
 import { translateRole } from "@/lib/i18n";
 
-export const revalidate = 300;
+// force-dynamic: same reason as company page — prevents locale cache conflict.
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
 

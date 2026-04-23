@@ -29,6 +29,7 @@ const PUBLIC_PREFIXES: string[] = [
   "/methodologie",
   "/performance",
   "/strategie",
+  "/pitch",
   "/docs",
   // Public REST API v1 (API-key auth, handled per-route)
   "/api/v1/",
@@ -57,6 +58,9 @@ const PUBLIC_PREFIXES: string[] = [
 const PUBLIC_EXACT = new Set<string>([
   "/robots.txt",
   "/sitemap.xml",
+  "/sitemap-static.xml",
+  "/sitemap-companies.xml",
+  "/sitemap-insiders.xml",
 ]);
 
 function isPublicPath(pathname: string): boolean {

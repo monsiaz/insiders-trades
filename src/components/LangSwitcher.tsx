@@ -15,7 +15,7 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close the dropdown when the user taps/clicks anywhere outside it.
+  // Close when clicking/tapping outside the container
   useEffect(() => {
     if (!open) return;
     function handleOutside(e: MouseEvent | TouchEvent) {
@@ -32,13 +32,9 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
     };
   }, [open]);
 
-  // Close on route change
   useEffect(() => { setOpen(false); }, [pathname]);
 
-  // Build the sister-page URL for a given target locale.
-  // We use a plain <a href> (no onClick) so the browser performs a real full-page
-  // load — this is intentional: locale changes must bypass the Next.js client-side
-  // router cache (which reuses RSC payloads and ignores x-locale header changes).
+  // Compute the sister-page URL for a target locale.
   function getSisterPath(targetLocale: Locale): string {
     let base = pathname;
     for (const loc of locales) {
@@ -49,15 +45,42 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
     return localePath(base, targetLocale);
   }
 
+  // Hard navigation: bypass Next.js router cache so Server Components re-render
+  // with the correct x-locale header set by middleware.
+  function switchTo(targetLocale: Locale) {
+    setOpen(false);
+    window.location.assign(getSisterPath(targetLocale));
+  }
+
+  const optionStyle = (isActive: boolean): React.CSSProperties => ({
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    width: "100%",
+    padding: "10px 14px",
+    fontSize: "0.82rem",
+    fontWeight: isActive ? 600 : 400,
+    color: isActive ? "var(--gold)" : "var(--tx-1)",
+    background: isActive ? "var(--gold-bg)" : "transparent",
+    textDecoration: "none",
+    cursor: "pointer",
+    border: "none",
+    borderBottom: "1px solid var(--border)",
+    textAlign: "left",
+    transition: "background 0.1s ease",
+    touchAction: "manipulation",
+    WebkitTapHighlightColor: "transparent",
+  });
+
   if (variant === "full") {
     return (
       <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
         {locales.map((loc) => {
           const isActive = loc === currentLocale;
           return (
-            <a
+            <button
               key={loc}
-              href={getSisterPath(loc)}
+              onClick={() => switchTo(loc)}
               aria-current={isActive ? "page" : undefined}
               style={{
                 display: "flex",
@@ -72,13 +95,15 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
                 border: `1px solid ${isActive ? "var(--gold)" : "var(--border-med)"}`,
                 background: isActive ? "var(--gold-bg)" : "transparent",
                 color: isActive ? "var(--gold)" : "var(--tx-3)",
-                textDecoration: "none",
+                cursor: "pointer",
                 transition: "all 0.15s ease",
+                touchAction: "manipulation",
+                WebkitTapHighlightColor: "transparent",
               }}
             >
               <span>{localeFlags[loc]}</span>
               <span>{localeNames[loc]}</span>
-            </a>
+            </button>
           );
         })}
       </div>
@@ -149,26 +174,12 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
           {locales.map((loc) => {
             const isActive = loc === currentLocale;
             return (
-              <a
+              <button
                 key={loc}
-                href={getSisterPath(loc)}
                 role="option"
                 aria-selected={isActive}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "10px 14px",
-                  fontSize: "0.82rem",
-                  fontWeight: isActive ? 600 : 400,
-                  color: isActive ? "var(--gold)" : "var(--tx-1)",
-                  background: isActive ? "var(--gold-bg)" : "transparent",
-                  textDecoration: "none",
-                  transition: "background 0.1s ease",
-                  borderBottom: "1px solid var(--border)",
-                  touchAction: "manipulation",
-                  WebkitTapHighlightColor: "transparent",
-                }}
+                onClick={() => switchTo(loc)}
+                style={optionStyle(isActive)}
               >
                 <span style={{ fontSize: "1.1rem" }}>{localeFlags[loc]}</span>
                 <div style={{ flex: 1 }}>
@@ -182,7 +193,7 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
                     <polyline points="20 6 9 17 4 12" stroke="var(--gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 )}
-              </a>
+              </button>
             );
           })}
         </div>

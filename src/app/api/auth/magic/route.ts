@@ -24,7 +24,7 @@ const OWNER_EMAIL = "simon.azoulay.pro@gmail.com";
 export async function GET(req: NextRequest) {
   const token    = req.nextUrl.searchParams.get("t") ?? "";
   const nextPath = req.nextUrl.searchParams.get("next") ?? "/";
-  const secret   = process.env.MAGIC_LINK_TOKEN ?? "";
+  const secret   = (process.env.MAGIC_LINK_TOKEN ?? "").trim();
 
   // ── 1. Validate token ──────────────────────────────────────────────────────
   if (!secret) {

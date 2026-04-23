@@ -62,3 +62,7 @@ Thumbs.db
 .cursor/
 *.swp
 *.swo
+src/__tests__/e2e/.auth/
+playwright-report/
+test-results/
+coverage/

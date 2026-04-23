@@ -205,23 +205,19 @@ export function CompanyFinancials({ companyId, companyName, initial, locale = "e
 
   if (loading) {
     return (
-      <div className="card p-5">
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--tx-3)", fontSize: "0.84rem" }}>
-          <span style={{ width: "16px", height: "16px", border: "2px solid var(--c-indigo)", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", animation: "spin 1s linear infinite" }} />
-          {isFr ? "Chargement des données financières…" : "Loading financial data…"}
+      <div className="card p-5" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <div className="skeleton" style={{ height: 16, width: 160 }} />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "8px" }}>
+          {[...Array(4)].map((_, i) => <div key={i} className="skeleton" style={{ height: 72 }} />)}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "8px" }}>
+          {[...Array(4)].map((_, i) => <div key={i} className="skeleton" style={{ height: 72 }} />)}
         </div>
       </div>
     );
   }
 
-  if (error || !data) {
-    return (
-      <div className="card p-5" style={{ color: "var(--tx-3)", fontSize: "0.84rem" }}>
-        {isFr ? `Données financières non disponibles pour ${companyName}` : `Financial data not available for ${companyName}`}
-        {error && <span style={{ color: "var(--c-crimson)", marginLeft: "8px", fontSize: "0.75rem" }}>({error})</span>}
-      </div>
-    );
-  }
+  if (error || !data) return null;
 
   const d = data;
   const hasIncome    = d.revenue || d.ebitda || d.netIncome;

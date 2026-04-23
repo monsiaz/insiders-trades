@@ -32,24 +32,21 @@ export function AnimateIn({
     if (!container) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return; // CSS handles the no-animation case
+    if (reduced) return;
+
+    const vh = window.innerHeight || document.documentElement.clientHeight;
 
     // ── SINGLE mode ────────────────────────────────────────────────────────
     if (single) {
       const rect = container.getBoundingClientRect();
-      const vh = window.innerHeight || document.documentElement.clientHeight;
-      const alreadyVisible = rect.top < vh * 0.85;
+      const alreadyVisible = rect.top < vh * 0.9 && rect.bottom > 0;
 
+      // Content already on screen — never hide it, skip animation to avoid FOIC
+      if (alreadyVisible) return;
+
+      // Below fold: hide then animate in when scrolled to
       container.classList.add("ai-single");
-      container.style.setProperty("--ai-delay", alreadyVisible ? "0ms" : `${baseDelay}ms`);
-
-      if (alreadyVisible) {
-        // Already in view — run in the next two rAF ticks to avoid flash
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          container.classList.add("ai-single-in");
-        }));
-        return;
-      }
+      container.style.setProperty("--ai-delay", `${baseDelay}ms`);
 
       const obs = new IntersectionObserver(
         ([entry]) => {
@@ -69,24 +66,16 @@ export function AnimateIn({
     if (items.length === 0) return;
 
     const rect = container.getBoundingClientRect();
-    const vh = window.innerHeight || document.documentElement.clientHeight;
-    const alreadyVisible = rect.top < vh * 0.85;
+    const alreadyVisible = rect.top < vh * 0.9 && rect.bottom > 0;
 
+    // Content already on screen — never hide it, skip animation to avoid FOIC
+    if (alreadyVisible) return;
+
+    // Below fold: hide each child then stagger them in when scrolled to
     items.forEach((item, i) => {
       item.classList.add("ai-item");
-      // Above-fold items animate quickly (30ms between each), below-fold use full stagger
-      item.style.setProperty("--ai-delay", alreadyVisible
-        ? `${i * 30}ms`
-        : `${baseDelay + i * stagger}ms`
-      );
+      item.style.setProperty("--ai-delay", `${baseDelay + i * stagger}ms`);
     });
-
-    if (alreadyVisible) {
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        items.forEach((item) => item.classList.add("ai-in"));
-      }));
-      return;
-    }
 
     const obs = new IntersectionObserver(
       ([entry]) => {

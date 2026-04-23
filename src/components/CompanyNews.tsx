@@ -18,18 +18,18 @@ interface ApiResponse {
   fetchedAt?: string;
 }
 
-function fmtRelativeFr(iso: string): string {
+function fmtRelative(iso: string, isFr: boolean): string {
   const now = Date.now();
   const then = new Date(iso).getTime();
   if (!Number.isFinite(then)) return "";
   const diffMs = now - then;
   const min = Math.round(diffMs / 60_000);
-  if (min < 60) return `il y a ${Math.max(1, min)} min`;
+  if (min < 60) return isFr ? `il y a ${Math.max(1, min)} min` : `${Math.max(1, min)} min ago`;
   const hrs = Math.round(min / 60);
-  if (hrs < 24) return `il y a ${hrs} h`;
+  if (hrs < 24) return isFr ? `il y a ${hrs} h` : `${hrs}h ago`;
   const days = Math.round(hrs / 24);
-  if (days < 7) return `il y a ${days} j`;
-  return new Date(iso).toLocaleDateString("fr-FR", {
+  if (days < 7) return isFr ? `il y a ${days} j` : `${days}d ago`;
+  return new Date(iso).toLocaleDateString(isFr ? "fr-FR" : "en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -44,7 +44,8 @@ function hostname(url: string): string {
   }
 }
 
-export function CompanyNews({ slug, companyName }: { slug: string; companyName: string }) {
+export function CompanyNews({ slug, companyName, locale = "en" }: { slug: string; companyName: string; locale?: string }) {
+  const isFr = locale === "fr";
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
@@ -72,7 +73,6 @@ export function CompanyNews({ slug, companyName }: { slug: string; companyName: 
     return <NewsSkeleton />;
   }
   if (!data || data.items.length === 0) {
-    // No news found across any source · keep a small placeholder
     return (
       <div
         style={{
@@ -83,7 +83,7 @@ export function CompanyNews({ slug, companyName }: { slug: string; companyName: 
           borderRadius: "2px",
         }}
       >
-        <SectionHeader companyName={companyName} ticker={data?.ticker ?? null} count={0} />
+        <SectionHeader companyName={companyName} ticker={data?.ticker ?? null} count={0} isFr={isFr} />
         <p
           style={{
             fontSize: "0.86rem",
@@ -93,7 +93,7 @@ export function CompanyNews({ slug, companyName }: { slug: string; companyName: 
             lineHeight: 1.55,
           }}
         >
-          Aucune dépêche récente pour cette société.
+          {isFr ? "Aucune dépêche récente pour cette société." : "No recent news for this company."}
         </p>
       </div>
     );
@@ -111,7 +111,7 @@ export function CompanyNews({ slug, companyName }: { slug: string; companyName: 
         borderRadius: "2px",
       }}
     >
-      <SectionHeader companyName={companyName} ticker={data.ticker} count={data.items.length} />
+      <SectionHeader companyName={companyName} ticker={data.ticker} count={data.items.length} isFr={isFr} />
       <ul
         style={{
           listStyle: "none",
@@ -130,7 +130,7 @@ export function CompanyNews({ slug, companyName }: { slug: string; companyName: 
               padding: "12px 0",
             }}
           >
-            <NewsRow n={n} />
+            <NewsRow n={n} isFr={isFr} />
           </li>
         ))}
       </ul>
@@ -155,8 +155,10 @@ export function CompanyNews({ slug, companyName }: { slug: string; companyName: 
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
             {showAll
-              ? "Voir moins"
-              : `Voir ${data.items.length - 4} dépêche${data.items.length - 4 > 1 ? "s" : ""} de plus →`}
+              ? (isFr ? "Voir moins" : "Show less")
+              : isFr
+                ? `Voir ${data.items.length - 4} dépêche${data.items.length - 4 > 1 ? "s" : ""} de plus →`
+                : `Show ${data.items.length - 4} more →`}
           </button>
         </div>
       )}
@@ -168,10 +170,12 @@ function SectionHeader({
   companyName,
   ticker,
   count,
+  isFr = false,
 }: {
   companyName: string;
   ticker: string | null;
   count: number;
+  isFr?: boolean;
 }) {
   return (
     <div style={{ display: "flex", alignItems: "baseline", gap: "12px", flexWrap: "wrap" }}>
@@ -185,7 +189,7 @@ function SectionHeader({
           textTransform: "uppercase",
         }}
       >
-        Actualités
+        {isFr ? "Actualités" : "News"}
       </span>
       <h3
         style={{
@@ -229,7 +233,7 @@ function SectionHeader({
   );
 }
 
-function NewsRow({ n }: { n: NewsItem }) {
+function NewsRow({ n, isFr = false }: { n: NewsItem; isFr?: boolean }) {
   return (
     <a
       href={n.link}
@@ -315,7 +319,7 @@ function NewsRow({ n }: { n: NewsItem }) {
         )}
         {!n.publisher && <span>{hostname(n.link)}</span>}
         <span style={{ color: "var(--border-strong)" }}>·</span>
-        <span>{fmtRelativeFr(n.pubDate)}</span>
+        <span>{fmtRelative(n.pubDate, isFr)}</span>
       </div>
     </a>
   );
@@ -332,33 +336,10 @@ function NewsSkeleton() {
         borderRadius: "2px",
       }}
     >
-      <div
-        style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: "0.64rem",
-          fontWeight: 600,
-          color: "var(--gold)",
-          letterSpacing: "0.14em",
-          textTransform: "uppercase",
-          marginBottom: "14px",
-        }}
-      >
-        Actualités
-      </div>
+      <div className="skeleton" style={{ height: 10, width: 80, marginBottom: "14px" }} />
       <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            style={{
-              height: "52px",
-              background:
-                "linear-gradient(90deg, var(--bg-raised) 0%, var(--bg-hover) 40%, var(--bg-raised) 100%)",
-              backgroundSize: "400px 100%",
-              animation: "shimmer 1.5s ease-in-out infinite",
-              borderRadius: "3px",
-              opacity: 1 - i * 0.15,
-            }}
-          />
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="skeleton" style={{ height: 52, borderRadius: "3px", opacity: 1 - i * 0.12 }} />
         ))}
       </div>
     </div>

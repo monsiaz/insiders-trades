@@ -11,11 +11,25 @@ import { AnimateIn } from "@/components/AnimateIn";
 import { headers } from "next/headers";
 
 const StockChart = dynamic(() => import("@/components/StockChart").then(m => ({ default: m.StockChart })), {
-  loading: () => <div style={{ height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.8rem" }}>Loading chart…</div>,
+  loading: () => (
+    <div className="card p-5" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      <div className="skeleton" style={{ height: 14, width: 120 }} />
+      <div className="skeleton" style={{ height: 220, borderRadius: 12 }} />
+    </div>
+  ),
 });
 
 const CompanyBacktestWidget = dynamic(() => import("@/components/CompanyBacktestWidget").then(m => ({ default: m.CompanyBacktestWidget })), {
-  loading: () => <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.8rem" }}>Loading statistics…</div>,
+  loading: () => (
+    <div className="card p-5" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div className="skeleton" style={{ height: 16, width: 180 }} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+        <div className="skeleton" style={{ height: 52 }} />
+        <div className="skeleton" style={{ height: 52 }} />
+      </div>
+      <div className="skeleton" style={{ height: 120 }} />
+    </div>
+  ),
 });
 import { CompanyNews } from "@/components/CompanyNews";
 import { DeclarationType } from "@prisma/client";
@@ -343,7 +357,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
 
       {/* Latest news (Google News + Yahoo RSS) */}
       <AnimateIn single className="mb-6">
-        <CompanyNews slug={company.slug} companyName={company.name} />
+        <CompanyNews slug={company.slug} companyName={company.name} locale={locale} />
       </AnimateIn>
 
       {/* Last declaration date */}

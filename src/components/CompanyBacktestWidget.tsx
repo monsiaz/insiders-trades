@@ -48,9 +48,13 @@ export function CompanyBacktestWidget({ companyId, locale = "en" }: { companyId:
 
   if (loading) {
     return (
-      <div className="card p-5" style={{ animation: "pulse 1.5s ease-in-out infinite" }}>
-        <div style={{ height: "14px", background: "var(--bg-raised)", borderRadius: "6px", width: "180px", marginBottom: "10px" }} />
-        <div style={{ height: "60px", background: "var(--bg-raised)", borderRadius: "8px" }} />
+      <div className="card p-5" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div className="skeleton" style={{ height: 16, width: 180 }} />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          <div className="skeleton" style={{ height: 52 }} />
+          <div className="skeleton" style={{ height: 52 }} />
+        </div>
+        <div className="skeleton" style={{ height: 120 }} />
       </div>
     );
   }

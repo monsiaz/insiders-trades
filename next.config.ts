@@ -16,6 +16,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // All page URLs end with /  (e.g. /portfolio/ not /portfolio)
+  // Next.js automatically 301-redirects the no-slash version to the slash version.
+  // Route Handlers with file extensions (.xml, .txt) are NOT affected.
+  trailingSlash: true,
+
   turbopack: {},
   serverExternalPackages: ["pdfjs-dist", "pdf-parse", "canvas"],
 

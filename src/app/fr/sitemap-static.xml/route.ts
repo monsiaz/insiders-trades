@@ -12,17 +12,17 @@ interface UrlEntry {
 const today = new Date().toISOString().split("T")[0];
 
 const FR_STATIC_PAGES: UrlEntry[] = [
-  { loc: `${BASE}/fr`,                          changefreq: "daily",   priority: 1.0, lastmod: today },
-  { loc: `${BASE}/fr/fonctionnement`,           changefreq: "monthly", priority: 0.9, lastmod: today },
-  { loc: `${BASE}/fr/methodologie`,             changefreq: "monthly", priority: 0.9, lastmod: today },
-  { loc: `${BASE}/fr/performance`,              changefreq: "weekly",  priority: 0.9, lastmod: today },
-  { loc: `${BASE}/fr/strategie`,                changefreq: "daily",   priority: 0.8, lastmod: today },
-  { loc: `${BASE}/fr/pitch`,                    changefreq: "monthly", priority: 0.8, lastmod: today },
-  { loc: `${BASE}/fr/backtest`,                 changefreq: "weekly",  priority: 0.7, lastmod: today },
-  { loc: `${BASE}/fr/companies`,                changefreq: "daily",   priority: 0.7, lastmod: today },
-  { loc: `${BASE}/fr/insiders`,                 changefreq: "daily",   priority: 0.7, lastmod: today },
-  { loc: `${BASE}/fr/docs`,                     changefreq: "monthly", priority: 0.6, lastmod: today },
-  { loc: `${BASE}/fr/docs/mcp`,                 changefreq: "monthly", priority: 0.5, lastmod: today },
+  { loc: `${BASE}/fr/`,                         changefreq: "daily",   priority: 1.0, lastmod: today },
+  { loc: `${BASE}/fr/fonctionnement/`,          changefreq: "monthly", priority: 0.9, lastmod: today },
+  { loc: `${BASE}/fr/methodologie/`,            changefreq: "monthly", priority: 0.9, lastmod: today },
+  { loc: `${BASE}/fr/performance/`,             changefreq: "weekly",  priority: 0.9, lastmod: today },
+  { loc: `${BASE}/fr/strategie/`,               changefreq: "daily",   priority: 0.8, lastmod: today },
+  { loc: `${BASE}/fr/pitch/`,                   changefreq: "monthly", priority: 0.8, lastmod: today },
+  { loc: `${BASE}/fr/backtest/`,                changefreq: "weekly",  priority: 0.7, lastmod: today },
+  { loc: `${BASE}/fr/companies/`,               changefreq: "daily",   priority: 0.7, lastmod: today },
+  { loc: `${BASE}/fr/insiders/`,                changefreq: "daily",   priority: 0.7, lastmod: today },
+  { loc: `${BASE}/fr/docs/`,                    changefreq: "monthly", priority: 0.6, lastmod: today },
+  { loc: `${BASE}/fr/docs/mcp/`,                changefreq: "monthly", priority: 0.5, lastmod: today },
 ];
 
 function escapeXml(str: string): string {

@@ -78,14 +78,20 @@ export default async function RootLayout({
   const canonicalPath = originalPath.startsWith("/fr")
     ? (originalPath.slice(3) || "/")
     : originalPath;
-  // Strip query string and ensure no trailing slash (except root)
+  // Strip query string, then ensure trailing slash on every path except root
   let canonicalPathClean = canonicalPath.split("?")[0];
-  if (canonicalPathClean !== "/" && canonicalPathClean.endsWith("/")) {
-    canonicalPathClean = canonicalPathClean.slice(0, -1);
+  if (canonicalPathClean !== "/" && !canonicalPathClean.endsWith("/")) {
+    canonicalPathClean = canonicalPathClean + "/";
   }
 
-  const hreflangEn = `${BASE_URL}${canonicalPathClean === "/" ? "" : canonicalPathClean}`;
-  const hreflangFr = `${BASE_URL}/fr${canonicalPathClean === "/" ? "" : canonicalPathClean}`;
+  // Home  → https://insiders-trades-sigma.vercel.app/
+  // Other → https://insiders-trades-sigma.vercel.app/companies/  etc.
+  const hreflangEn = canonicalPathClean === "/"
+    ? `${BASE_URL}/`
+    : `${BASE_URL}${canonicalPathClean}`;
+  const hreflangFr = canonicalPathClean === "/"
+    ? `${BASE_URL}/fr/`
+    : `${BASE_URL}/fr${canonicalPathClean}`;
 
   return (
     <html
@@ -101,7 +107,7 @@ export default async function RootLayout({
         <link rel="alternate" hrefLang="en" href={hreflangEn} />
         <link rel="alternate" hrefLang="fr" href={hreflangFr} />
         <link rel="alternate" hrefLang="x-default" href={hreflangEn} />
-        {/* Self-canonical — always the exact URL without trailing slash */}
+        {/* Self-canonical — always the exact URL with trailing slash */}
         <link rel="canonical" href={locale === "fr" ? hreflangFr : hreflangEn} />
 
         {/* Pre-connect to image CDN for faster logo loading */}

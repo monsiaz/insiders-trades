@@ -22,10 +22,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: `${insider.name}${insider.primaryRole ? ` · ${insider.primaryRole}` : ""} | Sigma`,
     description: insider.descriptionEn?.slice(0, 160) ?? `Track insider declarations by ${insider.name} on InsiderTrades Sigma.`,
     alternates: {
-      canonical: `${BASE_URL}/insider/${slug}`,
+      canonical: `${BASE_URL}/insider/${slug}/`,
       languages: {
-        en: `${BASE_URL}/insider/${slug}`,
-        fr: `${BASE_URL}/fr/insider/${slug}`,
+        en: `${BASE_URL}/insider/${slug}/`,
+        fr: `${BASE_URL}/fr/insider/${slug}/`,
       },
     },
     openGraph: {

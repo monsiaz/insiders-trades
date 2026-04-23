@@ -13,6 +13,39 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Determine locale from the `next` redirect target
+  const isFr = next.startsWith("/fr");
+
+  const t = isFr
+    ? {
+        badge:       "Accès beta",
+        heading:     "Connexion",
+        sub:         "Phase bêta · accès sur invitation uniquement.",
+        emailLabel:  "Email",
+        emailPh:     "vous@exemple.com",
+        passLabel:   "Mot de passe",
+        passPh:      "••••••••",
+        forgot:      "Mot de passe oublié ?",
+        submit:      "Se connecter",
+        submitting:  "Connexion…",
+        errorFallback: "Erreur",
+        footer:      "L'inscription est fermée pendant la phase beta.\nPour une demande d'accès, contactez l'administrateur.",
+      }
+    : {
+        badge:       "Beta access",
+        heading:     "Sign in",
+        sub:         "Private beta · invitation only.",
+        emailLabel:  "Email",
+        emailPh:     "you@example.com",
+        passLabel:   "Password",
+        passPh:      "••••••••",
+        forgot:      "Forgot password?",
+        submit:      "Sign in",
+        submitting:  "Signing in…",
+        errorFallback: "Error",
+        footer:      "Registration is closed during the beta.\nTo request access, contact the administrator.",
+      };
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
@@ -24,7 +57,7 @@ function LoginForm() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Erreur"); return; }
+      if (!res.ok) { setError(data.error ?? t.errorFallback); return; }
       // Hard redirect so Safari picks up the Set-Cookie header before navigating
       window.location.href = next;
     } finally {
@@ -64,12 +97,10 @@ function LoginForm() {
               textTransform: "uppercase",
             }}
           >
-            Accès beta
+            {t.badge}
           </div>
-          <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--tx-1)" }}>Connexion</h1>
-          <p className="text-sm" style={{ color: "var(--tx-3)" }}>
-            Phase bêta · accès sur invitation uniquement.
-          </p>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--tx-1)" }}>{t.heading}</h1>
+          <p className="text-sm" style={{ color: "var(--tx-3)" }}>{t.sub}</p>
         </div>
 
         {/* Card */}
@@ -82,41 +113,42 @@ function LoginForm() {
               </div>
             )}
             <div>
-              <label className="block text-sm font-semibold mb-1.5" style={{ color: "var(--tx-2)" }}>Email</label>
+              <label className="block text-sm font-semibold mb-1.5" style={{ color: "var(--tx-2)" }}>{t.emailLabel}</label>
               <input
                 type="email" required autoComplete="email"
                 value={email} onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-xl px-4 py-2.5 text-sm"
-                placeholder="vous@exemple.com"
+                placeholder={t.emailPh}
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-1.5" style={{ color: "var(--tx-2)" }}>Mot de passe</label>
+              <label className="block text-sm font-semibold mb-1.5" style={{ color: "var(--tx-2)" }}>{t.passLabel}</label>
               <input
                 type="password" required autoComplete="current-password"
                 value={password} onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-xl px-4 py-2.5 text-sm"
-                placeholder="••••••••"
+                placeholder={t.passPh}
               />
             </div>
             <div className="flex justify-end">
-              <Link href="/auth/forgot-password" className="text-xs transition-colors"
+              <Link href={isFr ? "/fr/auth/forgot-password/" : "/auth/forgot-password/"} className="text-xs transition-colors"
                 style={{ color: "var(--c-indigo-2)" }}>
-                Mot de passe oublié ?
+                {t.forgot}
               </Link>
             </div>
             <button
               type="submit" disabled={loading}
               className="btn btn-primary w-full rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Connexion…" : "Se connecter"}
+              {loading ? t.submitting : t.submit}
             </button>
           </form>
         </div>
 
         <p className="text-center text-xs mt-4" style={{ color: "var(--tx-4)", lineHeight: 1.6 }}>
-          L&apos;inscription est fermée pendant la phase beta.<br />
-          Pour une demande d&apos;accès, contactez l&apos;administrateur.
+          {t.footer.split("\n").map((line, i) => (
+            <span key={i}>{line}{i === 0 && <br />}</span>
+          ))}
         </p>
       </div>
     </div>

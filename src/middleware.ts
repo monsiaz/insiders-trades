@@ -10,6 +10,13 @@
  * • /en/*          → 301 redirect to /*  (canonical: no /en/ prefix)
  * • everything else → x-locale: en header injected
  *
+ * TRAILING SLASH
+ * ─────────────
+ * All page URLs end with /.  Any URL without a trailing slash is 301-redirected
+ * to the slash version.  File extensions (.xml, .txt, …) are excluded.
+ * Note: next.config.ts also has `trailingSlash: true` which handles EN routes
+ * at the routing level; this middleware covers FR paths + edge cases.
+ *
  * BETA LOCKDOWN
  * ─────────────
  * Every page and API require a valid session JWT unless the path is
@@ -24,16 +31,20 @@ const JWT_SECRET = JWT_SECRET_RAW
   : null;
 
 const COOKIE_NAME = "it_session";
-const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
 
 // ── Locale config ────────────────────────────────────────────────────────────
 const NON_DEFAULT_LOCALES = ["fr"] as const;
-type NonDefaultLocale = (typeof NON_DEFAULT_LOCALES)[number];
 
 function getLocaleFromPath(pathname: string): { locale: string; stripped: string } {
   for (const locale of NON_DEFAULT_LOCALES) {
-    if (pathname === `/${locale}`) return { locale, stripped: "/" };
-    if (pathname.startsWith(`/${locale}/`)) return { locale, stripped: pathname.slice(locale.length + 1) };
+    // /fr  or  /fr/
+    if (pathname === `/${locale}` || pathname === `/${locale}/`) {
+      return { locale, stripped: "/" };
+    }
+    // /fr/companies/  →  /companies/
+    if (pathname.startsWith(`/${locale}/`)) {
+      return { locale, stripped: pathname.slice(locale.length + 1) || "/" };
+    }
   }
   return { locale: "en", stripped: pathname };
 }
@@ -68,7 +79,7 @@ const PUBLIC_PREFIXES: string[] = [
   "/api/admin/fetch-logos",
 ];
 
-/** Exact pathnames that are always public. */
+/** Exact pathnames that are always public (file-extension routes). */
 const PUBLIC_EXACT = new Set<string>([
   "/robots.txt",
   "/sitemap.xml",
@@ -81,9 +92,14 @@ const PUBLIC_EXACT = new Set<string>([
 ]);
 
 function isPublicPath(pathname: string): boolean {
-  if (PUBLIC_EXACT.has(pathname)) return true;
+  // Normalize: strip trailing slash for prefix/exact checks (except root)
+  const p = pathname !== "/" && pathname.endsWith("/")
+    ? pathname.slice(0, -1)
+    : pathname;
+
+  if (PUBLIC_EXACT.has(pathname) || PUBLIC_EXACT.has(p)) return true;
   for (const prefix of PUBLIC_PREFIXES) {
-    if (pathname === prefix || pathname.startsWith(prefix)) return true;
+    if (p === prefix || p.startsWith(prefix) || pathname.startsWith(prefix)) return true;
   }
   return false;
 }
@@ -98,59 +114,66 @@ function unauthorized(req: NextRequest, originalPathname: string): NextResponse 
       {
         error: "Unauthorized",
         reason: "beta-access-required",
-        hint: "Log in at /auth/login with the beta credentials.",
+        hint: "Log in at /auth/login/ with the beta credentials.",
       },
       { status: 401, headers: { "Cache-Control": "no-store" } }
     );
   }
-  const url = new URL("/auth/login", req.url);
+  // Redirect to the login page with a trailing slash
+  const url = new URL("/auth/login/", req.url);
   url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
   const res = NextResponse.redirect(url);
   res.cookies.delete(COOKIE_NAME);
   return res;
 }
 
+// ── Helper: path has a file extension ────────────────────────────────────────
+function hasFileExtension(pathname: string): boolean {
+  // Match things like .xml, .txt, .json, .png, .webp, etc.
+  return /\.[a-zA-Z0-9]{1,6}$/.test(pathname);
+}
+
 // ── Main middleware ──────────────────────────────────────────────────────────
 export async function middleware(req: NextRequest) {
   const rawPath = req.nextUrl.pathname;
 
-  // 1. Canonical redirect: /en/* → /* (avoid duplicate content)
-  if (rawPath === "/en" || rawPath.startsWith("/en/")) {
-    const stripped = rawPath === "/en" ? "/" : rawPath.slice(3);
-    const target = new URL(stripped || "/", req.url);
+  // 1. Canonical redirect: /en/* → /*  (no /en/ prefix in canonical URLs)
+  if (rawPath === "/en" || rawPath === "/en/" || rawPath.startsWith("/en/")) {
+    const stripped = (rawPath === "/en" || rawPath === "/en/") ? "/" : rawPath.slice(3);
+    // Ensure the destination has a trailing slash (unless it's root)
+    const dest = stripped === "/" ? "/" : (stripped.endsWith("/") ? stripped : stripped + "/");
+    const target = new URL(dest, req.url);
     target.search = req.nextUrl.search;
     return NextResponse.redirect(target, 301);
   }
 
-  // 2. Trailing-slash redirect: /foo/ → /foo (except root /)
-  // Exceptions: sitemap and robots files which Next.js serves with trailing slashes internally
+  // 2. Trailing-slash enforcement: /foo → /foo/
+  // Skip: root /,  file-extension paths (.xml .txt etc.), API routes
   if (
     rawPath !== "/" &&
-    rawPath.endsWith("/") &&
-    !rawPath.endsWith(".xml/") &&
-    !rawPath.endsWith(".txt/")
+    !rawPath.endsWith("/") &&
+    !rawPath.startsWith("/api/") &&
+    !hasFileExtension(rawPath)
   ) {
-    const noSlash = rawPath.slice(0, -1);
-    const target = new URL(noSlash, req.url);
+    const target = new URL(rawPath + "/", req.url);
     target.search = req.nextUrl.search;
     return NextResponse.redirect(target, 301);
   }
 
-  // 3. Detect locale
+  // 3. Detect locale from path
   const { locale, stripped } = getLocaleFromPath(rawPath);
 
-  // 4. Auth check uses the STRIPPED path (so /fr/fonctionnement → /fonctionnement)
-  const authPath = stripped;
-  const isPublic = isPublicPath(authPath);
+  // 4. Auth check uses the STRIPPED path  (/fr/fonctionnement/ → /fonctionnement/)
+  const isPublic = isPublicPath(stripped);
 
   if (!isPublic) {
-    if (!JWT_SECRET) return unauthorized(req, authPath);
+    if (!JWT_SECRET) return unauthorized(req, stripped);
     const token = req.cookies.get(COOKIE_NAME)?.value;
-    if (!token) return unauthorized(req, authPath);
+    if (!token) return unauthorized(req, stripped);
     try {
       await jwtVerify(token, JWT_SECRET);
     } catch {
-      return unauthorized(req, authPath);
+      return unauthorized(req, stripped);
     }
   }
 

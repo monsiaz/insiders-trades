@@ -13,23 +13,23 @@ const today = new Date().toISOString().split("T")[0];
 
 const STATIC_PAGES: UrlEntry[] = [
   // ── Home ──────────────────────────────────────────────
-  { loc: BASE,                         changefreq: "daily",   priority: 1.0, lastmod: today },
+  { loc: `${BASE}/`,                        changefreq: "daily",   priority: 1.0, lastmod: today },
 
   // ── Core marketing / methodology ──────────────────────
-  { loc: `${BASE}/fonctionnement`,     changefreq: "monthly", priority: 0.9, lastmod: today },
-  { loc: `${BASE}/methodologie`,       changefreq: "monthly", priority: 0.9, lastmod: today },
-  { loc: `${BASE}/performance`,        changefreq: "weekly",  priority: 0.9, lastmod: today },
-  { loc: `${BASE}/strategie`,          changefreq: "daily",   priority: 0.8, lastmod: today },
-  { loc: `${BASE}/pitch`,              changefreq: "monthly", priority: 0.8, lastmod: today },
+  { loc: `${BASE}/fonctionnement/`,         changefreq: "monthly", priority: 0.9, lastmod: today },
+  { loc: `${BASE}/methodologie/`,           changefreq: "monthly", priority: 0.9, lastmod: today },
+  { loc: `${BASE}/performance/`,            changefreq: "weekly",  priority: 0.9, lastmod: today },
+  { loc: `${BASE}/strategie/`,              changefreq: "daily",   priority: 0.8, lastmod: today },
+  { loc: `${BASE}/pitch/`,                  changefreq: "monthly", priority: 0.8, lastmod: today },
 
   // ── Platform features (visible before signup) ─────────
-  { loc: `${BASE}/backtest`,           changefreq: "weekly",  priority: 0.7, lastmod: today },
-  { loc: `${BASE}/companies`,          changefreq: "daily",   priority: 0.7, lastmod: today },
-  { loc: `${BASE}/insiders`,           changefreq: "daily",   priority: 0.7, lastmod: today },
+  { loc: `${BASE}/backtest/`,               changefreq: "weekly",  priority: 0.7, lastmod: today },
+  { loc: `${BASE}/companies/`,              changefreq: "daily",   priority: 0.7, lastmod: today },
+  { loc: `${BASE}/insiders/`,               changefreq: "daily",   priority: 0.7, lastmod: today },
 
   // ── Documentation / API ───────────────────────────────
-  { loc: `${BASE}/docs`,               changefreq: "monthly", priority: 0.6, lastmod: today },
-  { loc: `${BASE}/docs/mcp`,           changefreq: "monthly", priority: 0.5, lastmod: today },
+  { loc: `${BASE}/docs/`,                   changefreq: "monthly", priority: 0.6, lastmod: today },
+  { loc: `${BASE}/docs/mcp/`,               changefreq: "monthly", priority: 0.5, lastmod: today },
 ];
 
 function escapeXml(str: string): string {

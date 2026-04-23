@@ -37,10 +37,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: `${company.name} · Insider Transactions | Sigma`,
     description: company.descriptionEn?.slice(0, 160) ?? `Track insider transactions for ${company.name} on InsiderTrades Sigma.`,
     alternates: {
-      canonical: `${BASE_URL}/company/${slug}`,
+      canonical: `${BASE_URL}/company/${slug}/`,
       languages: {
-        en: `${BASE_URL}/company/${slug}`,
-        fr: `${BASE_URL}/fr/company/${slug}`,
+        en: `${BASE_URL}/company/${slug}/`,
+        fr: `${BASE_URL}/fr/company/${slug}/`,
       },
     },
     openGraph: {

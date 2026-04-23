@@ -27,7 +27,7 @@ export async function GET() {
     const lastmod = toDate(declarations[0]?.pubDate ?? null);
     return [
       "  <url>",
-      `    <loc>${escapeXml(`${BASE}/fr/company/${slug}`)}</loc>`,
+      `    <loc>${escapeXml(`${BASE}/fr/company/${slug}/`)}</loc>`,
       `    <lastmod>${lastmod}</lastmod>`,
       "    <changefreq>weekly</changefreq>",
       "    <priority>0.6</priority>",

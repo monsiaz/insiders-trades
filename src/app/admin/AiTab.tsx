@@ -15,10 +15,16 @@ interface ChatMessage {
 }
 
 const MODELS = [
-  { value: "gpt-4o-mini", label: "GPT-4o mini",  hint: "Rapide · recommandé" },
-  { value: "gpt-4o",      label: "GPT-4o",       hint: "Précis · plus cher" },
-  { value: "gpt-4.1-mini",label: "GPT-4.1 mini", hint: "Alt. rapide" },
-  { value: "gpt-4.1",     label: "GPT-4.1",      hint: "Alt. précis" },
+  // ── GPT-4o family ──────────────────────────────────────────────────────────
+  { value: "gpt-4o-mini",  label: "GPT-4o mini",   hint: "Rapide · recommandé" },
+  { value: "gpt-4o",       label: "GPT-4o",         hint: "Précis · multimodal" },
+  // ── GPT-4.1 family ─────────────────────────────────────────────────────────
+  { value: "gpt-4.1-mini", label: "GPT-4.1 mini",  hint: "Rapide · économique" },
+  { value: "gpt-4.1",      label: "GPT-4.1",        hint: "Précis · 1M context" },
+  // ── o-series reasoning ─────────────────────────────────────────────────────
+  { value: "o4-mini",      label: "o4-mini",        hint: "Raisonnement rapide · NEW" },
+  { value: "o3",           label: "o3",             hint: "Raisonnement avancé · NEW" },
+  { value: "o1",           label: "o1",             hint: "Raisonnement · long CoT" },
 ] as const;
 
 const CANNED_PROMPTS: { label: string; prompt: string }[] = [
@@ -46,6 +52,7 @@ export function AiTab({
   const [sending, setSending] = useState(false);
   const [model, setModel] = useState<string>("gpt-4o-mini");
   const [temperature, setTemperature] = useState(0.3);
+  const isReasoningModel = model.startsWith("o1") || model.startsWith("o3") || model.startsWith("o4");
   const [showTools, setShowTools] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -204,23 +211,29 @@ export function AiTab({
           </select>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <label style={{ fontSize: "0.74rem", color: "var(--tx-3)", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-            Créativité
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.05}
-            value={temperature}
-            onChange={(e) => setTemperature(Number(e.target.value))}
-            style={{ width: "110px" }}
-          />
-          <span style={{ fontSize: "0.76rem", color: "var(--tx-3)", fontFamily: "'JetBrains Mono', monospace", minWidth: "36px" }}>
-            {temperature.toFixed(2)}
+        {isReasoningModel ? (
+          <span style={{ fontSize: "0.72rem", color: "var(--gold)", fontFamily: "'JetBrains Mono', monospace", padding: "4px 8px", borderRadius: "4px", background: "var(--gold-bg)", border: "1px solid var(--gold-bd)" }}>
+            Raisonnement · temp. non applicable
           </span>
-        </div>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <label style={{ fontSize: "0.74rem", color: "var(--tx-3)", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+              Créativité
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={temperature}
+              onChange={(e) => setTemperature(Number(e.target.value))}
+              style={{ width: "110px" }}
+            />
+            <span style={{ fontSize: "0.76rem", color: "var(--tx-3)", fontFamily: "'JetBrains Mono', monospace", minWidth: "36px" }}>
+              {temperature.toFixed(2)}
+            </span>
+          </div>
+        )}
 
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "12px" }}>
           <span style={{ fontSize: "0.72rem", color: "var(--tx-3)", fontFamily: "'JetBrains Mono', monospace" }}>

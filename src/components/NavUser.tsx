@@ -102,12 +102,20 @@ export function NavUser() {
             Mon portfolio
           </Link>
           {user.role === "admin" && (
-            <Link href="/admin" onClick={() => setOpen(false)}
-              style={{ display: "flex", alignItems: "center", gap: "10px", padding: "11px 16px", minHeight: "44px", fontSize: "0.85rem", color: "var(--c-indigo-2)", textDecoration: "none" }}
-              className="hover:bg-[var(--bg-hover)] transition-colors">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              <span style={{ fontWeight: 700 }}>Administration</span>
-            </Link>
+            <>
+              <div style={{ margin: "4px 0", borderTop: "1px solid var(--border)" }} />
+              <Link href="/admin" onClick={() => setOpen(false)}
+                style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 16px", minHeight: "44px", fontSize: "0.85rem", color: "var(--c-indigo-2)", textDecoration: "none", background: "var(--c-indigo-bg)" }}
+                className="hover:opacity-90 transition-opacity">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span style={{ fontWeight: 700, flex: 1 }}>Administration</span>
+                <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "4px", background: "var(--c-indigo)", color: "white", letterSpacing: "0.05em" }}>
+                  ADMIN
+                </span>
+              </Link>
+            </>
           )}
           <button onClick={logout}
             style={{ width: "100%", display: "flex", alignItems: "center", gap: "10px", padding: "11px 16px", minHeight: "44px", fontSize: "0.85rem", color: "var(--c-red-2)", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" }}

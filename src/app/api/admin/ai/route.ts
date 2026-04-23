@@ -24,9 +24,16 @@ export const maxDuration = 120;
 
 const DEFAULT_MODEL = "gpt-4o-mini";
 const ALLOWED_MODELS = new Set([
+  // GPT-4o family
   "gpt-4o-mini",
   "gpt-4o",
+  // GPT-4.1 family
   "gpt-4.1",
+  "gpt-4.1-mini",
+  // o-series reasoning models
+  "o1",
+  "o3",
+  "o4-mini",
   "gpt-4.1-mini",
   "gpt-5.2",
 ]);
@@ -122,8 +129,8 @@ export async function POST(req: NextRequest) {
   for (let round = 0; round < MAX_ROUNDS; round++) {
     let completion;
     try {
-      // Some newer models (gpt-5.x) reject temperature != 1 · drop it for those.
-      const isReasoningModel = /^gpt-5/i.test(model);
+      // o-series reasoning models (o1, o3, o4-mini) do not support temperature.
+      const isReasoningModel = /^o\d/i.test(model) || /^gpt-5/i.test(model);
       completion = await openai.chat.completions.create({
         model,
         messages: messages as never,

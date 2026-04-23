@@ -1,0 +1,376 @@
+{
+  "signals": {
+    "acquisition": "Acquisition",
+    "cession": "Disposition",
+    "strong": "Strong",
+    "medium": "Medium",
+    "weak": "Weak",
+    "score": "Signal score",
+    "amount": "Amount",
+    "pctMarketCap": "% market cap",
+    "insider": "Insider",
+    "role": "Role",
+    "date": "Date",
+    "nature": "Nature"
+  },
+  "pageTransition": {
+    "label": "Sigma · Loading"
+  },
+  "auth": {
+    "login": {
+      "password": "Password",
+      "submit": "Log in",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account yet?",
+      "register": "Sign up",
+      "error": "Incorrect credentials",
+      "title": "Login",
+      "subtitle": "Access your InsiderTrades space",
+      "email": "Email Address"
+    },
+    "register": {
+      "title": "Create an account",
+      "subtitle": "Join InsiderTrades Sigma",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Create my account",
+      "hasAccount": "Already have an account?",
+      "login": "Log in"
+    }
+  },
+  "nav": {
+    "insiders": "Executives",
+    "backtest": "Backtesting",
+    "portfolio": "Portfolio",
+    "recommendations": "Recommendations",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mainNav": "Main navigation",
+    "homeAriaLabel": "InsiderTrades Sigma home",
+    "amfSource": "AMF Source",
+    "search": "Search",
+    "home": "Home",
+    "companies": "Companies"
+  },
+  "footer": {
+    "navigation": "Navigation",
+    "about": "About",
+    "pitch": "The Investor Pitch",
+    "howItWorks": "How it works",
+    "strategy": "Sigma Strategy ★",
+    "methodology": "Methodology",
+    "performance": "Performance & transparency",
+    "apiDocs": "API Documentation",
+    "mcpServer": "MCP Server ↗",
+    "apiKeys": "My API keys",
+    "home": "Home",
+    "companies": "Companies",
+    "insiders": "Insiders",
+    "recommendations": "Recommendations",
+    "backtestSignals": "Backtest & Signals",
+    "myPortfolio": "My Portfolio",
+    "amfTagline": "Monitoring of insider trading declarations published by the AMF, in accordance with the European MAR regulation.",
+    "amfLogo": "AMF · Financial Markets Authority",
+    "amfDesc": "MAR Declarations · BDIF",
+    "euronextDesc": "Stock Market Data · SRD",
+    "footerAriaLabel": "InsiderTrades home"
+  },
+  "common": {
+    "lang": "Language",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "loading": "Loading",
+    "error": "Error",
+    "noData": "No data",
+    "seeMore": "See more",
+    "seeAll": "See all",
+    "back": "Back",
+    "close": "Close",
+    "search": "Search",
+    "searchPlaceholder": "Company, executive, ISIN…",
+    "sortBy": "Sort by",
+    "filter": "Filter",
+    "reset": "Reset",
+    "export": "Export",
+    "date": "Date",
+    "amount": "Amount",
+    "volume": "Volume",
+    "price": "Price",
+    "score": "Score",
+    "company": "Company",
+    "insider": "Insider",
+    "declaration": "Declaration",
+    "transaction": "Transaction",
+    "buy": "Buy",
+    "sell": "Sell",
+    "today": "today",
+    "yesterday": "yesterday",
+    "daysAgo": "{{n}} days ago",
+    "since": "since {{year}}",
+    "official": "official",
+    "source": "Source",
+    "dataSources": "Data Sources",
+    "legalNotice": "Informational use · does not constitute investment advice",
+    "marReg": "MAR Regulation 596/2014",
+    "amfData": "Public AMF Data",
+    "copyRight": "© {{year}} InsiderTrades"
+  },
+  "strategie": {
+    "eyebrow": "Sigma Strategy",
+    "title": "Signals That Beat the Market",
+    "sub": "Quantitative filtering of insider transactions based on 5 conviction criteria",
+    "criteria": {
+      "title": "The 5 Criteria of the Strategy",
+      "sub": "Each signal must meet all conditions"
+    },
+    "signals": {
+      "title": "Active Signals",
+      "sub": "Recent transactions meeting all criteria",
+      "eyebrow": "Live"
+    },
+    "performance": {
+      "title": "Historical Performance",
+      "sub": "Backtesting on all transactions meeting the criteria"
+    },
+    "insiderCount": "{{n}} insiders",
+    "clusterConfirmed": "confirmed cluster",
+    "meta": {
+      "title": "Sigma Strategy · InsiderTrades Sigma",
+      "description": "The Sigma strategy filters the best AMF insider transactions based on 5 quantitative criteria. Discover active signals and historical performance."
+    }
+  },
+  "methodologie": {
+    "meta": {
+      "title": "Methodology · InsiderTrades Sigma",
+      "description": "Discover how we collect, analyze, and score AMF insider transactions to generate reliable investment signals."
+    },
+    "eyebrow": "Methodology",
+    "title": "Our Quantitative Approach",
+    "sub": "From AMF collection to actionable signal generation"
+  },
+  "performance": {
+    "meta": {
+      "title": "Performance & Transparency · InsiderTrades Sigma",
+      "description": "Comprehensive backtest results, performance by strategy, limitations, and warnings. Total transparency on our data and methods."
+    },
+    "eyebrow": "Performance",
+    "title": "Results & Transparency",
+    "sub": "Complete backtest data, methods, and limitations"
+  },
+  "home": {
+    "winRate": {
+      "label": "Win rate · T+90 · 12 months",
+      "winningTrades": "winning trades",
+      "avgReturn": "avg return"
+    },
+    "featureStrip": {
+      "backtest": {
+        "eyebrow": "Backtest",
+        "title": "{{n}} analyzed signals",
+        "sub": "Real data since {{year}}"
+      },
+      "winRate": {
+        "eyebrow": "Win rate T+90",
+        "title": "{{pct}}% winners",
+        "sub": "On filtered signals"
+      },
+      "return": {
+        "eyebrow": "Median return T+90",
+        "title": "+{{pct}}% in 3 months",
+        "sub": "On executive acquisitions"
+      }
+    },
+    "meta": {
+      "title": "InsiderTrades Sigma · AMF Insider Signals",
+      "description": "Follow the transactions of French executives published by the AMF. Detect accumulation signals, analyze historical patterns, and access quantitative recommendations."
+    },
+    "strategy": {
+      "eyebrow": "★ Sigma Strategy · available",
+      "title": "A strategy that has outperformed the CAC 40",
+      "titleItalic": "every year since 2022",
+      "annualReturn": "average annual return",
+      "alpha": "alpha vs CAC 40",
+      "sharpe": "Sharpe ratio",
+      "yearsWon": "winning years",
+      "seeProof": "See proof →"
+    },
+    "signals": {
+      "title": "Current Signals",
+      "sub": "Recent acquisitions · score ≥ 65",
+      "eyebrow": "Strong Signals"
+    },
+    "backtest": {
+      "title": "Historical Backtest",
+      "sub": "Statistical performance on {{n}} analyzed signals",
+      "eyebrow": "Real data"
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "sub": "From AMF declaration to actionable real-time signal",
+      "eyebrow": "Methodology"
+    },
+    "live": {
+      "title": "Real-time Declarations",
+      "sub": "Latest transactions reported to the AMF",
+      "eyebrow": "Live"
+    },
+    "hero": {
+      "tag": "AMF Data · Real-time · MAR Regulation",
+      "h1line1": "Transactions",
+      "h1italic": "executives",
+      "h1line3": "decoded.",
+      "subtitle": "Follow every AMF declaration, detect accumulation signals, and analyze historical patterns of French insiders.",
+      "ctaExplore": "Explore companies",
+      "ctaSignals": "Top signals",
+      "ctaBacktest": "Backtesting →",
+      "badgeAmf": "Official AMF Data",
+      "badgeDeclarations": "{{n}} declarations",
+      "badgeUpdated": "Updated daily"
+    },
+    "kpi": {
+      "totalDeclarations": "Total declarations",
+      "totalDeclarationsSub": "since {{year}}",
+      "companies": "Tracked companies",
+      "companiesSub": "French listed",
+      "buyRatio": "Buy/Sell ratio",
+      "buyRatioSub": "{{n}} buys",
+      "insiders": "Identified executives",
+      "insidersSub": "CEOs, GMs, Board members…"
+    }
+  },
+  "companies": {
+    "meta": {
+      "title": "Companies · InsiderTrades Sigma",
+      "description": "All listed French companies with AMF declarations from executives. Filter by market capitalization, sector, recent activity."
+    },
+    "title": "Tracked companies",
+    "sub": "Listed French companies with AMF declarations from executives",
+    "searchPlaceholder": "Filter by name, ISIN…",
+    "columns": {
+      "company": "Company",
+      "declarations": "Declarations",
+      "lastActivity": "Last activity",
+      "insider": "Executive",
+      "nature": "Nature",
+      "amount": "Amount"
+    },
+    "showAll": "View all companies",
+    "showWithActivity": "With recent activity",
+    "noResults": "No companies found",
+    "sync": "Synchronize"
+  },
+  "dataTicker": {
+    "totalDeclarations": "{{n}} declarations",
+    "companies": "{{n}} companies",
+    "insiders": "{{n}} insiders",
+    "recentBuys": "{{n}} recent buys",
+    "todayAdded": "+{{n}} today",
+    "latestSignal": "Latest signal",
+    "live": "Live",
+    "freshData": "Fresh data"
+  },
+  "fonctionnement": {
+    "meta": {
+      "title": "How It Works · Insiders Trades Sigma",
+      "description": "Discover how Insiders Trades Sigma transforms AMF declarations from executives into actionable investment signals. Collection, scoring, historical backtesting, recommendations."
+    },
+    "eyebrow": "How It Works",
+    "title": "From AMF Declaration to Signal",
+    "sub": "The complete pipeline for collecting, analyzing, and scoring executive transactions"
+  },
+  "pitch": {
+    "meta": {
+      "title": "Investor Pitch · InsiderTrades Sigma",
+      "description": "The quantitative insider trading strategy that beats the CAC 40. Proven performance, rigorous methodology, actionable signals."
+    },
+    "eyebrow": "Investor Pitch",
+    "title": "The Method That Beats the CAC 40",
+    "sub": "Proven performance over 4 years of real AMF data"
+  },
+  "docs": {
+    "meta": {
+      "title": "API Documentation · InsiderTrades Sigma",
+      "description": "Documentation for the InsiderTrades Sigma REST API. Access AMF declarations, signals, backtesting, and company data via API."
+    },
+    "title": "API Documentation",
+    "sub": "REST API to access executive transaction data",
+    "eyebrow": "API v1"
+  },
+  "company": {
+    "lastActivity": "Last Activity",
+    "marketCap": "Market Cap",
+    "isin": "ISIN",
+    "allDeclarations": "All Declarations",
+    "buys": "Buys",
+    "sells": "Sells",
+    "noDeclarations": "No Declarations",
+    "financials": "Financial Data",
+    "news": "News",
+    "backtest": "Backtest",
+    "insiderActivity": "Insider Activity",
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page {{n}} of {{total}}"
+    },
+    "backButton": "Back to companies",
+    "declarations": "declarations",
+    "insiders": "executives"
+  },
+  "insider": {
+    "backButton": "Back to Insiders",
+    "declarations": "declarations",
+    "companies": "companies",
+    "lastActivity": "Last Activity",
+    "role": "Role",
+    "allDeclarations": "All Declarations",
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "backtest": {
+    "meta": {
+      "title": "Backtesting · InsiderTrades Sigma",
+      "description": "Historical backtest results on AMF insider transactions. Performance at T+90, T+365, and T+2 years by executive profile and capitalization."
+    },
+    "title": "Backtest Dashboard",
+    "sub": "Historical performance of insider signals",
+    "eyebrow": "Quantitative Analysis"
+  },
+  "recommendations": {
+    "meta": {
+      "title": "Recommendations · InsiderTrades Sigma",
+      "description": "Buy and sell recommendations based on AMF insider transaction signals."
+    },
+    "title": "Recommendations",
+    "sub": "Buy and sell signals based on AMF transactions",
+    "tabs": {
+      "general": "General",
+      "personal": "Personal"
+    },
+    "buy": "Buy",
+    "sell": "Sell",
+    "score": "Score",
+    "noSignals": "No signals available",
+    "loading": "Loading recommendations…"
+  },
+  "insiders": {
+    "meta": {
+      "title": "Executives · InsiderTrades Sigma",
+      "description": "All executives and related persons who have reported transactions to the AMF."
+    },
+    "title": "Executives",
+    "sub": "Executives and related persons who have reported transactions to the AMF",
+    "searchPlaceholder": "Filter by name…",
+    "columns": {
+      "name": "Name",
+      "declarations": "Declarations",
+      "lastActivity": "Last activity",
+      "companies": "Companies"
+    },
+    "noResults": "No executive found"
+  }
+}

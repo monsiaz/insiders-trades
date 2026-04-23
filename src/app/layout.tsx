@@ -6,6 +6,8 @@ import { AppNav } from "@/components/AppNav";
 import { AppFooter } from "@/components/AppFooter";
 import { DataTicker } from "@/components/DataTicker";
 import { PageTransition } from "@/components/PageTransition";
+import { headers } from "next/headers";
+import type { Locale } from "@/lib/i18n";
 
 // Self-hosted, preloaded, non-blocking Google Fonts via next/font
 const inter = Inter({
@@ -26,9 +28,9 @@ const dmSerif = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Insiders Trades Sigma · Intelligence des transactions dirigeants",
-  description: "Suivez les déclarations AMF des dirigeants français. Détectez les signaux d'accumulation, backtestez les performances historiques. Réglementation MAR · AMF France.",
-  keywords: ["insider trading", "AMF", "déclarations dirigeants", "transactions initiés", "signal financier", "Sigma"],
+  title: "Insiders Trades Sigma · Insider Transaction Intelligence",
+  description: "Track French insider transactions published by the AMF. Detect accumulation signals, backtest historical performance. MAR regulation · AMF France.",
+  keywords: ["insider trading", "AMF", "insider declarations", "insider transactions", "financial signal", "Sigma"],
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -41,10 +43,11 @@ export const metadata: Metadata = {
   },
   manifest: "/site.webmanifest",
   openGraph: {
-    title: "Insiders Trades Sigma · Intelligence des transactions dirigeants",
-    description: "Suivez les déclarations AMF des dirigeants français. Signaux d'accumulation + backtesting historique.",
+    title: "Insiders Trades Sigma · Insider Transaction Intelligence",
+    description: "Track French insider transactions published by the AMF. Accumulation signals + historical backtesting.",
     type: "website",
-    locale: "fr_FR",
+    locale: "en_US",
+    alternateLocale: ["fr_FR"],
     siteName: "Insiders Trades Sigma",
     images: [{ url: "/logo-mark.png", width: 512, height: 323, alt: "Insiders Trades Sigma" }],
   },
@@ -57,18 +60,40 @@ export const viewport = {
   ],
 };
 
-export default function RootLayout({
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const locale = (headersList.get("x-locale") ?? "en") as Locale;
+  const originalPath = headersList.get("x-original-path") ?? "/";
+
+  // Strip locale prefix to get the canonical path for hreflang
+  const canonicalPath = originalPath.startsWith("/fr")
+    ? (originalPath.slice(3) || "/")
+    : originalPath;
+  const canonicalPathNoQuery = canonicalPath.split("?")[0];
+
+  const hreflangEn = `${BASE_URL}${canonicalPathNoQuery === "/" ? "" : canonicalPathNoQuery}`;
+  const hreflangFr = `${BASE_URL}/fr${canonicalPathNoQuery === "/" ? "" : canonicalPathNoQuery}`;
+
   return (
     <html
-      lang="fr"
+      lang={locale}
       className={`dark ${inter.variable} ${dmSerif.variable}`}
       suppressHydrationWarning
     >
       <head>
+        {/* Hreflang — cross-link sister pages for SEO */}
+        <link rel="alternate" hrefLang="en" href={hreflangEn} />
+        <link rel="alternate" hrefLang="fr" href={hreflangFr} />
+        <link rel="alternate" hrefLang="x-default" href={hreflangEn} />
+        {/* Canonical */}
+        <link rel="canonical" href={locale === "fr" ? hreflangFr : hreflangEn} />
+
         {/* Pre-connect to image CDN for faster logo loading */}
         <link rel="preconnect" href="https://public.blob.vercel-storage.com" />
         <link rel="dns-prefetch" href="https://public.blob.vercel-storage.com" />

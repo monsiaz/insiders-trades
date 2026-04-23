@@ -1,14 +1,19 @@
 /**
- * Beta lockdown middleware.
+ * Middleware — locale routing + beta lockdown.
  *
- * Every page and every non-cron API require a valid session JWT.
- * Allow-listed paths (see PUBLIC_PREFIXES) bypass the check so that
- * auth pages, the auth API, cron/secret endpoints and the site chrome
- * (favicon, fonts, etc.) remain reachable for unauthenticated visitors.
+ * LOCALE ROUTING
+ * ─────────────
+ * EN is the default locale (no URL prefix). FR lives at /fr/…
  *
- * For pages, a missing/invalid session triggers a 302 redirect to
- * /auth/login with a ?next= parameter to bounce back after login.
- * For APIs, we return a 401 JSON body (no redirect).
+ * • /fr/*          → rewritten internally to /*  (URL stays /fr/*)
+ *                    + x-locale: fr header injected for server components
+ * • /en/*          → 301 redirect to /*  (canonical: no /en/ prefix)
+ * • everything else → x-locale: en header injected
+ *
+ * BETA LOCKDOWN
+ * ─────────────
+ * Every page and API require a valid session JWT unless the path is
+ * allow-listed in PUBLIC_PREFIXES / PUBLIC_EXACT below.
  */
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
@@ -19,27 +24,36 @@ const JWT_SECRET = JWT_SECRET_RAW
   : null;
 
 const COOKIE_NAME = "it_session";
+const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+
+// ── Locale config ────────────────────────────────────────────────────────────
+const NON_DEFAULT_LOCALES = ["fr"] as const;
+type NonDefaultLocale = (typeof NON_DEFAULT_LOCALES)[number];
+
+function getLocaleFromPath(pathname: string): { locale: string; stripped: string } {
+  for (const locale of NON_DEFAULT_LOCALES) {
+    if (pathname === `/${locale}`) return { locale, stripped: "/" };
+    if (pathname.startsWith(`/${locale}/`)) return { locale, stripped: pathname.slice(locale.length + 1) };
+  }
+  return { locale: "en", stripped: pathname };
+}
+
+// ── Auth allow-list ──────────────────────────────────────────────────────────
 
 /** Paths reachable without an authenticated session (during beta). */
 const PUBLIC_PREFIXES: string[] = [
-  // Auth pages
   "/auth/",
-  // Public marketing / methodology / API docs
   "/fonctionnement",
   "/methodologie",
   "/performance",
   "/strategie",
   "/pitch",
   "/docs",
-  // Public REST API v1 (API-key auth, handled per-route)
   "/api/v1/",
   "/api/docs",
   "/api/openapi.json",
-  // MCP server (JSON-RPC over HTTP, API-key auth inside)
   "/api/mcp",
-  // Auth API
   "/api/auth/",
-  // Cron / webhook / scheduled jobs · gated by CRON_SECRET header or secret query
   "/api/cron",
   "/api/sync",
   "/api/sync-latest",
@@ -54,13 +68,16 @@ const PUBLIC_PREFIXES: string[] = [
   "/api/admin/fetch-logos",
 ];
 
-/** Exact pathnames that are public (site chrome). */
+/** Exact pathnames that are always public. */
 const PUBLIC_EXACT = new Set<string>([
   "/robots.txt",
   "/sitemap.xml",
   "/sitemap-static.xml",
   "/sitemap-companies.xml",
   "/sitemap-insiders.xml",
+  "/fr/sitemap-static.xml",
+  "/fr/sitemap-companies.xml",
+  "/fr/sitemap-insiders.xml",
 ]);
 
 function isPublicPath(pathname: string): boolean {
@@ -75,8 +92,8 @@ function isApiRequest(pathname: string): boolean {
   return pathname.startsWith("/api/");
 }
 
-function unauthorized(req: NextRequest): NextResponse {
-  if (isApiRequest(req.nextUrl.pathname)) {
+function unauthorized(req: NextRequest, originalPathname: string): NextResponse {
+  if (isApiRequest(originalPathname)) {
     return NextResponse.json(
       {
         error: "Unauthorized",
@@ -86,7 +103,6 @@ function unauthorized(req: NextRequest): NextResponse {
       { status: 401, headers: { "Cache-Control": "no-store" } }
     );
   }
-  // Page: redirect to login
   const url = new URL("/auth/login", req.url);
   url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
   const res = NextResponse.redirect(url);
@@ -94,40 +110,53 @@ function unauthorized(req: NextRequest): NextResponse {
   return res;
 }
 
+// ── Main middleware ──────────────────────────────────────────────────────────
 export async function middleware(req: NextRequest) {
-  const pathname = req.nextUrl.pathname;
+  const rawPath = req.nextUrl.pathname;
 
-  // Public → let through
-  if (isPublicPath(pathname)) {
-    return NextResponse.next();
+  // 1. Canonical redirect: /en/* → /* (avoid duplicate content)
+  if (rawPath === "/en" || rawPath.startsWith("/en/")) {
+    const stripped = rawPath === "/en" ? "/" : rawPath.slice(3);
+    const target = new URL(stripped || "/", req.url);
+    target.search = req.nextUrl.search;
+    return NextResponse.redirect(target, 301);
   }
 
-  // Without a JWT secret at runtime, refuse to serve protected routes
-  // (safer than silently letting everyone through).
-  if (!JWT_SECRET) {
-    return unauthorized(req);
+  // 2. Detect locale
+  const { locale, stripped } = getLocaleFromPath(rawPath);
+
+  // 3. Auth check uses the STRIPPED path (so /fr/fonctionnement → /fonctionnement)
+  const authPath = stripped;
+  const isPublic = isPublicPath(authPath);
+
+  if (!isPublic) {
+    if (!JWT_SECRET) return unauthorized(req, authPath);
+    const token = req.cookies.get(COOKIE_NAME)?.value;
+    if (!token) return unauthorized(req, authPath);
+    try {
+      await jwtVerify(token, JWT_SECRET);
+    } catch {
+      return unauthorized(req, authPath);
+    }
   }
 
-  const token = req.cookies.get(COOKIE_NAME)?.value;
-  if (!token) return unauthorized(req);
-
-  try {
-    await jwtVerify(token, JWT_SECRET);
-    return NextResponse.next();
-  } catch {
-    return unauthorized(req);
+  // 4. For non-default locale: rewrite to stripped path, inject locale header
+  if (locale !== "en") {
+    const rewriteUrl = new URL(stripped === "/" ? "/" : stripped, req.url);
+    rewriteUrl.search = req.nextUrl.search;
+    const response = NextResponse.rewrite(rewriteUrl);
+    response.headers.set("x-locale", locale);
+    response.headers.set("x-original-path", rawPath);
+    return response;
   }
+
+  // 5. Default locale (EN) — inject header and pass through
+  const response = NextResponse.next();
+  response.headers.set("x-locale", "en");
+  response.headers.set("x-original-path", rawPath);
+  return response;
 }
 
 export const config = {
-  /**
-   * Run middleware on every request EXCEPT:
-   *   - Next.js internals (`_next/*`)
-   *   - Files with an extension (favicon, images, fonts, manifest, sitemaps…)
-   * This keeps the beta guard in front of every page + API route while
-   * still letting the site's CSS/fonts/logos render on the login screen.
-   */
-  matcher: [
-    "/((?!_next/|.*\\.[a-zA-Z0-9]+$).*)",
-  ],
+  matcher: ["/((?!_next/|.*\\.[a-zA-Z0-9]+$).*)"],
 };

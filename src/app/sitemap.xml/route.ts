@@ -5,9 +5,14 @@ const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.
 const today = new Date().toISOString().split("T")[0];
 
 const SUB_SITEMAPS = [
-  { loc: `${BASE}/sitemap-static.xml`,    lastmod: today },
-  { loc: `${BASE}/sitemap-companies.xml`, lastmod: today },
-  { loc: `${BASE}/sitemap-insiders.xml`,  lastmod: today },
+  // EN (default)
+  { loc: `${BASE}/sitemap-static.xml`,       lastmod: today },
+  { loc: `${BASE}/sitemap-companies.xml`,    lastmod: today },
+  { loc: `${BASE}/sitemap-insiders.xml`,     lastmod: today },
+  // FR
+  { loc: `${BASE}/fr/sitemap-static.xml`,    lastmod: today },
+  { loc: `${BASE}/fr/sitemap-companies.xml`, lastmod: today },
+  { loc: `${BASE}/fr/sitemap-insiders.xml`,  lastmod: today },
 ];
 
 function buildXml(): string {

@@ -1,0 +1,376 @@
+{
+  "common": {
+    "lang": "Langue",
+    "theme": {
+      "light": "Clair",
+      "dark": "Sombre"
+    },
+    "loading": "Chargement",
+    "error": "Erreur",
+    "noData": "Aucune donnée",
+    "seeMore": "Voir plus",
+    "seeAll": "Tout voir",
+    "back": "Retour",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "searchPlaceholder": "Société, dirigeant, ISIN…",
+    "sortBy": "Trier par",
+    "filter": "Filtrer",
+    "reset": "Réinitialiser",
+    "export": "Exporter",
+    "date": "Date",
+    "amount": "Montant",
+    "volume": "Volume",
+    "price": "Prix",
+    "score": "Score",
+    "company": "Société",
+    "insider": "Dirigeant",
+    "declaration": "Déclaration",
+    "transaction": "Transaction",
+    "buy": "Achat",
+    "sell": "Cession",
+    "today": "aujourd'hui",
+    "yesterday": "hier",
+    "daysAgo": "il y a {{n}} jours",
+    "since": "depuis {{year}}",
+    "official": "officielles",
+    "source": "Source",
+    "dataSources": "Sources de données",
+    "legalNotice": "Usage informatif · ne constitue pas un conseil en investissement",
+    "marReg": "Règlement MAR 596/2014",
+    "amfData": "Données AMF publiques",
+    "copyRight": "© {{year}} InsiderTrades"
+  },
+  "nav": {
+    "home": "Accueil",
+    "companies": "Sociétés",
+    "insiders": "Dirigeants",
+    "backtest": "Backtesting",
+    "portfolio": "Portfolio",
+    "recommendations": "Recommandations",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "mainNav": "Navigation principale",
+    "homeAriaLabel": "InsiderTrades Sigma accueil",
+    "amfSource": "Source AMF",
+    "search": "Rechercher"
+  },
+  "footer": {
+    "navigation": "Navigation",
+    "about": "À propos",
+    "pitch": "Le Pitch investisseur",
+    "howItWorks": "Comment ça marche",
+    "strategy": "Stratégie Sigma ★",
+    "methodology": "Méthodologie",
+    "performance": "Performance & transparence",
+    "apiDocs": "Documentation API",
+    "mcpServer": "MCP Server ↗",
+    "apiKeys": "Mes clés API",
+    "home": "Accueil",
+    "companies": "Sociétés",
+    "insiders": "Dirigeants",
+    "recommendations": "Recommandations",
+    "backtestSignals": "Backtest & Signaux",
+    "myPortfolio": "Mon portfolio",
+    "amfTagline": "Surveillance des déclarations de transactions de dirigeants publiées par l'AMF, conformément au règlement européen MAR.",
+    "amfLogo": "AMF · Autorité des Marchés Financiers",
+    "amfDesc": "Déclarations MAR · BDIF",
+    "euronextDesc": "Données boursières · SRD",
+    "footerAriaLabel": "InsiderTrades accueil"
+  },
+  "dataTicker": {
+    "totalDeclarations": "{{n}} déclarations",
+    "companies": "{{n}} sociétés",
+    "insiders": "{{n}} dirigeants",
+    "recentBuys": "{{n}} achats récents",
+    "todayAdded": "+{{n}} aujourd'hui",
+    "latestSignal": "Dernier signal",
+    "live": "Live",
+    "freshData": "Données fraîches"
+  },
+  "home": {
+    "meta": {
+      "title": "InsiderTrades Sigma · Signaux dirigeants AMF",
+      "description": "Suivez les transactions des dirigeants français publiées par l'AMF. Détectez les signaux d'accumulation, analysez les patterns historiques et accédez aux recommandations quantitatives."
+    },
+    "hero": {
+      "tag": "Données AMF · Temps réel · Règlement MAR",
+      "h1line1": "Transactions",
+      "h1italic": "dirigeants",
+      "h1line3": "décodées.",
+      "subtitle": "Suivez chaque déclaration AMF, détectez les signaux d'accumulation et analysez les patterns historiques des insiders français.",
+      "ctaExplore": "Explorer les sociétés",
+      "ctaSignals": "Top signaux",
+      "ctaBacktest": "Backtesting →",
+      "badgeAmf": "Données AMF officielles",
+      "badgeDeclarations": "{{n}} déclarations",
+      "badgeUpdated": "Mis à jour quotidiennement"
+    },
+    "kpi": {
+      "totalDeclarations": "Déclarations totales",
+      "totalDeclarationsSub": "depuis {{year}}",
+      "companies": "Sociétés suivies",
+      "companiesSub": "cotées françaises",
+      "buyRatio": "Ratio achats/ventes",
+      "buyRatioSub": "{{n}} achats",
+      "insiders": "Dirigeants identifiés",
+      "insidersSub": "PDG, DG, CA…"
+    },
+    "strategy": {
+      "eyebrow": "★ Stratégie Sigma · disponible",
+      "title": "Une stratégie qui a battu le CAC 40",
+      "titleItalic": "chaque année depuis 2022",
+      "annualReturn": "rendement annuel moyen",
+      "alpha": "alpha vs CAC 40",
+      "sharpe": "ratio de Sharpe",
+      "yearsWon": "années gagnées",
+      "seeProof": "Voir la preuve →"
+    },
+    "signals": {
+      "title": "Signaux du moment",
+      "sub": "Acquisitions récentes · score ≥ 65",
+      "eyebrow": "Signaux forts"
+    },
+    "backtest": {
+      "title": "Backtest historique",
+      "sub": "Performance statistique sur {{n}} signaux analysés",
+      "eyebrow": "Données réelles"
+    },
+    "howItWorks": {
+      "title": "Comment ça marche",
+      "sub": "De la déclaration AMF au signal actionnable en temps réel",
+      "eyebrow": "Méthodologie"
+    },
+    "live": {
+      "title": "Déclarations en temps réel",
+      "sub": "Dernières transactions déclarées à l'AMF",
+      "eyebrow": "Live"
+    },
+    "winRate": {
+      "label": "Win rate · T+90 · 12 mois",
+      "winningTrades": "trades gagnants",
+      "avgReturn": "retour moy."
+    },
+    "featureStrip": {
+      "backtest": {
+        "eyebrow": "Backtest",
+        "title": "{{n}} signaux analysés",
+        "sub": "Données réelles depuis {{year}}"
+      },
+      "winRate": {
+        "eyebrow": "Win rate T+90",
+        "title": "{{pct}}% gagnants",
+        "sub": "Sur les signaux filtrés"
+      },
+      "return": {
+        "eyebrow": "Retour médian T+90",
+        "title": "+{{pct}}% en 3 mois",
+        "sub": "Sur acquisitions dirigeants"
+      }
+    }
+  },
+  "companies": {
+    "meta": {
+      "title": "Sociétés · InsiderTrades Sigma",
+      "description": "Toutes les sociétés françaises cotées avec des déclarations AMF de dirigeants. Filtrez par capitalisation, secteur, activité récente."
+    },
+    "title": "Sociétés suivies",
+    "sub": "Sociétés françaises cotées avec déclarations AMF de dirigeants",
+    "searchPlaceholder": "Filtrer par nom, ISIN…",
+    "columns": {
+      "company": "Société",
+      "declarations": "Déclarations",
+      "lastActivity": "Dernière activité",
+      "insider": "Dirigeant",
+      "nature": "Nature",
+      "amount": "Montant"
+    },
+    "showAll": "Voir toutes les sociétés",
+    "showWithActivity": "Avec activité récente",
+    "noResults": "Aucune société trouvée",
+    "sync": "Synchroniser"
+  },
+  "insiders": {
+    "meta": {
+      "title": "Dirigeants · InsiderTrades Sigma",
+      "description": "Tous les dirigeants et personnes liées qui ont déclaré des transactions à l'AMF."
+    },
+    "title": "Dirigeants",
+    "sub": "Dirigeants et personnes liées ayant déclaré des transactions à l'AMF",
+    "searchPlaceholder": "Filtrer par nom…",
+    "columns": {
+      "name": "Nom",
+      "declarations": "Déclarations",
+      "lastActivity": "Dernière activité",
+      "companies": "Sociétés"
+    },
+    "noResults": "Aucun dirigeant trouvé"
+  },
+  "company": {
+    "backButton": "Retour aux sociétés",
+    "declarations": "déclarations",
+    "insiders": "dirigeants",
+    "lastActivity": "Dernière activité",
+    "marketCap": "Capitalisation",
+    "isin": "ISIN",
+    "allDeclarations": "Toutes les déclarations",
+    "buys": "Achats",
+    "sells": "Cessions",
+    "noDeclarations": "Aucune déclaration",
+    "financials": "Données financières",
+    "news": "Actualités",
+    "backtest": "Backtest",
+    "insiderActivity": "Activité dirigeants",
+    "pagination": {
+      "prev": "Précédent",
+      "next": "Suivant",
+      "page": "Page {{n}} sur {{total}}"
+    }
+  },
+  "insider": {
+    "backButton": "Retour aux dirigeants",
+    "declarations": "déclarations",
+    "companies": "sociétés",
+    "lastActivity": "Dernière activité",
+    "role": "Fonction",
+    "allDeclarations": "Toutes les déclarations",
+    "pagination": {
+      "prev": "Précédent",
+      "next": "Suivant"
+    }
+  },
+  "backtest": {
+    "meta": {
+      "title": "Backtesting · InsiderTrades Sigma",
+      "description": "Résultats du backtest historique sur les transactions dirigeants AMF. Performance à T+90, T+365 et T+2ans par profil de dirigeant et capitalisation."
+    },
+    "title": "Dashboard Backtest",
+    "sub": "Performance historique des signaux dirigeants",
+    "eyebrow": "Analyse quantitative"
+  },
+  "recommendations": {
+    "meta": {
+      "title": "Recommandations · InsiderTrades Sigma",
+      "description": "Recommandations d'achat et de vente basées sur les signaux de transactions dirigeants AMF."
+    },
+    "title": "Recommandations",
+    "sub": "Signaux d'achat et de vente basés sur les transactions AMF",
+    "tabs": {
+      "general": "Général",
+      "personal": "Personnel"
+    },
+    "buy": "Achat",
+    "sell": "Vente",
+    "score": "Score",
+    "noSignals": "Aucun signal disponible",
+    "loading": "Chargement des recommandations…"
+  },
+  "strategie": {
+    "meta": {
+      "title": "Stratégie Sigma · InsiderTrades Sigma",
+      "description": "La stratégie Sigma filtre les meilleures transactions dirigeants AMF selon 5 critères quantitatifs. Découvrez les signaux actifs et la performance historique."
+    },
+    "eyebrow": "Stratégie Sigma",
+    "title": "Les signaux qui ont battu le marché",
+    "sub": "Filtrage quantitatif des transactions dirigeants selon 5 critères de conviction",
+    "criteria": {
+      "title": "Les 5 critères de la stratégie",
+      "sub": "Chaque signal doit satisfaire l'ensemble des conditions"
+    },
+    "signals": {
+      "title": "Signaux actifs",
+      "sub": "Transactions récentes satisfaisant tous les critères",
+      "eyebrow": "Live"
+    },
+    "performance": {
+      "title": "Performance historique",
+      "sub": "Backtesting sur toutes les transactions satisfaisant les critères"
+    },
+    "insiderCount": "{{n}} dirigeants",
+    "clusterConfirmed": "cluster confirmé"
+  },
+  "methodologie": {
+    "meta": {
+      "title": "Méthodologie · InsiderTrades Sigma",
+      "description": "Découvrez comment nous collectons, analysons et scorons les transactions dirigeants AMF pour générer des signaux d'investissement fiables."
+    },
+    "eyebrow": "Méthodologie",
+    "title": "Notre approche quantitative",
+    "sub": "De la collecte AMF à la génération de signaux actionnables"
+  },
+  "performance": {
+    "meta": {
+      "title": "Performance & Transparence · InsiderTrades Sigma",
+      "description": "Résultats complets du backtest, performance par stratégie, limites et avertissements. Transparence totale sur nos données et méthodes."
+    },
+    "eyebrow": "Performance",
+    "title": "Résultats & Transparence",
+    "sub": "Données de backtest complètes, méthodes et limites"
+  },
+  "fonctionnement": {
+    "meta": {
+      "title": "Comment ça marche · Insiders Trades Sigma",
+      "description": "Découvrez comment Insiders Trades Sigma transforme les déclarations AMF des dirigeants en signaux d'investissement actionnables. Collecte, scoring, backtest historique, recommandations."
+    },
+    "eyebrow": "Comment ça marche",
+    "title": "De la déclaration AMF au signal",
+    "sub": "Le pipeline complet de collecte, analyse et scoring des transactions dirigeants"
+  },
+  "pitch": {
+    "meta": {
+      "title": "Pitch Investisseur · InsiderTrades Sigma",
+      "description": "La stratégie insider trading quantitative qui bat le CAC 40. Performance prouvée, méthodologie rigoureuse, signaux actionnables."
+    },
+    "eyebrow": "Pitch Investisseur",
+    "title": "La méthode qui bat le CAC 40",
+    "sub": "Performances prouvées sur 4 ans de données AMF réelles"
+  },
+  "docs": {
+    "meta": {
+      "title": "Documentation API · InsiderTrades Sigma",
+      "description": "Documentation de l'API REST InsiderTrades Sigma. Accédez aux déclarations AMF, signaux, backtest et données sociétés via API."
+    },
+    "title": "Documentation API",
+    "sub": "API REST pour accéder aux données de transactions dirigeants",
+    "eyebrow": "API v1"
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "subtitle": "Accédez à votre espace InsiderTrades",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "forgotPassword": "Mot de passe oublié ?",
+      "noAccount": "Pas encore de compte ?",
+      "register": "S'inscrire",
+      "error": "Identifiants incorrects"
+    },
+    "register": {
+      "title": "Créer un compte",
+      "subtitle": "Rejoignez InsiderTrades Sigma",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "submit": "Créer mon compte",
+      "hasAccount": "Déjà un compte ?",
+      "login": "Se connecter"
+    }
+  },
+  "signals": {
+    "score": "Score signal",
+    "amount": "Montant",
+    "pctMarketCap": "% cap. boursière",
+    "insider": "Dirigeant",
+    "role": "Fonction",
+    "date": "Date",
+    "nature": "Nature",
+    "acquisition": "Acquisition",
+    "cession": "Cession",
+    "strong": "Fort",
+    "medium": "Moyen",
+    "weak": "Faible"
+  },
+  "pageTransition": {
+    "label": "Sigma · Chargement"
+  }
+}

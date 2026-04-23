@@ -345,7 +345,7 @@ function TransitionInner() {
             zIndex: 1,
           }}
         >
-          Sigma · Chargement
+                    {typeof window !== "undefined" && window.location.pathname.startsWith("/fr") ? "Sigma · Chargement" : "Sigma · Loading"}
         </div>
       </div>
 

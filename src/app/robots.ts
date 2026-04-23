@@ -8,6 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: [
+          // EN (default)
           "/",
           "/fonctionnement",
           "/methodologie",
@@ -21,6 +22,20 @@ export default function robots(): MetadataRoute.Robots {
           "/companies",
           "/insiders",
           "/backtest",
+          // FR
+          "/fr/",
+          "/fr/fonctionnement",
+          "/fr/methodologie",
+          "/fr/performance",
+          "/fr/strategie",
+          "/fr/pitch",
+          "/fr/docs",
+          "/fr/docs/mcp",
+          "/fr/company/",
+          "/fr/insider/",
+          "/fr/companies",
+          "/fr/insiders",
+          "/fr/backtest",
         ],
         disallow: [
           "/admin/",
@@ -31,6 +46,7 @@ export default function robots(): MetadataRoute.Robots {
           "/recommendations",
           "/companies/add",
           "/_next/",
+          "/en/",
         ],
       },
       {

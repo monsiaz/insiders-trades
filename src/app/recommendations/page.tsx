@@ -53,7 +53,7 @@ function maskRecos(recos: RecoItem[], isAuth: boolean): RecoItem[] {
     return {
       ...r,
       company: { name: "████████ ███", slug: "", yahooSymbol: null, logoUrl: null },
-      insider: { name: "████████", function: null, role: r.insider.role },
+      insider: { name: "████████", slug: null, function: null, role: r.insider.role },
       recoScore: Math.round(r.recoScore * 0.7 + 5),
       expectedReturn90d: null,
       historicalWinRate90d: null,

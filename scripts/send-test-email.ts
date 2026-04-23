@@ -24,7 +24,7 @@ function sampleReco(over: Partial<RecoItem>): RecoItem {
     declarationId: "demo-" + Math.random(),
     action: "BUY",
     company: { name: "ABEO", slug: "abeo", yahooSymbol: "ABEO.PA", logoUrl: null },
-    insider: { name: "Olivier ESTEVES", function: "Président-Directeur Général", role: "PDG/DG" },
+    insider: { name: "Olivier ESTEVES", slug: null, function: "Président-Directeur Général", role: "PDG/DG" },
     totalAmount: 3_300_000,
     pctOfMarketCap: 4.73,
     signalScore: 55,
@@ -52,15 +52,15 @@ function sampleReco(over: Partial<RecoItem>): RecoItem {
 (async () => {
   const topBuys: RecoItem[] = [
     sampleReco({ company: { name: "ABEO", slug: "abeo", yahooSymbol: "ABEO.PA", logoUrl: null }, recoScore: 78, expectedReturn90d: 14.2, badges: ["Cluster", "PDG/DG", ">1M€", "Value"] }),
-    sampleReco({ company: { name: "BALYO", slug: "balyo", yahooSymbol: "BALYO.PA", logoUrl: null }, insider: { name: "SILVER BANDS 4 (US) CORP.", function: "Actionnaire majoritaire", role: "Actionnaire" }, totalAmount: 580_000, recoScore: 66, expectedReturn90d: 8.6, badges: ["Cluster", "Small-cap", ">0.5% mcap"] }),
-    sampleReco({ company: { name: "LAURENT-PERRIER", slug: "laurent-perrier", yahooSymbol: "LPE.PA", logoUrl: null }, insider: { name: "STEPHANE DALYAC", function: "Directeur Général", role: "PDG/DG" }, totalAmount: 428_000, recoScore: 61, expectedReturn90d: 9.6, badges: ["PDG/DG", ">200k€", "Qualité"] }),
+    sampleReco({ company: { name: "BALYO", slug: "balyo", yahooSymbol: "BALYO.PA", logoUrl: null }, insider: { name: "SILVER BANDS 4 (US) CORP.", slug: null, function: "Actionnaire majoritaire", role: "Actionnaire" }, totalAmount: 580_000, recoScore: 66, expectedReturn90d: 8.6, badges: ["Cluster", "Small-cap", ">0.5% mcap"] }),
+    sampleReco({ company: { name: "LAURENT-PERRIER", slug: "laurent-perrier", yahooSymbol: "LPE.PA", logoUrl: null }, insider: { name: "STEPHANE DALYAC", slug: null, function: "Directeur Général", role: "PDG/DG" }, totalAmount: 428_000, recoScore: 61, expectedReturn90d: 9.6, badges: ["PDG/DG", ">200k€", "Qualité"] }),
   ];
 
   const topSells: RecoItem[] = [
     sampleReco({
       action: "SELL",
       company: { name: "TELEPERFORMANCE", slug: "teleperformance", yahooSymbol: "TEP.PA", logoUrl: null },
-      insider: { name: "Moulay Hafid Elalamy", function: "Membre du Conseil", role: "CA/Board" },
+      insider: { name: "Moulay Hafid Elalamy", slug: null, function: "Membre du Conseil", role: "CA/Board" },
       totalAmount: 186_700_000,
       pctOfMarketCap: 5.19,
       recoScore: 69,
@@ -71,7 +71,7 @@ function sampleReco(over: Partial<RecoItem>): RecoItem {
     sampleReco({
       action: "SELL",
       company: { name: "GETLINK SE", slug: "getlink-se", yahooSymbol: "GET.PA", logoUrl: null },
-      insider: { name: "Getlink SE", function: "Conseil d'Administration", role: "CA/Board" },
+      insider: { name: "Getlink SE", slug: null, function: "Conseil d'Administration", role: "CA/Board" },
       totalAmount: 166_700_000,
       recoScore: 56,
       expectedReturn90d: -31.1,

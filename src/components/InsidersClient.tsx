@@ -223,7 +223,7 @@ export function InsidersClient({ insiders }: { insiders: InsiderRow[] }) {
       rows = rows.filter(
         (i) =>
           i.name.toLowerCase().includes(lq) ||
-          i.companies.some((c) => c.toLowerCase().includes(lq))
+          i.companies.some((c) => c.name.toLowerCase().includes(lq))
       );
     }
     rows = [...rows].sort((a, b) => {

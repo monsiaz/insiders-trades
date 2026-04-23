@@ -10,11 +10,13 @@ import { headers } from "next/headers";
 import type { Locale } from "@/lib/i18n";
 
 // Self-hosted, preloaded, non-blocking Google Fonts via next/font
+// Only load 400 + 600 — 500 and 700 are approximated by the browser from these two,
+// saving ~40 KB of font data on the critical path.
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "600"],
   preload: true,
 });
 

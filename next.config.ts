@@ -16,13 +16,16 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // All page URLs end with /  (e.g. /portfolio/ not /portfolio)
-  // Next.js automatically 301-redirects the no-slash version to the slash version.
-  // Route Handlers with file extensions (.xml, .txt) are NOT affected.
   trailingSlash: true,
+
+  // Compress static assets via Next.js (gzip/brotli on applicable routes)
+  compress: true,
 
   turbopack: {},
   serverExternalPackages: ["pdfjs-dist", "pdf-parse", "canvas"],
+
+  // Reduce logs in production
+  logging: { fetches: { fullUrl: false } },
 
   async headers() {
     return [
@@ -54,11 +57,18 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86400,
+    // Explicit whitelist — the old hostname:"**" wildcard allowed any domain through
+    // the image optimizer (security risk + cost). Only allow known logo sources.
     remotePatterns: [
       { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+      { protocol: "https", hostname: "public.blob.vercel-storage.com" },
       { protocol: "https", hostname: "logo.clearbit.com" },
       { protocol: "https", hostname: "www.google.com", pathname: "/s2/favicons**" },
-      { protocol: "https", hostname: "**" },
+      // Yahoo Finance chart images
+      { protocol: "https", hostname: "*.yahoo.com" },
+      // Favicon CDN used in CompanyBadge
+      { protocol: "https", hostname: "icons.duckduckgo.com" },
+      { protocol: "https", hostname: "www.gstatic.com" },
     ],
   },
 };

@@ -326,7 +326,7 @@ body::before {
 @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.8); } }
 @keyframes pulse     { 0%,100% { opacity:1; } 50% { opacity:0.45; } }
 @keyframes spin      { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes shimmer   { from { background-position:-800px 0; } to { background-position:800px 0; } }
+@keyframes shimmer-old { from { background-position:-800px 0; } to { background-position:800px 0; } }
 
 /* ── Skeleton system ──────────────────────────────────────────────────────── */
 .skel {
@@ -340,7 +340,7 @@ body::before {
     #1A2438  100%
   );
   background-size: 800px 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
+  animation: shimmer-old 1.4s ease-in-out infinite;
 }
 .light .skel {
   background: linear-gradient(
@@ -1144,13 +1144,7 @@ input[type="search"], textarea, select {
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--tx-4); background-clip: padding-box; }
 
-/* Skeleton */
-.skeleton {
-  background: linear-gradient(90deg, var(--bg-raised) 0%, var(--bg-hover) 40%, var(--bg-raised) 100%);
-  background-size: 400px 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: 4px;
-}
+/* Skeleton → canonical definition above (search for "Skeleton shimmer") */
 
 /* Charts */
 .recharts-surface { overflow: visible; }

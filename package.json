@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.2.8",
-    "@fontsource/space-grotesk": "^5.2.10",
     "@prisma/client": "^6.19.3",
     "@vercel/blob": "^2.3.3",
     "bcryptjs": "^3.0.3",

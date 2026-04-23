@@ -2,6 +2,15 @@
   "git": {
     "deploymentEnabled": false
   },
+  "functions": {
+    "src/app/api/cron/route.ts":           { "maxDuration": 300, "memory": 1024 },
+    "src/app/api/backtest/compute/route.ts":{ "maxDuration": 300, "memory": 1024 },
+    "src/app/api/translate-news/route.ts": { "maxDuration": 60,  "memory": 512  },
+    "src/app/api/sync/route.ts":           { "maxDuration": 60,  "memory": 512  },
+    "src/app/api/sync-latest/route.ts":    { "maxDuration": 60,  "memory": 512  },
+    "src/app/api/enrich/route.ts":         { "maxDuration": 60,  "memory": 512  },
+    "src/app/api/admin/ai/route.ts":       { "maxDuration": 120, "memory": 512  }
+  },
   "crons": [
     {
       "path": "/api/sync-latest",

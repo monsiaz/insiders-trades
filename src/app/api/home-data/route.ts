@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
 
 export const revalidate = 60;
 
-export async function GET() {
-  const since90d = new Date(Date.now() - 90 * 86400_000);
+// Cache the expensive DB aggregation server-side so concurrent CDN misses
+// don't all hit Postgres simultaneously (thundering herd on revalidation).
+const getHomeData = unstable_cache(
+  async () => {
+    const since90d = new Date(Date.now() - 90 * 86400_000);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    return _fetchHomeData(since90d, todayStart);
+  },
+  ["home-data-v1"],
+  { revalidate: 60 }
+);
 
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
+async function _fetchHomeData(since90d: Date, todayStart: Date) {
   const [
     totalDeclarations,
     totalCompanies,
@@ -105,24 +114,24 @@ export async function GET() {
     insider: insiderMap.get(r.insiderName ?? "") ?? null,
   }));
 
-  return NextResponse.json(
-    {
-      stats: { totalDeclarations, totalCompanies, totalInsiders, totalBuys, totalSells },
-      lastAmfDate: lastDecl?.pubDate.toISOString() ?? null,
-      todayCount,
-      recentDeclarations: recentDeclarations.map((d) => ({
-        ...d,
-        pubDate: d.pubDate.toISOString(),
-        transactionDate: d.transactionDate?.toISOString() ?? null,
-      })),
-      topCompanies,
-      topInsiders,
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      headers: {
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=30",
-      },
-    }
-  );
+  return {
+    stats: { totalDeclarations, totalCompanies, totalInsiders, totalBuys, totalSells },
+    lastAmfDate: lastDecl?.pubDate.toISOString() ?? null,
+    todayCount,
+    recentDeclarations: recentDeclarations.map((d) => ({
+      ...d,
+      pubDate: d.pubDate.toISOString(),
+      transactionDate: d.transactionDate?.toISOString() ?? null,
+    })),
+    topCompanies,
+    topInsiders,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export async function GET() {
+  const data = await getHomeData();
+  return NextResponse.json(data, {
+    headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=30" },
+  });
 }

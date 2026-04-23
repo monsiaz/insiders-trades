@@ -25,14 +25,14 @@ const NAV_LINKS_EN = [
 ];
 
 const ABOUT_LINKS_FR = [
-  { href: "/pitch", label: "Le Pitch investisseur" },
-  { href: "/fonctionnement", label: "Comment ça marche" },
-  { href: "/strategie", label: "Stratégie Sigma ★" },
-  { href: "/methodologie", label: "Méthodologie" },
-  { href: "/performance", label: "Performance & transparence" },
-  { href: "/docs", label: "Documentation API" },
-  { href: "/docs/mcp", label: "MCP Server ↗" },
-  { href: "/account/api-keys", label: "Mes clés API" },
+  { href: "/fr/pitch", label: "Le Pitch investisseur" },
+  { href: "/fr/fonctionnement", label: "Comment ça marche" },
+  { href: "/fr/strategie", label: "Stratégie Sigma ★" },
+  { href: "/fr/methodologie", label: "Méthodologie" },
+  { href: "/fr/performance", label: "Performance & transparence" },
+  { href: "/fr/docs", label: "Documentation API" },
+  { href: "/fr/docs/mcp", label: "MCP Server ↗" },
+  { href: "/fr/account/api-keys", label: "Mes clés API" },
 ];
 const ABOUT_LINKS_EN = [
   { href: "/pitch", label: "Investor Pitch" },

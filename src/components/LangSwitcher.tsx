@@ -137,7 +137,6 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
           transition: "border-color 0.15s ease, color 0.15s ease, background 0.15s ease",
           touchAction: "manipulation",
           WebkitTapHighlightColor: "transparent",
-          minHeight: "36px",
         }}
       >
         <span style={{ fontSize: "1rem", lineHeight: 1 }}>{localeFlags[currentLocale]}</span>

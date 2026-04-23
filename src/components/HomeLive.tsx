@@ -255,11 +255,11 @@ export function HomeLive({ initial }: { initial: HomeData }) {
         isFr={isFr}
       />
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-14 animate-fade-in-delay">
+      {/* Stats grid — 3 cols on mobile (show all 5 stats), 5 on large screens */}
+      <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-14 animate-fade-in-delay">
         <StatTile label={isFr ? "Déclarations" : "Declarations"} value={stats.totalDeclarations.toLocaleString(isFr ? "fr-FR" : "en-US")} icon={<FileText size={15} strokeWidth={1.8} />} accent="indigo" />
         <StatTile label={isFr ? "Sociétés" : "Companies"} value={stats.totalCompanies.toLocaleString(isFr ? "fr-FR" : "en-US")} icon={<Building2 size={15} strokeWidth={1.8} />} accent="violet" />
-        <StatTile label={isFr ? "Dirigeants" : "Insiders"} value={stats.totalInsiders.toLocaleString(isFr ? "fr-FR" : "en-US")} icon={<User size={15} strokeWidth={1.8} />} accent="slate" className="hidden sm:flex" />
+        <StatTile label={isFr ? "Dirigeants" : "Insiders"} value={stats.totalInsiders.toLocaleString(isFr ? "fr-FR" : "en-US")} icon={<User size={15} strokeWidth={1.8} />} accent="slate" />
         <StatTile label={isFr ? "Achats" : "Buys"} value={stats.totalBuys.toLocaleString(isFr ? "fr-FR" : "en-US")} icon={<TrendingUp size={15} strokeWidth={1.8} />} accent="emerald" />
         <StatTile label={isFr ? "Ventes" : "Sells"} value={stats.totalSells.toLocaleString(isFr ? "fr-FR" : "en-US")} icon={<TrendingDown size={15} strokeWidth={1.8} />} accent="rose" />
       </div>

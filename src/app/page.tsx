@@ -980,7 +980,8 @@ function SignalCard({ sig, locale = "en" }: { sig: Signal; locale?: "en" | "fr" 
       <div style={{
         display: "flex",
         alignItems: "baseline",
-        gap: "18px",
+        gap: "10px 18px",
+        flexWrap: "wrap",
         paddingTop: "10px",
         borderTop: "1px solid var(--border)",
       }}>

@@ -322,7 +322,7 @@ export function StockChart({ isin, companyName, trades = [], locale = "en" }: St
           </div>
 
           {/* Range selector */}
-          <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "3px", background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "3px", background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: "10px", flexWrap: "wrap" }}>
             {RANGE_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -438,7 +438,7 @@ export function StockChart({ isin, companyName, trades = [], locale = "en" }: St
 
       {/* Trades detail section */}
       {allTrades.length > 0 && (
-        <div className="card" style={{ overflow: "hidden" }}>
+        <div className="card" style={{ overflow: "hidden", overflowX: "auto" }}>
           {/* Toolbar */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", padding: "10px 16px", borderBottom: "1px solid var(--border)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "3px", background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: "9px" }}>
@@ -489,11 +489,11 @@ export function StockChart({ isin, companyName, trades = [], locale = "en" }: St
           </div>
 
           {/* Trades list */}
-          <div style={{ maxHeight: "288px", overflowY: "auto" }}>
+          <div style={{ maxHeight: "288px", overflowY: "auto", minWidth: "360px" }}>
             {filteredTrades.slice(0, 100).map((trade, i) => {
               const isBuy = trade.type !== "sell";
               return (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 20px", borderBottom: "1px solid var(--border)", transition: "background 0.1s" }}
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 16px", borderBottom: "1px solid var(--border)", transition: "background 0.1s" }}
                   onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-hover)"}
                   onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                 >

@@ -162,6 +162,8 @@ function TransitionInner() {
   }, [clearTimers]);
 
   const startLoading = useCallback(() => {
+    // Skip animation for users who prefer reduced motion
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     clearTimers();
     startAt.current = Date.now();
     visibleRef.current = true;

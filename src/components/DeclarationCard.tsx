@@ -160,19 +160,19 @@ export function DeclarationCard({ declaration, showCompany = true, locale = "en"
 
           {/* Insider row */}
           {hasDetail && declaration.insiderName && (
-            <div className="flex items-center gap-2 mb-2.5">
+            <div className="flex items-center gap-2 mb-2.5 min-w-0">
               <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0"
                 style={{ background: "var(--c-indigo-bg)", border: "1px solid var(--c-indigo-bd)", color: "var(--c-indigo-2)" }}>
                 {declaration.insiderName.charAt(0)}
               </div>
               {declaration.insider?.slug ? (
                 <Link href={`/insider/${declaration.insider.slug}`}
-                  className="text-sm font-medium transition-colors hover:underline"
+                  className="text-sm font-medium transition-colors hover:underline truncate min-w-0"
                   style={{ color: "var(--tx-1)" }}>
                   {declaration.insiderName}
                 </Link>
               ) : (
-                <span className="text-sm font-medium" style={{ color: "var(--tx-1)" }}>{declaration.insiderName}</span>
+                <span className="text-sm font-medium truncate min-w-0" style={{ color: "var(--tx-1)" }}>{declaration.insiderName}</span>
               )}
               {declaration.insiderFunction && (
                 <span className="text-xs truncate" style={{ color: "var(--tx-3)" }}>
@@ -256,8 +256,8 @@ export function DeclarationCard({ declaration, showCompany = true, locale = "en"
           )}
 
           {/* Footer */}
-          <div className="flex items-center gap-2 text-[11px]" style={{ color: "var(--tx-3)" }}>
-            <span className="font-mono">{declaration.amfId}</span>
+          <div className="flex items-center gap-2 text-[11px] flex-wrap min-w-0" style={{ color: "var(--tx-3)" }}>
+            <span className="font-mono truncate" style={{ maxWidth: "120px" }}>{declaration.amfId}</span>
             <span>·</span>
             <time>{fmtDate(pubDate, numLocale)}</time>
             {!declaration.pdfParsed && declaration.type === "DIRIGEANTS" && (

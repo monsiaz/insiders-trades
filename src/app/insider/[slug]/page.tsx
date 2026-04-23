@@ -186,7 +186,8 @@ export default async function InsiderPage({ params, searchParams }: Props) {
                 <Link
                   key={ci.company.slug}
                   href={isFr ? `/fr/company/${ci.company.slug}` : `/company/${ci.company.slug}`}
-                  className="text-xs px-2.5 py-1 rounded-full glass-card-static border-white/8 text-[var(--tx-2)] hover:text-[var(--tx-1)] transition-colors"
+                  className="text-xs px-2.5 py-1 rounded-full glass-card-static border-white/8 text-[var(--tx-2)] hover:text-[var(--tx-1)] transition-colors truncate"
+                  style={{ maxWidth: "min(100%, 200px)" }}
                 >
                   {ci.company.name}
                 </Link>

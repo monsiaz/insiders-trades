@@ -210,7 +210,7 @@ export function PortfolioPerformance({ positions, locale = "en" }: { positions: 
           </div>
 
           {/* Period selector */}
-          <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "3px", background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "3px", background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: "10px", flexWrap: "wrap" }}>
             {PERIODS.map((p) => (
               <button key={p.key} onClick={() => setPeriod(p.key)} style={{
                 padding: "4px 11px", borderRadius: "7px",

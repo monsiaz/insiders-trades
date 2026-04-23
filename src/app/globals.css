@@ -552,6 +552,10 @@ body::before {
   animation-play-state: paused;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .data-ticker-track { animation: none; }
+}
+
 @keyframes ticker-scroll {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
@@ -1971,8 +1975,8 @@ input[type="search"], textarea, select {
   .app-footer-link {
     font-size: 0.82rem;
     display: block;
-    padding: 6px 0;             /* 44px min tap target per row */
-    min-height: 36px;
+    padding: 10px 0;            /* 44px min tap target per row */
+    min-height: 44px;
     display: flex; align-items: center;
   }
 

@@ -1154,7 +1154,7 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
               <InfoTip text={isFr ? "Chaque point = un trade historique. L'axe Y = retour 90j après l'achat." : "Each point = one historical trade. Y-axis = 90d return after purchase. A cloud trending up-right confirms the score → performance correlation."} wide />
             </h3>
             <ResponsiveContainer width="100%" height={280}>
-              <ScatterChart margin={{ top: 4, right: 20, bottom: 4, left: 0 }}>
+              <ScatterChart margin={{ top: 4, right: 20, bottom: 4, left: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                 <XAxis dataKey="score" name="Score" tick={{ fontSize: 11, fill: "var(--tx-3)" }} axisLine={{ stroke: "var(--border-med)" }} tickLine={false} label={{ value: "Score", position: "insideBottom", offset: -4, fill: "var(--tx-3)", fontSize: 11 }} />
                 <YAxis dataKey="return90d" name="T+90" tickFormatter={(v) => `${v > 0 ? "+" : ""}${v.toFixed(0)}%`} tick={{ fontSize: 11, fill: "var(--tx-3)" }} axisLine={{ stroke: "var(--border-med)" }} tickLine={false} />

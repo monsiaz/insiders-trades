@@ -106,7 +106,14 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://public.blob.vercel-storage.com" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var s=localStorage.getItem('it-theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var t=s||(d?'dark':'light');document.documentElement.classList.remove('dark','light');document.documentElement.classList.add(t);}catch(e){}})();`,
+            __html: `(function(){try{
+  var s=localStorage.getItem('it-theme');
+  var sys=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  var t=s&&s!=='system'?s:sys;
+  document.documentElement.classList.remove('dark','light');
+  document.documentElement.classList.add(t);
+  document.documentElement.dataset.themeMode=s||'system';
+}catch(e){}})();`,
           }}
         />
       </head>

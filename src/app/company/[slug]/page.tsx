@@ -6,6 +6,8 @@ import { CompanySyncButton } from "@/components/CompanySyncButton";
 import { EnrichButton } from "@/components/EnrichButton";
 import dynamic from "next/dynamic";
 import { CompanyFinancials } from "@/components/CompanyFinancials";
+import { RelatedEntities } from "@/components/RelatedEntities";
+import { headers } from "next/headers";
 
 const StockChart = dynamic(() => import("@/components/StockChart").then(m => ({ default: m.StockChart })), {
   loading: () => <div style={{ height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.8rem" }}>Chargement du graphique…</div>,
@@ -19,7 +21,36 @@ import { DeclarationType } from "@prisma/client";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import { unstable_cache } from "next/cache";
 
-export const revalidate = 300; // Revalidate every 5 min
+export const revalidate = 300;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const company = await prisma.company.findUnique({
+    where: { slug },
+    select: { name: true, sectorTagEn: true, descriptionEn: true },
+  });
+  if (!company) return {};
+  return {
+    title: `${company.name} · Insider Transactions | Sigma`,
+    description: company.descriptionEn?.slice(0, 160) ?? `Track insider transactions for ${company.name} on InsiderTrades Sigma.`,
+    alternates: {
+      canonical: `${BASE_URL}/company/${slug}`,
+      languages: {
+        en: `${BASE_URL}/company/${slug}`,
+        fr: `${BASE_URL}/fr/company/${slug}`,
+      },
+    },
+    openGraph: {
+      title: `${company.name} · Insider Transactions`,
+      description: company.descriptionEn?.slice(0, 160) ?? `Track insider transactions for ${company.name}.`,
+      type: "website",
+      locale: "en_US",
+      alternateLocale: ["fr_FR"],
+    },
+  };
+}
 
 const getCompanyData = (slug: string) =>
   unstable_cache(
@@ -27,6 +58,7 @@ const getCompanyData = (slug: string) =>
       const company = await prisma.company.findUnique({
         where: { slug },
         include: { _count: { select: { declarations: true, insiders: true } } },
+        // SEO description fields fetched below
       });
       if (!company) return null;
 
@@ -94,9 +126,41 @@ export default async function CompanyPage({ params, searchParams }: Props) {
   const offset = (pageNum - 1) * limit;
   const filterType = type as DeclarationType | undefined;
 
+  // Detect locale from middleware-injected header
+  const headersList = await headers();
+  const locale = headersList.get("x-locale") ?? "en";
+  const isFr = locale === "fr";
+
   const cached = await getCompanyData(slug);
   if (!cached) notFound();
   const { company, typeCounts, lastDecl, isinRow, buyTotal, sellTotal, allTradeEvents } = cached;
+
+  // Fetch SEO content + related entities
+  const companySeo = await prisma.company.findUnique({
+    where: { slug },
+    select: {
+      sectorTag: true, sectorTagEn: true,
+      descriptionFr: true, descriptionEn: true,
+      relatedCompanySlugs: true, relatedInsiderSlugs: true,
+    },
+  });
+
+  const [relatedCompaniesData, relatedInsidersData] = await Promise.all([
+    companySeo?.relatedCompanySlugs?.length
+      ? prisma.company.findMany({
+          where: { slug: { in: companySeo.relatedCompanySlugs } },
+          select: { slug: true, name: true, logoUrl: true, sectorTag: true, sectorTagEn: true },
+          take: 6,
+        })
+      : Promise.resolve([]),
+    companySeo?.relatedInsiderSlugs?.length
+      ? prisma.insider.findMany({
+          where: { slug: { in: companySeo.relatedInsiderSlugs } },
+          select: { slug: true, name: true, primaryRole: true },
+          take: 6,
+        })
+      : Promise.resolve([]),
+  ]);
 
   const where = {
     companyId: company.id,
@@ -173,6 +237,12 @@ export default async function CompanyPage({ params, searchParams }: Props) {
                     Mcap {Number(company.marketCap) >= 1e9
                       ? `${(Number(company.marketCap) / 1e9).toFixed(1)}Md€`
                       : `${(Number(company.marketCap) / 1e6).toFixed(0)}M€`}
+                  </span>
+                )}
+                {(isFr ? companySeo?.sectorTag : companySeo?.sectorTagEn) && (
+                  <span className="text-xs px-2 py-0.5 rounded-lg"
+                    style={{ color: "var(--c-sky)", background: "var(--c-sky-bg, rgba(14,165,233,0.1))", border: "1px solid var(--c-sky-bd, rgba(14,165,233,0.2))" }}>
+                    {isFr ? companySeo?.sectorTag : companySeo?.sectorTagEn}
                   </span>
                 )}
               </div>
@@ -344,6 +414,46 @@ export default async function CompanyPage({ params, searchParams }: Props) {
       <div className="mt-4 text-center text-xs" style={{ color: "var(--tx-3)" }}>
         {totalCount} déclaration{totalCount !== 1 ? "s" : ""} au total
       </div>
+
+      {/* AI-generated company description */}
+      {(isFr ? companySeo?.descriptionFr : companySeo?.descriptionEn) && (
+        <div
+          className="glass-card-static rounded-3xl p-6"
+          style={{ marginTop: "3rem" }}
+        >
+          <h2
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--tx-3)",
+              marginBottom: "1rem",
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
+            {isFr ? `À propos de ${company.name}` : `About ${company.name}`}
+          </h2>
+          <p
+            style={{
+              color: "var(--tx-2)",
+              fontSize: "0.875rem",
+              lineHeight: 1.75,
+              whiteSpace: "pre-line",
+            }}
+          >
+            {isFr ? companySeo?.descriptionFr : companySeo?.descriptionEn}
+          </p>
+        </div>
+      )}
+
+      {/* Related companies and insiders */}
+      <RelatedEntities
+        relatedCompanies={relatedCompaniesData}
+        relatedInsiders={relatedInsidersData}
+        locale={locale}
+        entityType="company"
+      />
     </div>
   );
 }

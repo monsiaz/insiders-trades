@@ -75,10 +75,14 @@ export default async function RootLayout({
   const canonicalPath = originalPath.startsWith("/fr")
     ? (originalPath.slice(3) || "/")
     : originalPath;
-  const canonicalPathNoQuery = canonicalPath.split("?")[0];
+  // Strip query string and ensure no trailing slash (except root)
+  let canonicalPathClean = canonicalPath.split("?")[0];
+  if (canonicalPathClean !== "/" && canonicalPathClean.endsWith("/")) {
+    canonicalPathClean = canonicalPathClean.slice(0, -1);
+  }
 
-  const hreflangEn = `${BASE_URL}${canonicalPathNoQuery === "/" ? "" : canonicalPathNoQuery}`;
-  const hreflangFr = `${BASE_URL}/fr${canonicalPathNoQuery === "/" ? "" : canonicalPathNoQuery}`;
+  const hreflangEn = `${BASE_URL}${canonicalPathClean === "/" ? "" : canonicalPathClean}`;
+  const hreflangFr = `${BASE_URL}/fr${canonicalPathClean === "/" ? "" : canonicalPathClean}`;
 
   return (
     <html
@@ -87,11 +91,14 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Robots: index, follow on all public pages */}
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+
         {/* Hreflang — cross-link sister pages for SEO */}
         <link rel="alternate" hrefLang="en" href={hreflangEn} />
         <link rel="alternate" hrefLang="fr" href={hreflangFr} />
         <link rel="alternate" hrefLang="x-default" href={hreflangEn} />
-        {/* Canonical */}
+        {/* Self-canonical — always the exact URL without trailing slash */}
         <link rel="canonical" href={locale === "fr" ? hreflangFr : hreflangEn} />
 
         {/* Pre-connect to image CDN for faster logo loading */}

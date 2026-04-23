@@ -122,10 +122,24 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(target, 301);
   }
 
-  // 2. Detect locale
+  // 2. Trailing-slash redirect: /foo/ → /foo (except root /)
+  // Exceptions: sitemap and robots files which Next.js serves with trailing slashes internally
+  if (
+    rawPath !== "/" &&
+    rawPath.endsWith("/") &&
+    !rawPath.endsWith(".xml/") &&
+    !rawPath.endsWith(".txt/")
+  ) {
+    const noSlash = rawPath.slice(0, -1);
+    const target = new URL(noSlash, req.url);
+    target.search = req.nextUrl.search;
+    return NextResponse.redirect(target, 301);
+  }
+
+  // 3. Detect locale
   const { locale, stripped } = getLocaleFromPath(rawPath);
 
-  // 3. Auth check uses the STRIPPED path (so /fr/fonctionnement → /fonctionnement)
+  // 4. Auth check uses the STRIPPED path (so /fr/fonctionnement → /fonctionnement)
   const authPath = stripped;
   const isPublic = isPublicPath(authPath);
 
@@ -140,7 +154,7 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // 4. For non-default locale: rewrite to stripped path, inject locale header
+  // 5. For non-default locale: rewrite to stripped path, inject locale header
   if (locale !== "en") {
     const rewriteUrl = new URL(stripped === "/" ? "/" : stripped, req.url);
     rewriteUrl.search = req.nextUrl.search;
@@ -150,7 +164,7 @@ export async function middleware(req: NextRequest) {
     return response;
   }
 
-  // 5. Default locale (EN) — inject header and pass through
+  // 6. Default locale (EN) — inject header and pass through
   const response = NextResponse.next();
   response.headers.set("x-locale", "en");
   response.headers.set("x-original-path", rawPath);

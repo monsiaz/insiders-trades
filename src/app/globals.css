@@ -698,6 +698,12 @@ body::before {
 .glass-card:hover  { border-color: var(--gold-bd); }
 .glass-card-static { background: var(--bg-surface); border: 1px solid var(--border-med); border-radius: 8px; }
 
+/* Related entity cards */
+.related-entity-card:hover {
+  border-color: var(--gold) !important;
+  background: var(--bg-raised) !important;
+}
+
 /* ═══════════════════════════════════════════════════════════
    TYPOGRAPHY
    ═══════════════════════════════════════════════════════════ */

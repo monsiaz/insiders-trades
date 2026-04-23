@@ -2,9 +2,40 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { DeclarationCard } from "@/components/DeclarationCard";
+import { RelatedEntities } from "@/components/RelatedEntities";
 import { unstable_cache } from "next/cache";
+import { headers } from "next/headers";
 
 export const revalidate = 300;
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const insider = await prisma.insider.findUnique({
+    where: { slug },
+    select: { name: true, primaryRole: true, descriptionEn: true },
+  });
+  if (!insider) return {};
+  return {
+    title: `${insider.name}${insider.primaryRole ? ` · ${insider.primaryRole}` : ""} | Sigma`,
+    description: insider.descriptionEn?.slice(0, 160) ?? `Track insider declarations by ${insider.name} on InsiderTrades Sigma.`,
+    alternates: {
+      canonical: `${BASE_URL}/insider/${slug}`,
+      languages: {
+        en: `${BASE_URL}/insider/${slug}`,
+        fr: `${BASE_URL}/fr/insider/${slug}`,
+      },
+    },
+    openGraph: {
+      title: `${insider.name} · Insider Declarations`,
+      description: insider.descriptionEn?.slice(0, 160) ?? `Insider declarations by ${insider.name}.`,
+      type: "website",
+      locale: "en_US",
+      alternateLocale: ["fr_FR"],
+    },
+  };
+}
 
 const getInsiderData = (slug: string) =>
   unstable_cache(
@@ -64,9 +95,40 @@ export default async function InsiderPage({ params, searchParams }: Props) {
   const limit = 25;
   const offset = (pageNum - 1) * limit;
 
+  const headersList = await headers();
+  const locale = headersList.get("x-locale") ?? "en";
+  const isFr = locale === "fr";
+
   const cached = await getInsiderData(slug);
   if (!cached) notFound();
   const { insider, buyAgg, sellAgg } = cached;
+
+  // Fetch SEO content + related entities
+  const insiderSeo = await prisma.insider.findUnique({
+    where: { slug },
+    select: {
+      descriptionFr: true, descriptionEn: true,
+      primaryRole: true,
+      relatedCompanySlugs: true, relatedInsiderSlugs: true,
+    },
+  });
+
+  const [relatedCompaniesData, relatedInsidersData] = await Promise.all([
+    insiderSeo?.relatedCompanySlugs?.length
+      ? prisma.company.findMany({
+          where: { slug: { in: insiderSeo.relatedCompanySlugs } },
+          select: { slug: true, name: true, logoUrl: true, sectorTag: true, sectorTagEn: true },
+          take: 6,
+        })
+      : Promise.resolve([]),
+    insiderSeo?.relatedInsiderSlugs?.length
+      ? prisma.insider.findMany({
+          where: { slug: { in: insiderSeo.relatedInsiderSlugs } },
+          select: { slug: true, name: true, primaryRole: true },
+          take: 6,
+        })
+      : Promise.resolve([]),
+  ]);
 
   const [declarations, totalCount] = await Promise.all([
     prisma.declaration.findMany({
@@ -106,13 +168,16 @@ export default async function InsiderPage({ params, searchParams }: Props) {
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border border-violet-500/25 flex items-center justify-center text-xl font-bold tx-violet flex-shrink-0">
             {initials}
           </div>
-          <div className="min-w-0">
+            <div className="min-w-0">
             <h1 className="text-xl sm:text-2xl font-bold text-[var(--tx-1)] tracking-tight" style={{ overflowWrap: "break-word", wordBreak: "break-word" }}>{insider.name}</h1>
+            {insiderSeo?.primaryRole && (
+              <div className="text-sm mt-1" style={{ color: "var(--tx-3)" }}>{insiderSeo.primaryRole}</div>
+            )}
             <div className="flex flex-wrap gap-1.5 mt-2">
               {insider.companies.map((ci) => (
                 <Link
                   key={ci.company.slug}
-                  href={`/company/${ci.company.slug}`}
+                  href={isFr ? `/fr/company/${ci.company.slug}` : `/company/${ci.company.slug}`}
                   className="text-xs px-2.5 py-1 rounded-full glass-card-static border-white/8 text-[var(--tx-2)] hover:text-[var(--tx-1)] transition-colors"
                 >
                   {ci.company.name}
@@ -173,6 +238,46 @@ export default async function InsiderPage({ params, searchParams }: Props) {
       <div className="mt-4 text-center text-xs" style={{ color: "var(--tx-3)" }}>
         {totalCount} déclaration{totalCount !== 1 ? "s" : ""} au total
       </div>
+
+      {/* AI-generated insider description */}
+      {(isFr ? insiderSeo?.descriptionFr : insiderSeo?.descriptionEn) && (
+        <div
+          className="glass-card-static rounded-3xl p-6"
+          style={{ marginTop: "3rem" }}
+        >
+          <h2
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--tx-3)",
+              marginBottom: "1rem",
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
+            {isFr ? `À propos de ${insider.name}` : `About ${insider.name}`}
+          </h2>
+          <p
+            style={{
+              color: "var(--tx-2)",
+              fontSize: "0.875rem",
+              lineHeight: 1.75,
+              whiteSpace: "pre-line",
+            }}
+          >
+            {isFr ? insiderSeo?.descriptionFr : insiderSeo?.descriptionEn}
+          </p>
+        </div>
+      )}
+
+      {/* Related companies and insiders */}
+      <RelatedEntities
+        relatedCompanies={relatedCompaniesData}
+        relatedInsiders={relatedInsidersData}
+        locale={locale}
+        entityType="insider"
+      />
     </div>
   );
 }

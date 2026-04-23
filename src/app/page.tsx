@@ -4,6 +4,7 @@ import { HomeBacktestWidget } from "@/components/HomeBacktestWidget";
 import { HeroAnimated } from "@/components/HeroAnimated";
 import { HowItWorksAnimations } from "@/components/HowItWorksAnimations";
 import { CompanyAvatar } from "@/components/CompanyBadge";
+import { AnimateIn } from "@/components/AnimateIn";
 import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
@@ -195,7 +196,7 @@ async function FeatureStripSection({ earliestYear }: { earliestYear: number }) {
   const snap = await getBacktestSnapshot();
   return (
     <section className="mb-16">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <AnimateIn className="grid grid-cols-1 md:grid-cols-3 gap-4" stagger={100}>
         <FeatureCard
           icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.8"/><path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>}
           title="Détection des signaux"
@@ -214,7 +215,7 @@ async function FeatureStripSection({ earliestYear }: { earliestYear: number }) {
           body="Top 10 signaux d'achat générés chaque jour. Personnalisé si vous avez un portefeuille. Alertes email sur les nouvelles opportunités."
           accent="var(--gold)"
         />
-      </div>
+      </AnimateIn>
     </section>
   );
 }
@@ -230,11 +231,11 @@ async function HighScoreSection() {
         eyebrow="Intelligence"
         action={{ label: "Voir toutes les recommandations →", href: "/recommendations" }}
       />
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mt-5">
+      <AnimateIn className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mt-5" stagger={75}>
         {sigs.slice(0, 6).map((sig) => (
           <SignalCard key={sig.id} sig={sig} />
         ))}
-      </div>
+      </AnimateIn>
     </section>
   );
 }
@@ -395,7 +396,7 @@ export default async function HomePage() {
 
       {/* ── KPI STRIP ─────────────────────────────────────────────────── */}
       <section className="mb-16">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <AnimateIn className="grid grid-cols-2 lg:grid-cols-4 gap-3" stagger={90} baseDelay={120}>
           <KpiCard
             value={stats.totalDeclarations.toLocaleString("fr-FR")}
             label="Déclarations totales"
@@ -444,7 +445,7 @@ export default async function HomePage() {
               </svg>
             }
           />
-        </div>
+        </AnimateIn>
       </section>
 
       {/* ── FEATURE STRIP · 3 valeurs (streams in with backtest total) ── */}
@@ -454,6 +455,7 @@ export default async function HomePage() {
 
       {/* ── STRATÉGIE SIGMA (hero banner) ────────────────────────────── */}
       <section className="mb-16">
+        <AnimateIn single>
         <Link
           href="/strategie"
           style={{
@@ -550,6 +552,7 @@ export default async function HomePage() {
             </div>
           </div>
         </Link>
+        </AnimateIn>
       </section>
 
       {/* ── SIGNALS DU MOMENT (streamed) ─────────────────────────────── */}
@@ -564,14 +567,18 @@ export default async function HomePage() {
 
       {/* ── VISUAL SECTION · "Comment ça marche" ─────────────────────── */}
       <section className="mb-16">
-        <SectionHeader
-          title="Comment ça marche"
-          sub="De la déclaration AMF au signal actionnable en temps réel"
-          eyebrow="Méthodologie"
-        />
-        <div className="mt-6">
-          <HowItWorksAnimations />
-        </div>
+        <AnimateIn single>
+          <div>
+            <SectionHeader
+              title="Comment ça marche"
+              sub="De la déclaration AMF au signal actionnable en temps réel"
+              eyebrow="Méthodologie"
+            />
+            <div className="mt-6">
+              <HowItWorksAnimations />
+            </div>
+          </div>
+        </AnimateIn>
       </section>
 
       {/* ── LIVE FEED (streamed · heavy queries) ────────────────────── */}

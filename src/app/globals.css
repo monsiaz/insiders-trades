@@ -365,6 +365,51 @@ body::before {
 .animate-fade-in       { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) both; }
 .animate-fade-in-delay { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) 0.08s both; }
 .animate-scale-in      { animation: scaleIn 0.28s cubic-bezier(0.16,1,0.3,1) both; }
+
+/* ── AnimateIn · scroll-triggered staggered reveal ────────────────────────── */
+/*
+ * Usage: wrap a grid with <AnimateIn className="grid …">.
+ * Each direct child gets .ai-item (hidden) then .ai-in (visible) when the
+ * container crosses the viewport. Delay comes from --ai-delay CSS var.
+ */
+.ai-item {
+  opacity: 0;
+  transform: translateY(26px) scale(0.98);
+  will-change: opacity, transform;
+}
+
+.ai-item.ai-in {
+  transition:
+    opacity   0.55s cubic-bezier(0.16, 1, 0.3, 1) var(--ai-delay, 0ms),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1) var(--ai-delay, 0ms);
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Single-element variant (the wrapper div itself is the animated target) */
+.ai-single {
+  opacity: 0;
+  transform: translateY(20px);
+  will-change: opacity, transform;
+}
+.ai-single.ai-single-in {
+  transition:
+    opacity   0.55s cubic-bezier(0.16, 1, 0.3, 1) var(--ai-delay, 0ms),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1) var(--ai-delay, 0ms);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-item,
+  .ai-item.ai-in,
+  .ai-single,
+  .ai-single.ai-single-in {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
 .sparkline-path        { stroke-dasharray:600; stroke-dashoffset:600; animation: draw-line 2s cubic-bezier(0.16,1,0.3,1) 0.4s forwards; }
 
 /* ═══════════════════════════════════════════════════════════

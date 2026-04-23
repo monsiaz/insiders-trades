@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { localePath, localeNames, localeFlags, locales, type Locale } from "@/lib/i18n";
 
 interface LangSwitcherProps {
@@ -16,9 +16,6 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Close the dropdown when the user taps/clicks anywhere outside it.
-  // We cannot use a `position:fixed` backdrop because the nav ancestor has
-  // `transform: translateZ(0)` which turns `position:fixed` children into
-  // `position:absolute` (relative to the nav, not the viewport).
   useEffect(() => {
     if (!open) return;
     function handleOutside(e: MouseEvent | TouchEvent) {
@@ -27,7 +24,6 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
         setOpen(false);
       }
     }
-    // Use capture so we catch taps before any stopPropagation inside children
     document.addEventListener("mousedown", handleOutside, true);
     document.addEventListener("touchstart", handleOutside, { capture: true, passive: true });
     return () => {
@@ -39,7 +35,10 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
   // Close on route change
   useEffect(() => { setOpen(false); }, [pathname]);
 
-  // pathname is the browser URL (e.g. /fr/companies/ or /companies/)
+  // Build the sister-page URL for a given target locale.
+  // We use a plain <a href> (no onClick) so the browser performs a real full-page
+  // load — this is intentional: locale changes must bypass the Next.js client-side
+  // router cache (which reuses RSC payloads and ignores x-locale header changes).
   function getSisterPath(targetLocale: Locale): string {
     let base = pathname;
     for (const loc of locales) {
@@ -49,16 +48,6 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
     }
     return localePath(base, targetLocale);
   }
-
-  // Hard navigation is required because the middleware rewrites /fr/* → /* internally.
-  // The Next.js App Router client-side router sees both as the same route and reuses
-  // the cached RSC payload, so a soft <Link> navigation would NOT re-render Server
-  // Components with the new x-locale header. A full reload solves this cleanly.
-  const navigateTo = useCallback((targetLocale: Locale) => {
-    setOpen(false);
-    if (targetLocale === currentLocale) return;
-    window.location.href = getSisterPath(targetLocale);
-  }, [currentLocale, pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (variant === "full") {
     return (
@@ -70,7 +59,6 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
               key={loc}
               href={getSisterPath(loc)}
               aria-current={isActive ? "page" : undefined}
-              onClick={(e) => { e.preventDefault(); navigateTo(loc); }}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -85,7 +73,6 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
                 background: isActive ? "var(--gold-bg)" : "transparent",
                 color: isActive ? "var(--gold)" : "var(--tx-3)",
                 textDecoration: "none",
-                cursor: "pointer",
                 transition: "all 0.15s ease",
               }}
             >
@@ -124,7 +111,7 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
           transition: "border-color 0.15s ease, color 0.15s ease, background 0.15s ease",
           touchAction: "manipulation",
           WebkitTapHighlightColor: "transparent",
-          minHeight: "36px", // larger tap target on mobile
+          minHeight: "36px",
         }}
       >
         <span style={{ fontSize: "1rem", lineHeight: 1 }}>{localeFlags[currentLocale]}</span>
@@ -167,7 +154,6 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
                 href={getSisterPath(loc)}
                 role="option"
                 aria-selected={isActive}
-                onClick={(e) => { e.preventDefault(); navigateTo(loc); }}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -178,7 +164,6 @@ export function LangSwitcher({ currentLocale, variant = "compact" }: LangSwitche
                   color: isActive ? "var(--gold)" : "var(--tx-1)",
                   background: isActive ? "var(--gold-bg)" : "transparent",
                   textDecoration: "none",
-                  cursor: "pointer",
                   transition: "background 0.1s ease",
                   borderBottom: "1px solid var(--border)",
                   touchAction: "manipulation",

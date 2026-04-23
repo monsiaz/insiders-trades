@@ -14,6 +14,8 @@ const DAY = 86400_000;
 export interface StrategyResult {
   label: string;
   description: string;
+  labelEn: string;
+  descriptionEn: string;
   matching: number;       // total signals matching the filter over all history
   months: number;         // months simulated
   cagr: number | null;    // annualized return %
@@ -125,6 +127,8 @@ function runStrategy(
   opts: {
     label: string;
     description: string;
+    labelEn: string;
+    descriptionEn: string;
     filter: (bt: Bt) => boolean;
     topN?: number;
     minN?: number;
@@ -165,10 +169,9 @@ function runStrategy(
 
   if (monthlyReturns.length < 12) {
     return {
-      label: opts.label,
-      description: opts.description,
-      matching: matching.length,
-      months: monthlyReturns.length,
+      label: opts.label, description: opts.description,
+      labelEn: opts.labelEn, descriptionEn: opts.descriptionEn,
+      matching: matching.length, months: monthlyReturns.length,
       cagr: null, sharpe: null, maxDDPct: null, winRatePct: null,
       beatCacPct: null, avgMonthlyPct: null,
     };
@@ -201,13 +204,10 @@ function runStrategy(
   const winRate = (monthlyReturns.filter((r) => r > 0).length / monthlyReturns.length) * 100;
 
   return {
-    label: opts.label,
-    description: opts.description,
-    matching: matching.length,
-    months: monthlyReturns.length,
-    cagr,
-    sharpe,
-    maxDDPct: maxDD * 100,
+    label: opts.label, description: opts.description,
+    labelEn: opts.labelEn, descriptionEn: opts.descriptionEn,
+    matching: matching.length, months: monthlyReturns.length,
+    cagr, sharpe, maxDDPct: maxDD * 100,
     winRatePct: winRate,
     beatCacPct: totalCacMonths ? (beatCac / totalCacMonths) * 100 : 0,
     avgMonthlyPct: avgMonthly,
@@ -305,31 +305,43 @@ export async function computePerformanceData(): Promise<PerfData> {
     runStrategy(universe, cacByMonth, {
       label: "Passif · tous les signaux d'achat",
       description: "Stratégie naïve : on achète les 20 meilleurs scores chaque mois, quel que soit le filtre.",
+      labelEn: "Passive · all buy signals",
+      descriptionEn: "Naïve strategy: buy the top-20 scores every month regardless of filters.",
       filter: () => true,
     }),
     runStrategy(universe, cacByMonth, {
       label: "Filtre signalScore ≥ 50",
       description: "On n'achète que si notre score composite (v2) dépasse 50.",
+      labelEn: "Score filter ≥ 50",
+      descriptionEn: "Buy only when our composite score (v2) exceeds 50.",
       filter: (bt) => (bt.signalScore ?? 0) >= 50,
     }),
     runStrategy(universe, cacByMonth, {
       label: "Cluster uniquement",
       description: "Uniquement les trades où ≥ 2 dirigeants ont acheté la même société ±30 jours · signal de conviction collective.",
+      labelEn: "Cluster only",
+      descriptionEn: "Only trades where ≥ 2 insiders bought the same company within ±30 days · collective conviction signal.",
       filter: (bt) => bt.isCluster === true,
     }),
     runStrategy(universe, cacByMonth, {
       label: "PDG / CFO seulement",
       description: "On filtre par fonction : uniquement les trades des PDG et directeurs financiers (les plus informés).",
+      labelEn: "CEO / CFO only",
+      descriptionEn: "Filter by role: only trades by CEOs and CFOs (the best-informed insiders).",
       filter: (bt) => ["ceo", "cfo"].includes(roleCategory(bt.insiderFunction)),
     }),
     runStrategy(universe, cacByMonth, {
       label: "Trade ≥ 500k€ + Cluster",
       description: "Conviction matérielle : seulement les trades d'au moins 500 000 € dans un cluster.",
+      labelEn: "Trade ≥ €500k + Cluster",
+      descriptionEn: "Material conviction: trades of at least €500,000 inside a cluster.",
       filter: (bt) => (bt.totalAmount ?? 0) >= 500_000 && bt.isCluster === true,
     }),
     runStrategy(universe, cacByMonth, {
       label: "★ Stratégie Sigma recommandée",
       description: "PDG/CFO + cluster + déclaration récente (délai tx→pub ≤ 5 jours). Notre meilleur ratio rendement / risque.",
+      labelEn: "★ Recommended Sigma strategy",
+      descriptionEn: "CEO/CFO + cluster + recent filing (tx→pub delay ≤ 5 days). Best risk/return ratio.",
       filter: (bt) => {
         const role = roleCategory(bt.insiderFunction);
         const fresh = bt.transactionDate

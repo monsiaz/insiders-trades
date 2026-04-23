@@ -565,7 +565,7 @@ print(r.json())`,
               <CodeTabs
                 tabs={[
                   { label: "cURL", language: "bash", code: `curl ${BASE_URL}/api/v1/me -H "Authorization: Bearer ${EX_KEY}"` },
-                  { label: "Réponse", language: "json", code: `{
+                  { label: isFr ? "Réponse" : "Response", language: "json", code: `{
   "key": {
     "id":            "cm...",
     "name":          "Production bot",
@@ -575,7 +575,7 @@ print(r.json())`,
   },
   "user": {
     "id":        "cm...",
-    "email":     "vous@exemple.com",
+    "email":     "you@example.com",
     "firstName": "Simon",
     "lastName":  null,
     "role":      "user"

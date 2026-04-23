@@ -364,7 +364,7 @@ export default async function PerformancePage() {
             </thead>
             <tbody>
               {d.strategies.map((s, i) => (
-                <StrategyRow key={i} s={s} isBest={s === d.bestBySharpe} numLocale={numLocale} />
+                <StrategyRow key={i} s={s} isBest={s === d.bestBySharpe} numLocale={numLocale} isFr={isFr} />
               ))}
               <tr style={{ borderTop: "2px solid var(--gold)", background: "var(--gold-bg)" }}>
                 <td style={{ padding: "10px 12px", color: "var(--tx-1)", fontWeight: 700 }}>
@@ -1054,7 +1054,7 @@ function PlaybookStep({
   );
 }
 
-function StrategyRow({ s, isBest, numLocale }: { s: StrategyResult; isBest: boolean; numLocale: string }) {
+function StrategyRow({ s, isBest, numLocale, isFr = true }: { s: StrategyResult; isBest: boolean; numLocale: string; isFr?: boolean }) {
   const cagrColor = (s.cagr ?? 0) > 0 ? "var(--signal-pos)" : (s.cagr ?? 0) < 0 ? "var(--signal-neg)" : "var(--tx-2)";
   return (
     <tr
@@ -1064,9 +1064,9 @@ function StrategyRow({ s, isBest, numLocale }: { s: StrategyResult; isBest: bool
       }}
     >
       <td style={{ padding: "10px 12px", color: "var(--tx-1)", fontWeight: isBest ? 700 : 500 }}>
-        <div>{s.label}</div>
+        <div>{isFr ? s.label : (s.labelEn ?? s.label)}</div>
         <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "2px", lineHeight: 1.4 }}>
-          {s.description}
+          {isFr ? s.description : (s.descriptionEn ?? s.description)}
         </div>
       </td>
       <td style={{ padding: "10px 12px", color: "var(--tx-2)", fontFamily: "monospace", verticalAlign: "top" }}>

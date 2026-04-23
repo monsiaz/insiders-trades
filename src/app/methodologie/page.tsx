@@ -984,7 +984,7 @@ export default async function MethodologiePage() {
             desc={isFr
               ? "Cours au-dessus de sa moyenne mobile 200 jours : tendance de fond haussière, conforté par l'achat dirigeant."
               : "Price above its 200-day moving average: underlying uptrend, reinforced by the insider buy."}
-            threshold="prix ≥ MA200 × 1.05"
+            threshold={isFr ? "prix ≥ MA200 × 1.05" : "price ≥ MA200 × 1.05"}
             points="+2 pts"
             badge="Momentum"
           />
@@ -994,7 +994,7 @@ export default async function MethodologiePage() {
             desc={isFr
               ? "Objectif cours moyen analystes supérieur de 25%+ au cours actuel. Consensus bullish chiffré."
               : "Average analyst price target more than 25% above the current price. Quantified bullish consensus."}
-            threshold="(target − prix) / prix ≥ 25%"
+            threshold={isFr ? "(target − prix) / prix ≥ 25%" : "(target − price) / price ≥ 25%"}
             points="+3 pts"
             badge="Upside ≥25%"
           />

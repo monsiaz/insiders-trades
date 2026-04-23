@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect, memo } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CompanyLogo } from "./CompanyLogo";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -30,35 +30,36 @@ type ActivityFilter = "all" | "7d" | "30d" | "90d";
 type ActionFilter = "all" | "buy" | "sell";
 type SortKey = "name" | "activity" | "count" | "cap";
 
-// ── Filter config ──────────────────────────────────────────────────────────
+// ── Filter config — FR / EN ─────────────────────────────────────────────────
 
-const CAP_LABELS: Record<CapFilter, string> = {
-  all: "Toutes",
-  micro: "Micro (<50M€)",
-  small: "Small (50-300M€)",
-  mid: "Mid (0.3-2B€)",
-  large: "Large (2-10B€)",
-  mega: "Mega (>10B€)",
+const CAP_LABELS_FR: Record<CapFilter, string> = {
+  all: "Toutes", micro: "Micro (<50M€)", small: "Small (50-300M€)",
+  mid: "Mid (0.3-2Md€)", large: "Large (2-10Md€)", mega: "Mega (>10Md€)",
+};
+const CAP_LABELS_EN: Record<CapFilter, string> = {
+  all: "All", micro: "Micro (<€50M)", small: "Small (€50-300M)",
+  mid: "Mid (€0.3-2Bn)", large: "Large (€2-10Bn)", mega: "Mega (>€10Bn)",
 };
 
-const ACTIVITY_LABELS: Record<ActivityFilter, string> = {
-  all: "Toutes périodes",
-  "7d": "7 derniers jours",
-  "30d": "30 derniers jours",
-  "90d": "3 derniers mois",
+const ACTIVITY_LABELS_FR: Record<ActivityFilter, string> = {
+  all: "Toutes périodes", "7d": "7 derniers jours", "30d": "30 derniers jours", "90d": "3 derniers mois",
+};
+const ACTIVITY_LABELS_EN: Record<ActivityFilter, string> = {
+  all: "All periods", "7d": "Last 7 days", "30d": "Last 30 days", "90d": "Last 3 months",
 };
 
-const ACTION_LABELS: Record<ActionFilter, string> = {
-  all: "Toutes",
-  buy: "Achats récents",
-  sell: "Ventes récentes",
+const ACTION_LABELS_FR: Record<ActionFilter, string> = {
+  all: "Toutes", buy: "Achats récents", sell: "Ventes récentes",
+};
+const ACTION_LABELS_EN: Record<ActionFilter, string> = {
+  all: "All", buy: "Recent buys", sell: "Recent sales",
 };
 
-const SORT_LABELS: Record<SortKey, string> = {
-  name: "Alphabétique",
-  activity: "Activité récente",
-  count: "+ de déclarations",
-  cap: "Capitalisation",
+const SORT_LABELS_FR: Record<SortKey, string> = {
+  name: "Alphabétique", activity: "Activité récente", count: "+ de déclarations", cap: "Capitalisation",
+};
+const SORT_LABELS_EN: Record<SortKey, string> = {
+  name: "Alphabetical", activity: "Recent activity", count: "Most declarations", cap: "Market cap",
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -153,7 +154,7 @@ function Pill<T extends string>({
 
 // ── Sort dropdown ───────────────────────────────────────────────────────────
 
-function SortDropdown({ value, onChange }: { value: SortKey; onChange: (v: SortKey) => void }) {
+function SortDropdown({ value, onChange, labels }: { value: SortKey; onChange: (v: SortKey) => void; labels: Record<SortKey, string> }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -180,7 +181,7 @@ function SortDropdown({ value, onChange }: { value: SortKey; onChange: (v: SortK
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
           <path d="M3 6h18M7 12h10M11 18h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
         </svg>
-        {SORT_LABELS[value]}
+        {labels[value]}
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.5 }}>
           <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
@@ -193,7 +194,7 @@ function SortDropdown({ value, onChange }: { value: SortKey; onChange: (v: SortK
           borderRadius: "12px", boxShadow: "var(--shadow-md)",
           zIndex: 100, minWidth: "180px", overflow: "hidden",
         }}>
-          {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
+          {(Object.keys(labels) as SortKey[]).map((k) => (
             <button
               key={k}
               onClick={() => { onChange(k); setOpen(false); }}
@@ -225,7 +226,7 @@ function SortDropdown({ value, onChange }: { value: SortKey; onChange: (v: SortK
 
 // ── Company card ────────────────────────────────────────────────────────────
 
-function CompanyCard({ company, q }: { company: CompanyRow; q: string }) {
+function CompanyCard({ company, q, isFr = false, numLocale = "en-GB" }: { company: CompanyRow; q: string; isFr?: boolean; numLocale?: string }) {
   const lastDecl = company.lastDecl;
   const nature = lastDecl?.transactionNature?.toLowerCase() ?? "";
   const isB = isBuy(lastDecl?.transactionNature ?? null);
@@ -325,7 +326,7 @@ function CompanyCard({ company, q }: { company: CompanyRow; q: string }) {
               fontWeight: 600,
               marginTop: "3px",
             }}>
-              Dernier
+              {isFr ? "Dernier" : "Latest"}
             </div>
           </div>
         ) : null}
@@ -350,7 +351,7 @@ function CompanyCard({ company, q }: { company: CompanyRow; q: string }) {
             <strong style={{ color: "var(--tx-1)", fontWeight: 700 }}>
               {company.declarationCount}
             </strong>{" "}
-            décl.
+            {isFr ? "décl." : "decl."}
           </span>
           {mcap && (
             <>
@@ -373,7 +374,7 @@ function CompanyCard({ company, q }: { company: CompanyRow; q: string }) {
             fontFamily: "'JetBrains Mono', monospace",
             letterSpacing: "0.04em",
           }}>
-            {new Date(lastDecl.pubDate).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "2-digit" })}
+            {new Date(lastDecl.pubDate).toLocaleDateString(numLocale, { day: "2-digit", month: "short", year: "2-digit" })}
           </span>
         )}
       </div>
@@ -398,7 +399,7 @@ function CompanyCard({ company, q }: { company: CompanyRow; q: string }) {
 // Memoize: with 2000+ companies, filter changes shouldn't re-render unchanged rows
 const MemoCompanyCard = memo(
   CompanyCard,
-  (prev, next) => prev.company.id === next.company.id && prev.q === next.q
+  (prev, next) => prev.company.id === next.company.id && prev.q === next.q && prev.isFr === next.isFr
 );
 
 // ── Active filters badge ────────────────────────────────────────────────────
@@ -423,6 +424,14 @@ export function CompaniesClient({ companies, initialQ }: {
   companies: CompanyRow[];
   initialQ?: string;
 }) {
+  const pathname = usePathname();
+  const isFr = pathname === "/fr" || pathname.startsWith("/fr/");
+  const numLocale = isFr ? "fr-FR" : "en-GB";
+  const CAP_LABELS      = isFr ? CAP_LABELS_FR      : CAP_LABELS_EN;
+  const ACTIVITY_LABELS = isFr ? ACTIVITY_LABELS_FR  : ACTIVITY_LABELS_EN;
+  const ACTION_LABELS   = isFr ? ACTION_LABELS_FR    : ACTION_LABELS_EN;
+  const SORT_LABELS     = isFr ? SORT_LABELS_FR      : SORT_LABELS_EN;
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -497,7 +506,7 @@ export function CompaniesClient({ companies, initialQ }: {
 
     // Sort
     rows = [...rows].sort((a, b) => {
-      if (sort === "name")     return a.name.localeCompare(b.name, "fr");
+      if (sort === "name")     return a.name.localeCompare(b.name, isFr ? "fr" : "en");
       if (sort === "count")    return b.declarationCount - a.declarationCount;
       if (sort === "cap") {
         const acap = a.marketCap ?? 0;
@@ -535,7 +544,7 @@ export function CompaniesClient({ companies, initialQ }: {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Filtrer par nom ou ticker…"
+              placeholder={isFr ? "Filtrer par nom ou ticker…" : "Filter by name or ticker…"}
               style={{
                 width: "100%", paddingLeft: "34px", paddingRight: q ? "32px" : "12px",
                 height: "44px",
@@ -564,7 +573,7 @@ export function CompaniesClient({ companies, initialQ }: {
 
           {/* Sort + filter toggle row (always horizontal) */}
           <div className="flex items-center gap-2">
-          <SortDropdown value={sort} onChange={setSort} />
+          <SortDropdown value={sort} onChange={setSort} labels={SORT_LABELS} />
 
           {/* Filter toggle */}
           <button
@@ -582,7 +591,7 @@ export function CompaniesClient({ companies, initialQ }: {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Filtres
+            {isFr ? "Filtres" : "Filters"}
             <ActiveCount n={activeFilterCount} />
           </button>
           </div>
@@ -599,7 +608,7 @@ export function CompaniesClient({ companies, initialQ }: {
             {/* Capitalisation */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", flexWrap: "wrap" }}>
               <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.72rem", fontWeight: 700, color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.07em", minWidth: "80px", paddingTop: "10px" }}>
-                Capitalisation
+                {isFr ? "Capitalisation" : "Market cap"}
               </span>
               <div style={{ flex: "1 1 0", minWidth: 0, overflowX: "auto" }}>
                 <Pill
@@ -614,7 +623,7 @@ export function CompaniesClient({ companies, initialQ }: {
             {/* Activité */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", flexWrap: "wrap" }}>
               <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.72rem", fontWeight: 700, color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.07em", minWidth: "80px", paddingTop: "10px" }}>
-                Activité
+                {isFr ? "Activité" : "Activity"}
               </span>
               <div style={{ flex: "1 1 0", minWidth: 0, overflowX: "auto" }}>
                 <Pill
@@ -629,7 +638,7 @@ export function CompaniesClient({ companies, initialQ }: {
             {/* Dernière transaction */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", flexWrap: "wrap" }}>
               <span style={{ fontFamily: "'Inter', system-ui", fontSize: "0.72rem", fontWeight: 700, color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.07em", minWidth: "80px", paddingTop: "10px" }}>
-                Transaction
+                {isFr ? "Transaction" : "Trade type"}
               </span>
               <div style={{ flex: "1 1 0", minWidth: 0, overflowX: "auto" }}>
                 <Pill
@@ -654,7 +663,7 @@ export function CompaniesClient({ companies, initialQ }: {
                   color: "var(--tx-3)", cursor: "pointer",
                 }}
               >
-                Réinitialiser les filtres
+                {isFr ? "Réinitialiser les filtres" : "Reset filters"}
               </button>
             )}
           </div>
@@ -667,10 +676,12 @@ export function CompaniesClient({ companies, initialQ }: {
         marginBottom: "16px",
       }}>
         <div style={{ fontFamily: "'Inter', system-ui", fontSize: "0.82rem", color: "var(--tx-3)" }}>
-          <span style={{ fontWeight: 700, color: "var(--tx-2)" }}>{filtered.length.toLocaleString("fr-FR")}</span>
-          {" "}société{filtered.length !== 1 ? "s" : ""}
+          <span style={{ fontWeight: 700, color: "var(--tx-2)" }}>{filtered.length.toLocaleString(numLocale)}</span>
+          {isFr
+            ? ` société${filtered.length !== 1 ? "s" : ""}`
+            : ` compan${filtered.length !== 1 ? "ies" : "y"}`}
           {filtered.length !== companies.length && (
-            <span style={{ color: "var(--tx-4)" }}> sur {companies.length.toLocaleString("fr-FR")}</span>
+            <span style={{ color: "var(--tx-4)" }}> {isFr ? "sur" : "of"} {companies.length.toLocaleString(numLocale)}</span>
           )}
         </div>
 
@@ -698,17 +709,14 @@ export function CompaniesClient({ companies, initialQ }: {
             <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
           <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--tx-1)", marginBottom: "6px" }}>
-            Aucune société trouvée
+            {isFr ? "Aucune société trouvée" : "No company found"}
           </h2>
           <p style={{ color: "var(--tx-3)", fontSize: "0.84rem", marginBottom: "16px" }}>
-            Essayez d&apos;ajuster vos filtres.
+            {isFr ? "Essayez d'ajuster vos filtres." : "Try adjusting your filters."}
           </p>
           {activeFilterCount > 0 && (
-            <button
-              onClick={resetFilters}
-              className="btn btn-primary"
-            >
-              Réinitialiser les filtres
+            <button onClick={resetFilters} className="btn btn-primary">
+              {isFr ? "Réinitialiser les filtres" : "Reset filters"}
             </button>
           )}
         </div>
@@ -716,7 +724,7 @@ export function CompaniesClient({ companies, initialQ }: {
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.slice(0, visibleCount).map((company) => (
-              <MemoCompanyCard key={company.id} company={company} q={dq} />
+              <MemoCompanyCard key={company.id} company={company} q={dq} isFr={isFr} numLocale={numLocale} />
             ))}
           </div>
           {visibleCount < filtered.length && (
@@ -726,8 +734,9 @@ export function CompaniesClient({ companies, initialQ }: {
                 className="btn btn-outline"
                 style={{ padding: "10px 22px", fontSize: "0.85rem" }}
               >
-                Charger {Math.min(120, filtered.length - visibleCount)} société
-                {Math.min(120, filtered.length - visibleCount) > 1 ? "s" : ""} de plus
+                {isFr
+                  ? `Charger ${Math.min(120, filtered.length - visibleCount)} société${Math.min(120, filtered.length - visibleCount) > 1 ? "s" : ""} de plus`
+                  : `Load ${Math.min(120, filtered.length - visibleCount)} more compan${Math.min(120, filtered.length - visibleCount) > 1 ? "ies" : "y"}`}
                 <span style={{
                   marginLeft: "8px",
                   fontFamily: "'JetBrains Mono', monospace",
@@ -735,7 +744,7 @@ export function CompaniesClient({ companies, initialQ }: {
                   color: "var(--tx-4)",
                   letterSpacing: "0.04em",
                 }}>
-                  · {(filtered.length - visibleCount).toLocaleString("fr-FR")} restantes
+                  · {(filtered.length - visibleCount).toLocaleString(numLocale)} {isFr ? "restantes" : "remaining"}
                 </span>
               </button>
             </div>

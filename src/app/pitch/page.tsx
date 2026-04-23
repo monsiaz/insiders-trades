@@ -263,7 +263,7 @@ export default async function PitchPage() {
     clusterStat2: "Median T+365",
     clusterStat3: "Win rate",
     clusterTradesLabel: "trades · n T+365 =",
-    chartOverline: "02 · Visualisation",
+    chartOverline: "02 · Visualization",
     chartH2: "Average T+90 return by signal type",
     chartDesc: "All bars are measured from pubDate+1 — the day after AMF publication, not the internal purchase date. The more qualified the signal (cluster, depth), the higher the return and the more symmetric the distribution.",
     legendSigma: "Sigma signals (gold)",
@@ -639,8 +639,9 @@ export default async function PitchPage() {
             <tbody>
               {combos.slice(0, 8).map((c, i) => {
                 const isTop = i < 3;
-                const cat = c.category;
-                const catColor = cat === "Cluster" ? "var(--gold)" : cat === "Rôle" ? "var(--c-indigo-2)" : "var(--tx-4)";
+                const catRaw = c.category;
+                const cat = isFr ? catRaw : (catRaw === "Rôle" ? "Role" : catRaw === "Taille" ? "Size" : catRaw);
+                const catColor = catRaw === "Cluster" ? "var(--gold)" : catRaw === "Rôle" ? "var(--c-indigo-2)" : "var(--tx-4)";
                 return (
                   <tr key={c.name} style={{
                     background: isTop ? "var(--gold-bg)" : i % 2 === 0 ? "transparent" : "var(--bg-raised)",
@@ -724,9 +725,9 @@ export default async function PitchPage() {
                   }}>
                     <td style={{ padding: "10px 12px", minWidth: 240 }}>
                       <div style={{ fontWeight: i === 0 ? 700 : 500, color: "var(--tx-1)", fontSize: "0.84rem" }}>
-                        {i === 0 && "★ "}{s.label}
+                        {i === 0 && "★ "}{isFr ? s.label : (s.labelEn ?? s.label)}
                       </div>
-                      <div style={{ fontSize: "0.7rem", color: "var(--tx-3)", marginTop: 2, lineHeight: 1.4 }}>{s.description}</div>
+                      <div style={{ fontSize: "0.7rem", color: "var(--tx-3)", marginTop: 2, lineHeight: 1.4 }}>{isFr ? s.description : (s.descriptionEn ?? s.description)}</div>
                     </td>
                     <td style={{ padding: "10px 12px", textAlign: "center", color: "var(--tx-3)", fontSize: "0.78rem" }}>{fmtNum(s.matching)}</td>
                     <td style={{ padding: "10px 12px", textAlign: "center", fontWeight: 700, fontFamily: "'Banana Grotesk', sans-serif", fontSize: "1rem", color: "var(--signal-pos)" }}>

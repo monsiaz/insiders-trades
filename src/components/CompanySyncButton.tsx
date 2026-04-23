@@ -24,10 +24,10 @@ export function CompanySyncButton({ companyId }: { companyId: string }) {
         setResult(`+${data.added}`);
         router.refresh();
       } else {
-        setResult("Erreur");
+        setResult("Error");
       }
     } catch {
-      setResult("Erreur");
+      setResult("Error");
     } finally {
       setLoading(false);
       setTimeout(() => setResult(null), 4000);

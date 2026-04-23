@@ -215,7 +215,7 @@ function SortDropdown({ value, onChange, labels }: { value: SortKey; onChange: (
                 </svg>
               )}
               {value !== k && <span style={{ width: 12 }} />}
-              {SORT_LABELS[k]}
+              {labels[k]}
             </button>
           ))}
         </div>

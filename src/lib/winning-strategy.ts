@@ -269,5 +269,7 @@ export const STRATEGY_PROOF: StrategyProof = {
   sharpe: 1.00,
   winRate: 66,
   maxDrawdownPct: -12,
-  lastUpdatedAt: new Date().toISOString(),
+  // Fixed date — reflects the actual grid-search run, not "now".
+  // Update by re-running scripts/grid-search-v2.mjs and setting the ISO date here.
+  lastUpdatedAt: "2025-04-01T00:00:00.000Z",
 };

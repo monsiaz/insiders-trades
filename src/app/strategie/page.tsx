@@ -292,12 +292,12 @@ export default async function StrategiePage() {
             title={isFr ? `Publié ≤ ${WINNING_STRATEGY.maxPubDelayDays} jours` : `Filed ≤ ${WINNING_STRATEGY.maxPubDelayDays} days`}
             detail={isFr ? (
               <>
-                Délai entre la transaction et sa publication AMF ≤ 7 jours ouvrés. Les déclarations
+                Délai entre la transaction et sa publication AMF ≤ 7 jours calendaires. Les déclarations
                 tardives sont souvent sur des positions anciennes, moins actionnables.
               </>
             ) : (
               <>
-                Delay between the transaction and its AMF filing ≤ 7 business days. Late filings
+                Delay between the transaction and its AMF filing ≤ 7 calendar days. Late filings
                 are often on older positions, less actionable.
               </>
             )}

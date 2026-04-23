@@ -583,15 +583,17 @@ function SignalsTable({ combos, isFr = false }: { combos: SignalCombo[]; isFr?: 
               </th>
               <th className="text-center pb-2 text-xs text-muted font-medium">
                 Win%/90j
-                <InfoTip text="% de trades avec un cours en hausse à T+90. >60% = fort signal. Un hasard pur donnerait ~50%." />
+                <InfoTip text="% de trades avec un cours en hausse à T+90. Référence : le marché actions clôture en hausse ~55-60% des fois sur 90j historiquement (biais haussier). Un taux >65% est donc significatif pour ce signal." />
               </th>
               <th className="text-center pb-2 text-xs text-muted font-medium">
                 Win%/1an
                 <InfoTip text="% de trades avec un cours en hausse à T+365." />
               </th>
               <th className="text-center pb-2 text-xs text-muted font-medium">
-                Sharpe 90j
-                <InfoTip text="Rendement moyen T+90 divisé par l'écart-type. Mesure la régularité du signal. >0.5 = bon, >1 = excellent. Un Sharpe élevé avec peu de trades peut être du bruit." wide />
+                {isFr ? "Ratio R/σ 90j" : "Return/Risk 90d"}
+                <InfoTip text={isFr
+                  ? "Retour moyen T+90 / écart-type (ratio cross-sectionnel sur l'ensemble des trades, non annualisé, sans taux sans risque). Ce n'est pas un Sharpe de série temporelle au sens académique. Valeur > 0.5 = signal régulier, > 1.0 = excellent, < 0 = signal erratique."
+                  : "Mean T+90 return / std dev (cross-sectional ratio across all trades, not annualised, no risk-free rate). This is not a time-series Sharpe in the academic sense. Value > 0.5 = consistent signal, > 1.0 = excellent, < 0 = erratic."} wide />
               </th>
               <th className="text-center pb-2 text-xs text-muted font-medium">
                 Sharpe 1an
@@ -920,12 +922,10 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
 
   // Dynamic KPI values: respond to the groupHorizon picker
   const kpiReturn = getReturn(g, groupHorizon);
-  const kpiWinRate = groupHorizon === "30d"  ? g.winRate90d   // no dedicated 30d win rate · fallback
-    : groupHorizon === "60d"  ? g.winRate90d
-    : groupHorizon === "90d"  ? g.winRate90d
-    : groupHorizon === "160d" ? g.winRate90d
-    : groupHorizon === "365d" ? g.winRate365d
-    : g.winRate365d; // 730d
+  // Win rate only available at T+90 and T+365 — for other horizons, show the nearest available
+  const kpiWinRate = (groupHorizon === "365d" || groupHorizon === "730d") ? g.winRate365d : g.winRate90d;
+  // The actual horizon used for the win rate label (to avoid misleading "Win rate T+30" when T+90 data is shown)
+  const kpiWinRateHorizonLabel = (groupHorizon === "365d" || groupHorizon === "730d") ? (isFr ? "T+365" : "T+365") : "T+90";
   const kpiMedianReturn = groupHorizon === "90d" ? g.medianReturn90d : groupHorizon === "365d" ? g.medianReturn365d : null;
   const kpiHorizonLabel = HORIZONS.find((h) => h.key === groupHorizon)?.label ?? groupHorizon;
 
@@ -1024,18 +1024,22 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
             tooltip={isFr ? "La médiane est plus robuste que la moyenne : 50% des trades ont eu un retour inférieur à cette valeur." : "The median is more robust than the mean: 50% of trades returned less than this value."}
           />
           <KpiCard
-            label={`Win rate ${kpiHorizonLabel}`}
+            label={`Win rate ${kpiWinRateHorizonLabel}`}
             value={kpiWinRate != null ? `${kpiWinRate.toFixed(0)}%` : "·"}
             border="mint"
             sub={isFr ? "trades positifs" : "positive trades"}
-            tooltip={isFr ? "Pourcentage de trades où le cours était en hausse à l'horizon choisi." : "Percentage of trades where the price was up at the chosen horizon."}
+            tooltip={isFr
+              ? `% de trades avec un cours en hausse à ${kpiWinRateHorizonLabel} après la transaction. Disponible uniquement à T+90 et T+365. Référence marché : le CAC 40 clôture en hausse ~55-60% des fois sur ces horizons sur longue période — un taux >65% est donc significatif.`
+              : `% of trades where the price was up at ${kpiWinRateHorizonLabel} after the transaction. Available only at T+90 and T+365. Market reference: the CAC 40 closes higher ~55-60% of the time on these horizons over the long run — so a rate >65% is genuinely significant.`}
           />
           <KpiCard
             label="Sharpe T+90"
             value={g.sharpe90d != null ? g.sharpe90d.toFixed(2) : "·"}
             border="amber"
-            sub={isFr ? "ratio risque/retour" : "risk/return ratio"}
-            tooltip={isFr ? "Ratio de Sharpe = rendement moyen / écart-type des retours. >0.5 = bon, >1.0 = excellent." : "Sharpe ratio = mean return / std dev of returns. >0.5 = good, >1.0 = excellent."}
+            sub={isFr ? "retour / σ (90j)" : "return / σ (90d)"}
+            tooltip={isFr
+              ? "Retour moyen T+90 divisé par l'écart-type — ratio cross-sectionnel sur les trades (non annualisé, sans taux sans risque). Mesure la régularité du signal. >0.5 = bon, >1.0 = excellent. Ne pas confondre avec le ratio de Sharpe de portefeuille."
+              : "Mean T+90 return divided by std dev — cross-sectional ratio across trades (not annualised, no risk-free rate). Measures signal consistency. >0.5 = good, >1.0 = excellent. Not to be confused with a portfolio Sharpe ratio."}
           />
         </div>
       </div>
@@ -1281,7 +1285,7 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
                     </th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">Win/1an</th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">
-                      Sharpe <InfoTip text="Rendement moyen T+90 / écart-type. Mesure la constance du signal." wide />
+                      {isFr ? "Retour/σ" : "Return/σ"} <InfoTip text={isFr ? "Retour moyen T+90 / écart-type (ratio cross-sectionnel, non annualisé). >0.5 = signal régulier." : "Mean T+90 / std dev (cross-sectional ratio, not annualised). >0.5 = consistent signal."} wide />
                     </th>
                   </tr>
                 </thead>
@@ -1612,7 +1616,7 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
                             Win% <InfoTip text="% trades positifs à T+90." />
                           </th>
                           <th className="text-center pb-2 text-xs text-muted font-medium">
-                            Sharpe <InfoTip text="Rendement T+90 / écart-type." />
+                            {isFr ? "Retour/σ" : "Return/σ"} <InfoTip text={isFr ? "Retour moyen T+90 / écart-type (cross-sectionnel, non annualisé)." : "Mean T+90 / std dev (cross-sectional, not annualised)."} />
                           </th>
                         </tr>
                       </thead>
@@ -1628,7 +1632,7 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
                                   {isCurrentYear && (
                                     <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                                       style={{ background: "var(--c-mint-bg)", color: "var(--c-mint)", border: "1px solid var(--c-mint-bd)" }}>
-                                      en cours
+                                      {isFr ? "en cours" : "ongoing"}
                                     </span>
                                   )}
                                 </td>
@@ -1657,6 +1661,22 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
           })()}
         </div>
       )}
+
+      {/* ── Disclaimer réglementaire ─────────────────────────────────────────── */}
+      <div style={{
+        marginTop: "32px", padding: "14px 18px", borderRadius: "8px",
+        background: "var(--bg-raised)", border: "1px solid var(--border)",
+        fontSize: "0.72rem", color: "var(--tx-4)", lineHeight: 1.6,
+      }}>
+        <strong style={{ color: "var(--tx-3)" }}>
+          {isFr ? "⚠ Avertissement méthodologique" : "⚠ Methodological disclaimer"}
+        </strong>
+        {" · "}{isFr ? (
+          <>Les rendements affichés sont des <strong>moyennes arithmétiques</strong> calculées sur des trades individuels depuis la <strong>date de transaction de l&apos;initié</strong> (non la date de publication AMF). Le ratio Retour/σ n&apos;est pas un ratio de Sharpe annualisé au sens académique (pas de taux sans risque, pas de dimension temporelle). Les performances passées ne préjugent pas des performances futures. Cet outil est à usage analytique uniquement — il ne constitue pas un conseil en investissement.</>
+        ) : (
+          <>Returns shown are <strong>arithmetic averages</strong> across individual trades measured from the <strong>insider&apos;s transaction date</strong> (not the AMF publication date). The Return/σ ratio is not an annualised Sharpe ratio in the academic sense (no risk-free rate, no time dimension). Past performance does not predict future results. This tool is for analytical use only — it does not constitute investment advice.</>
+        )}
+      </div>
     </div>
   );
 }

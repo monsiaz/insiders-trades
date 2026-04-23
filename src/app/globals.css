@@ -894,10 +894,18 @@ input[type="search"], textarea, select {
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   border-radius: 8px;
 }
 .table-scroll .data-table,
 .table-scroll .glass-table { min-width: 600px; }
+
+/* Global: iOS momentum scroll + overscroll containment on any horizontal scroll container */
+.overflow-x-auto,
+[class*="overflow-x-auto"] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
 
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table th {

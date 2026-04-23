@@ -4,6 +4,7 @@
  * which is the honest, more compelling figure.
  */
 
+import type React from "react";
 import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
 import { computePerformanceData } from "@/lib/performance-data";
@@ -30,40 +31,43 @@ function BarChart({ bars }: {
   bars: { label: string; sub: string; value: number; gold?: boolean; grey?: boolean }[];
 }) {
   const maxVal = Math.max(...bars.map((b) => Math.abs(b.value)), 1);
-  const W = 100 / bars.length;
+  // Min bar width so labels don't crush on narrow viewports
+  const minTotalW = bars.length * 56;
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", height: 200, padding: "0 4px" }}>
-      {bars.map((b, i) => {
-        const pct = (Math.abs(b.value) / maxVal) * 100;
-        const bg = b.grey
-          ? "var(--bg-elevated)"
-          : b.gold
-            ? "var(--gold)"
-            : "var(--c-indigo-2)";
-        return (
-          <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", gap: 6 }}>
-            <div style={{
-              fontFamily: "'Banana Grotesk', sans-serif",
-              fontSize: "0.95rem",
-              fontWeight: 800,
-              letterSpacing: "-0.03em",
-              color: b.grey ? "var(--tx-3)" : b.gold ? "var(--gold)" : "var(--tx-1)",
-            }}>
-              {b.value > 0 ? "+" : ""}{b.value.toFixed(1)}%
+    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" as React.CSSProperties["WebkitOverflowScrolling"] }}>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: "4px", height: 200, padding: "0 4px", minWidth: minTotalW }}>
+        {bars.map((b, i) => {
+          const pct = (Math.abs(b.value) / maxVal) * 100;
+          const bg = b.grey
+            ? "var(--bg-elevated)"
+            : b.gold
+              ? "var(--gold)"
+              : "var(--c-indigo-2)";
+          return (
+            <div key={i} style={{ flex: 1, minWidth: 50, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", gap: 6 }}>
+              <div style={{
+                fontFamily: "'Banana Grotesk', sans-serif",
+                fontSize: "clamp(0.7rem, 1.8vw, 0.95rem)",
+                fontWeight: 800,
+                letterSpacing: "-0.03em",
+                color: b.grey ? "var(--tx-3)" : b.gold ? "var(--gold)" : "var(--tx-1)",
+              }}>
+                {b.value > 0 ? "+" : ""}{b.value.toFixed(1)}%
+              </div>
+              <div style={{
+                width: "70%", height: `${pct}%`,
+                background: bg, borderRadius: "2px 2px 0 0",
+                minHeight: 8,
+                transition: "height 0.3s",
+              }} />
+              <div style={{ textAlign: "center", padding: "0 2px" }}>
+                <div style={{ fontSize: "clamp(0.58rem, 1.4vw, 0.68rem)", fontWeight: 700, color: b.grey ? "var(--tx-4)" : "var(--tx-2)", lineHeight: 1.2 }}>{b.label}</div>
+                <div style={{ fontSize: "clamp(0.52rem, 1.2vw, 0.6rem)", color: "var(--tx-4)", lineHeight: 1.3, marginTop: 2 }}>{b.sub}</div>
+              </div>
             </div>
-            <div style={{
-              width: "70%", height: `${pct}%`,
-              background: bg, borderRadius: "2px 2px 0 0",
-              minHeight: 8,
-              transition: "height 0.3s",
-            }} />
-            <div style={{ textAlign: "center", padding: "0 2px" }}>
-              <div style={{ fontSize: "0.68rem", fontWeight: 700, color: b.grey ? "var(--tx-4)" : "var(--tx-2)", lineHeight: 1.2 }}>{b.label}</div>
-              <div style={{ fontSize: "0.6rem", color: "var(--tx-4)", lineHeight: 1.3, marginTop: 2 }}>{b.sub}</div>
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -240,7 +244,7 @@ export default async function PitchPage() {
           Ce que montrent les backtests, en clair
         </h2>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(200px,100%), 1fr))", gap: 8, marginBottom: 32 }}>
+        <div className="pitch-scroll-x pitch-kpi-grid" style={{ gap: 8, marginBottom: 32 }}>
           <KpiTile
             value={fmt.pos(medT90Cluster)}
             label="Médiane T+90 — cluster"
@@ -268,7 +272,7 @@ export default async function PitchPage() {
         </div>
 
         {/* Signal zoom — cluster depth */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(220px,100%), 1fr))", gap: 8, marginBottom: 16 }}>
+        <div className="pitch-scroll-x pitch-cluster-grid" style={{ gap: 8, marginBottom: 16 }}>
           {[
             { label: "Cluster 2+ insiders", stats: clusterStats, highlight: true },
             { label: "Deep cluster 3+",     stats: deepCluster,  highlight: true },
@@ -283,7 +287,7 @@ export default async function PitchPage() {
               <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--tx-3)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
                 {label}
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6 }}>
                 {[
                   { v: fmt.pos(stats.medianReturn90d), s: "Médiane T+90" },
                   { v: fmt.pos(stats.medianReturn365d), s: "Médiane T+365" },
@@ -361,7 +365,7 @@ export default async function PitchPage() {
         }}>
           Pourquoi ce signal est exploitable
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(230px,100%), 1fr))", gap: 10, marginBottom: 16 }}>
+        <div className="pitch-scroll-x pitch-method-grid" style={{ gap: 10, marginBottom: 16 }}>
           {[
             {
               n: "01", title: "Obligation légale, pas une opinion",
@@ -575,7 +579,7 @@ export default async function PitchPage() {
           Combien de sociétés, combien de trades, quel capital
         </h2>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(280px,100%), 1fr))", gap: 10 }}>
+        <div className="pitch-scroll-x pitch-capital-grid" style={{ gap: 10 }}>
           {[
             {
               amount: "10 000 €", tag: "Débutant", featured: false,
@@ -628,9 +632,9 @@ export default async function PitchPage() {
               </div>
               <div style={{ display: "flex", flexDirection: "column" }}>
                 {c.rows.map(([k, v]) => (
-                  <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "7px 0", borderBottom: "1px solid var(--border)" }}>
+                  <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "7px 0", borderBottom: "1px solid var(--border)" }}>
                     <span style={{ fontSize: "0.74rem", color: "var(--tx-3)", flexShrink: 0 }}>{k}</span>
-                    <span style={{ fontSize: "0.74rem", color: "var(--tx-1)", fontWeight: 600, textAlign: "right" }}>{v}</span>
+                    <span style={{ fontSize: "0.74rem", color: "var(--tx-1)", fontWeight: 600, textAlign: "right", minWidth: 0, wordBreak: "break-word" }}>{v}</span>
                   </div>
                 ))}
               </div>
@@ -658,16 +662,12 @@ export default async function PitchPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
           {[
             ["Historique de 4 ans seulement", `${startYear}–${endYear} couvre un cycle majoritairement haussier (CAC ATH en 2024). Les académiques requièrent 10–15 ans pour valider un système. Nos résultats peuvent surestimer la performance sur un cycle baissier.`],
-            ["Survivorship bias partiel", "La base ne contient que les sociétés encore cotées. Les sociétés radiées, en faillite ou rachetées ne sont pas comptabilisées — ce qui peut surestimer la performance de 0,5 à 1 point de CAGR."],
-            ["Slippage non modélisé", "Les backtests supposent une exécution au prix de clôture pubDate+1. Sur les small-caps françaises (bid-ask parfois 1–3%), votre prix réel sera moins favorable. Retirez mentalement 0,5 à 1 point par an."],
+            ["Survivorship bias partiel", "La base ne contient que les sociétés encore cotées. Les sociétés radiées, en faillite ou rachetées ne sont pas comptabilisées, ce qui peut surestimer la performance de 0,5 à 1 point de CAGR."],
+            ["Slippage non modélisé", "Les backtests supposent une exécution au prix de clôture pubDate+1. Sur les small-caps françaises (bid-ask parfois 1 à 3%), votre prix réel sera moins favorable. Retirez mentalement 0,5 à 1 point par an."],
             ["Pas un substitut à l'analyse fondamentale", "Sigma identifie les dossiers méritant une analyse. Il ne remplace pas la lecture du bilan, des résultats, et de la valorisation. Un signal fort sur une société surendettée reste un signal sur une société surendettée."],
             ["Pas un conseil en investissement", "Ce site est un outil d'information réglementée (données AMF publiques). Il ne constitue pas un conseil en investissement. Vos décisions sont vos responsabilités."],
           ].map(([title, body]) => (
-            <div key={title} style={{
-              display: "grid", gridTemplateColumns: "220px 1fr", gap: 20,
-              padding: "14px 0", borderBottom: "1px solid var(--border)",
-              alignItems: "baseline",
-            }}>
+            <div key={title} className="pitch-transparency-row">
               <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--tx-1)" }}>{title}</div>
               <div style={{ fontSize: "0.84rem", color: "var(--tx-2)", lineHeight: 1.65 }}>{body}</div>
             </div>
@@ -726,13 +726,80 @@ export default async function PitchPage() {
         </p>
       </section>
 
-      {/* ── Responsive limits table fix */}
+      {/* ── Mobile responsive styles ──────────────────────────────────────── */}
       <style>{`
-        @media (max-width: 600px) {
-          .pitch-wrap > section > div[style*="220px 1fr"] {
-            grid-template-columns: 1fr !important;
-            gap: 4px !important;
+        /* Transparency rows: 2-col on desktop, stacked on mobile */
+        .pitch-transparency-row {
+          display: grid;
+          grid-template-columns: 200px 1fr;
+          gap: 20px;
+          padding: 14px 0;
+          border-bottom: 1px solid var(--border);
+          align-items: baseline;
+        }
+
+        /* Desktop grids */
+        .pitch-kpi-grid     { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px,100%), 1fr)); }
+        .pitch-cluster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px,100%), 1fr)); }
+        .pitch-method-grid  { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px,100%), 1fr)); }
+        .pitch-capital-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px,100%), 1fr)); }
+
+        /* ── Mobile: horizontal swipe cards + overflow fixes ── */
+        @media (max-width: 640px) {
+
+          /* Swipe containers */
+          .pitch-scroll-x {
+            display: flex !important;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 10px;
+            /* Bleed edge-to-edge inside content-wrapper */
+            margin-left: -16px;
+            margin-right: -16px;
+            padding-left: 16px;
+            padding-right: 16px;
+            scrollbar-width: none;
           }
+          .pitch-scroll-x::-webkit-scrollbar { display: none; }
+
+          /* Card sizes per section */
+          .pitch-kpi-grid > *     { flex: 0 0 min(260px, 76vw); scroll-snap-align: start; }
+          .pitch-cluster-grid > * { flex: 0 0 min(260px, 80vw); scroll-snap-align: start; }
+          .pitch-method-grid > *  { flex: 0 0 min(280px, 82vw); scroll-snap-align: start; }
+          .pitch-capital-grid > * { flex: 0 0 min(290px, 84vw); scroll-snap-align: start; }
+
+          /* Scroll hint: fade the right edge */
+          .pitch-kpi-grid,
+          .pitch-cluster-grid,
+          .pitch-method-grid,
+          .pitch-capital-grid {
+            -webkit-mask-image: linear-gradient(to right, black calc(100% - 32px), transparent 100%);
+            mask-image: linear-gradient(to right, black calc(100% - 32px), transparent 100%);
+          }
+
+          /* Transparency rows: stack title above body */
+          .pitch-transparency-row {
+            grid-template-columns: 1fr;
+            gap: 6px;
+          }
+
+          /* BarChart labels responsive via container */
+          .pitch-wrap .bar-chart-value { font-size: 0.72rem !important; }
+
+          /* Tables: make sure scrollable */
+          .pitch-wrap table { min-width: 540px; }
+          .pitch-wrap [style*="overflowX"] { -webkit-overflow-scrolling: touch; }
+
+          /* CTA section padding */
+          .pitch-wrap section:last-of-type { padding: 32px 16px !important; }
+        }
+
+        @media (max-width: 400px) {
+          .pitch-kpi-grid > *     { flex: 0 0 88vw; }
+          .pitch-cluster-grid > * { flex: 0 0 88vw; }
+          .pitch-method-grid > *  { flex: 0 0 88vw; }
+          .pitch-capital-grid > * { flex: 0 0 90vw; }
         }
       `}</style>
     </div>

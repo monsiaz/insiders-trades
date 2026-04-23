@@ -278,10 +278,12 @@ function CoverageBar({
   coverage,
   horizon,
   totalBuys,
+  isFr = false,
 }: {
   coverage: StatsData["coverageByHorizon"] | undefined;
   horizon: Horizon;
   totalBuys: number;
+  isFr?: boolean;
 }) {
   if (!coverage) return null;
   const hData = coverage[horizon] as CoverageHorizon | undefined;
@@ -298,7 +300,7 @@ function CoverageBar({
     <div className="flex items-center gap-3 flex-wrap">
       <div className="flex items-center gap-1.5">
         <span className="text-[11px] font-medium" style={{ color: "var(--tx-4)" }}>
-          {typeof isFr !== "undefined" && isFr ? "Couverture prix :" : "Price coverage:"}
+          {isFr ? "Couverture prix :" : "Price coverage:"}
         </span>
         <span className="text-[11px] font-bold" style={{ color: withPricePct >= 90 ? "var(--gold)" : withPricePct >= 70 ? "var(--tx-2)" : "var(--c-red)" }}>
           {withPricePct}%
@@ -326,12 +328,12 @@ function CoverageBar({
           {horizonPct}%
         </span>
         <span className="text-[10px]" style={{ color: "var(--tx-4)" }}>
-          {typeof isFr !== "undefined" && isFr
+          {isFr
             ? `ont atteint l'horizon ${horizon === "730d" ? "T+2ans" : `T+${horizon}`}`
             : `reached horizon ${horizon === "730d" ? "T+2y" : `T+${horizon}`}`}
         </span>
         <InfoTip
-          text={`Pour l'horizon ${horizon === "730d" ? "T+2ans" : `T+${horizon}`}, seuls les trades suffisamment anciens ont des données de cours. Les transactions récentes réduisent ce chiffre, c'est normal.`}
+          text={isFr ? `Pour l'horizon ${horizon === "730d" ? "T+2ans" : `T+${horizon}`}, seuls les trades suffisamment anciens ont des données de cours.` : `For horizon ${horizon === "730d" ? "T+2y" : `T+${horizon}`}, only trades old enough have price data. Recent transactions reduce this figure — that's normal.`}
           wide
         />
       </div>
@@ -662,7 +664,9 @@ function SignalsTable({ combos, isFr = false }: { combos: SignalCombo[]; isFr?: 
         </table>
       </div>
       <p className="text-xs text-muted">
-        {filtered.length} signaux affichés · Sharpe = rendement moyen / écart-type (plus c&apos;est élevé, plus le signal est régulier) · Win% = % de trades positifs
+        {isFr
+          ? `${filtered.length} signaux affichés · Sharpe = rendement moyen / écart-type · Win% = % de trades positifs`
+          : `${filtered.length} signals shown · Sharpe = avg return / std dev · Win% = % positive trades`}
       </p>
     </div>
   );
@@ -670,7 +674,7 @@ function SignalsTable({ combos, isFr = false }: { combos: SignalCombo[]; isFr?: 
 
 // ── Top trades table ───────────────────────────────────────────────────────
 
-function TopTradesTable({ trades }: { trades: StatsData["topTrades"] }) {
+function TopTradesTable({ trades, isFr = false }: { trades: StatsData["topTrades"]; isFr?: boolean }) {
   const [horizon, setHorizon] = useState<Horizon>("365d");
 
   const sorted = [...trades].sort((a, b) => {
@@ -682,7 +686,7 @@ function TopTradesTable({ trades }: { trades: StatsData["topTrades"] }) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-muted">Trier par horizon :</span>
+        <span className="text-xs text-muted">{isFr ? "Trier par horizon :" : "Sort by horizon:"}</span>
         {HORIZONS.map((h) => (
           <button
             key={h.key}
@@ -985,7 +989,7 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
               );
             })}
           </div>
-          <CoverageBar coverage={data.coverageByHorizon} horizon={groupHorizon} totalBuys={data.totalBuys ?? data.total} />
+          <CoverageBar coverage={data.coverageByHorizon} horizon={groupHorizon} totalBuys={data.totalBuys ?? data.total} isFr={isFr} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -1373,19 +1377,19 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
         !isAuth ? (
           <FreemiumLock feature="les 30 meilleures transactions avec noms des entreprises">
             <div className="card p-4 md:p-6">
-              <h3 className="text-base font-semibold text-primary mb-2">Top 30 trades historiques</h3>
-              <TopTradesTable trades={data.topTrades} />
+              <h3 className="text-base font-semibold text-primary mb-2">{isFr ? "Top 30 trades historiques" : "Top 30 historical trades"}</h3>
+              <TopTradesTable trades={data.topTrades} isFr={isFr} />
             </div>
           </FreemiumLock>
         ) : (
           <div className="card p-4 md:p-6">
             <div className="mb-4">
-              <h3 className="text-base font-semibold text-primary">Top 30 trades historiques</h3>
+              <h3 className="text-base font-semibold text-primary">{isFr ? "Top 30 trades historiques" : "Top 30 historical trades"}</h3>
               <p className="text-xs text-muted mt-1">
-                Les meilleures transactions d&apos;initiés classées par retour sur investissement
+                {isFr ? "Les meilleures transactions d'initiés classées par retour sur investissement" : "Best insider transactions ranked by return on investment"}
               </p>
             </div>
-            <TopTradesTable trades={data.topTrades} />
+            <TopTradesTable trades={data.topTrades} isFr={isFr} />
           </div>
         )
       )}

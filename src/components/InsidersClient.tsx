@@ -21,11 +21,17 @@ export interface InsiderRow {
 
 type SortKey = "name" | "activity" | "count" | "amount";
 
-const SORT_LABELS: Record<SortKey, string> = {
+const SORT_LABELS_FR: Record<SortKey, string> = {
   name: "Alphabétique",
   activity: "Activité récente",
   count: "+ de déclarations",
   amount: "Montant dernier trade",
+};
+const SORT_LABELS_EN: Record<SortKey, string> = {
+  name: "Alphabetical",
+  activity: "Recent activity",
+  count: "Most declarations",
+  amount: "Last trade amount",
 };
 
 // ── InsiderCard ────────────────────────────────────────────────────────────
@@ -199,7 +205,9 @@ const MemoInsiderCard = memo(
 
 // ── Main ───────────────────────────────────────────────────────────────────
 
-export function InsidersClient({ insiders }: { insiders: InsiderRow[] }) {
+export function InsidersClient({ insiders, locale = "en" }: { insiders: InsiderRow[]; locale?: string }) {
+  const isFr = locale === "fr";
+  const SORT_LABELS = isFr ? SORT_LABELS_FR : SORT_LABELS_EN;
   const PAGE_SIZE = 120;
   const [q, setQ] = useState("");
   const [dq, setDq] = useState("");
@@ -272,7 +280,7 @@ export function InsidersClient({ insiders }: { insiders: InsiderRow[] }) {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Rechercher un dirigeant ou une société…"
+            placeholder={isFr ? "Rechercher un dirigeant ou une société…" : "Search an executive or company…"}
             style={{
               width: "100%",
               paddingLeft: "34px",
@@ -397,15 +405,17 @@ export function InsidersClient({ insiders }: { insiders: InsiderRow[] }) {
           marginBottom: "16px",
         }}
       >
-        {filtered.length.toLocaleString("fr-FR")} dirigeant
-        {filtered.length !== 1 ? "s" : ""}
-        {dq && ` · filtre : "${dq}"`}
+        {filtered.length.toLocaleString(isFr ? "fr-FR" : "en-GB")}{" "}
+        {isFr
+          ? `dirigeant${filtered.length !== 1 ? "s" : ""}`
+          : `executive${filtered.length !== 1 ? "s" : ""}`}
+        {dq && (isFr ? ` · filtre : "${dq}"` : ` · filter: "${dq}"`)}
       </div>
 
       {/* Grid */}
       {filtered.length === 0 ? (
         <div className="card p-10 text-center">
-          <p style={{ color: "var(--tx-3)" }}>Aucun dirigeant trouvé.</p>
+          <p style={{ color: "var(--tx-3)" }}>{isFr ? "Aucun dirigeant trouvé." : "No executives found."}</p>
         </div>
       ) : (
         <>

@@ -51,8 +51,9 @@ export async function generateMetadata() {
 }
 
 async function BacktestDashboardSection() {
-  const [user, base] = await Promise.all([getCurrentUser(), getBacktestBase()]);
+  const [user, base, hdrs] = await Promise.all([getCurrentUser(), getBacktestBase(), headers()]);
   const isAuthenticated = !!user;
+  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
   const initialData = base
     ? { ...applyBacktestMasking(base, isAuthenticated), isAuthenticated }
     : undefined;
@@ -61,6 +62,7 @@ async function BacktestDashboardSection() {
     <BacktestDashboard
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       initialData={initialData as any}
+      locale={locale}
     />
   );
 }

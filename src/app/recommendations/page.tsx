@@ -356,16 +356,16 @@ async function GeneralTabContent({ isAuth, locale = "en" }: { isAuth: boolean; l
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
             {recos.slice(0, FREE_VISIBLE).map((item, i) => (
-              <RecoCard key={item.declarationId} item={item} rank={i + 1} />
+              <RecoCard key={item.declarationId} item={item} rank={i + 1} locale={locale} />
             ))}
           </div>
           {!isAuth && recos.length > FREE_VISIBLE && (
-            <FreemiumGate feature={isFr
+            <FreemiumGate locale={locale} feature={isFr
               ? "les 7 autres recommandations avec noms des entreprises, scores et retours estimés"
               : "the 7 other recommendations with company names, scores and estimated returns"}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {recos.slice(FREE_VISIBLE).map((item, i) => (
-                  <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
+                  <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} locale={locale} />
                 ))}
               </div>
             </FreemiumGate>
@@ -373,7 +373,7 @@ async function GeneralTabContent({ isAuth, locale = "en" }: { isAuth: boolean; l
           {isAuth && recos.length > FREE_VISIBLE && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {recos.slice(FREE_VISIBLE).map((item, i) => (
-                <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
+                <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} locale={locale} />
               ))}
             </div>
           )}
@@ -418,16 +418,16 @@ async function SellsTabContent({ isAuth, locale = "en" }: { isAuth: boolean; loc
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
             {recos.slice(0, FREE_VISIBLE).map((item, i) => (
-              <RecoCard key={item.declarationId} item={item} rank={i + 1} />
+              <RecoCard key={item.declarationId} item={item} rank={i + 1} locale={locale} />
             ))}
           </div>
           {!isAuth && recos.length > FREE_VISIBLE && (
-            <FreemiumGate feature={isFr
+            <FreemiumGate locale={locale} feature={isFr
               ? `les ${recos.length - FREE_VISIBLE} autres signaux de vente avec sociétés, dirigeants et retours historiques`
               : `the ${recos.length - FREE_VISIBLE} other sell signals with companies, insiders and historical returns`}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {recos.slice(FREE_VISIBLE).map((item, i) => (
-                  <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
+                  <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} locale={locale} />
                 ))}
               </div>
             </FreemiumGate>
@@ -435,7 +435,7 @@ async function SellsTabContent({ isAuth, locale = "en" }: { isAuth: boolean; loc
           {isAuth && recos.length > FREE_VISIBLE && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {recos.slice(FREE_VISIBLE).map((item, i) => (
-                <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} />
+                <RecoCard key={item.declarationId} item={item} rank={FREE_VISIBLE + i + 1} locale={locale} />
               ))}
             </div>
           )}
@@ -497,7 +497,7 @@ async function PersonalTabContent({ userId, locale = "en" }: { userId: string; l
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {data.recos.map((item, i) => (
-              <RecoCard key={item.declarationId} item={item} rank={i + 1} />
+              <RecoCard key={item.declarationId} item={item} rank={i + 1} locale={locale} />
             ))}
           </div>
         )}
@@ -538,7 +538,7 @@ async function PersonalTabContent({ userId, locale = "en" }: { userId: string; l
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
             {sellRecos.map((item, i) => (
-              <RecoCard key={item.declarationId} item={item} rank={i + 1} />
+              <RecoCard key={item.declarationId} item={item} rank={i + 1} locale={locale} />
             ))}
           </div>
         </>
@@ -556,7 +556,7 @@ async function PersonalTabContent({ userId, locale = "en" }: { userId: string; l
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {buyRecos.map((item, i) => (
-              <RecoCard key={item.declarationId} item={item} rank={i + 1} />
+              <RecoCard key={item.declarationId} item={item} rank={i + 1} locale={locale} />
             ))}
           </div>
         </>

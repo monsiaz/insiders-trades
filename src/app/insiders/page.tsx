@@ -98,7 +98,7 @@ export default async function InsidersPage() {
         </p>
       </div>
 
-      <InsidersClient insiders={insiders} />
+      <InsidersClient insiders={insiders} locale={locale} />
     </div>
   );
 }

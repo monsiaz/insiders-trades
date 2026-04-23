@@ -10,21 +10,21 @@ function fmtPct(n: number | null | undefined, d = 1): string {
   return `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
 }
 
-function fmtAmt(n: number | null): string {
+function fmtAmt(n: number | null, isFr: boolean): string {
   if (!n) return "·";
-  if (n >= 1e9) return `${(n / 1e9).toFixed(1)} Md€`;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)} ${isFr ? "Md€" : "Bn€"}`;
   if (n >= 1e6) return `${(n / 1e6).toFixed(1)} M€`;
   if (n >= 1e3) return `${(n / 1e3).toFixed(0)} k€`;
   return `${n.toFixed(0)} €`;
 }
 
-function fmtDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+function fmtDate(iso: string, locale: string): string {
+  return new Date(iso).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function fmtMcap(n: number | null): string | null {
+function fmtMcap(n: number | null, isFr: boolean): string | null {
   if (!n) return null;
-  if (n >= 1e9) return `${(n / 1e9).toFixed(1)} Md€`;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)} ${isFr ? "Md€" : "Bn€"}`;
   if (n >= 1e6) return `${(n / 1e6).toFixed(0)} M€`;
   return null;
 }
@@ -78,11 +78,12 @@ function InlineLogo({ name, logoUrl }: { name: string; logoUrl?: string | null }
   );
 }
 
-export function RecoCard({ item, rank }: { item: RecoItem; rank: number }) {
+export function RecoCard({ item, rank, locale = "en" }: { item: RecoItem; rank: number; locale?: string }) {
+  const isFr = locale === "fr";
   const isBuy = item.action === "BUY";
   const actionClass = isBuy ? "buy" : "sell";
 
-  const mcapStr = fmtMcap(item.marketCap);
+  const mcapStr = fmtMcap(item.marketCap, isFr);
   const expectedRet = item.expectedReturn90d ?? 0;
   const winRate = item.historicalWinRate90d ?? 0;
 
@@ -122,7 +123,7 @@ export function RecoCard({ item, rank }: { item: RecoItem; rank: number }) {
             )}
             <span className={`tearsheet-action-tag ${actionClass}`}>
               <span className="tag-dot" aria-hidden="true" />
-              {isBuy ? "Achat" : "Vente"}
+              {isBuy ? (isFr ? "Achat" : "Buy") : (isFr ? "Vente" : "Sale")}
             </span>
           </div>
 
@@ -169,7 +170,7 @@ export function RecoCard({ item, rank }: { item: RecoItem; rank: number }) {
       <div className="tearsheet-strip">
         <div className="tearsheet-strip-cell">
           <span className="tearsheet-strip-label">
-            {isBuy ? "Retour estimé T+90" : "Dérive titre T+90"}
+            {isBuy ? (isFr ? "Retour estimé T+90" : "Est. return T+90") : (isFr ? "Dérive titre T+90" : "Price drift T+90")}
           </span>
           <span className={
             // For BUY: positive return = good (green), negative = bad
@@ -181,23 +182,25 @@ export function RecoCard({ item, rank }: { item: RecoItem; rank: number }) {
             {fmtPct(item.expectedReturn90d, 1)}
           </span>
           <span className="tearsheet-strip-sub">
-            {isBuy ? "moy. historique" : "moy. post-cession histo."}
+            {isBuy
+              ? (isFr ? "moy. historique" : "hist. avg.")
+              : (isFr ? "moy. post-cession histo." : "hist. post-sell avg.")}
           </span>
         </div>
         <div className="tearsheet-strip-cell">
           <span className="tearsheet-strip-label">
-            {isBuy ? "Win rate" : "Taux de chute"}
+            {isBuy ? "Win rate" : (isFr ? "Taux de chute" : "Drop rate")}
           </span>
           <span className={`tearsheet-strip-value ${winRate >= 60 ? "pos" : ""}`}>
             {item.historicalWinRate90d != null ? `${item.historicalWinRate90d.toFixed(0)}%` : "·"}
           </span>
           <span className="tearsheet-strip-sub">
-            T+90 · {item.sampleSize.toLocaleString("fr-FR")} trades
+              T+90 · {item.sampleSize.toLocaleString(isFr ? "fr-FR" : "en-GB")} trades
           </span>
         </div>
         <div className="tearsheet-strip-cell">
-          <span className="tearsheet-strip-label">Montant déclaré</span>
-          <span className="tearsheet-strip-value">{fmtAmt(item.totalAmount)}</span>
+          <span className="tearsheet-strip-label">{isFr ? "Montant déclaré" : "Declared amount"}</span>
+          <span className="tearsheet-strip-value">{fmtAmt(item.totalAmount, isFr)}</span>
           {pctMcapStr && <span className="tearsheet-strip-sub">{pctMcapStr}</span>}
         </div>
       </div>
@@ -214,14 +217,14 @@ export function RecoCard({ item, rank }: { item: RecoItem; rank: number }) {
             <>
               {mcapStr && <span className="tearsheet-foot-sep" aria-hidden="true" />}
               <span>
-                Analystes · <strong>{item.analystReco}</strong>
-                {item.targetMean && ` · obj. ${item.targetMean.toFixed(1)}€`}
+                {isFr ? "Analystes" : "Analysts"} · <strong>{item.analystReco}</strong>
+                {item.targetMean && ` · ${isFr ? "obj." : "target"} ${item.targetMean.toFixed(1)}€`}
               </span>
             </>
           )}
         </div>
         <div className="flex items-center gap-3">
-          <time className="tearsheet-foot-date">{fmtDate(item.pubDate)}</time>
+          <time className="tearsheet-foot-date">{fmtDate(item.pubDate, locale)}</time>
           {item.amfLink && item.amfLink !== "#" && (
             <a
               href={item.amfLink}
@@ -229,7 +232,7 @@ export function RecoCard({ item, rank }: { item: RecoItem; rank: number }) {
               rel="noopener noreferrer"
               className="tearsheet-foot-link"
             >
-              Source AMF
+              {isFr ? "Source AMF" : "AMF filing"}
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M7 17L17 7M17 7H8M17 7v9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>

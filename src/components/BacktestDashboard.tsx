@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
@@ -297,16 +298,16 @@ function CoverageBar({
     <div className="flex items-center gap-3 flex-wrap">
       <div className="flex items-center gap-1.5">
         <span className="text-[11px] font-medium" style={{ color: "var(--tx-4)" }}>
-          Couverture prix :
+          {typeof isFr !== "undefined" && isFr ? "Couverture prix :" : "Price coverage:"}
         </span>
         <span className="text-[11px] font-bold" style={{ color: withPricePct >= 90 ? "var(--gold)" : withPricePct >= 70 ? "var(--tx-2)" : "var(--c-red)" }}>
           {withPricePct}%
         </span>
         <span className="text-[10px]" style={{ color: "var(--tx-4)" }}>
-          ({coverage.totalWithPrice.toLocaleString("fr")}/{coverage.totalEligible.toLocaleString("fr")} déclarations)
+          ({coverage.totalWithPrice.toLocaleString()}/{coverage.totalEligible.toLocaleString()} decl.)
         </span>
         <InfoTip
-          text="% de déclarations AMF pour lesquelles Yahoo Finance a fourni un cours historique. Les 3% manquants sont des sociétés délistées, obligataires (ISIN) ou trop récentes."
+          text="% of AMF declarations for which Yahoo Finance provided a historical price. Missing ~3% are delisted, bond (ISIN) or recently-listed companies."
           wide
         />
       </div>
@@ -325,7 +326,9 @@ function CoverageBar({
           {horizonPct}%
         </span>
         <span className="text-[10px]" style={{ color: "var(--tx-4)" }}>
-          ont atteint l'horizon {horizon === "730d" ? "T+2ans" : `T+${horizon}`}
+          {typeof isFr !== "undefined" && isFr
+            ? `ont atteint l'horizon ${horizon === "730d" ? "T+2ans" : `T+${horizon}`}`
+            : `reached horizon ${horizon === "730d" ? "T+2y" : `T+${horizon}`}`}
         </span>
         <InfoTip
           text={`Pour l'horizon ${horizon === "730d" ? "T+2ans" : `T+${horizon}`}, seuls les trades suffisamment anciens ont des données de cours. Les transactions récentes réduisent ce chiffre, c'est normal.`}
@@ -476,14 +479,22 @@ function GroupChart({
 
 // ── Signals table (main feature) ───────────────────────────────────────────
 
-const SIGNAL_CATEGORIES = ["Tous", "Score", "Rôle", "Cluster", "Conviction", "Taille", "Timing"];
+const SIGNAL_CATEGORIES_FR = ["Tous", "Score", "Rôle", "Cluster", "Conviction", "Taille", "Timing"];
+const SIGNAL_CATEGORIES_EN = ["All",  "Score", "Role", "Cluster", "Conviction", "Size",   "Timing"];
 
-function SignalsTable({ combos }: { combos: SignalCombo[] }) {
-  const [cat, setCat] = useState("Tous");
+function SignalsTable({ combos, isFr = false }: { combos: SignalCombo[]; isFr?: boolean }) {
+  const SIGNAL_CATEGORIES = isFr ? SIGNAL_CATEGORIES_FR : SIGNAL_CATEGORIES_EN;
+  const ALL_LABEL = isFr ? "Tous" : "All";
+  const [cat, setCat] = useState(ALL_LABEL);
   const [sortKey, setSortKey] = useState<"sharpe90d" | "sharpe365d" | "avgReturn365d" | "winRate365d">("sharpe90d");
   const [horizon, setHorizon] = useState<Horizon>("90d");
 
-  const filtered = (cat === "Tous" ? combos : combos.filter((c) => c.category === cat))
+  const filtered = (cat === ALL_LABEL ? combos : combos.filter((c) => {
+    // Map EN category back to FR for data filtering (data stored in FR)
+    const catIdx = SIGNAL_CATEGORIES.indexOf(cat);
+    const frCat = catIdx >= 0 ? SIGNAL_CATEGORIES_FR[catIdx] : cat;
+    return c.category === frCat;
+  }))
     .filter((c) => c.count >= 5)
     .sort((a, b) => ((b[sortKey] ?? -99) as number) - ((a[sortKey] ?? -99) as number));
 
@@ -511,12 +522,12 @@ function SignalsTable({ combos }: { combos: SignalCombo[] }) {
       {/* Sort + horizon controls */}
       <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted">Trier par :</span>
+          <span className="text-xs text-muted">{isFr ? "Trier par :" : "Sort by:"}</span>
           {[
-            { k: "sharpe90d", label: "Sharpe 90j" },
-            { k: "sharpe365d", label: "Sharpe 1an" },
-            { k: "avgReturn365d", label: "Retour 1an" },
-            { k: "winRate365d", label: "Win rate 1an" },
+            { k: "sharpe90d",    label: isFr ? "Sharpe 90j" : "Sharpe 90d" },
+            { k: "sharpe365d",   label: isFr ? "Sharpe 1an" : "Sharpe 1y" },
+            { k: "avgReturn365d",label: isFr ? "Retour 1an" : "Return 1y" },
+            { k: "winRate365d",  label: isFr ? "Win rate 1an" : "Win rate 1y" },
           ].map((opt) => (
             <button
               key={opt.k}
@@ -692,15 +703,15 @@ function TopTradesTable({ trades }: { trades: StatsData["topTrades"] }) {
           <thead>
             <tr className="border-b border-soft">
               <th className="text-left pb-2 text-xs text-muted font-medium">#</th>
-              <th className="text-left pb-2 text-xs text-muted font-medium">Société</th>
+              <th className="text-left pb-2 text-xs text-muted font-medium">{isFr ? "Société" : "Company"}</th>
               <th className="text-left pb-2 text-xs text-muted font-medium">Insider</th>
               <th className="text-center pb-2 text-xs text-muted font-medium">Date</th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">Montant</th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">{isFr ? "Montant" : "Amount"}</th>
               <th className="text-center pb-2 text-xs text-muted font-medium">Score</th>
               <th className="text-center pb-2 text-xs text-muted font-medium">T+30</th>
               <th className="text-center pb-2 text-xs text-muted font-medium">T+90</th>
               <th className="text-center pb-2 text-xs text-muted font-medium">T+365</th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">T+2ans</th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">{isFr ? "T+2ans" : "T+2y"}</th>
               <th className="text-left pb-2 text-xs text-muted font-medium">Tags</th>
             </tr>
           </thead>
@@ -863,7 +874,11 @@ function FreemiumLock({ feature = "cet onglet", children }: { feature?: string; 
 
 type Tab = "overview" | "signals" | "behaviors" | "trades" | "sells" | "evolution";
 
-export default function BacktestDashboard({ initialData }: { initialData?: StatsData }) {
+export default function BacktestDashboard({ initialData, locale }: { initialData?: StatsData; locale?: string }) {
+  const pathname = usePathname();
+  const isFr = (locale ?? (pathname.startsWith("/fr") ? "fr" : "en")) === "fr";
+  const numLocale = isFr ? "fr-FR" : "en-GB";
+
   const [data, setData] = useState<StatsData | null>(initialData ?? null);
   const [loading, setLoading] = useState(!initialData);
   const [tab, setTab] = useState<Tab>("overview");
@@ -883,7 +898,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4">
         <div className="w-10 h-10 rounded-full border-2 border-mint border-t-transparent animate-spin" />
-        <p className="text-secondary text-sm">Calcul des statistiques de backtest…</p>
+        <p className="text-secondary text-sm">{isFr ? "Calcul des statistiques de backtest…" : "Computing backtest statistics…"}</p>
       </div>
     );
   }
@@ -891,8 +906,8 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
   if (!data || data.total === 0) {
     return (
       <div className="text-center py-24 text-muted">
-        <p className="text-lg font-medium">Aucune donnée de backtest disponible.</p>
-        <p className="text-sm mt-2">Lancez le pipeline de calcul en local pour initialiser les données.</p>
+        <p className="text-lg font-medium">{isFr ? "Aucune donnée de backtest disponible." : "No backtest data available."}</p>
+        <p className="text-sm mt-2">{isFr ? "Lancez le pipeline de calcul en local pour initialiser les données." : "Run the compute pipeline locally to initialize data."}</p>
       </div>
     );
   }
@@ -913,12 +928,12 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
   const isAuth = data.isAuthenticated;
 
   const tabs: { key: Tab; label: string; locked?: boolean }[] = [
-    { key: "overview",  label: "Vue d'ensemble" },
-    { key: "signals",   label: "Signaux",     locked: !isAuth },
-    { key: "behaviors", label: "Comportements" },
-    { key: "trades",    label: "Top trades",  locked: !isAuth },
-    { key: "sells",     label: `Ventes (${data.totalSells ?? 0})`, locked: !isAuth },
-    { key: "evolution", label: "Par année" },
+    { key: "overview",  label: isFr ? "Vue d'ensemble" : "Overview" },
+    { key: "signals",   label: isFr ? "Signaux" : "Signals",          locked: !isAuth },
+    { key: "behaviors", label: isFr ? "Comportements" : "Behaviours" },
+    { key: "trades",    label: "Top trades",                           locked: !isAuth },
+    { key: "sells",     label: isFr ? `Ventes (${data.totalSells ?? 0})` : `Sales (${data.totalSells ?? 0})`, locked: !isAuth },
+    { key: "evolution", label: isFr ? "Par année" : "By year" },
   ];
 
   const HORIZON_LABEL = HORIZONS.find((h) => h.key === groupHorizon)?.label ?? groupHorizon;
@@ -931,13 +946,13 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "var(--gold)" }} />
           <span className="text-xs font-semibold" style={{ color: "var(--tx-3)" }}>
-            Backtest sur données réelles AMF
+            {isFr ? "Backtest sur données réelles AMF" : "Backtest on real AMF data"}
           </span>
-          <InfoTip text="Les résultats sont calculés à partir des cours historiques Yahoo Finance sur 20 ans. Le calcul incrémental tourne quotidiennement en production." wide />
+          <InfoTip text={isFr ? "Les résultats sont calculés à partir des cours historiques Yahoo Finance sur 20 ans. Le calcul incrémental tourne quotidiennement en production." : "Results are computed from Yahoo Finance 20-year historical prices. Incremental calculation runs daily in production."} wide />
         </div>
         {data.lastComputedAt && (
           <span className="text-[11px] px-2.5 py-1 rounded-lg" style={{ background: "var(--bg-raised)", color: "var(--tx-4)", border: "1px solid var(--border)" }}>
-            Dernière mise à jour : {new Date(data.lastComputedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+            {isFr ? "Dernière mise à jour : " : "Last updated: "}{new Date(data.lastComputedAt).toLocaleDateString(numLocale, { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
           </span>
         )}
       </div>
@@ -947,7 +962,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
         {/* Horizon picker + coverage */}
         <div className="flex items-center gap-2 flex-wrap justify-between">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--tx-4)" }}>Horizon :</span>
+            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--tx-4)" }}>{isFr ? "Horizon :" : "Horizon:"}</span>
             {HORIZONS.map((h) => {
               const hCov = data.coverageByHorizon?.[h.key] as CoverageHorizon | undefined;
               const hPct = hCov && (data.totalBuys ?? data.total) > 0
@@ -975,48 +990,48 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <KpiCard
-            label="Achats backtestés"
-            value={(data.totalBuys ?? data.total).toLocaleString("fr")}
+            label={isFr ? "Achats backtestés" : "Backtested buys"}
+            value={(data.totalBuys ?? data.total).toLocaleString(numLocale)}
             border="indigo"
-            sub="déclarations AMF"
-            tooltip="Nombre total d'achats d'initiés ayant un cours de référence Yahoo Finance valide. Seuls les achats (acquisitions) sont inclus dans l'analyse de signal."
+            sub={isFr ? "déclarations AMF" : "AMF declarations"}
+            tooltip={isFr ? "Nombre total d'achats d'initiés ayant un cours de référence Yahoo Finance valide." : "Total insider buys with a valid Yahoo Finance price reference."}
           />
           <KpiCard
-            label="Ventes backtestées"
-            value={(data.totalSells ?? 0).toLocaleString("fr")}
+            label={isFr ? "Ventes backtestées" : "Backtested sales"}
+            value={(data.totalSells ?? 0).toLocaleString(numLocale)}
             border="red"
-            sub="signal baissier"
-            tooltip="Nombre de cessions d'initiés backtestées. Une vente est un signal baissier : l'insider anticipe une baisse. L'onglet 'Ventes' analyse leur précision."
+            sub={isFr ? "signal baissier" : "bearish signal"}
+            tooltip={isFr ? "Nombre de cessions d'initiés backtestées. Une vente est un signal baissier." : "Number of backtested insider sales. A sale is a bearish signal."}
           />
           <KpiCard
-            label={`Retour moyen ${kpiHorizonLabel}`}
+            label={isFr ? `Retour moyen ${kpiHorizonLabel}` : `Avg. return ${kpiHorizonLabel}`}
             value={fmt(kpiReturn)}
             accent={(kpiReturn ?? 0) > 0}
             border="mint"
-            sub="achats dirigeants"
-            tooltip={`Rendement moyen des achats d'initiés mesuré ${kpiHorizonLabel} après la date de transaction. Base : tous les achats avec données de cours disponibles pour cet horizon.`}
+            sub={isFr ? "achats dirigeants" : "insider buys"}
+            tooltip={isFr ? `Rendement moyen des achats d'initiés mesuré ${kpiHorizonLabel} après la date de transaction.` : `Avg. return of insider buys measured ${kpiHorizonLabel} after the transaction date.`}
           />
           <KpiCard
-            label={`Médiane ${kpiHorizonLabel}`}
+            label={isFr ? `Médiane ${kpiHorizonLabel}` : `Median ${kpiHorizonLabel}`}
             value={fmt(kpiMedianReturn)}
             accent={(kpiMedianReturn ?? 0) > 0}
             border="mint"
-            sub="50% des trades"
-            tooltip="La médiane est plus robuste que la moyenne : 50% des trades ont eu un retour inférieur à cette valeur. Un écart important entre moyenne et médiane indique des outliers."
+            sub={isFr ? "50% des trades" : "50% of trades"}
+            tooltip={isFr ? "La médiane est plus robuste que la moyenne : 50% des trades ont eu un retour inférieur à cette valeur." : "The median is more robust than the mean: 50% of trades returned less than this value."}
           />
           <KpiCard
             label={`Win rate ${kpiHorizonLabel}`}
             value={kpiWinRate != null ? `${kpiWinRate.toFixed(0)}%` : "·"}
             border="mint"
-            sub="trades positifs"
-            tooltip="Pourcentage de trades où le cours était en hausse à l'horizon choisi. Un win rate >55% est significatif (le marché fait environ 50% sur longue période)."
+            sub={isFr ? "trades positifs" : "positive trades"}
+            tooltip={isFr ? "Pourcentage de trades où le cours était en hausse à l'horizon choisi." : "Percentage of trades where the price was up at the chosen horizon."}
           />
           <KpiCard
             label="Sharpe T+90"
             value={g.sharpe90d != null ? g.sharpe90d.toFixed(2) : "·"}
             border="amber"
-            sub="ratio risque/retour"
-            tooltip="Ratio de Sharpe = rendement moyen / écart-type des retours. Mesure la régularité du signal. >0.5 = bon, >1.0 = excellent, <0 = signal erratique."
+            sub={isFr ? "ratio risque/retour" : "risk/return ratio"}
+            tooltip={isFr ? "Ratio de Sharpe = rendement moyen / écart-type des retours. >0.5 = bon, >1.0 = excellent." : "Sharpe ratio = mean return / std dev of returns. >0.5 = good, >1.0 = excellent."}
           />
         </div>
       </div>
@@ -1086,43 +1101,43 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="card p-4">
               <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
-                Par rôle de l&apos;insider · {HORIZON_LABEL}
-                <InfoTip text="PDG/DG = Président-Directeur Général. CFO/DAF = Directeur Financier. CA/Board = membre du Conseil d'Administration. Les CFO ont historiquement les signaux les plus forts." wide />
+                {isFr ? "Par rôle de l'insider" : "By insider role"} · {HORIZON_LABEL}
+                <InfoTip text={isFr ? "PDG/DG = Président-Directeur Général. CFO/DAF = Directeur Financier. CA/Board = membre du Conseil d'Administration." : "PDG/DG = Chairman & CEO. CFO/DAF = Chief Financial Officer. CA/Board = Board Member."} wide />
               </h3>
               <GroupChart data={data.byRole} horizon={groupHorizon} height={200} />
             </div>
             <div className="card p-4">
               <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
-                Par taille de société · {HORIZON_LABEL}
-                <InfoTip text="Micro <50M€ · Small <300M€ · Mid <2Md€ · Large <10Md€ · Mega >10Md€. Les small/mid-cap offrent plus d'alpha car moins suivies par les analystes." wide />
+                {isFr ? "Par taille de société" : "By company size"} · {HORIZON_LABEL}
+                <InfoTip text={isFr ? "Micro <50M€ · Small <300M€ · Mid <2Md€ · Large <10Md€ · Mega >10Md€." : "Micro <€50M · Small <€300M · Mid <€2Bn · Large <€10Bn · Mega >€10Bn."} wide />
               </h3>
               <GroupChart data={data.bySize} horizon={groupHorizon} height={200} />
             </div>
             <div className="card p-4">
               <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
-                Par score de signal · {HORIZON_LABEL}
-                <InfoTip text="Score composite 0-100 intégrant : rôle insider, montant, % market cap, cluster, DCA, fonction. Un score ≥65 est considéré comme un signal fort." wide />
+                {isFr ? "Par score de signal" : "By signal score"} · {HORIZON_LABEL}
+                <InfoTip text={isFr ? "Score composite 0-100 intégrant : rôle insider, montant, % market cap, cluster, DCA, fonction. Un score ≥65 est considéré comme un signal fort." : "Composite score 0-100 incorporating: insider role, amount, % market cap, cluster, DCA, function. A score ≥65 is considered a strong signal."} wide />
               </h3>
               <GroupChart data={data.byScore} horizon={groupHorizon} height={200} />
             </div>
             <div className="card p-4">
               <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
-                Par montant de la transaction · {HORIZON_LABEL}
-                <InfoTip text="Montant total de l'acquisition. Les gros montants (>200k€) révèlent une conviction forte de l'insider, particulièrement significatifs en small/micro-cap." wide />
+                {isFr ? "Par montant de la transaction" : "By transaction amount"} · {HORIZON_LABEL}
+                <InfoTip text={isFr ? "Montant total de l'acquisition. Les gros montants (>200k€) révèlent une conviction forte de l'insider." : "Total acquisition amount. Large amounts (>€200k) reveal strong insider conviction, particularly significant for small/micro-cap."} wide />
               </h3>
               <GroupChart data={data.byAmount} horizon={groupHorizon} height={200} />
             </div>
             <div className="card p-4">
               <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
-                Saisonnalité · {HORIZON_LABEL}
-                <InfoTip text="Répartition des retours par saison. Avr-Mai coïncide avec la publication des résultats annuels : les insiders achètent après avoir confirmé les chiffres en interne." wide />
+                {isFr ? "Saisonnalité" : "Seasonality"} · {HORIZON_LABEL}
+                <InfoTip text={isFr ? "Répartition des retours par saison." : "Return distribution by season. Apr–May coincides with annual results publication: insiders buy after internally confirming the figures."} wide />
               </h3>
               <GroupChart data={data.bySeason} horizon={groupHorizon} height={180} />
             </div>
             <div className="card p-4">
               <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
-                % de la capitalisation · {HORIZON_LABEL}
-                <InfoTip text="Montant / market cap de la société. Un achat >0.5% de la capitalisation par un dirigeant est un signal de conviction forte. >2% est exceptionnel." wide />
+                {isFr ? "% de la capitalisation" : "% of market cap"} · {HORIZON_LABEL}
+                <InfoTip text={isFr ? "Montant / market cap. Un achat >0.5% de la capitalisation par un dirigeant est un signal de conviction forte." : "Amount / market cap. A buy >0.5% of market cap by an insider is a strong conviction signal. >2% is exceptional."} wide />
               </h3>
               <GroupChart data={data.byMcapPct} horizon={groupHorizon} height={180} />
             </div>
@@ -1131,8 +1146,8 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
           {/* Scatter: score vs return */}
           <div className="card p-4">
             <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
-              Score de signal vs retour T+90 (par insider)
-              <InfoTip text="Chaque point = un trade historique. L'axe Y = retour 90j après l'achat. Un nuage orienté vers le haut-droite confirme la corrélation score → performance." wide />
+              {isFr ? "Score de signal vs retour T+90 (par insider)" : "Signal score vs T+90 return (per insider)"}
+              <InfoTip text={isFr ? "Chaque point = un trade historique. L'axe Y = retour 90j après l'achat." : "Each point = one historical trade. Y-axis = 90d return after purchase. A cloud trending up-right confirms the score → performance correlation."} wide />
             </h3>
             <ResponsiveContainer width="100%" height={280}>
               <ScatterChart margin={{ top: 4, right: 20, bottom: 4, left: 0 }}>
@@ -1178,23 +1193,23 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
       {/* ═══════════════════════════════════════════════════════════════ */}
       {tab === "signals" && (
         !isAuth ? (
-          <FreemiumLock feature="le classement complet des signaux (23 combinaisons)">
+          <FreemiumLock feature={isFr ? "le classement complet des signaux (23 combinaisons)" : "the full signal ranking (23 combinations)"}>
             <div className="card p-4 md:p-6">
-              <h3 className="text-base font-semibold text-primary mb-4">Classement des signaux</h3>
-              <SignalsTable combos={data.signalCombos.slice(0, 8)} />
+              <h3 className="text-base font-semibold text-primary mb-4">{isFr ? "Classement des signaux" : "Signal ranking"}</h3>
+              <SignalsTable combos={data.signalCombos.slice(0, 8)} isFr={isFr} />
             </div>
           </FreemiumLock>
         ) : (
           <div className="card p-4 md:p-6">
             <div className="flex items-start justify-between mb-5">
               <div>
-                <h3 className="text-base font-semibold text-primary">Classement des signaux</h3>
+                <h3 className="text-base font-semibold text-primary">{isFr ? "Classement des signaux" : "Signal ranking"}</h3>
                 <p className="text-xs text-muted mt-1">
-                  {data.signalCombos.length} combinaisons analysées sur {data.total} transactions historiques · triées par Sharpe (régularité du signal)
+                  {data.signalCombos.length} {isFr ? "combinaisons analysées sur" : "combinations across"} {data.total} {isFr ? "transactions historiques · triées par Sharpe (régularité du signal)" : "historical transactions · sorted by Sharpe (signal consistency)"}
                 </p>
               </div>
             </div>
-            <SignalsTable combos={data.signalCombos} />
+            <SignalsTable combos={data.signalCombos} isFr={isFr} />
           </div>
         )
       )}
@@ -1206,7 +1221,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
         <div className="space-y-6">
           {/* Horizon picker synced with global */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted">Horizon :</span>
+            <span className="text-xs text-muted">{isFr ? "Horizon :" : "Horizon:"}</span>
             {HORIZONS.map((h) => (
               <button
                 key={h.key}
@@ -1225,16 +1240,16 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="card p-4">
               <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
-                Patterns comportementaux · {HORIZON_LABEL}
-                <InfoTip text="DCA = achat répété (≥2 fois en 12 mois). Cluster = 2+ insiders distincts achètent dans les 30 jours. Cascade = 4+ insiders. Premier achat = jamais acheté auparavant." wide />
+                {isFr ? "Patterns comportementaux" : "Behavioural patterns"} · {HORIZON_LABEL}
+                <InfoTip text={isFr ? "DCA = achat répété (≥2 fois en 12 mois). Cluster = 2+ insiders distincts achètent dans les 30 jours." : "DCA = repeated buy (≥2 times in 12 months). Cluster = 2+ distinct insiders buy within 30 days. Cascade = 4+ insiders."} wide />
               </h3>
               <GroupChart data={data.byBehavior} horizon={groupHorizon} height={240} />
             </div>
 
             <div className="card p-4">
               <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
-                Profondeur du cluster · {HORIZON_LABEL}
-                <InfoTip text="Nombre d'insiders distincts ayant acheté la même société dans les 30 jours. Plus il y en a, plus le signal de conviction collective est fort." wide />
+                {isFr ? "Profondeur du cluster" : "Cluster depth"} · {HORIZON_LABEL}
+                <InfoTip text={isFr ? "Nombre d'insiders distincts ayant acheté la même société dans les 30 jours." : "Number of distinct insiders who bought the same company within 30 days. More insiders = stronger collective conviction signal."} wide />
               </h3>
               <GroupChart data={data.byClusterDepth} horizon={groupHorizon} height={200} />
             </div>
@@ -1242,12 +1257,12 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
 
           {/* Behavior detail table */}
           <div className="card p-4">
-            <h3 className="text-sm font-semibold text-primary mb-4">Détail par comportement · tous horizons</h3>
+            <h3 className="text-sm font-semibold text-primary mb-4">{isFr ? "Détail par comportement · tous horizons" : "Detail by behaviour · all horizons"}</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm min-w-[700px]">
                 <thead>
                   <tr className="border-b border-soft">
-                    <th className="text-left pb-2 text-xs text-muted font-medium">Comportement</th>
+                    <th className="text-left pb-2 text-xs text-muted font-medium">{isFr ? "Comportement" : "Behaviour"}</th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">
                       N <InfoTip text="Nombre de trades dans ce groupe." />
                     </th>
@@ -1269,7 +1284,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
                 <tbody>
                   {/* Overall first */}
                   <tr className="border-b border-mint/20 bg-mint/5">
-                    <td className="py-2 font-semibold text-primary text-sm">Ensemble (baseline)</td>
+                    <td className="py-2 font-semibold text-primary text-sm">{isFr ? "Ensemble (baseline)" : "Overall (baseline)"}</td>
                     <td className="py-2 text-center text-xs font-mono text-secondary">{g.count}</td>
                     <td className="py-2 text-center"><ReturnPill v={g.avgReturn30d} /></td>
                     <td className="py-2 text-center"><ReturnPill v={g.avgReturn60d} /></td>
@@ -1304,14 +1319,14 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
           {/* ── Gender comparison ───────────────────────────────────────── */}
           {data.byGender && (
             <div className="card p-4 md:p-6">
-              <h3 className="text-sm font-semibold text-primary mb-1">Analyse Hommes vs Femmes</h3>
-              <p className="text-xs text-muted mb-4">Performance des achats d&apos;initiés selon le genre du dirigeant</p>
+              <h3 className="text-sm font-semibold text-primary mb-1">{isFr ? "Analyse Hommes vs Femmes" : "Men vs Women analysis"}</h3>
+              <p className="text-xs text-muted mb-4">{isFr ? "Performance des achats d'initiés selon le genre du dirigeant" : "Insider buy performance by executive gender"}</p>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm min-w-[560px]">
                   <thead>
                     <tr className="border-b border-soft">
-                      <th className="text-left pb-2 text-xs text-muted font-medium">Genre</th>
-                      <th className="text-center pb-2 text-xs text-muted font-medium">Achats</th>
+                      <th className="text-left pb-2 text-xs text-muted font-medium">{isFr ? "Genre" : "Gender"}</th>
+                      <th className="text-center pb-2 text-xs text-muted font-medium">{isFr ? "Achats" : "Buys"}</th>
                       <th className="text-center pb-2 text-xs text-muted font-medium">T+30</th>
                       <th className="text-center pb-2 text-xs text-muted font-medium">T+90</th>
                       <th className="text-center pb-2 text-xs text-muted font-medium">T+365</th>
@@ -1324,7 +1339,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
                     {(["M", "F", "unknown"] as const).map((key) => {
                       const g = data.byGender[key];
                       if (!g || g.count < 3) return null;
-                      const label = key === "M" ? "Hommes" : key === "F" ? "Femmes" : "Non déterminé";
+                      const label = key === "M" ? (isFr ? "Hommes" : "Men") : key === "F" ? (isFr ? "Femmes" : "Women") : (isFr ? "Non déterminé" : "Unknown");
                       const color = key === "F" ? "tx-violet" : key === "M" ? "tx-brand" : "text-muted";
                       return (
                         <tr key={key} className="border-b border-soft/50 hover:bg-surface/50">
@@ -1343,8 +1358,8 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
                 </table>
               </div>
               <p className="text-xs text-muted mt-3">
-                Genre inféré depuis la fonction (formes féminines) et les prénom/civilité des déclarations.
-                {" "}{data.byGender.F.count} femmes · {data.byGender.M.count} hommes identifiés.
+                {isFr ? "Genre inféré depuis la fonction (formes féminines) et les prénom/civilité des déclarations." : "Gender inferred from role wording (feminine forms) and first name / title in AMF declarations."}
+                {" "}{data.byGender.F.count} {isFr ? "femmes · " : "women · "}{data.byGender.M.count} {isFr ? "hommes identifiés." : "men identified."}
               </p>
             </div>
           )}
@@ -1382,10 +1397,10 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
         !isAuth ? (
           <FreemiumLock feature="l'analyse détaillée des signaux de vente par rôle et entreprise">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-2">
-              <KpiCard label="Ventes analysées" value={data.sellStats.count.toLocaleString("fr")} />
-              <KpiCard label="Précision T+90" value={data.sellStats.accuracy90d != null ? `${data.sellStats.accuracy90d.toFixed(0)}%` : "·"} accent={(data.sellStats.accuracy90d ?? 0) > 50} />
-              <KpiCard label="Précision T+365" value={data.sellStats.accuracy365d != null ? `${data.sellStats.accuracy365d.toFixed(0)}%` : "·"} accent={(data.sellStats.accuracy365d ?? 0) > 50} />
-              <KpiCard label="Retour T+90" value={data.sellStats.avgReturn90d != null ? `${data.sellStats.avgReturn90d > 0 ? "+" : ""}${data.sellStats.avgReturn90d.toFixed(1)}%` : "·"} />
+              <KpiCard label={isFr ? "Ventes analysées" : "Analysed sales"} value={data.sellStats.count.toLocaleString(numLocale)} />
+              <KpiCard label={isFr ? "Précision T+90" : "Accuracy T+90"} value={data.sellStats.accuracy90d != null ? `${data.sellStats.accuracy90d.toFixed(0)}%` : "·"} accent={(data.sellStats.accuracy90d ?? 0) > 50} />
+              <KpiCard label={isFr ? "Précision T+365" : "Accuracy T+365"} value={data.sellStats.accuracy365d != null ? `${data.sellStats.accuracy365d.toFixed(0)}%` : "·"} accent={(data.sellStats.accuracy365d ?? 0) > 50} />
+              <KpiCard label={isFr ? "Retour T+90" : "Return T+90"} value={data.sellStats.avgReturn90d != null ? `${data.sellStats.avgReturn90d > 0 ? "+" : ""}${data.sellStats.avgReturn90d.toFixed(1)}%` : "·"} />
             </div>
           </FreemiumLock>
         ) : (
@@ -1393,15 +1408,15 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
 
           {/* Sell KPI strip */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            <KpiCard label="Ventes analysées" value={data.sellStats.count.toLocaleString("fr")} />
+            <KpiCard label={isFr ? "Ventes analysées" : "Analysed sales"} value={data.sellStats.count.toLocaleString(numLocale)} />
             <KpiCard
-              label="Précision signal T+90"
+              label={isFr ? "Précision signal T+90" : "Signal accuracy T+90"}
               value={data.sellStats.accuracy90d != null ? `${data.sellStats.accuracy90d.toFixed(0)}%` : "·"}
               sub="% des ventes suivies d'une baisse"
               accent={(data.sellStats.accuracy90d ?? 0) > 50}
             />
             <KpiCard
-              label="Précision signal T+365"
+              label={isFr ? "Précision signal T+365" : "Signal accuracy T+365"}
               value={data.sellStats.accuracy365d != null ? `${data.sellStats.accuracy365d.toFixed(0)}%` : "·"}
               sub="% des ventes suivies d'une baisse"
               accent={(data.sellStats.accuracy365d ?? 0) > 50}
@@ -1474,11 +1489,11 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
               <table className="w-full text-sm min-w-[560px]">
                 <thead>
                   <tr className="border-b border-soft">
-                    <th className="text-left pb-2 text-xs text-muted font-medium">Société</th>
-                    <th className="text-left pb-2 text-xs text-muted font-medium">Initié</th>
-                    <th className="text-left pb-2 text-xs text-muted font-medium">Rôle</th>
+                    <th className="text-left pb-2 text-xs text-muted font-medium">{isFr ? "Société" : "Company"}</th>
+                    <th className="text-left pb-2 text-xs text-muted font-medium">{isFr ? "Initié" : "Insider"}</th>
+                    <th className="text-left pb-2 text-xs text-muted font-medium">{isFr ? "Rôle" : "Role"}</th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">Date</th>
-                    <th className="text-center pb-2 text-xs text-muted font-medium">Montant</th>
+                    <th className="text-center pb-2 text-xs text-muted font-medium">{isFr ? "Montant" : "Amount"}</th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">T+30</th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">T+90</th>
                     <th className="text-center pb-2 text-xs text-muted font-medium">T+365</th>
@@ -1517,7 +1532,7 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
       {tab === "evolution" && (
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted">Horizon :</span>
+            <span className="text-xs text-muted">{isFr ? "Horizon :" : "Horizon:"}</span>
             {HORIZONS.map((h) => (
               <button
                 key={h.key}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 /**
  * Animated scatter radar · plots signals on 2 axes:
@@ -64,6 +65,8 @@ function yFor(score: number) {
 }
 
 export function SignalRadar() {
+  const pathname = usePathname();
+  const isFr = pathname.startsWith("/fr");
   const [visible, setVisible] = useState(0);
   const [hover, setHover] = useState<number | null>(null);
 
@@ -159,7 +162,7 @@ export function SignalRadar() {
           fill="var(--tx-3)"
           letterSpacing="0.1em"
         >
-          % CAPITALISATION ENGAGÉE →
+          {isFr ? "% CAPITALISATION ENGAGÉE →" : "% MARKET CAP ENGAGED →"}
         </text>
         <text
           x={-H / 2}
@@ -188,7 +191,7 @@ export function SignalRadar() {
           fontFamily="'JetBrains Mono', monospace"
           letterSpacing="0.08em"
         >
-          SEUIL RECO ≥ 70
+          {isFr ? "SEUIL RECO ≥ 70" : "RECO THRESHOLD ≥ 70"}
         </text>
 
         {/* Radar sweep */}
@@ -270,28 +273,15 @@ export function SignalRadar() {
               background: "var(--signal-pos)",
             }}
           />
-          Achat
+          {isFr ? "Achat" : "Buy"}
         </span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-          <span
-            style={{
-              width: "10px",
-              height: "10px",
-              borderRadius: "50%",
-              background: "var(--signal-neg)",
-            }}
-          />
-          Vente
+          <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "var(--signal-neg)" }} />
+          {isFr ? "Vente" : "Sale"}
         </span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-          <span
-            style={{
-              width: "18px",
-              height: "0",
-              borderTop: "1.5px dashed var(--gold)",
-            }}
-          />
-          Seuil reco ≥ 70
+          <span style={{ width: "18px", height: "0", borderTop: "1.5px dashed var(--gold)" }} />
+          {isFr ? "Seuil reco ≥ 70" : "Reco threshold ≥ 70"}
         </span>
       </div>
 

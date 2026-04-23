@@ -3,19 +3,16 @@
 import Link from "next/link";
 
 interface FreemiumGateProps {
-  /** How many rows/items are visible before the gate */
   visibleCount?: number;
   feature?: string;
+  locale?: string;
   children: React.ReactNode;
 }
 
-/**
- * Wraps content that should be gated behind authentication.
- * The *actual data* must already be masked server-side (replaced with
- * placeholder strings / nulls). This component only applies the visual
- * blur + CTA overlay on top.
- */
-export default function FreemiumGate({ children, feature = "cette fonctionnalité" }: FreemiumGateProps) {
+export default function FreemiumGate({ children, feature, locale = "en" }: FreemiumGateProps) {
+  const isFr = locale === "fr";
+  const defaultFeature = isFr ? "cette fonctionnalité" : "this feature";
+  const displayFeature = feature ?? defaultFeature;
   return (
     <div style={{ position: "relative" }}>
       {/* Blurred content */}
@@ -70,7 +67,7 @@ export default function FreemiumGate({ children, feature = "cette fonctionnalit�
             letterSpacing: "-0.025em",
             marginBottom: "6px",
           }}>
-            Contenu réservé aux membres
+            {isFr ? "Contenu réservé aux membres" : "Members-only content"}
           </h3>
           <p style={{
             fontSize: "0.84rem",
@@ -79,11 +76,13 @@ export default function FreemiumGate({ children, feature = "cette fonctionnalit�
             marginBottom: "18px",
             fontFamily: "'Inter', system-ui",
           }}>
-            Créez un compte gratuit pour accéder à {feature} et à toutes les données de signaux insiders.
+            {isFr
+              ? `Créez un compte gratuit pour accéder à ${displayFeature} et à toutes les données de signaux insiders.`
+              : `Create a free account to access ${displayFeature} and all insider signal data.`}
           </p>
           <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
             <Link
-              href="/auth/register"
+              href={isFr ? "/fr/auth/register" : "/auth/register"}
               style={{
                 display: "inline-block",
                 padding: "9px 20px",
@@ -97,10 +96,10 @@ export default function FreemiumGate({ children, feature = "cette fonctionnalit�
                 boxShadow: "0 4px 14px rgba(91,92,246,0.4)",
               }}
             >
-              Créer un compte gratuit
+              {isFr ? "Créer un compte gratuit" : "Create a free account"}
             </Link>
             <Link
-              href="/auth/login"
+              href={isFr ? "/fr/auth/login" : "/auth/login"}
               style={{
                 display: "inline-block",
                 padding: "9px 16px",
@@ -114,7 +113,7 @@ export default function FreemiumGate({ children, feature = "cette fonctionnalit�
                 textDecoration: "none",
               }}
             >
-              Se connecter
+              {isFr ? "Se connecter" : "Sign in"}
             </Link>
           </div>
         </div>

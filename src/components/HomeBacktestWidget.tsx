@@ -77,7 +77,7 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
           className="btn btn-glass flex-shrink-0 self-start"
           style={{ fontSize: "0.78rem", padding: "8px 14px", borderRadius: "8px" }}
         >
-          Analyse →
+          {isFr ? "Analyse →" : "Backtest →"}
         </Link>
       </div>
     </div>

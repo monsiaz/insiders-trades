@@ -33,7 +33,9 @@ function fmt(n: number | null, decimals = 1): string {
   return `${sign}${n.toFixed(decimals)}%`;
 }
 
-export function CompanyBacktestWidget({ companyId }: { companyId: string }) {
+export function CompanyBacktestWidget({ companyId, locale = "en" }: { companyId: string; locale?: string }) {
+  const isFr = locale === "fr";
+  const numLocale = isFr ? "fr-FR" : "en-GB";
   const [data, setData] = useState<CompanyBacktestData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -59,21 +61,27 @@ export function CompanyBacktestWidget({ companyId }: { companyId: string }) {
     .filter((p) => p.return90d != null)
     .sort((a, b) => a.date.localeCompare(b.date))
     .map((p) => ({
-      date: new Date(p.date).toLocaleDateString("fr-FR", { month: "short", year: "2-digit" }),
+      date: new Date(p.date).toLocaleDateString(numLocale, { month: "short", year: "2-digit" }),
       return90d: p.return90d,
     }));
+
+  const yearsCount = new Set(data.points.map((p) => p.date.slice(0, 4))).size;
 
   return (
     <div className="card p-5">
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
         <div>
-          <h3 style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--tx-1)", margin: 0 }}>Historique de performance</h3>
+          <h3 style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--tx-1)", margin: 0 }}>
+            {isFr ? "Historique de performance" : "Performance history"}
+          </h3>
           <p style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "3px" }}>
-            {data.count} achat{data.count > 1 ? "s" : ""} tracé{data.count > 1 ? "s" : ""} · {new Set(data.points.map((p) => p.date.slice(0, 4))).size} ans de données
+            {isFr
+              ? `${data.count} achat${data.count > 1 ? "s" : ""} tracé${data.count > 1 ? "s" : ""} · ${yearsCount} ans de données`
+              : `${data.count} purchase${data.count > 1 ? "s" : ""} tracked · ${yearsCount} yr${yearsCount > 1 ? "s" : ""} of data`}
           </p>
         </div>
         <Link href="/backtest" style={{ fontSize: "0.75rem", color: "var(--c-indigo-2)", textDecoration: "none" }}>
-          Backtesting →
+          {isFr ? "Backtesting →" : "Backtesting →"}
         </Link>
       </div>
 
@@ -86,7 +94,9 @@ export function CompanyBacktestWidget({ companyId }: { companyId: string }) {
           }}>
             {fmt(data.avg90d)}
           </div>
-          <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "2px" }}>Rendement moyen T+90</div>
+          <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "2px" }}>
+            {isFr ? "Rendement moyen T+90" : "Avg. return T+90"}
+          </div>
         </div>
         <div>
           <div style={{
@@ -96,7 +106,9 @@ export function CompanyBacktestWidget({ companyId }: { companyId: string }) {
           }}>
             {data.winRate90d != null ? `${data.winRate90d.toFixed(0)}%` : "·"}
           </div>
-          <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "2px" }}>Taux de réussite</div>
+          <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "2px" }}>
+            {isFr ? "Taux de réussite" : "Win rate"}
+          </div>
         </div>
       </div>
 

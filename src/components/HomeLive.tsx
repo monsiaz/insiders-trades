@@ -363,7 +363,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
           </div>
           <div className="space-y-2">
             {recentDeclarations.map((decl: Declaration) => (
-              <DeclarationCard key={decl.id} declaration={decl} />
+              <DeclarationCard key={decl.id} declaration={decl} locale={isFr ? "fr" : "en"} />
             ))}
           </div>
         </div>

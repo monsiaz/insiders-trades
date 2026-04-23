@@ -7,15 +7,16 @@ interface Props {
   companyId: string;
   companyName: string;
   initial?: Partial<CompanyFinancials> | null;
+  locale?: string;
 }
 
 // ── Formatters ────────────────────────────────────────────────────────────
 
-function fmtB(n: number | null | undefined, currency = "€"): string {
+function fmtB(n: number | null | undefined, isFr: boolean, currency = "€"): string {
   if (n == null) return "·";
   const abs = Math.abs(n);
   const sign = n < 0 ? "−" : "";
-  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(2)} Md${currency}`;
+  if (abs >= 1e9) return `${sign}${(abs / 1e9).toFixed(2)} ${isFr ? "Md" : "Bn"}${currency}`;
   if (abs >= 1e6) return `${sign}${(abs / 1e6).toFixed(1)} M${currency}`;
   if (abs >= 1e3) return `${sign}${(abs / 1e3).toFixed(0)} k${currency}`;
   return `${sign}${abs.toFixed(0)} ${currency}`;
@@ -50,13 +51,15 @@ function positiveColor(positive: boolean | null): string {
 
 // ── Analyst reco ─────────────────────────────────────────────────────────
 
-const RECO_CONFIG: Record<string, { label: string; pct: number; positive: boolean }> = {
-  strong_buy:   { label: "Achat fort",  pct: 100, positive: true  },
-  buy:          { label: "Achat",       pct: 75,  positive: true  },
-  hold:         { label: "Neutre",      pct: 50,  positive: false },
-  underperform: { label: "Sous-perf.", pct: 30,  positive: false },
-  sell:         { label: "Vente",       pct: 10,  positive: false },
-};
+function getRecoConfig(isFr: boolean): Record<string, { label: string; pct: number; positive: boolean }> {
+  return {
+    strong_buy:   { label: isFr ? "Achat fort"  : "Strong buy",    pct: 100, positive: true  },
+    buy:          { label: isFr ? "Achat"        : "Buy",           pct: 75,  positive: true  },
+    hold:         { label: isFr ? "Neutre"       : "Hold",          pct: 50,  positive: false },
+    underperform: { label: isFr ? "Sous-perf."   : "Underperform",  pct: 30,  positive: false },
+    sell:         { label: isFr ? "Vente"        : "Sell",          pct: 10,  positive: false },
+  };
+}
 
 function scoreToReco(s: number): string {
   if (s <= 1.5) return "strong_buy";
@@ -66,9 +69,10 @@ function scoreToReco(s: number): string {
   return "sell";
 }
 
-function RecoGauge({ score, reco }: { score?: number | null; reco?: string | null }) {
+function RecoGauge({ score, reco, isFr }: { score?: number | null; reco?: string | null; isFr: boolean }) {
+  const config = getRecoConfig(isFr);
   const key = reco ?? (score != null ? scoreToReco(score) : null);
-  const cfg = key ? RECO_CONFIG[key] : null;
+  const cfg = key ? config[key] : null;
   if (!cfg && score == null) return <span style={{ color: "var(--tx-4)" }}>·</span>;
 
   const barPct = score != null ? Math.max(5, Math.round(((5 - score) / 4) * 100)) : (cfg?.pct ?? 50);
@@ -88,8 +92,8 @@ function RecoGauge({ score, reco }: { score?: number | null; reco?: string | nul
 
 // ── Target price bar ──────────────────────────────────────────────────────
 
-function TargetBar({ current, low, mean, high }: {
-  current?: number | null; low?: number | null; mean?: number | null; high?: number | null;
+function TargetBar({ current, low, mean, high, isFr }: {
+  current?: number | null; low?: number | null; mean?: number | null; high?: number | null; isFr: boolean;
 }) {
   if (!low && !mean && !high) return null;
   const min = Math.min(current ?? mean ?? 0, low ?? mean ?? 0) * 0.85;
@@ -120,7 +124,7 @@ function TargetBar({ current, low, mean, high }: {
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "6px", fontSize: "10px", color: "var(--tx-4)" }}>
         <span>{low ? fmtPrice(low) : ""}</span>
         <span style={{ color: "var(--tx-3)" }}>
-          Objectif {fmtPrice(mean)}
+          {isFr ? "Objectif" : "Target"} {fmtPrice(mean)}
           {upside != null && (
             <span style={{ color: positiveColor(upside > 0), marginLeft: "4px" }}>
               ({upside > 0 ? "+" : ""}{upside.toFixed(0)}%)
@@ -182,7 +186,9 @@ function Metric({ label, value, sub, color, tooltip }: {
 
 // ── Main component ────────────────────────────────────────────────────────
 
-export function CompanyFinancials({ companyId, companyName, initial }: Props) {
+export function CompanyFinancials({ companyId, companyName, initial, locale = "en" }: Props) {
+  const isFr = locale === "fr";
+  const numLocale = isFr ? "fr-FR" : "en-GB";
   const [data, setData] = useState<Partial<CompanyFinancials> | null>(initial ?? null);
   const [loading, setLoading] = useState(!initial);
   const [error, setError] = useState<string | null>(null);
@@ -202,7 +208,7 @@ export function CompanyFinancials({ companyId, companyName, initial }: Props) {
       <div className="card p-5">
         <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--tx-3)", fontSize: "0.84rem" }}>
           <span style={{ width: "16px", height: "16px", border: "2px solid var(--c-indigo)", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", animation: "spin 1s linear infinite" }} />
-          Chargement des données financières…
+          {isFr ? "Chargement des données financières…" : "Loading financial data…"}
         </div>
       </div>
     );
@@ -211,7 +217,7 @@ export function CompanyFinancials({ companyId, companyName, initial }: Props) {
   if (error || !data) {
     return (
       <div className="card p-5" style={{ color: "var(--tx-3)", fontSize: "0.84rem" }}>
-        Données financières non disponibles pour {companyName}
+        {isFr ? `Données financières non disponibles pour ${companyName}` : `Financial data not available for ${companyName}`}
         {error && <span style={{ color: "var(--c-crimson)", marginLeft: "8px", fontSize: "0.75rem" }}>({error})</span>}
       </div>
     );
@@ -228,6 +234,7 @@ export function CompanyFinancials({ companyId, companyName, initial }: Props) {
   const netMargin    = d.profitMargin != null
     ? d.profitMargin * 100
     : (d.netIncome && d.revenue ? (d.netIncome / d.revenue) * 100 : null);
+  const marginLabel  = isFr ? "marge" : "margin";
 
   return (
     <div className="card p-5" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -235,11 +242,12 @@ export function CompanyFinancials({ companyId, companyName, initial }: Props) {
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
         <div>
           <h3 style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--tx-1)", margin: 0, letterSpacing: "-0.02em" }}>
-            Données financières
+            {isFr ? "Données financières" : "Financial data"}
           </h3>
           {d.fiscalYearEnd && (
             <p style={{ fontSize: "0.72rem", color: "var(--tx-3)", marginTop: "3px" }}>
-              Exercice clos {new Date(d.fiscalYearEnd).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
+              {isFr ? "Exercice clos" : "FY ended"}{" "}
+              {new Date(d.fiscalYearEnd).toLocaleDateString(numLocale, { month: "long", year: "numeric" })}
               {" · "}
               <span style={{ color: "var(--tx-4)" }}>{d.source?.join(", ")}</span>
             </p>
@@ -256,7 +264,7 @@ export function CompanyFinancials({ companyId, companyName, initial }: Props) {
             </div>
             {d.fiftyTwoWeekLow && d.fiftyTwoWeekHigh && (
               <div style={{ fontSize: "10px", color: "var(--tx-4)", marginTop: "2px" }}>
-                52s : {fmtPrice(d.fiftyTwoWeekLow)} – {fmtPrice(d.fiftyTwoWeekHigh)}
+                {isFr ? "52s" : "52w"} : {fmtPrice(d.fiftyTwoWeekLow)} – {fmtPrice(d.fiftyTwoWeekHigh)}
               </div>
             )}
           </div>
@@ -267,14 +275,16 @@ export function CompanyFinancials({ companyId, companyName, initial }: Props) {
       {hasAnalyst && (
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-            <SectionTitle>Consensus analystes</SectionTitle>
+            <SectionTitle>{isFr ? "Consensus analystes" : "Analyst consensus"}</SectionTitle>
             {d.numAnalysts && (
-              <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>{d.numAnalysts} analystes</span>
+              <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>
+                {d.numAnalysts} {isFr ? "analystes" : "analysts"}
+              </span>
             )}
           </div>
-          <RecoGauge score={d.analystScore} reco={d.analystReco} />
+          <RecoGauge score={d.analystScore} reco={d.analystReco} isFr={isFr} />
           {(d.targetLow || d.targetMean || d.targetHigh) && (
-            <TargetBar current={d.currentPrice} low={d.targetLow} mean={d.targetMean} high={d.targetHigh} />
+            <TargetBar current={d.currentPrice} low={d.targetLow} mean={d.targetMean} high={d.targetHigh} isFr={isFr} />
           )}
         </div>
       )}
@@ -282,21 +292,21 @@ export function CompanyFinancials({ companyId, companyName, initial }: Props) {
       {/* Income statement */}
       {hasIncome && (
         <div>
-          <SectionTitle>Compte de résultat</SectionTitle>
+          <SectionTitle>{isFr ? "Compte de résultat" : "Income statement"}</SectionTitle>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "8px" }}>
-            {d.revenue != null && <Metric label="Chiffre d'affaires" value={fmtB(d.revenue)} />}
+            {d.revenue != null && <Metric label={isFr ? "Chiffre d'affaires" : "Revenue"} value={fmtB(d.revenue, isFr)} />}
             {d.grossProfit != null && (
-              <Metric label="Marge brute" value={fmtB(d.grossProfit)}
-                sub={d.revenue ? `${((d.grossProfit / d.revenue) * 100).toFixed(0)}%` : undefined} />
+              <Metric label={isFr ? "Marge brute" : "Gross profit"} value={fmtB(d.grossProfit, isFr)}
+                sub={d.revenue ? `${((d.grossProfit / d.revenue) * 100).toFixed(0)}% ${marginLabel}` : undefined} />
             )}
             {d.ebitda != null && (
-              <Metric label="EBITDA" value={fmtB(d.ebitda)}
-                sub={ebitdaMargin != null ? `${ebitdaMargin.toFixed(0)}% marge` : undefined}
+              <Metric label="EBITDA" value={fmtB(d.ebitda, isFr)}
+                sub={ebitdaMargin != null ? `${ebitdaMargin.toFixed(0)}% ${marginLabel}` : undefined}
                 color={positiveColor(d.ebitda > 0)} />
             )}
             {d.netIncome != null && (
-              <Metric label="Résultat net" value={fmtB(d.netIncome)}
-                sub={netMargin != null ? `${netMargin.toFixed(1)}% marge` : undefined}
+              <Metric label={isFr ? "Résultat net" : "Net income"} value={fmtB(d.netIncome, isFr)}
+                sub={netMargin != null ? `${netMargin.toFixed(1)}% ${marginLabel}` : undefined}
                 color={positiveColor(d.netIncome > 0)} />
             )}
           </div>
@@ -306,23 +316,26 @@ export function CompanyFinancials({ companyId, companyName, initial }: Props) {
       {/* Valuation */}
       {hasValuation && (
         <div>
-          <SectionTitle>Valorisation</SectionTitle>
+          <SectionTitle>{isFr ? "Valorisation" : "Valuation"}</SectionTitle>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "8px" }}>
             {d.trailingPE != null && (
               <Metric label="PER (trailing)" value={fmtNum(d.trailingPE, 1) + "x"}
                 color={d.trailingPE < 15 ? "var(--c-emerald)" : d.trailingPE < 25 ? "var(--tx-1)" : "var(--c-crimson)"}
-                tooltip="Price / Earnings ratio (historique)" />
+                tooltip={isFr ? "Price / Earnings ratio (historique)" : "Price / Earnings ratio (trailing)"} />
             )}
             {d.forwardPE != null && (
               <Metric label="PER (forward)" value={fmtNum(d.forwardPE, 1) + "x"}
                 color={d.forwardPE < 15 ? "var(--c-emerald)" : d.forwardPE < 25 ? "var(--tx-1)" : "var(--c-crimson)"}
-                tooltip="Price / Earnings projeté" />
+                tooltip={isFr ? "Price / Earnings projeté" : "Price / Earnings (forward)"} />
             )}
-            {d.priceToBook != null && <Metric label="P/Book" value={fmtX(d.priceToBook)} tooltip="Price / Valeur comptable" />}
+            {d.priceToBook != null && (
+              <Metric label="P/Book" value={fmtX(d.priceToBook)}
+                tooltip={isFr ? "Price / Valeur comptable" : "Price / Book value"} />
+            )}
             {d.beta != null && (
-              <Metric label="Bêta" value={fmtNum(d.beta)}
+              <Metric label={isFr ? "Bêta" : "Beta"} value={fmtNum(d.beta)}
                 color={d.beta > 1.5 ? "var(--c-crimson)" : d.beta < 0.8 ? "var(--c-emerald)" : "var(--tx-1)"}
-                tooltip="Volatilité relative au marché (1 = même risque)" />
+                tooltip={isFr ? "Volatilité relative au marché (1 = même risque)" : "Market volatility vs index (1 = same risk)"} />
             )}
           </div>
         </div>
@@ -331,30 +344,30 @@ export function CompanyFinancials({ companyId, companyName, initial }: Props) {
       {/* Balance sheet */}
       {hasBalance && (
         <div>
-          <SectionTitle>Bilan & trésorerie</SectionTitle>
+          <SectionTitle>{isFr ? "Bilan & trésorerie" : "Balance sheet & cash"}</SectionTitle>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "8px" }}>
-            {d.marketCap != null && <Metric label="Capitalisation" value={fmtB(d.marketCap)} />}
+            {d.marketCap != null && <Metric label={isFr ? "Capitalisation" : "Market cap"} value={fmtB(d.marketCap, isFr)} />}
             {d.totalDebt != null && (
-              <Metric label="Dette totale" value={fmtB(d.totalDebt)}
+              <Metric label={isFr ? "Dette totale" : "Total debt"} value={fmtB(d.totalDebt, isFr)}
                 color={d.totalDebt > (d.marketCap ?? Infinity) * 0.5 ? "var(--c-crimson)" : "var(--tx-1)"} />
             )}
             {d.freeCashFlow != null && (
-              <Metric label="Free Cash Flow" value={fmtB(d.freeCashFlow)}
+              <Metric label="Free Cash Flow" value={fmtB(d.freeCashFlow, isFr)}
                 color={positiveColor(d.freeCashFlow > 0)} />
             )}
             {d.debtToEquity != null && (
-              <Metric label="Dette / FP" value={fmtNum(d.debtToEquity, 0) + "%"}
+              <Metric label={isFr ? "Dette / FP" : "Debt / Equity"} value={fmtNum(d.debtToEquity, 0) + "%"}
                 color={d.debtToEquity < 50 ? "var(--c-emerald)" : d.debtToEquity < 150 ? "var(--tx-1)" : "var(--c-crimson)"}
-                tooltip="Ratio dette / capitaux propres" />
+                tooltip={isFr ? "Ratio dette / capitaux propres" : "Debt / Equity ratio"} />
             )}
           </div>
         </div>
       )}
 
-      {/* Rentabilité & actionnariat */}
+      {/* Profitability & ownership */}
       {hasOwnership && (
         <div>
-          <SectionTitle>Rentabilité & actionnariat</SectionTitle>
+          <SectionTitle>{isFr ? "Rentabilité & actionnariat" : "Profitability & ownership"}</SectionTitle>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "8px" }}>
             {d.returnOnEquity != null && (
               <Metric label="ROE" value={fmtPct(d.returnOnEquity)}
@@ -367,13 +380,13 @@ export function CompanyFinancials({ companyId, companyName, initial }: Props) {
                 tooltip="Return on Assets" />
             )}
             {d.heldByInsiders != null && (
-              <Metric label="% dirigeants" value={fmtPct(d.heldByInsiders)}
+              <Metric label={isFr ? "% dirigeants" : "% insiders"} value={fmtPct(d.heldByInsiders)}
                 color={d.heldByInsiders > 0.1 ? "var(--c-indigo-2)" : "var(--tx-1)"}
-                tooltip="Part du capital détenue par les dirigeants" />
+                tooltip={isFr ? "Part du capital détenue par les dirigeants" : "Capital held by insiders"} />
             )}
             {d.heldByInstitutions != null && (
-              <Metric label="% institutionnels" value={fmtPct(d.heldByInstitutions)}
-                tooltip="Part du capital détenue par les institutionnels" />
+              <Metric label={isFr ? "% institutionnels" : "% institutions"} value={fmtPct(d.heldByInstitutions)}
+                tooltip={isFr ? "Part du capital détenue par les institutionnels" : "Capital held by institutions"} />
             )}
           </div>
         </div>

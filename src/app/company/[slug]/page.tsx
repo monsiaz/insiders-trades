@@ -240,7 +240,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
                   <span className="text-xs px-2 py-0.5 rounded-lg"
                     style={{ color: "var(--c-amber)", background: "var(--c-amber-bg)", border: "1px solid var(--c-amber-bd)" }}>
                     Mcap {Number(company.marketCap) >= 1e9
-                      ? `${(Number(company.marketCap) / 1e9).toFixed(1)}Md€`
+                      ? `${(Number(company.marketCap) / 1e9).toFixed(1)}${isFr ? "Md€" : "Bn€"}`
                       : `${(Number(company.marketCap) / 1e6).toFixed(0)}M€`}
                   </span>
                 )}
@@ -332,12 +332,13 @@ export default async function CompanyPage({ params, searchParams }: Props) {
             fetchedAt: company.financialsAt!.toISOString(),
             source: ["cache"],
           } : null}
+          locale={locale}
         />
       </AnimateIn>
 
       {/* Backtest mini-widget */}
       <AnimateIn single className="mb-6">
-        <CompanyBacktestWidget companyId={company.id} />
+        <CompanyBacktestWidget companyId={company.id} locale={locale} />
       </AnimateIn>
 
       {/* Latest news (Google News + Yahoo RSS) */}
@@ -387,7 +388,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
           </div>
         ) : (
           declarations.map((decl) => (
-            <DeclarationCard key={decl.id} declaration={decl} showCompany={false} />
+            <DeclarationCard key={decl.id} declaration={decl} showCompany={false} locale={locale} />
           ))
         )}
       </AnimateIn>

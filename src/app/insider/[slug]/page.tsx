@@ -223,7 +223,7 @@ export default async function InsiderPage({ params, searchParams }: Props) {
             {isFr ? "Aucune déclaration" : "No declarations"}
           </div>
         ) : (
-          declarations.map((decl) => <DeclarationCard key={decl.id} declaration={decl} />)
+          declarations.map((decl) => <DeclarationCard key={decl.id} declaration={decl} locale={locale} />)
         )}
       </AnimateIn>
 

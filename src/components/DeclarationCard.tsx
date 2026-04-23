@@ -32,21 +32,23 @@ interface DeclarationCardProps {
     pctOfInsiderFlow?: number | null;
   };
   showCompany?: boolean;
+  /** "en" (default) or "fr" */
+  locale?: string;
 }
 
-function getTradeStyle(nature?: string | null) {
+function getTradeStyle(nature: string | null | undefined, isFr: boolean) {
   if (!nature) return null;
   const n = nature.toLowerCase();
-  if (n.includes("cession")) return { label: "Vente", icon: "▼", cls: "badge-sell", amountCls: "text-[var(--tx-1)]" };
-  if (n.includes("acquisition")) return { label: "Achat", icon: "▲", cls: "badge-buy", amountCls: "text-[var(--tx-1)]" };
+  if (n.includes("cession"))   return { label: isFr ? "Vente"       : "Sale",    icon: "▼", cls: "badge-sell",    amountCls: "text-[var(--tx-1)]" };
+  if (n.includes("acquisition")) return { label: isFr ? "Achat"     : "Purchase", icon: "▲", cls: "badge-buy",     amountCls: "text-[var(--tx-1)]" };
   if (n.includes("exercice") || n.includes("option")) return { label: "Options", icon: "◇", cls: "bg-gold-soft border bd-gold tx-gold", amountCls: "text-[var(--tx-1)]" };
-  if (n.includes("attribution")) return { label: "Attribution", icon: "◆", cls: "bg-violet-soft border bd-violet tx-violet", amountCls: "text-[var(--tx-1)]" };
+  if (n.includes("attribution")) return { label: isFr ? "Attribution" : "Grant", icon: "◆", cls: "bg-violet-soft border bd-violet tx-violet", amountCls: "text-[var(--tx-1)]" };
   return { label: nature, icon: "●", cls: "badge-neutral", amountCls: "text-[var(--tx-2)]" };
 }
 
-function fmt(amount: number | null | undefined, currency?: string | null): string {
+function fmt(amount: number | null | undefined, currency: string | null | undefined, numLocale: string): string {
   if (!amount) return "";
-  return new Intl.NumberFormat("fr-FR", {
+  return new Intl.NumberFormat(numLocale, {
     style: "currency",
     currency: currency || "EUR",
     maximumFractionDigits: 0,
@@ -54,15 +56,14 @@ function fmt(amount: number | null | undefined, currency?: string | null): strin
   }).format(amount);
 }
 
-function fmtDate(d: Date): string {
-  return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+function fmtDate(d: Date, numLocale: string): string {
+  return new Date(d).toLocaleDateString(numLocale, { day: "numeric", month: "short", year: "numeric" });
 }
 
-// Signal score → visual indicator (more prominent)
-function SignalBadge({ score }: { score: number }) {
+function SignalBadge({ score, isFr }: { score: number; isFr: boolean }) {
   if (score >= 70) return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-gold-soft border bd-gold tx-gold">
-      <span>★</span>Score fort · {score}
+      <span>★</span>{isFr ? "Score fort" : "Strong signal"} · {score}
     </span>
   );
   if (score >= 45) return (
@@ -78,22 +79,36 @@ function SignalBadge({ score }: { score: number }) {
   );
 }
 
-// Use CSS-variable-based badge classes defined in globals.css
 const TYPE_BADGE_CLS: Record<DeclarationType, string> = {
   DIRIGEANTS: "badge badge-indigo",
   SEUILS:     "badge badge-indigo",
   PROSPECTUS: "badge badge-amber",
   OTHER:      "badge badge-neutral",
 };
-const TYPE_LABEL: Record<DeclarationType, string> = {
-  DIRIGEANTS: "Dirigeants",
-  SEUILS: "Seuils",
-  PROSPECTUS: "Prospectus",
-  OTHER: "Autre",
-};
 
-export function DeclarationCard({ declaration, showCompany = true }: DeclarationCardProps) {
-  const trade = getTradeStyle(declaration.transactionNature);
+function getTypeLabel(type: DeclarationType, isFr: boolean): string {
+  if (isFr) {
+    const FR: Record<DeclarationType, string> = {
+      DIRIGEANTS: "Dirigeants",
+      SEUILS: "Seuils",
+      PROSPECTUS: "Prospectus",
+      OTHER: "Autre",
+    };
+    return FR[type];
+  }
+  const EN: Record<DeclarationType, string> = {
+    DIRIGEANTS: "Executives",
+    SEUILS: "Thresholds",
+    PROSPECTUS: "Prospectus",
+    OTHER: "Other",
+  };
+  return EN[type];
+}
+
+export function DeclarationCard({ declaration, showCompany = true, locale = "en" }: DeclarationCardProps) {
+  const isFr = locale === "fr";
+  const numLocale = isFr ? "fr-FR" : "en-GB";
+  const trade = getTradeStyle(declaration.transactionNature, isFr);
   const hasDetail = declaration.pdfParsed && declaration.insiderName;
   const pubDate = declaration.transactionDate ?? declaration.pubDate;
   const score = declaration.signalScore ?? 0;
@@ -117,7 +132,7 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
           {/* Top row: badges + company */}
           <div className="flex flex-wrap items-center gap-2 mb-2.5">
             <span className={`${TYPE_BADGE_CLS[declaration.type]} text-[11px]`}>
-              {TYPE_LABEL[declaration.type]}
+              {getTypeLabel(declaration.type, isFr)}
             </span>
 
             {trade && (
@@ -139,7 +154,7 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
               </Link>
             )}
 
-            <SignalBadge score={Math.round(score)} />
+            <SignalBadge score={Math.round(score)} isFr={isFr} />
           </div>
 
           {/* Insider row */}
@@ -161,18 +176,18 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2.5">
               {declaration.totalAmount && (
                 <span className={`text-base font-bold tabular-nums ${trade?.amountCls ?? "text-[var(--tx-1)]"}`}>
-                  {fmt(declaration.totalAmount, declaration.currency)}
+                  {fmt(declaration.totalAmount, declaration.currency, numLocale)}
                 </span>
               )}
               {declaration.volume && (
                 <span className="text-xs text-[var(--tx-3)]">
-                  {new Intl.NumberFormat("fr-FR").format(declaration.volume)} titres
+                  {new Intl.NumberFormat(numLocale).format(declaration.volume)} {isFr ? "titres" : "shares"}
                 </span>
               )}
               {declaration.unitPrice && (
                 <span className="text-xs text-[var(--tx-3)]">
                   @{" "}
-                  {new Intl.NumberFormat("fr-FR", {
+                  {new Intl.NumberFormat(numLocale, {
                     style: "currency",
                     currency: declaration.currency || "EUR",
                     minimumFractionDigits: 2,
@@ -193,14 +208,14 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
               {/* % of insider's own flow */}
               {pctFlow != null && pctFlow > 0 && (
                 <span className="text-[11px] text-[var(--tx-3)] tabular-nums">
-                  {pctFlow.toFixed(1)}% de son flux
+                  {pctFlow.toFixed(1)}{isFr ? "% de son flux" : "% of flow"}
                 </span>
               )}
               {declaration.isin && (
                 <button
                   type="button"
                   onClick={copyIsin}
-                  title={copied ? "Copié !" : "Copier l'ISIN"}
+                  title={copied ? (isFr ? "Copié !" : "Copied!") : (isFr ? "Copier l'ISIN" : "Copy ISIN")}
                   className="font-mono text-[10px] px-2 py-0.5 rounded transition-colors cursor-pointer flex items-center gap-1"
                   style={{ color: "var(--tx-3)", background: "var(--bg-raised)", border: "1px solid var(--border)" }}
                 >
@@ -233,9 +248,11 @@ export function DeclarationCard({ declaration, showCompany = true }: Declaration
           <div className="flex items-center gap-2 text-[11px]" style={{ color: "var(--tx-3)" }}>
             <span className="font-mono">{declaration.amfId}</span>
             <span>·</span>
-            <time>{fmtDate(pubDate)}</time>
+            <time>{fmtDate(pubDate, numLocale)}</time>
             {!declaration.pdfParsed && declaration.type === "DIRIGEANTS" && (
-              <span className="italic" style={{ color: "var(--tx-4)" }}>détails non chargés</span>
+              <span className="italic" style={{ color: "var(--tx-4)" }}>
+                {isFr ? "détails non chargés" : "details not loaded"}
+              </span>
             )}
           </div>
         </div>

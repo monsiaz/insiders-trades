@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getBacktestBase } from "@/lib/backtest-compute";
 import { HomeLive } from "@/components/HomeLive";
 import { HomeBacktestWidget } from "@/components/HomeBacktestWidget";
 import { HeroAnimated } from "@/components/HeroAnimated";
@@ -27,28 +28,25 @@ export async function generateMetadata() {
   };
 }
 
-// ── Fast SQL-aggregate backtest snapshot (was loading 20k rows → now 1 aggregate query) ─
+// ── Backtest snapshot from overallBuys (buy-only, all scores) ─────────────────
+// Uses the same getBacktestBase() as the /backtest page → consistent numbers.
+// Replaces the old raw SQL that averaged ALL rows (buys+sells) → was showing -1.9%.
 const getBacktestSnapshot = unstable_cache(
   async () => {
     try {
-      const rows = await prisma.$queryRaw<Array<{ total: bigint; avg90d: number | null; winrate: number | null }>>`
-        SELECT
-          COUNT(*)::bigint AS total,
-          AVG("return90d")::float8 AS avg90d,
-          (SUM(CASE WHEN "return90d" > 0 THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*), 0))::float8 AS winrate
-        FROM "BacktestResult"
-        WHERE "return90d" IS NOT NULL
-      `;
-      const r = rows[0];
-      if (!r || Number(r.total) === 0) return null;
+      const base = await getBacktestBase();
+      if (!base || !base.overallBuys || base.totalBuys === 0) return null;
+      const g = base.overallBuys;
       return {
-        total: Number(r.total),
-        avg90d: r.avg90d ?? 0,
-        winRate90d: r.winrate ?? 0,
+        total: base.totalBuys,
+        avg90d: g.avgReturn90d ?? 0,
+        medianReturn90d: g.medianReturn90d ?? 0,
+        winRate90d: g.winRate90d ?? 0,
+        sharpe90d: g.sharpe90d ?? null,
       };
     } catch { return null; }
   },
-  ["home-backtest-snapshot-v2"],
+  ["home-backtest-snapshot-v3"],   // bumped: forces fresh computation
   { revalidate: 3600 }
 );
 

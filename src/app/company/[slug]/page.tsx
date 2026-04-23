@@ -30,25 +30,28 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const company = await prisma.company.findUnique({
     where: { slug },
-    select: { name: true, sectorTagEn: true, descriptionEn: true },
+    select: { name: true, sectorTagEn: true, descriptionEn: true, descriptionFr: true },
   });
   if (!company) return {};
+  const hdrs = await headers();
+  const isFr = hdrs.get("x-locale") === "fr";
+  const title = isFr
+    ? `${company.name} · Transactions dirigeants | Sigma`
+    : `${company.name} · Insider Transactions | Sigma`;
+  const desc = (isFr ? company.descriptionFr : company.descriptionEn)?.slice(0, 160)
+    ?? (isFr
+      ? `Suivez les transactions d'initiés de ${company.name}.`
+      : `Track insider transactions for ${company.name} on InsiderTrades Sigma.`);
+  // Canonical and hreflang are handled globally by layout.tsx — no alternates here to avoid duplicates.
   return {
-    title: `${company.name} · Insider Transactions | Sigma`,
-    description: company.descriptionEn?.slice(0, 160) ?? `Track insider transactions for ${company.name} on InsiderTrades Sigma.`,
-    alternates: {
-      canonical: `${BASE_URL}/company/${slug}/`,
-      languages: {
-        en: `${BASE_URL}/company/${slug}/`,
-        fr: `${BASE_URL}/fr/company/${slug}/`,
-      },
-    },
+    title,
+    description: desc,
     openGraph: {
-      title: `${company.name} · Insider Transactions`,
-      description: company.descriptionEn?.slice(0, 160) ?? `Track insider transactions for ${company.name}.`,
+      title: isFr ? `${company.name} · Transactions dirigeants` : `${company.name} · Insider Transactions`,
+      description: desc,
       type: "website",
-      locale: "en_US",
-      alternateLocale: ["fr_FR"],
+      locale: isFr ? "fr_FR" : "en_US",
+      alternateLocale: [isFr ? "en_US" : "fr_FR"],
     },
   };
 }

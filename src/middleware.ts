@@ -178,20 +178,23 @@ export async function middleware(req: NextRequest) {
   }
 
   // 5. For non-default locale: rewrite to stripped path, inject locale header
+  // IMPORTANT: headers must be passed as REQUEST headers (request: { headers })
+  // so that `headers()` in Server Components can read them.
+  // Setting them only on response.headers would make them browser-only.
   if (locale !== "en") {
     const rewriteUrl = new URL(stripped === "/" ? "/" : stripped, req.url);
     rewriteUrl.search = req.nextUrl.search;
-    const response = NextResponse.rewrite(rewriteUrl);
-    response.headers.set("x-locale", locale);
-    response.headers.set("x-original-path", rawPath);
-    return response;
+    const reqHeaders = new Headers(req.headers);
+    reqHeaders.set("x-locale", locale);
+    reqHeaders.set("x-original-path", rawPath);
+    return NextResponse.rewrite(rewriteUrl, { request: { headers: reqHeaders } });
   }
 
-  // 6. Default locale (EN) — inject header and pass through
-  const response = NextResponse.next();
-  response.headers.set("x-locale", "en");
-  response.headers.set("x-original-path", rawPath);
-  return response;
+  // 6. Default locale (EN) — inject headers and pass through
+  const reqHeaders = new Headers(req.headers);
+  reqHeaders.set("x-locale", "en");
+  reqHeaders.set("x-original-path", rawPath);
+  return NextResponse.next({ request: { headers: reqHeaders } });
 }
 
 export const config = {

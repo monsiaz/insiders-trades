@@ -15,25 +15,26 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const insider = await prisma.insider.findUnique({
     where: { slug },
-    select: { name: true, primaryRole: true, descriptionEn: true },
+    select: { name: true, primaryRole: true, descriptionEn: true, descriptionFr: true },
   });
   if (!insider) return {};
+  const hdrs = await headers();
+  const isFr = hdrs.get("x-locale") === "fr";
+  const title = `${insider.name}${insider.primaryRole ? ` · ${insider.primaryRole}` : ""} | Sigma`;
+  const desc = (isFr ? insider.descriptionFr : insider.descriptionEn)?.slice(0, 160)
+    ?? (isFr
+      ? `Suivez les déclarations d'initiés de ${insider.name}.`
+      : `Track insider declarations by ${insider.name} on InsiderTrades Sigma.`);
+  // Canonical and hreflang are handled globally by layout.tsx — no alternates here to avoid duplicates.
   return {
-    title: `${insider.name}${insider.primaryRole ? ` · ${insider.primaryRole}` : ""} | Sigma`,
-    description: insider.descriptionEn?.slice(0, 160) ?? `Track insider declarations by ${insider.name} on InsiderTrades Sigma.`,
-    alternates: {
-      canonical: `${BASE_URL}/insider/${slug}/`,
-      languages: {
-        en: `${BASE_URL}/insider/${slug}/`,
-        fr: `${BASE_URL}/fr/insider/${slug}/`,
-      },
-    },
+    title,
+    description: desc,
     openGraph: {
       title: `${insider.name} · Insider Declarations`,
-      description: insider.descriptionEn?.slice(0, 160) ?? `Insider declarations by ${insider.name}.`,
+      description: desc,
       type: "website",
-      locale: "en_US",
-      alternateLocale: ["fr_FR"],
+      locale: isFr ? "fr_FR" : "en_US",
+      alternateLocale: [isFr ? "en_US" : "fr_FR"],
     },
   };
 }

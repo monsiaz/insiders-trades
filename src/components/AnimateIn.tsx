@@ -39,7 +39,11 @@ export function AnimateIn({
     // ── SINGLE mode ────────────────────────────────────────────────────────
     if (single) {
       const rect = container.getBoundingClientRect();
-      const alreadyVisible = rect.top < vh * 0.9 && rect.bottom > 0;
+
+      // If container has no height yet (dynamic import not loaded), never hide it
+      if (rect.height === 0) return;
+
+      const alreadyVisible = rect.top < vh && rect.bottom > 0;
 
       // Content already on screen — never hide it, skip animation to avoid FOIC
       if (alreadyVisible) return;
@@ -66,7 +70,11 @@ export function AnimateIn({
     if (items.length === 0) return;
 
     const rect = container.getBoundingClientRect();
-    const alreadyVisible = rect.top < vh * 0.9 && rect.bottom > 0;
+
+    // If container has no height yet (dynamic import not loaded), never hide children
+    if (rect.height === 0) return;
+
+    const alreadyVisible = rect.top < vh && rect.bottom > 0;
 
     // Content already on screen — never hide it, skip animation to avoid FOIC
     if (alreadyVisible) return;

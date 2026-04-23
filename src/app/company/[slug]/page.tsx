@@ -304,18 +304,18 @@ export default async function CompanyPage({ params, searchParams }: Props) {
         />
       </AnimateIn>
 
-      {/* Stock chart */}
-      <AnimateIn single className="mb-6">
+      {/* Stock chart — no AnimateIn: dynamic import renders skeleton first, FOIC risk */}
+      <div className="mb-6">
         <StockChart
           isin={isin}
           companyName={company.name}
           trades={tradeEvents}
           locale={locale}
         />
-      </AnimateIn>
+      </div>
 
       {/* Financial data */}
-      <AnimateIn single className="mb-6">
+      <div className="mb-6">
         <CompanyFinancials
           companyId={company.id}
           companyName={company.name}
@@ -351,17 +351,17 @@ export default async function CompanyPage({ params, searchParams }: Props) {
           } : null}
           locale={locale}
         />
-      </AnimateIn>
+      </div>
 
       {/* Backtest mini-widget */}
-      <AnimateIn single className="mb-6">
+      <div className="mb-6">
         <CompanyBacktestWidget companyId={company.id} locale={locale} />
-      </AnimateIn>
+      </div>
 
-      {/* Latest news (Google News + Yahoo RSS) */}
-      <AnimateIn single className="mb-6">
+      {/* Latest news */}
+      <div className="mb-6">
         <CompanyNews slug={company.slug} companyName={company.name} locale={locale} />
-      </AnimateIn>
+      </div>
 
       {/* Last declaration date */}
       {lastDecl && (

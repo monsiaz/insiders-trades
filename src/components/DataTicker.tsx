@@ -46,7 +46,16 @@ export function DataTicker() {
       .catch(() => null);
   }, []);
 
-  if (!data || (!data.total && !data.lastScrape)) return null;
+  // While loading: show a subtle skeleton placeholder so the footer doesn't jump
+  if (!data) {
+    return (
+      <div className="data-ticker" aria-hidden style={{ opacity: 0.4 }}>
+        <div className="skeleton" style={{ height: 12, width: 180, borderRadius: 4, display: "inline-block" }} />
+      </div>
+    );
+  }
+
+  if (!data.total && !data.lastScrape) return null;
 
   // Build the list of segments to display in the ticker
   const segments: string[] = [];

@@ -446,10 +446,11 @@ body::before {
   /* iPhone notch safe area */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
-  /* Promote to own layer + skip painting offscreen content · big scroll win */
+  /* Promote to own compositor layer for scroll performance */
   will-change: transform;
   transform: translateZ(0);
-  contain: layout paint;
+  /* NOTE: do NOT add contain:paint here — it clips absolutely-positioned children
+     (LangSwitcher dropdown, mobile menu) to the nav's 56px bounding box */
 }
 
 .light .app-nav {
@@ -573,7 +574,7 @@ body::before {
   height: 100%; max-width: 1400px; margin: 0 auto;
   padding: 0 20px; gap: 8px;
   min-width: 0;
-  overflow: hidden; /* prevent nav items from causing horizontal scroll */
+  /* NOTE: do NOT add overflow:hidden here — it clips the LangSwitcher dropdown */
 }
 
 .nav-logo {

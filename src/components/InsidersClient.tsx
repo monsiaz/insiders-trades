@@ -11,7 +11,7 @@ export interface InsiderRow {
   name: string;
   declarationCount: number;
   topFunction: string | null;
-  companies: string[]; // up to 3 company names
+  companies: { name: string; slug: string }[]; // up to 3 companies with slugs
   lastDecl: {
     pubDate: string;
     totalAmount: number | null;
@@ -139,15 +139,18 @@ function InsiderCard({ insider }: { insider: InsiderRow }) {
       </div>
 
       {insider.companies.length > 0 && (
-        <div
-          style={{
-            fontSize: "0.72rem",
-            color: "var(--tx-3)",
-            fontStyle: "italic",
-            lineHeight: 1.4,
-          }}
-        >
- · {insider.companies.join(" · ")}
+        <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", fontStyle: "italic", lineHeight: 1.4 }}>
+          {insider.companies.map((c, i) => (
+            <span key={c.slug}>
+              {i === 0 ? " · " : " · "}
+              <a href={`/company/${c.slug}`}
+                onClick={(e) => e.stopPropagation()}
+                style={{ color: "var(--tx-3)", textDecoration: "none" }}
+                className="hover:underline hover:text-[var(--tx-2)]">
+                {c.name}
+              </a>
+            </span>
+          ))}
         </div>
       )}
 

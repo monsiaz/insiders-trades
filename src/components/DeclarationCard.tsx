@@ -165,7 +165,15 @@ export function DeclarationCard({ declaration, showCompany = true, locale = "en"
                 style={{ background: "var(--c-indigo-bg)", border: "1px solid var(--c-indigo-bd)", color: "var(--c-indigo-2)" }}>
                 {declaration.insiderName.charAt(0)}
               </div>
-              <span className="text-sm font-medium" style={{ color: "var(--tx-1)" }}>{declaration.insiderName}</span>
+              {declaration.insider?.slug ? (
+                <Link href={`/insider/${declaration.insider.slug}`}
+                  className="text-sm font-medium transition-colors hover:underline"
+                  style={{ color: "var(--tx-1)" }}>
+                  {declaration.insiderName}
+                </Link>
+              ) : (
+                <span className="text-sm font-medium" style={{ color: "var(--tx-1)" }}>{declaration.insiderName}</span>
+              )}
               {declaration.insiderFunction && (
                 <span className="text-xs truncate" style={{ color: "var(--tx-3)" }}>
                   {translateRole(declaration.insiderFunction, locale ?? "en")}

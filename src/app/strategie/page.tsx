@@ -931,7 +931,19 @@ function SignalCard({ s, isFr }: { s: WinningSignal; isFr: boolean }) {
         <div style={{ fontSize: "0.78rem", color: "var(--tx-2)", lineHeight: 1.5 }}>
           {s.signal.insiderCount > 1
             ? `${s.signal.insiderCount} ${isFr ? "dirigeants · cluster confirmé" : "insiders · confirmed cluster"}`
-            : `${s.insider.name ?? "·"} · ${s.insider.role ?? s.insider.function ?? "·"}`
+            : (
+              <>
+                {s.insider.slug ? (
+                  <a href={`/insider/${s.insider.slug}`}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ color: "var(--tx-1)", fontWeight: 500, textDecoration: "none" }}
+                    className="hover:underline">
+                    {s.insider.name ?? "·"}
+                  </a>
+                ) : (s.insider.name ?? "·")}
+                {" · "}{s.insider.role ?? s.insider.function ?? "·"}
+              </>
+            )
           }
           {s.transaction.pctOfMarketCap != null && (
             <> · <strong>{s.transaction.pctOfMarketCap.toFixed(3)}%</strong> {isFr ? "du mcap" : "of mcap"}</>

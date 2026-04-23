@@ -45,7 +45,7 @@ export default async function InsidersPage() {
     name: i.name,
     declarationCount: i._count.declarations,
     topFunction: i.companies[0]?.function ?? null,
-    companies: i.companies.map((c) => c.company.name),
+    companies: i.companies.map((c) => ({ name: c.company.name, slug: c.company.slug })),
     lastDecl: i.declarations[0]
       ? {
           // unstable_cache serializes Date → string, so normalize defensively

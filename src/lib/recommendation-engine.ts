@@ -22,7 +22,7 @@ export interface RecoItem {
   declarationId: string;
   action: "BUY" | "SELL";
   company: { name: string; slug: string; yahooSymbol: string | null; logoUrl: string | null };
-  insider: { name: string | null; function: string | null; role: string };
+  insider: { name: string | null; slug: string | null; function: string | null; role: string };
   totalAmount: number | null;
   pctOfMarketCap: number | null;
   signalScore: number | null;
@@ -191,6 +191,7 @@ const DECL_SELECT = {
       analystReco: true,
     },
   },
+  insider: { select: { slug: true } },
 } as const;
 
 // ── RecoItem builder ──────────────────────────────────────────────────────────
@@ -247,6 +248,7 @@ function buildRecoItem(
     },
     insider: {
       name: decl.insiderName,
+      slug: decl.insider?.slug ?? null,
       function: decl.insiderFunction,
       role,
     },

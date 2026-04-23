@@ -128,7 +128,14 @@ export function RecoCard({ item, rank }: { item: RecoItem; rank: number }) {
 
           {item.insider.name && (
             <div className="tearsheet-insider">
-              <span style={{ fontWeight: 500 }}>{item.insider.name}</span>
+              {item.insider.slug ? (
+                <Link href={`/insider/${item.insider.slug}`} style={{ fontWeight: 500, color: "inherit", textDecoration: "none" }}
+                  className="hover:underline transition-opacity hover:opacity-80">
+                  {item.insider.name}
+                </Link>
+              ) : (
+                <span style={{ fontWeight: 500 }}>{item.insider.name}</span>
+              )}
               {item.insider.role !== "Autre" && (
                 <>
                   <span className="tearsheet-insider-sep">·</span>

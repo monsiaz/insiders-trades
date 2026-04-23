@@ -67,6 +67,7 @@ export interface WinningSignal {
   signal: {
     signalScore: number;
     isCluster: boolean;
+    insiderCount: number;
   };
   reasons: string[];
 }
@@ -147,9 +148,38 @@ export async function getWinningStrategySignals(opts: {
     // If transactionDate is null, we keep the row (best-effort)
 
     return true;
-  }).slice(0, limit);
+  });
 
-  return filtered.map((d): WinningSignal => {
+  // Deduplicate by company: keep the highest-scoring declaration per company,
+  // but accumulate insider count and total amount across all matching declarations.
+  type BestRow = (typeof filtered)[number] & { insiderCount: number; totalAmountSum: number };
+  const byCompany = new Map<string, BestRow>();
+
+  for (const d of filtered) {
+    const slug = d.company.slug;
+    const existing = byCompany.get(slug);
+    if (!existing) {
+      byCompany.set(slug, {
+        ...d,
+        insiderCount: 1,
+        totalAmountSum: d.totalAmount ?? 0,
+      });
+    } else {
+      // Accumulate stats; replace if this declaration has a higher score
+      existing.insiderCount += 1;
+      existing.totalAmountSum += d.totalAmount ?? 0;
+      if ((d.signalScore ?? 0) > (existing.signalScore ?? 0)) {
+        const saved = { insiderCount: existing.insiderCount, totalAmountSum: existing.totalAmountSum };
+        Object.assign(existing, d, saved);
+      }
+    }
+  }
+
+  const deduped = [...byCompany.values()]
+    .sort((a, b) => (b.signalScore ?? 0) - (a.signalScore ?? 0))
+    .slice(0, limit);
+
+  return deduped.map((d): WinningSignal => {
     const pubDelayDays = d.transactionDate
       ? (d.pubDate.getTime() - d.transactionDate.getTime()) / 86400_000
       : null;
@@ -178,15 +208,17 @@ export async function getWinningStrategySignals(opts: {
       },
       transaction: {
         nature: d.transactionNature,
-        amount: d.totalAmount,
+        // Show aggregated amount when multiple insiders bought
+        amount: d.insiderCount > 1 ? d.totalAmountSum : d.totalAmount,
         pctOfMarketCap: d.pctOfMarketCap,
       },
       signal: {
         signalScore: d.signalScore ?? 0,
         isCluster: d.isCluster,
+        insiderCount: d.insiderCount,
       },
       reasons: [
-        "Cluster : ≥ 2 dirigeants ont acheté ces 30 derniers jours",
+        `Cluster : ${d.insiderCount} dirigeant${d.insiderCount > 1 ? "s ont" : " a"} acheté ces 30 derniers jours`,
         "Mid-cap (200 M€ – 1 B€) · sweet spot liquidité / alpha",
         "Acquisition au marché (pas d'exercice ni d'apport)",
         `Publiée ${pubDelayDays != null ? pubDelayDays.toFixed(1) + "j" : "peu"} après la transaction`,

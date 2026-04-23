@@ -760,9 +760,23 @@ function SignalCard({ s }: { s: WinningSignal }) {
           >
             Score {s.signal.signalScore.toFixed(0)}
           </span>
+          {s.signal.insiderCount > 1 && (
+            <span
+              style={{
+                fontSize: "0.64rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+                color: "var(--signal-pos)", background: "var(--signal-pos-bg)", border: "1px solid var(--signal-pos-bd)",
+                padding: "1px 7px", borderRadius: "2px", fontFamily: "'JetBrains Mono', monospace",
+              }}
+            >
+              {s.signal.insiderCount} insiders
+            </span>
+          )}
         </div>
         <div style={{ fontSize: "0.78rem", color: "var(--tx-2)", lineHeight: 1.5 }}>
-          {s.insider.name} · {s.insider.role ?? s.insider.function ?? "·"}
+          {s.signal.insiderCount > 1
+            ? `${s.signal.insiderCount} dirigeants · cluster confirmé`
+            : `${s.insider.name ?? "·"} · ${s.insider.role ?? s.insider.function ?? "·"}`
+          }
           {s.transaction.pctOfMarketCap != null && (
             <> · <strong>{s.transaction.pctOfMarketCap.toFixed(3)}%</strong> du mcap</>
           )}

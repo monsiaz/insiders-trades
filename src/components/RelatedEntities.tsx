@@ -50,14 +50,8 @@ export function RelatedEntities({
           >
             {isFr ? "Sociétés similaires" : "Similar companies"}
           </h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-              gap: "0.75rem",
-            }}
-          >
-            {relatedCompanies.map((c) => (
+          <div className="related-entities-grid">
+            {relatedCompanies.slice(0, 5).map((c) => (
               <Link
                 key={c.slug}
                 href={isFr ? `/fr/company/${c.slug}` : `/company/${c.slug}`}
@@ -145,14 +139,8 @@ export function RelatedEntities({
           >
             {isFr ? "Dirigeants associés" : "Related executives"}
           </h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: "0.75rem",
-            }}
-          >
-            {relatedInsiders.map((i) => {
+          <div className="related-entities-grid">
+            {relatedInsiders.slice(0, 5).map((i) => {
               const initials = i.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
               return (
                 <Link

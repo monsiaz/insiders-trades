@@ -555,6 +555,271 @@ export default function FonctionnementPage() {
         </div>
       </Section>
 
+      {/* ── CADRE RÉGLEMENTAIRE ───────────────────────────────────────────── */}
+      <Section id="reglementation">
+        <div style={{ textAlign: "center", marginBottom: "40px" }}>
+          <Eyebrow color="var(--c-sky, #38bdf8)">Réglementation</Eyebrow>
+          <h2
+            style={{
+              fontFamily: "var(--font-dm-serif), Georgia, serif",
+              fontSize: "clamp(1.75rem, 4vw, 2.6rem)",
+              fontWeight: 400,
+              letterSpacing: "-0.012em",
+              color: "var(--tx-1)",
+              lineHeight: 1.15,
+              marginBottom: "16px",
+            }}
+          >
+            Qui doit déclarer, quoi, et pourquoi ?
+          </h2>
+          <p style={{ color: "var(--tx-2)", fontSize: "1.05rem", maxWidth: "680px", margin: "0 auto", lineHeight: 1.65 }}>
+            Le règlement européen MAR (Market Abuse Regulation) impose une transparence totale
+            sur les transactions des personnes les mieux informées d&apos;une société cotée.
+            Voici l&apos;essentiel du cadre légal que Sigma exploite.
+          </p>
+        </div>
+
+        {/* MAR Article 19 highlight */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, rgba(56,189,248,0.06) 0%, var(--bg-surface) 100%)",
+            border: "1px solid rgba(56,189,248,0.2)",
+            borderLeft: "3px solid rgba(56,189,248,0.6)",
+            borderRadius: "3px",
+            padding: "24px 28px",
+            marginBottom: "28px",
+            maxWidth: "860px",
+            margin: "0 auto 28px",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "0.62rem",
+              fontWeight: 700,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: "rgba(56,189,248,0.7)",
+              marginBottom: "8px",
+            }}
+          >
+            Fondement juridique
+          </div>
+          <p style={{ color: "var(--tx-1)", fontSize: "1rem", fontWeight: 600, marginBottom: "6px" }}>
+            Règlement UE n°596/2014 · Article 19 (MAR)
+          </p>
+          <p style={{ color: "var(--tx-2)", fontSize: "0.9rem", lineHeight: 1.65 }}>
+            En vigueur depuis le 3 juillet 2016, le MAR remplace et unifie les législations nationales
+            sur les abus de marché dans toute l&apos;Union européenne. En France, il est mis en oeuvre
+            et contrôlé par l&apos;<strong style={{ color: "var(--tx-1)" }}>Autorité des Marchés Financiers (AMF)</strong>.
+            Les déclarations sont publiées dans la base BDIF (Banque de Données &amp; d&apos;Informations Financières).
+          </p>
+        </div>
+
+        {/* 3 colonnes : qui / quoi / quand */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: "16px",
+            maxWidth: "860px",
+            margin: "0 auto 32px",
+          }}
+        >
+          {/* QUI */}
+          <div
+            style={{
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-med)",
+              borderRadius: "3px",
+              padding: "22px 20px",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "0.6rem",
+                fontWeight: 700,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: "var(--gold)",
+                marginBottom: "10px",
+              }}
+            >
+              Qui doit déclarer
+            </div>
+            <ul style={{ color: "var(--tx-2)", fontSize: "0.88rem", lineHeight: 1.7, paddingLeft: "16px", margin: 0 }}>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>PDMRs</strong> (Personnes Exerçant des
+                Responsabilités Dirigeantes) : PDG, DG, directeurs financiers, membres du conseil
+                d&apos;administration ou de surveillance
+              </li>
+              <li style={{ marginTop: "8px" }}>
+                <strong style={{ color: "var(--tx-1)" }}>PCAs</strong> (Personnes Étroitement
+                Associées) : conjoint/partenaire PACS, enfants à charge, parents sous le même toit
+                depuis +1 an, entités juridiques contrôlées par le PDMR
+              </li>
+              <li style={{ marginTop: "8px" }}>
+                Les <strong style={{ color: "var(--tx-1)" }}>actionnaires franchissant des seuils</strong>{" "}
+                (5%, 10%, 15%, 20%, 25%, 30%, 33⅓%, 50%, 66⅔%, 90%, 95%) font l&apos;objet
+                de déclarations <em>distinctes</em> (L.233-7 du Code de commerce)
+              </li>
+            </ul>
+          </div>
+
+          {/* QUOI */}
+          <div
+            style={{
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-med)",
+              borderRadius: "3px",
+              padding: "22px 20px",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "0.6rem",
+                fontWeight: 700,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: "var(--gold)",
+                marginBottom: "10px",
+              }}
+            >
+              Transactions concernées
+            </div>
+            <ul style={{ color: "var(--tx-2)", fontSize: "0.88rem", lineHeight: 1.7, paddingLeft: "16px", margin: 0 }}>
+              <li>Acquisitions et cessions d&apos;actions ou d&apos;instruments de dette</li>
+              <li style={{ marginTop: "6px" }}>Exercice d&apos;options ou de BSA (bons de souscription)</li>
+              <li style={{ marginTop: "6px" }}>Souscriptions dans le cadre d&apos;augmentations de capital</li>
+              <li style={{ marginTop: "6px" }}>Produits dérivés liés aux titres de l&apos;émetteur</li>
+              <li style={{ marginTop: "6px" }}>Donations (même à titre gratuit)</li>
+              <li style={{ marginTop: "6px" }}>Transactions réalisées par un gestionnaire de portefeuille mandaté</li>
+            </ul>
+          </div>
+
+          {/* QUAND / SEUILS */}
+          <div
+            style={{
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-med)",
+              borderRadius: "3px",
+              padding: "22px 20px",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "0.6rem",
+                fontWeight: 700,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: "var(--gold)",
+                marginBottom: "10px",
+              }}
+            >
+              Délais &amp; seuils
+            </div>
+            <ul style={{ color: "var(--tx-2)", fontSize: "0.88rem", lineHeight: 1.7, paddingLeft: "16px", margin: 0 }}>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>Délai de déclaration :</strong>{" "}
+                3 jours ouvrés après la date de la transaction
+              </li>
+              <li style={{ marginTop: "8px" }}>
+                <strong style={{ color: "var(--tx-1)" }}>Seuil de déclenchement :</strong>{" "}
+                20 000 € cumulés par an et par personne (relevé de 5 000 € par l&apos;EU Listing Act
+                2024 — les États membres peuvent ajuster entre 10 000 € et 50 000 €)
+              </li>
+              <li style={{ marginTop: "8px" }}>
+                <strong style={{ color: "var(--tx-1)" }}>Périodes d&apos;interdiction :</strong>{" "}
+                30 jours calendaires avant l&apos;annonce des résultats semestriels ou annuels
+                (« closed periods ») — sauf dérogations AMF strictement encadrées
+              </li>
+              <li style={{ marginTop: "8px" }}>
+                <strong style={{ color: "var(--tx-1)" }}>Publication par l&apos;émetteur :</strong>{" "}
+                2 jours ouvrés après réception pour rendre l&apos;information publique
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Actionnaires vs Dirigeants */}
+        <div
+          style={{
+            maxWidth: "860px",
+            margin: "0 auto",
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border-med)",
+            borderRadius: "3px",
+            padding: "22px 28px",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "0.6rem",
+              fontWeight: 700,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: "var(--gold)",
+              marginBottom: "12px",
+            }}
+          >
+            Dirigeants vs Actionnaires : deux régimes distincts
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+            <div>
+              <p style={{ color: "var(--tx-1)", fontSize: "0.88rem", fontWeight: 600, marginBottom: "6px" }}>
+                Déclarations Dirigeants (BDIF · type DIRIGEANTS)
+              </p>
+              <p style={{ color: "var(--tx-2)", fontSize: "0.84rem", lineHeight: 1.65 }}>
+                C&apos;est le <strong style={{ color: "var(--gold)" }}>cœur de Sigma</strong>. Ces déclarations
+                révèlent les achats et ventes personnels des PDG, CFO et membres de conseil. Leur valeur
+                informative est maximale : le dirigeant connaît ses propres chiffres mieux que tout analyste.
+                Sigma en couvre <strong style={{ color: "var(--tx-1)" }}>585 sociétés françaises cotées</strong>.
+              </p>
+            </div>
+            <div>
+              <p style={{ color: "var(--tx-1)", fontSize: "0.88rem", fontWeight: 600, marginBottom: "6px" }}>
+                Déclarations de Franchissement de Seuils (type SEUILS)
+              </p>
+              <p style={{ color: "var(--tx-2)", fontSize: "0.84rem", lineHeight: 1.65 }}>
+                Tout actionnaire — personne physique ou fonds — franchissant 5%, 10%... du capital ou
+                des droits de vote doit le notifier à l&apos;AMF sous 4 jours de bourse. Ces déclarations
+                signalent l&apos;entrée ou la sortie de blocs institutionnels. Sigma les collecte aussi,
+                mais leur analyse est distincte des transactions dirigeants.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Sanctions */}
+        <div
+          style={{
+            maxWidth: "860px",
+            margin: "20px auto 0",
+            display: "flex",
+            gap: "12px",
+            alignItems: "flex-start",
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border-med)",
+            borderRadius: "3px",
+            padding: "18px 24px",
+          }}
+        >
+          <div style={{ fontSize: "1.1rem", flexShrink: 0, marginTop: "2px" }}>⚖</div>
+          <p style={{ color: "var(--tx-3)", fontSize: "0.82rem", lineHeight: 1.65 }}>
+            <strong style={{ color: "var(--tx-2)" }}>Sanctions :</strong> Le défaut de déclaration ou
+            la déclaration tardive expose le dirigeant à une sanction administrative de l&apos;AMF pouvant
+            atteindre <strong style={{ color: "var(--tx-2)" }}>100 000 €</strong>, ainsi qu&apos;à des
+            poursuites pénales pour délit d&apos;initié si la transaction repose sur une information
+            privilégiée (jusqu&apos;à 100 M€ d&apos;amende et 7 ans d&apos;emprisonnement, Article L.465-1 du Code monétaire
+            et financier). C&apos;est pourquoi les dirigeants déclarent en général rapidement et correctement.
+          </p>
+        </div>
+      </Section>
+
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
       <Section>
         <div style={{ textAlign: "center", marginBottom: "36px" }}>
@@ -791,6 +1056,50 @@ function TrustItem({ label, desc }: { label: string; desc: string }) {
 }
 
 const FAQ_ITEMS = [
+  {
+    q: "Qui exactement est obligé de déclarer ses transactions à l'AMF ?",
+    a: (
+      <>
+        <strong>Deux catégories sont visées par l&apos;Article 19 du règlement MAR (UE 596/2014) :</strong>
+        <br /><br />
+        <strong style={{ color: "var(--tx-1)" }}>1. Les PDMRs</strong> (Personnes Exerçant des
+        Responsabilités Dirigeantes) : toute personne occupant un rôle exécutif ou non-exécutif senior
+        avec accès régulier à des informations privilégiées et pouvoir de décision —
+        PDG, DG délégué, Directeur Financier, membres du CA ou du Conseil de Surveillance.
+        <br /><br />
+        <strong style={{ color: "var(--tx-1)" }}>2. Les PCAs</strong> (Personnes Étroitement Associées) :
+        conjoint/partenaire enregistré, enfants à charge, autres membres de la famille sous le même
+        toit depuis au moins un an, et toute entité juridique dont le PDMR détient le contrôle ou
+        qui a été constituée à son profit.
+        <br /><br />
+        Les simples actionnaires ne sont <em>pas</em> concernés par MAR Art. 19 — sauf s&apos;ils
+        franchissent des seuils de participation (5%, 10%... du capital), auquel cas d&apos;autres
+        obligations déclaratives s&apos;appliquent (Code de commerce L.233-7).
+      </>
+    ),
+  },
+  {
+    q: "À partir de quel montant une transaction doit-elle être déclarée ?",
+    a: (
+      <>
+        Le seuil de déclaration a été <strong>relevé de 5 000 € à 20 000 €</strong> cumulés par année
+        civile par le <em>EU Listing Act</em> (entré en vigueur en 2024). Ce seuil est calculé en
+        additionnant toutes les transactions de l&apos;année sans compensation (achats + ventes comptent
+        chacun séparément).
+        <br /><br />
+        Les États membres ont la flexibilité de fixer leur propre seuil entre{" "}
+        <strong>10 000 € et 50 000 €</strong>. La France, via l&apos;AMF, peut donc choisir un seuil
+        différent de 20 000 €.
+        <br /><br />
+        Une fois le seuil dépassé, <strong>chaque transaction ultérieure</strong> de l&apos;année doit
+        être déclarée individuellement, même si elle est de 1 €.
+        <br /><br />
+        <strong>Délai :</strong> notification à l&apos;AMF et à l&apos;émetteur dans les{" "}
+        <strong>3 jours ouvrés</strong> suivant la date de transaction. L&apos;émetteur dispose ensuite
+        de 2 jours ouvrés pour rendre l&apos;information publique via le BDIF.
+      </>
+    ),
+  },
   {
     q: "Est-ce légal d'utiliser ces données ?",
     a: (

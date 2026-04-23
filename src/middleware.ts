@@ -54,6 +54,7 @@ function getLocaleFromPath(pathname: string): { locale: string; stripped: string
 /** Paths reachable without an authenticated session (during beta). */
 const PUBLIC_PREFIXES: string[] = [
   "/auth/",
+  "/api/auth/magic",
   "/fonctionnement",
   "/methodologie",
   "/performance",

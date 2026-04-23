@@ -37,6 +37,7 @@ interface StockChartProps {
   isin?: string | null;
   companyName: string;
   trades?: TradeEvent[];
+  locale?: string;
 }
 
 interface StockData {
@@ -50,13 +51,15 @@ interface StockData {
 type RangeOption = "1mo" | "3mo" | "6mo" | "1y" | "2y";
 type TradeFilter = "all" | "buy" | "sell";
 
-const RANGE_OPTIONS: { label: string; value: RangeOption }[] = [
-  { label: "1M", value: "1mo" },
-  { label: "3M", value: "3mo" },
-  { label: "6M", value: "6mo" },
-  { label: "1A", value: "1y" },
-  { label: "2A", value: "2y" },
-];
+function getRangeOptions(isFr: boolean): { label: string; value: RangeOption }[] {
+  return [
+    { label: "1M",  value: "1mo" },
+    { label: "3M",  value: "3mo" },
+    { label: "6M",  value: "6mo" },
+    { label: isFr ? "1A" : "1Y", value: "1y"  },
+    { label: isFr ? "2A" : "2Y", value: "2y"  },
+  ];
+}
 
 /** Normalize trade ISO date string to chart date format (YYYY-MM-DD, UTC) */
 function normalizeDate(isoDate: string): string {
@@ -68,33 +71,38 @@ function normalizeDate(isoDate: string): string {
   return `${base.getUTCFullYear()}-${String(base.getUTCMonth() + 1).padStart(2, "0")}-${String(base.getUTCDate()).padStart(2, "0")}`;
 }
 
-function formatXAxis(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+function makeFormatXAxis(numLocale: string) {
+  return (dateStr: string) => {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString(numLocale, { day: "numeric", month: "short" });
+  };
 }
 
 function scaleDotRadius(amount: number, min: number, max: number): number {
   if (max <= min) return 7;
   const log = (v: number) => Math.log(Math.max(v, 1));
   const t = (log(amount) - log(min)) / (log(max) - log(min));
-  return Math.round(4 + t * 12); // 4px to 16px
+  return Math.round(4 + t * 12);
 }
 
-function fmtAmount(v: number, currency = "EUR"): string {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency", currency,
-    maximumFractionDigits: 0,
-    notation: v >= 1_000_000 ? "compact" : "standard",
-  }).format(v);
+function makeFmtAmount(numLocale: string) {
+  return (v: number, currency = "EUR") =>
+    new Intl.NumberFormat(numLocale, {
+      style: "currency", currency,
+      maximumFractionDigits: 0,
+      notation: v >= 1_000_000 ? "compact" : "standard",
+    }).format(v);
 }
 
-function fmtDate(d: string): string {
-  const [y, m, day] = d.split("-").map(Number);
-  return new Date(y, m - 1, day).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit" });
+function makeFmtDate(numLocale: string) {
+  return (d: string) => {
+    const [y, m, day] = d.split("-").map(Number);
+    return new Date(y, m - 1, day).toLocaleDateString(numLocale, { day: "numeric", month: "short", year: "2-digit" });
+  };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CustomChartTooltip = ({ active, payload, label, tradeMap, currency }: any) => {
+const CustomChartTooltip = ({ active, payload, label, tradeMap, currency, isFr, fmtAmount, formatXAxis, numLocale }: any) => {
   if (!active || !payload?.length) return null;
   const price = payload[0]?.value as number;
   const bubbles = (tradeMap?.get(label) as TradeBubble[] | undefined) ?? [];
@@ -109,47 +117,29 @@ const CustomChartTooltip = ({ active, payload, label, tradeMap, currency }: any)
     }}>
       <p style={{ color: "var(--tx-3)", marginBottom: "4px" }}>{formatXAxis(label)}</p>
       <p style={{ color: "var(--tx-1)", fontWeight: 700, fontSize: "13px", fontFamily: "monospace" }}>
-        {new Intl.NumberFormat("fr-FR", { style: "currency", currency: currency || "EUR", minimumFractionDigits: 2 }).format(price)}
+        {new Intl.NumberFormat(numLocale, { style: "currency", currency: currency || "EUR", minimumFractionDigits: 2 }).format(price)}
       </p>
-      {bubbles.map((bubble, i) => {
+      {bubbles.map((bubble: TradeBubble, i: number) => {
         const isBuy = bubble.type === "buy";
-        // Uniq persons list
         const persons = Array.from(new Set(bubble.trades.map((t) => t.person).filter(Boolean))) as string[];
         return (
-          <div
-            key={i}
-            style={{
-              marginTop: "8px", paddingTop: "8px",
-              borderTop: "1px solid var(--border)",
-              color: isBuy ? "var(--signal-pos)" : "var(--signal-neg)",
-            }}
-          >
+          <div key={i} style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid var(--border)", color: isBuy ? "var(--signal-pos)" : "var(--signal-neg)" }}>
             <div style={{ fontWeight: 700, fontSize: "10px", marginBottom: "3px", display: "flex", alignItems: "center", gap: "6px" }}>
-              <span>{isBuy ? "▲ Achat" : "▼ Vente"}</span>
+              <span>{isBuy ? (isFr ? "▲ Achat" : "▲ Buy") : (isFr ? "▼ Vente" : "▼ Sale")}</span>
               {bubble.count > 1 && (
-                <span style={{
-                  background: isBuy ? "var(--signal-pos-bg)" : "var(--signal-neg-bg)",
-                  border: `1px solid ${isBuy ? "var(--signal-pos-bd)" : "var(--signal-neg-bd)"}`,
-                  padding: "0px 5px", borderRadius: "3px",
-                  fontSize: "9px", fontWeight: 700, letterSpacing: "0.02em",
-                }}>
+                <span style={{ background: isBuy ? "var(--signal-pos-bg)" : "var(--signal-neg-bg)", border: `1px solid ${isBuy ? "var(--signal-pos-bd)" : "var(--signal-neg-bd)"}`, padding: "0px 5px", borderRadius: "3px", fontSize: "9px", fontWeight: 700 }}>
                   × {bubble.count}
                 </span>
               )}
             </div>
             {persons.length > 0 && (
               <p style={{ color: "var(--tx-2)", fontWeight: 500, fontSize: "10.5px", marginBottom: "2px" }}>
-                {persons.slice(0, 3).join(" · ")}
-                {persons.length > 3 && ` · +${persons.length - 3}`}
+                {persons.slice(0, 3).join(" · ")}{persons.length > 3 && ` · +${persons.length - 3}`}
               </p>
             )}
             <p style={{ fontWeight: 700, fontFamily: "monospace" }}>
               {fmtAmount(bubble.totalAmount, currency)}
-              {bubble.count > 1 && (
-                <span style={{ fontWeight: 400, color: "var(--tx-3)", fontSize: "10px", marginLeft: "4px" }}>
-                  (total)
-                </span>
-              )}
+              {bubble.count > 1 && <span style={{ fontWeight: 400, color: "var(--tx-3)", fontSize: "10px", marginLeft: "4px" }}>(total)</span>}
             </p>
           </div>
         );
@@ -158,7 +148,14 @@ const CustomChartTooltip = ({ active, payload, label, tradeMap, currency }: any)
   );
 };
 
-export function StockChart({ isin, companyName, trades = [] }: StockChartProps) {
+export function StockChart({ isin, companyName, trades = [], locale = "en" }: StockChartProps) {
+  const isFr = locale === "fr";
+  const numLocale = isFr ? "fr-FR" : "en-GB";
+  const formatXAxis = makeFormatXAxis(numLocale);
+  const fmtAmount = makeFmtAmount(numLocale);
+  const fmtDate = makeFmtDate(numLocale);
+  const RANGE_OPTIONS = getRangeOptions(isFr);
+
   const [data, setData] = useState<StockData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -264,25 +261,14 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
 
   if (loading) {
     return (
-      <div className="glass-card rounded-2xl p-6 h-64 flex items-center justify-center">
-        <div className="flex items-center gap-3 text-[var(--tx-3)]">
-          <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          <span className="text-sm">Chargement du cours...</span>
-        </div>
+      <div className="card p-5" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div className="skeleton" style={{ height: 14, width: 120 }} />
+        <div className="skeleton" style={{ height: 220, borderRadius: 12 }} />
       </div>
     );
   }
 
-  if (error || !data) {
-    return (
-      <div className="glass-card rounded-2xl p-5 h-20 flex items-center justify-center">
-        <p className="text-[var(--tx-3)] text-sm">Cours non disponible pour cette société</p>
-      </div>
-    );
-  }
+  if (error || !data) return null;
 
   const isPositive = data.change >= 0;
   // DA v3: signal-pos / signal-neg · direct hex for Recharts (it can't parse CSS vars)
@@ -305,7 +291,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
             <div>
               <div className="flex items-center gap-2">
                 <span style={{ fontSize: "1.5rem", fontWeight: 700, fontFamily: "'Banana Grotesk', monospace", color: "var(--tx-1)", letterSpacing: "-0.04em" }}>
-                  {new Intl.NumberFormat("fr-FR", { style: "currency", currency, minimumFractionDigits: 2 }).format(data.latest)}
+                  {new Intl.NumberFormat(numLocale, { style: "currency", currency, minimumFractionDigits: 2 }).format(data.latest)}
                 </span>
                 <span style={{
                   fontSize: "0.72rem", fontWeight: 700, padding: "2px 8px", borderRadius: "20px",
@@ -383,11 +369,11 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
                 tickLine={false}
                 width={58}
                 tickFormatter={(v) =>
-                  new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) + " €"
+                  new Intl.NumberFormat(numLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) + " €"
                 }
               />
               <Tooltip
-                content={<CustomChartTooltip tradeMap={tradeMap} currency={currency} />}
+                content={<CustomChartTooltip tradeMap={tradeMap} currency={currency} isFr={isFr} fmtAmount={fmtAmount} formatXAxis={formatXAxis} numLocale={numLocale} />}
                 cursor={{ stroke: "rgba(255,255,255,0.06)", strokeWidth: 1 }}
               />
               <Area
@@ -432,17 +418,20 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
         {tradeBubbles.length > 0 && (
           <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginTop: "8px", paddingTop: "10px", borderTop: "1px solid var(--border)", flexWrap: "wrap" }}>
             <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>
-              Transactions insiders sur la période <strong style={{ color: "var(--tx-2)" }}>({allTrades.length})</strong> :
+              {isFr ? "Transactions insiders sur la période" : "Insider transactions"}{" "}
+              <strong style={{ color: "var(--tx-2)" }}>({allTrades.length})</strong> :
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
               <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "var(--signal-pos)" }} />
-              <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>Achat ({buyTrades.length})</span>
+              <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>{isFr ? "Achat" : "Buy"} ({buyTrades.length})</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
               <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "var(--signal-neg)" }} />
-              <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>Vente ({sellTrades.length})</span>
+              <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>{isFr ? "Vente" : "Sale"} ({sellTrades.length})</span>
             </div>
-            <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>· taille = montant cumulé · 1 bulle / jour / côté</span>
+            <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>
+              {isFr ? "· taille = montant cumulé · 1 bulle / jour / côté" : "· size = cumulative amount · 1 bubble / day / side"}
+            </span>
           </div>
         )}
       </div>
@@ -472,12 +461,16 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
                     cursor: "pointer", transition: "all 0.12s",
                   }}
                 >
-                  {f === "all" ? `Tous (${allTrades.length})` : f === "buy" ? `▲ Achats (${buyTrades.length})` : `▼ Ventes (${sellTrades.length})`}
+                  {f === "all"
+                    ? `${isFr ? "Tous" : "All"} (${allTrades.length})`
+                    : f === "buy"
+                    ? `▲ ${isFr ? "Achats" : "Buys"} (${buyTrades.length})`
+                    : `▼ ${isFr ? "Ventes" : "Sales"} (${sellTrades.length})`}
                 </button>
               ))}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              <span style={{ fontSize: "11px", color: "var(--tx-4)", marginRight: "4px" }}>Trier :</span>
+              <span style={{ fontSize: "11px", color: "var(--tx-4)", marginRight: "4px" }}>{isFr ? "Trier :" : "Sort:"}</span>
               {(["date", "amount"] as const).map((s) => (
                 <button
                   key={s}
@@ -489,7 +482,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
                     border: "none", cursor: "pointer",
                   }}
                 >
-                  {s === "date" ? "Date" : "Montant"}
+                  {s === "date" ? "Date" : (isFr ? "Montant" : "Amount")}
                 </button>
               ))}
             </div>
@@ -534,7 +527,7 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
             })}
             {filteredTrades.length === 0 && (
               <div style={{ padding: "24px", textAlign: "center", color: "var(--tx-3)", fontSize: "0.84rem" }}>
-                Aucune transaction sur la période
+                {isFr ? "Aucune transaction sur la période" : "No transactions in this period"}
               </div>
             )}
           </div>
@@ -542,18 +535,19 @@ export function StockChart({ isin, companyName, trades = [] }: StockChartProps) 
           {/* Summary footer */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", padding: "10px 16px", borderTop: "1px solid var(--border)", background: "var(--bg-raised)" }}>
             <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>
-              {filteredTrades.length} transaction{filteredTrades.length > 1 ? "s" : ""} sur la période
+              {filteredTrades.length} transaction{filteredTrades.length > 1 ? "s" : ""}
+              {isFr ? " sur la période" : " in this period"}
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               {totalBuy > 0 && (
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span style={{ fontSize: "10px", color: "var(--tx-4)" }}>Achats</span>
+                  <span style={{ fontSize: "10px", color: "var(--tx-4)" }}>{isFr ? "Achats" : "Buys"}</span>
                   <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--c-emerald)", fontFamily: "monospace" }}>{fmtAmount(totalBuy, currency)}</span>
                 </div>
               )}
               {totalSell > 0 && (
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span style={{ fontSize: "10px", color: "var(--tx-4)" }}>Ventes</span>
+                  <span style={{ fontSize: "10px", color: "var(--tx-4)" }}>{isFr ? "Ventes" : "Sales"}</span>
                   <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--c-crimson)", fontFamily: "monospace" }}>{fmtAmount(totalSell, currency)}</span>
                 </div>
               )}

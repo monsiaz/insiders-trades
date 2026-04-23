@@ -308,6 +308,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
           isin={isin}
           companyName={company.name}
           trades={tradeEvents}
+          locale={locale}
         />
       </AnimateIn>
 

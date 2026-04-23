@@ -180,6 +180,10 @@
 html {
   scroll-behavior: smooth;
   text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  /* Safari: prevent horizontal overscroll */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
@@ -191,8 +195,17 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  max-width: 100%;
+  min-height: 100vh;       /* fallback for older Safari */
   min-height: 100dvh;
   font-feature-settings: "kern" 1, "liga" 1, "cv11" 1;
+}
+
+/* iOS Safari: prevent auto-zoom on input focus (requires font-size >= 16px) */
+@media (max-width: 640px) {
+  input, select, textarea {
+    font-size: max(16px, 1em) !important;
+  }
 }
 
 /* Display headings · DM Serif for authority */
@@ -615,6 +628,7 @@ body::before {
 }
 
 .page-main {
+  min-height: 100vh;   /* fallback for older Safari */
   min-height: 100dvh;
   padding-top: 56px;
   padding-bottom: 64px;

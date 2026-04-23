@@ -2,11 +2,10 @@
 
 import { useState, FormEvent } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 function LoginForm() {
-  const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") ?? "/";
   const [email, setEmail] = useState("");
@@ -26,8 +25,8 @@ function LoginForm() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Erreur"); return; }
-      router.push(next);
-      router.refresh();
+      // Hard redirect so Safari picks up the Set-Cookie header before navigating
+      window.location.href = next;
     } finally {
       setLoading(false);
     }

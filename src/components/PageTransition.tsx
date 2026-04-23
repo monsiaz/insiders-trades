@@ -232,6 +232,22 @@ function TransitionInner() {
     }, remaining);
   }
 
+  // ── Show a brief animation on the very first page load ───────────────────
+  useEffect(() => {
+    startLoading();
+    // finishLoading immediately — MIN_MS ensures it shows for at least 640ms
+    finishLoading();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Browser back / forward navigation ────────────────────────────────────
+  useEffect(() => {
+    function onPopState() { startLoading(); }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── Intercept internal link clicks ────────────────────────────────────────
   useEffect(() => {
     function onClickCapture(e: MouseEvent) {

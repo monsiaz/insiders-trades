@@ -6,14 +6,42 @@ import { useRouter } from "next/navigation";
 
 interface User { id: string; email: string; name: string | null; role: string }
 
+const SESSION_HINT_KEY = "it_auth_hint";
+
+function getHint(): User | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_HINT_KEY);
+    return raw ? (JSON.parse(raw) as User) : null;
+  } catch { return null; }
+}
+
+function setHint(u: User) {
+  try { sessionStorage.setItem(SESSION_HINT_KEY, JSON.stringify(u)); } catch {}
+}
+
+function clearHint() {
+  try { sessionStorage.removeItem(SESSION_HINT_KEY); } catch {}
+}
+
 export function NavUser() {
-  const [user, setUser] = useState<User | null | "loading">("loading");
+  // Start with the cached hint so the avatar shows immediately (no flash of "Connexion")
+  const [user, setUser] = useState<User | null | "loading">(() => {
+    if (typeof window === "undefined") return "loading";
+    return getHint() ?? "loading";
+  });
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
-    fetch("/api/auth/me").then((r) => r.json()).then((d) => setUser(d.user ?? null)).catch(() => setUser(null));
+    fetch("/api/auth/me", { credentials: "same-origin" })
+      .then((r) => (r.ok ? r.json() : { user: null }))
+      .then((d) => {
+        const u: User | null = d.user ?? null;
+        setUser(u);
+        if (u) setHint(u); else clearHint();
+      })
+      .catch(() => { setUser(null); clearHint(); });
   }, []);
 
   useEffect(() => {
@@ -26,10 +54,11 @@ export function NavUser() {
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
+    clearHint();
     setUser(null);
     setOpen(false);
-    router.push("/");
-    router.refresh();
+    // Hard redirect so the middleware sees the cleared cookie immediately
+    window.location.href = "/";
   }
 
   if (user === "loading") return <div className="w-8 h-8 rounded-full bg-[var(--bg-raised)] animate-pulse" />;

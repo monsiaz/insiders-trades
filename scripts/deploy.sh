@@ -41,7 +41,7 @@ git push origin main
 echo ""
 echo "▶ 4/4  Verifying production..."
 sleep 5
-LIVE_SHA=$(curl -sf "${PROD_URL}/api/version" 2>/dev/null | grep -o '"sha":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
+LIVE_SHA=$(curl -sf "${PROD_URL}/api/version/" 2>/dev/null | grep -o '"sha":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -58,7 +58,7 @@ if [[ "$LIVE_SHA" == "$COMMIT_SHA"* ]] || [[ "$COMMIT_SHA" == "$LIVE_SHA"* ]]; t
   echo "  ✓ Live SHA matches commit — deployment confirmed."
 else
   echo "  ⚠  SHA mismatch — Vercel CDN may still be propagating (normal for ~30s)."
-  echo "     Re-run:  curl ${PROD_URL}/api/version"
+  echo "     Re-run:  curl ${PROD_URL}/api/version/"
 fi
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""

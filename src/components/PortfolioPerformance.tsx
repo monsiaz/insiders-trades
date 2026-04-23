@@ -41,8 +41,17 @@ interface HistoryData {
 }
 
 type Period = "1W" | "1M" | "3M" | "6M" | "1Y" | "MAX";
+type Locale = "en" | "fr";
 
-const PERIODS: { key: Period; label: string }[] = [
+const PERIODS_EN: { key: Period; label: string }[] = [
+  { key: "1W",  label: "1W" },
+  { key: "1M",  label: "1M" },
+  { key: "3M",  label: "3M" },
+  { key: "6M",  label: "6M" },
+  { key: "1Y",  label: "1Y" },
+  { key: "MAX", label: "MAX" },
+];
+const PERIODS_FR: { key: Period; label: string }[] = [
   { key: "1W",  label: "1S" },
   { key: "1M",  label: "1M" },
   { key: "3M",  label: "3M" },
@@ -53,14 +62,14 @@ const PERIODS: { key: Period; label: string }[] = [
 
 // ── Formatters ─────────────────────────────────────────────────────────────
 
-function fmtEur(n: number, d = 0) {
-  return n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", minimumFractionDigits: d, maximumFractionDigits: d });
+function fmtEur(n: number, d = 0, locale: Locale = "en") {
+  return n.toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", { style: "currency", currency: "EUR", minimumFractionDigits: d, maximumFractionDigits: d });
 }
 function fmtPct(n: number, sign = true) {
   return `${sign && n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
 }
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+function fmtDate(iso: string, locale: Locale = "en") {
+  return new Date(iso).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short" });
 }
 
 // ── Custom Tooltips ────────────────────────────────────────────────────────
@@ -91,7 +100,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
           {isPos ? "+" : ""}{fmtEur(pnl)} ({pct != null ? fmtPct(pct) : "·"})
         </p>
       )}
-      {invested != null && <p style={{ color: "var(--tx-4)", fontSize: "10px", marginTop: "3px" }}>Investi : {fmtEur(invested)}</p>}
+      {invested != null && <p style={{ color: "var(--tx-4)", fontSize: "10px", marginTop: "3px" }}>{fmtEur(invested)}</p>}
     </div>
   );
 }
@@ -106,8 +115,8 @@ function BarTooltip({ active, payload }: { active?: boolean; payload?: { payload
       <p style={{ color: isPos ? "var(--c-emerald)" : "var(--c-crimson)", fontWeight: 600 }}>
         {isPos ? "+" : ""}{fmtEur(d.pnl)} ({fmtPct(d.pct)})
       </p>
-      <p style={{ color: "var(--tx-3)", fontSize: "11px", marginTop: "3px" }}>Investi : {fmtEur(d.invested)}</p>
-      <p style={{ color: "var(--tx-3)", fontSize: "11px" }}>Valeur : {fmtEur(d.value)}</p>
+      <p style={{ color: "var(--tx-3)", fontSize: "11px", marginTop: "3px" }}>{fmtEur(d.invested)}</p>
+      <p style={{ color: "var(--tx-3)", fontSize: "11px" }}>{fmtEur(d.value)}</p>
     </div>
   );
 }
@@ -126,8 +135,9 @@ function Skeleton() {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export function PortfolioPerformance({ positions }: { positions: Position[] }) {
+export function PortfolioPerformance({ positions, locale = "en" }: { positions: Position[]; locale?: Locale }) {
   const [period, setPeriod] = useState<Period>("3M");
+  const PERIODS = locale === "fr" ? PERIODS_FR : PERIODS_EN;
   const [data, setData]     = useState<HistoryData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -153,9 +163,9 @@ export function PortfolioPerformance({ positions }: { positions: Position[] }) {
     if (!data?.points?.length) return [];
     // Thin out if too many points
     const pts = data.points;
-    if (pts.length <= 100) return pts.map((p) => ({ ...p, dateLabel: fmtDate(p.date) }));
+    if (pts.length <= 100) return pts.map((p) => ({ ...p, dateLabel: fmtDate(p.date, locale) }));
     const step = Math.ceil(pts.length / 100);
-    return pts.filter((_, i) => i % step === 0 || i === pts.length - 1).map((p) => ({ ...p, dateLabel: fmtDate(p.date) }));
+    return pts.filter((_, i) => i % step === 0 || i === pts.length - 1).map((p) => ({ ...p, dateLabel: fmtDate(p.date, locale) }));
   }, [data]);
 
   // Waterfall from API positions data
@@ -181,7 +191,7 @@ export function PortfolioPerformance({ positions }: { positions: Position[] }) {
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "20px" }}>
           <div>
             <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--tx-3)", marginBottom: "6px" }}>
-              Performance globale
+              {locale === "fr" ? "Performance globale" : "Overall performance"}
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: "12px", flexWrap: "wrap" }}>
               <span style={{ fontFamily: "'Banana Grotesk', monospace", fontSize: "2rem", fontWeight: 700, letterSpacing: "-0.04em", color: "var(--tx-1)" }}>
@@ -192,10 +202,10 @@ export function PortfolioPerformance({ positions }: { positions: Position[] }) {
               </span>
             </div>
             <div style={{ fontSize: "0.75rem", color: "var(--tx-4)", marginTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
-              <span>{fmtEur(totalInvested)} investi · {positions.length} position{positions.length > 1 ? "s" : ""}</span>
-              {!hasPrices && <span style={{ color: "var(--c-amber)" }}>· Actualisez les cours pour voir la vraie perf</span>}
-              {data?.hasRealData && <span style={{ color: "var(--c-emerald)", fontSize: "0.7rem", fontWeight: 600 }}>· Données Yahoo Finance</span>}
-              {hasPrices && !data?.hasRealData && <span style={{ color: "var(--tx-4)", fontSize: "0.7rem" }}>· Courbe estimée</span>}
+              <span>{fmtEur(totalInvested, 0, locale)} {locale === "fr" ? "investi" : "invested"} · {positions.length} position{positions.length > 1 ? "s" : ""}</span>
+              {!hasPrices && <span style={{ color: "var(--c-amber)" }}>· {locale === "fr" ? "Actualisez les cours pour voir la vraie perf" : "Refresh prices to see real performance"}</span>}
+              {data?.hasRealData && <span style={{ color: "var(--c-emerald)", fontSize: "0.7rem", fontWeight: 600 }}>· {locale === "fr" ? "Données Yahoo Finance" : "Yahoo Finance data"}</span>}
+              {hasPrices && !data?.hasRealData && <span style={{ color: "var(--tx-4)", fontSize: "0.7rem" }}>· {locale === "fr" ? "Courbe estimée" : "Estimated curve"}</span>}
             </div>
           </div>
 
@@ -236,7 +246,7 @@ export function PortfolioPerformance({ positions }: { positions: Position[] }) {
                 <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: "var(--tx-4)" }} axisLine={false} tickLine={false}
                   interval={Math.ceil(chartPoints.length / 6)} />
                 <YAxis tick={{ fontSize: 10, fill: "var(--tx-4)" }} axisLine={false} tickLine={false} width={75}
-                  tickFormatter={(v) => fmtEur(v, 0)} domain={["auto", "auto"]}/>
+                  tickFormatter={(v) => fmtEur(v, 0, locale)} domain={["auto", "auto"]}/>
                 <Tooltip content={<ChartTooltip />} />
                 <ReferenceLine y={totalInvested} stroke="var(--c-indigo)" strokeDasharray="4 4" strokeWidth={1} opacity={0.4}/>
                 <Area type="monotone" dataKey="invested" stroke="var(--c-indigo)" strokeWidth={1.5} strokeDasharray="4 4"
@@ -253,7 +263,7 @@ export function PortfolioPerformance({ positions }: { positions: Position[] }) {
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <p style={{ color: "var(--tx-3)", fontSize: "0.84rem", textAlign: "center" }}>
-              Actualisez les cours pour afficher le graphique de performance
+              {locale === "fr" ? "Actualisez les cours pour afficher le graphique de performance" : "Refresh prices to display the performance chart"}
             </p>
           </div>
         )}
@@ -262,11 +272,11 @@ export function PortfolioPerformance({ positions }: { positions: Position[] }) {
         <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "16px", marginTop: "10px", paddingTop: "10px", borderTop: "1px solid var(--border)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <div style={{ width: "24px", height: "2px", background: isPositive ? "var(--c-emerald)" : "var(--c-crimson)", borderRadius: "1px" }}/>
-            <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>Valeur du portfolio</span>
+            <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>{locale === "fr" ? "Valeur du portfolio" : "Portfolio value"}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <div style={{ width: "24px", height: "2px", background: "var(--c-indigo)", borderRadius: "1px", opacity: 0.6 }}/>
-            <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>Capital investi</span>
+            <span style={{ fontSize: "11px", color: "var(--tx-3)" }}>{locale === "fr" ? "Capital investi" : "Capital invested"}</span>
           </div>
         </div>
       </div>
@@ -275,7 +285,7 @@ export function PortfolioPerformance({ positions }: { positions: Position[] }) {
       {waterfallData.length > 0 && (
         <div className="card p-5">
           <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--tx-3)", marginBottom: "16px" }}>
-            P&L par position
+            {locale === "fr" ? "P&L par position" : "P&L by position"}
           </div>
           <div className="overflow-x-auto">
           <div style={{ height: Math.max(160, waterfallData.length * 36) + "px", minWidth: "280px" }}>
@@ -304,10 +314,10 @@ export function PortfolioPerformance({ positions }: { positions: Position[] }) {
       {/* ── KPI grid ───────────────────────────────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(160px, 100%), 1fr))", gap: "10px" }}>
         {[
-          { label: "Capital investi",     value: fmtEur(totalInvested),                   sub: `${positions.length} lignes`,          color: "var(--tx-1)" },
-          { label: "Valeur actuelle",      value: fmtEur(totalValue),                      sub: hasPrices ? "cours temps réel" : "PRU × quantité", color: "var(--tx-1)" },
-          { label: "Plus-value latente",   value: `${isPositive ? "+" : ""}${fmtEur(totalPnl)}`, sub: fmtPct(totalPct),              color: isPositive ? "var(--c-emerald)" : "var(--c-crimson)" },
-          { label: "En hausse",            value: String(positions.filter((p) => (p.pnlPct ?? 0) > 0).length), sub: `${positions.filter((p) => (p.pnlPct ?? 0) < 0).length} en baisse`, color: "var(--c-emerald)" },
+          { label: locale === "fr" ? "Capital investi" : "Capital invested",  value: fmtEur(totalInvested, 0, locale), sub: `${positions.length} ${locale === "fr" ? "lignes" : "lines"}`, color: "var(--tx-1)" },
+          { label: locale === "fr" ? "Valeur actuelle" : "Current value",     value: fmtEur(totalValue, 0, locale),    sub: hasPrices ? (locale === "fr" ? "cours temps réel" : "live prices") : "AVG × qty", color: "var(--tx-1)" },
+          { label: locale === "fr" ? "Plus-value latente" : "Unrealized P&L", value: `${isPositive ? "+" : ""}${fmtEur(totalPnl, 0, locale)}`, sub: fmtPct(totalPct), color: isPositive ? "var(--c-emerald)" : "var(--c-crimson)" },
+          { label: locale === "fr" ? "En hausse" : "Gainers",                 value: String(positions.filter((p) => (p.pnlPct ?? 0) > 0).length), sub: `${positions.filter((p) => (p.pnlPct ?? 0) < 0).length} ${locale === "fr" ? "en baisse" : "losers"}`, color: "var(--c-emerald)" },
         ].map((k) => (
           <div key={k.label} className="card p-4">
             <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", fontWeight: 500, marginBottom: "4px" }}>{k.label}</div>

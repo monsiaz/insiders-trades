@@ -29,23 +29,154 @@ interface Position {
 interface User { id: string; email: string; name: string | null }
 interface PortfolioSummary { portfolioCash: number | null }
 
+type Locale = "en" | "fr";
+
+const DICT = {
+  en: {
+    badge: "Portfolio PEA",
+    title: "My",
+    titleSpan: "Portfolio",
+    updatedRecently: "Updated recently",
+    refreshBtn: "Refresh prices",
+    refreshing: "Updating…",
+    alertTriggered: (n: number) => `${n} alert${n > 1 ? "s" : ""} triggered`,
+    alertBelow: (cur: string, low: string) => `price ${cur} ≤ low alert ${low}`,
+    alertAbove: (cur: string, high: string) => `price ${cur} ≥ high alert ${high}`,
+    totalPortfolio: "Total Portfolio (stocks + cash)",
+    cashBalance: (d: string) => `Available cash ${d}`,
+    cash: "Cash",
+    stockValue: "Stock valuation",
+    unrealizedPnl: "Unrealized P&L",
+    tabPositions: (n: number) => `Positions (${n})`,
+    tabAdd: "Add",
+    tabEdit: "Edit",
+    tabImport: "Import CSV",
+    noPositions: "No positions yet. Add securities or import a CSV.",
+    addManually: "+ Add manually",
+    allocation: "Portfolio allocation",
+    insiderTitle: "AMF Trades on your holdings",
+    insiderSub: "executives who recently bought your securities",
+    colSecurity: "Security",
+    colQty: "Qty",
+    colAvgCost: "Avg cost",
+    colPrice: "Price",
+    colValue: "Value",
+    colAlert: "Alert",
+    formTitle: (editing: boolean) => editing ? "Edit position" : "Add a position",
+    fieldName: "Security name *",
+    fieldIsin: "ISIN (optional)",
+    fieldQty: "Quantity *",
+    fieldAvgCost: "Avg cost (buy price) *",
+    alertsTitle: "Price alerts (optional)",
+    alertBelow2: "Alert if price ≤ €",
+    alertAbove2: "Alert if price ≥ €",
+    fieldNotes: "Notes (optional)",
+    notesPlaceholder: "Investment thesis, target…",
+    saving: "Saving…",
+    saveBtn: (editing: boolean) => editing ? "Update" : "Add position",
+    cancel: "Cancel",
+    deleteConfirm: "Delete this position?",
+    required: "Name, quantity and buy price are required",
+    errorFallback: "Error",
+    csvTitle: "Expected CSV format",
+    csvSep: "Separator:",
+    csvEnc: "Encoding: UTF-8 · Decimals: dot",
+    csvCompat: "Compatible with Boursorama, BNP, Société Générale exports. Columns lastPrice, amount, etc. are ignored.",
+    csvDownload: "↓ Download CSV template",
+    importTitle: "Import your file",
+    clickToChoose: "Click to choose a CSV file",
+    dropHere: "or drag and drop here",
+    preview: (n: number) => `Preview (${n} rows)`,
+    importBtn: (n: number) => `Import ${n} positions`,
+    importLoading: "Importing…",
+    importDone: (n: number, errs: number) => `${n} positions imported${errs ? ` · ${errs} errors` : ""}`,
+    linesDetected: (n: number) => `${n} rows detected, ready to import`,
+    noPriceWarning: "Refresh prices to see real performance",
+    yahooData: "Yahoo Finance data",
+    estimatedCurve: "Estimated curve",
+  },
+  fr: {
+    badge: "Portfolio PEA",
+    title: "Mon",
+    titleSpan: "Portfolio",
+    updatedRecently: "Mis à jour récemment",
+    refreshBtn: "Actualiser les cours",
+    refreshing: "Mise à jour…",
+    alertTriggered: (n: number) => `${n} alerte${n > 1 ? "s" : ""} déclenchée${n > 1 ? "s" : ""}`,
+    alertBelow: (cur: string, low: string) => `cours ${cur} ≤ alerte basse ${low}`,
+    alertAbove: (cur: string, high: string) => `cours ${cur} ≥ alerte haute ${high}`,
+    totalPortfolio: "Total Portefeuille (titres + espèces)",
+    cashBalance: (d: string) => `Solde Espèces disponible ${d}`,
+    cash: "Espèces",
+    stockValue: "Évaluation titres",
+    unrealizedPnl: "Montant +/- values latentes",
+    tabPositions: (n: number) => `Positions (${n})`,
+    tabAdd: "+ Ajouter",
+    tabEdit: "Modifier",
+    tabImport: "Importer CSV",
+    noPositions: "Aucune position. Ajoutez des titres ou importez un CSV.",
+    addManually: "+ Ajouter manuellement",
+    allocation: "Répartition du portefeuille",
+    insiderTitle: "Trades AMF sur vos positions",
+    insiderSub: "dirigeants ayant récemment acheté vos titres",
+    colSecurity: "Titre",
+    colQty: "Qté",
+    colAvgCost: "PRU",
+    colPrice: "Cours",
+    colValue: "Valeur",
+    colAlert: "Alerte",
+    formTitle: (editing: boolean) => editing ? "Modifier la position" : "Ajouter une position",
+    fieldName: "Nom du titre *",
+    fieldIsin: "ISIN (optionnel)",
+    fieldQty: "Quantité *",
+    fieldAvgCost: "PRU (prix moyen d'achat) *",
+    alertsTitle: "Alertes de cours (optionnel)",
+    alertBelow2: "Alerte si cours ≤ €",
+    alertAbove2: "Alerte si cours ≥ €",
+    fieldNotes: "Notes (optionnel)",
+    notesPlaceholder: "Raison d'investissement, objectif…",
+    saving: "Enregistrement…",
+    saveBtn: (editing: boolean) => editing ? "Mettre à jour" : "Ajouter la position",
+    cancel: "Annuler",
+    deleteConfirm: "Supprimer cette position ?",
+    required: "Nom, quantité et prix d'achat sont requis",
+    errorFallback: "Erreur",
+    csvTitle: "Format CSV attendu",
+    csvSep: "Séparateur :",
+    csvEnc: "Encodage : UTF-8 · Décimales : virgule",
+    csvCompat: "Compatible avec les exports courtiers Boursorama, BNP, Société Générale, etc. Les colonnes lastPrice, amount, etc. sont ignorées.",
+    csvDownload: "↓ Télécharger le modèle CSV",
+    importTitle: "Importer votre fichier",
+    clickToChoose: "Cliquez pour choisir un fichier CSV",
+    dropHere: "ou glissez-déposez ici",
+    preview: (n: number) => `Aperçu (${n} lignes)`,
+    importBtn: (n: number) => `Importer ${n} positions`,
+    importLoading: "Import en cours…",
+    importDone: (n: number, errs: number) => `${n} positions importées${errs ? ` · ${errs} erreurs` : ""}`,
+    linesDetected: (n: number) => `${n} lignes détectées, prêt à importer`,
+    noPriceWarning: "Actualisez les cours pour voir la vraie perf",
+    yahooData: "Données Yahoo Finance",
+    estimatedCurve: "Courbe estimée",
+  },
+};
+
 // DA v3: monochrome gold → navy gradient (no rainbow) for portfolio allocation chart
 const COLORS = [
   "#B8955A", "#C9A772", "#A07F47", "#D4AF76", "#8C6C3D",
   "#17305C", "#3A5687", "#5E7BA8", "#112A46", "#1F3A6A",
 ];
 
-function fmt(n: number | null | undefined, d = 2): string {
+function fmt(n: number | null | undefined, d = 2, locale: Locale = "en"): string {
   if (n == null) return "·";
-  return n.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  return n.toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
 function fmtPct(n: number | null | undefined): string {
   if (n == null) return "·";
   return `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
 }
-function fmtEur(n: number | null | undefined, d = 0): string {
+function fmtEur(n: number | null | undefined, d = 0, locale: Locale = "en"): string {
   if (n == null) return "·";
-  return n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", minimumFractionDigits: d, maximumFractionDigits: d });
+  return n.toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", { style: "currency", currency: "EUR", minimumFractionDigits: d, maximumFractionDigits: d });
 }
 
 function PnlBadge({ pct }: { pct: number | null }) {
@@ -64,7 +195,8 @@ interface FormState {
 }
 const EMPTY_FORM: FormState = { name: "", isin: "", quantity: "", buyingPrice: "", alertBelow: "", alertAbove: "", notes: "" };
 
-export function PortfolioDashboard({ user }: { user: User }) {
+export function PortfolioDashboard({ user, locale = "en" }: { user: User; locale?: Locale }) {
+  const T = DICT[locale];
   const [positions, setPositions] = useState<Position[]>([]);
   const [portfolioCash, setPortfolioCash] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -123,7 +255,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
     e.preventDefault();
     setFormError("");
     if (!form.name || !form.quantity || !form.buyingPrice) {
-      setFormError("Nom, quantité et prix d'achat sont requis"); return;
+      setFormError(T.required); return;
     }
     setFormLoading(true);
     try {
@@ -140,7 +272,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
       const res = await fetch("/api/portfolio/positions", {
         method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
       });
-      if (!res.ok) { const d = await res.json(); setFormError(d.error ?? "Erreur"); return; }
+      if (!res.ok) { const d = await res.json(); setFormError(d.error ?? T.errorFallback); return; }
       setForm(EMPTY_FORM);
       setEditId(null);
       setTab("positions");
@@ -151,7 +283,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
   }
 
   async function deletePosition(id: string) {
-    if (!confirm("Supprimer cette position ?")) return;
+    if (!confirm(T.deleteConfirm)) return;
     await fetch("/api/portfolio/positions", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
     await fetchPositions();
   }
@@ -167,7 +299,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
       skipEmptyLines: true,
       complete: (res) => {
         setImportRows(res.data as Record<string, string>[]);
-        setImportStatus(`${res.data.length} lignes détectées, prêt à importer`);
+        setImportStatus(T.linesDetected(res.data.length));
       },
     });
   }
@@ -175,14 +307,14 @@ export function PortfolioDashboard({ user }: { user: User }) {
   async function submitImport() {
     if (!importRows.length) return;
     setImportLoading(true);
-    setImportStatus("Import en cours…");
+    setImportStatus(T.importLoading);
     const res = await fetch("/api/portfolio/import", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ rows: importRows }),
     });
     const data = await res.json();
-    setImportStatus(`${data.imported} positions importées${data.errors?.length ? ` · ${data.errors.length} erreurs` : ""}`);
+    setImportStatus(T.importDone(data.imported, data.errors?.length ?? 0));
     setImportRows([]);
     setImportLoading(false);
     await fetchPositions();
@@ -214,9 +346,9 @@ export function PortfolioDashboard({ user }: { user: User }) {
   const sorted = [...positions].sort((a, b) => (b.currentValue ?? b.totalInvested) - (a.currentValue ?? a.totalInvested));
 
   const tabs = [
-    { id: "positions", label: `Positions (${positions.length})` },
-    { id: "add", label: editId ? "Modifier" : "+ Ajouter" },
-    { id: "import", label: "Importer CSV" },
+    { id: "positions", label: T.tabPositions(positions.length) },
+    { id: "add", label: editId ? T.tabEdit : T.tabAdd },
+    { id: "import", label: T.tabImport },
   ] as const;
 
   if (loading) return (
@@ -235,10 +367,10 @@ export function PortfolioDashboard({ user }: { user: User }) {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card-static tx-brand text-xs font-semibold mb-4 bd-brand max-w-full overflow-hidden">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0" />
-            <span className="truncate">Portfolio PEA · {user.name ?? user.email}</span>
+            <span className="truncate">{T.badge} · {user.name ?? user.email}</span>
           </div>
-          <h1 className="text-3xl font-bold text-[var(--tx-1)] tracking-tight">Mon <span className="text-gradient-indigo">Portfolio</span></h1>
-          <p className="text-[var(--tx-2)] text-sm mt-1">{positions.length} position{positions.length !== 1 ? "s" : ""} · Mis à jour {priced.length > 0 ? "récemment" : "·"}</p>
+          <h1 className="text-3xl font-bold text-[var(--tx-1)] tracking-tight">{T.title} <span className="text-gradient-indigo">{T.titleSpan}</span></h1>
+          <p className="text-[var(--tx-2)] text-sm mt-1">{positions.length} position{positions.length !== 1 ? "s" : ""} · {priced.length > 0 ? T.updatedRecently : "·"}</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={refreshPrices} disabled={refreshing}
@@ -246,7 +378,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
             <svg className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} viewBox="0 0 24 24" fill="none">
               <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            {refreshing ? "Mise à jour…" : "Actualiser les cours"}
+            {refreshing ? T.refreshing : T.refreshBtn}
           </button>
         </div>
       </div>
@@ -255,14 +387,14 @@ export function PortfolioDashboard({ user }: { user: User }) {
       {alerts.length > 0 && (
         <div className="mb-6 bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <span className="tx-gold text-sm font-semibold">{alerts.length} alerte{alerts.length > 1 ? "s" : ""} déclenchée{alerts.length > 1 ? "s" : ""}</span>
+            <span className="tx-gold text-sm font-semibold">{T.alertTriggered(alerts.length)}</span>
           </div>
           <div className="space-y-1">
             {alerts.map((p) => {
               const below = p.alertBelow != null && p.currentPrice != null && p.currentPrice <= p.alertBelow;
               return (
                 <div key={p.id} className="text-sm tx-gold/80">
-                  <strong>{p.name}</strong> : {below ? `cours ${fmtEur(p.currentPrice)} ≤ alerte basse ${fmtEur(p.alertBelow)}` : `cours ${fmtEur(p.currentPrice)} ≥ alerte haute ${fmtEur(p.alertAbove)}`}
+                  <strong>{p.name}</strong> : {below ? T.alertBelow(fmtEur(p.currentPrice, 2, locale), fmtEur(p.alertBelow, 2, locale)) : T.alertAbove(fmtEur(p.currentPrice, 2, locale), fmtEur(p.alertAbove, 2, locale))}
                 </div>
               );
             })}
@@ -279,23 +411,23 @@ export function PortfolioDashboard({ user }: { user: User }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(200px, 100%), 1fr))", gap: 0, borderRadius: "14px", overflow: "hidden" }}>
             {[
               {
-                label: "Total Portefeuille (titres + espèces)",
-                value: fmtEur(totalValue + (portfolioCash ?? 0)),
+                label: T.totalPortfolio,
+                value: fmtEur(totalValue + (portfolioCash ?? 0), 0, locale),
                 color: "var(--tx-1)", bold: true,
               },
               {
-                label: portfolioCash != null ? `Solde Espèces disponible ${new Date().toLocaleDateString("fr-FR")}` : "Espèces",
-                value: portfolioCash != null ? fmtEur(portfolioCash) : "·",
+                label: portfolioCash != null ? T.cashBalance(new Date().toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB")) : T.cash,
+                value: portfolioCash != null ? fmtEur(portfolioCash, 0, locale) : "·",
                 color: "var(--tx-2)", bold: false,
               },
               {
-                label: "Évaluation titres",
-                value: fmtEur(totalValue),
+                label: T.stockValue,
+                value: fmtEur(totalValue, 0, locale),
                 color: "var(--tx-1)", bold: false,
               },
               {
-                label: "Montant +/- values latentes",
-                value: `${totalPnl >= 0 ? "+" : ""}${fmtEur(totalPnl)} (${totalPnlPct >= 0 ? "+" : ""}${totalPnlPct.toFixed(2)} %)`,
+                label: T.unrealizedPnl,
+                value: `${totalPnl >= 0 ? "+" : ""}${fmtEur(totalPnl, 0, locale)} (${totalPnlPct >= 0 ? "+" : ""}${totalPnlPct.toFixed(2)} %)`,
                 color: totalPnl >= 0 ? "var(--c-emerald)" : "var(--c-crimson)", bold: true,
               },
             ].map((row, i) => (
@@ -323,7 +455,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
 
       {/* Performance chart + KPI strip */}
       <div className="mb-8">
-        <PortfolioPerformance positions={positions} />
+        <PortfolioPerformance positions={positions} locale={locale} />
       </div>
 
       {/* Tabs */}
@@ -344,10 +476,10 @@ export function PortfolioDashboard({ user }: { user: User }) {
           {positions.length === 0 ? (
             <div className="glass-card rounded-2xl p-12 text-center">
               <div className="flex justify-center mb-3 opacity-30"><BarChart2 size={40} strokeWidth={1.2} /></div>
-              <p className="text-[var(--tx-2)] mb-4">Aucune position. Ajoutez des titres ou importez un CSV.</p>
+              <p className="text-[var(--tx-2)] mb-4">{T.noPositions}</p>
               <div className="flex flex-wrap justify-center gap-3">
-                <button onClick={() => setTab("add")} className="px-4 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold">+ Ajouter manuellement</button>
-                <button onClick={() => setTab("import")} className="px-4 py-2.5 min-h-[44px] rounded-xl btn-glass text-sm">Importer CSV</button>
+                <button onClick={() => setTab("add")} className="px-4 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold">{T.addManually}</button>
+                <button onClick={() => setTab("import")} className="px-4 py-2.5 min-h-[44px] rounded-xl btn-glass text-sm">{T.tabImport}</button>
               </div>
             </div>
           ) : (
@@ -359,13 +491,13 @@ export function PortfolioDashboard({ user }: { user: User }) {
                     <table className="w-full text-sm min-w-[580px]">
                       <thead>
                         <tr className="text-left text-xs text-[var(--tx-3)] border-b border-white/8">
-                          <th className="p-4 font-medium">Titre</th>
-                          <th className="p-4 font-medium text-right">Qté</th>
-                          <th className="p-4 font-medium text-right">PRU</th>
-                          <th className="p-4 font-medium text-right">Cours</th>
-                          <th className="p-4 font-medium text-right">Valeur</th>
+                          <th className="p-4 font-medium">{T.colSecurity}</th>
+                          <th className="p-4 font-medium text-right">{T.colQty}</th>
+                          <th className="p-4 font-medium text-right">{T.colAvgCost}</th>
+                          <th className="p-4 font-medium text-right">{T.colPrice}</th>
+                          <th className="p-4 font-medium text-right">{T.colValue}</th>
                           <th className="p-4 font-medium text-right">P&L</th>
-                          <th className="p-4 font-medium text-center">Alerte</th>
+                          <th className="p-4 font-medium text-center">{T.colAlert}</th>
                           <th className="p-4 w-16" />
                         </tr>
                       </thead>
@@ -395,19 +527,19 @@ export function PortfolioDashboard({ user }: { user: User }) {
                                 {pos.isin && <div className="text-[11px] text-[var(--tx-3)] font-mono">{pos.isin}</div>}
                                 {pos.yahooSymbol && <div className="text-[11px] tx-brand">{pos.yahooSymbol}</div>}
                               </td>
-                              <td className="px-4 py-3 text-right tabular-nums text-[var(--tx-2)] text-xs">{fmt(pos.quantity, 2)}</td>
-                              <td className="px-4 py-3 text-right tabular-nums text-[var(--tx-2)] text-xs">{fmtEur(pos.buyingPrice, 2)}</td>
+                              <td className="px-4 py-3 text-right tabular-nums text-[var(--tx-2)] text-xs">{fmt(pos.quantity, 2, locale)}</td>
+                              <td className="px-4 py-3 text-right tabular-nums text-[var(--tx-2)] text-xs">{fmtEur(pos.buyingPrice, 2, locale)}</td>
                               <td className="px-4 py-3 text-right tabular-nums text-xs">
                                 {pos.currentPrice != null ? (
-                                  <span className="text-[var(--tx-1)]">{fmtEur(pos.currentPrice, 2)}</span>
+                                  <span className="text-[var(--tx-1)]">{fmtEur(pos.currentPrice, 2, locale)}</span>
                                 ) : <span className="text-[var(--tx-3)]">·</span>}
                               </td>
                               <td className="px-4 py-3 text-right tabular-nums text-xs text-[var(--tx-2)]">
-                                {fmtEur(pos.currentValue ?? pos.totalInvested)}
+                                {fmtEur(pos.currentValue ?? pos.totalInvested, 0, locale)}
                               </td>
                               <td className="px-4 py-3 text-right">
                                 <PnlBadge pct={pos.pnlPct} />
-                                {pos.pnl != null && <div className="text-[11px] tabular-nums text-[var(--tx-3)] mt-0.5">{fmtEur(pos.pnl)}</div>}
+                                {pos.pnl != null && <div className="text-[11px] tabular-nums text-[var(--tx-3)] mt-0.5">{fmtEur(pos.pnl, 0, locale)}</div>}
                               </td>
                               <td className="px-4 py-3 text-center">
                                 {alertTriggered ? <Bell size={13} className="tx-gold" /> :
@@ -433,14 +565,14 @@ export function PortfolioDashboard({ user }: { user: User }) {
 
                 {/* Pie chart */}
                 <div className="glass-card rounded-2xl p-6">
-                  <h3 className="text-sm font-semibold text-[var(--tx-1)] mb-4">Répartition du portefeuille</h3>
+                  <h3 className="text-sm font-semibold text-[var(--tx-1)] mb-4">{T.allocation}</h3>
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={2} dataKey="value">
                         {pieData.map((entry, i) => <Cell key={i} fill={entry.color} fillOpacity={0.85} />)}
                       </Pie>
                       <Tooltip contentStyle={{ background: "#0a0a1f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#f1f5f9" }}
-                        formatter={(v) => [fmtEur(Number(v)), ""]} />
+                        formatter={(v) => [fmtEur(Number(v), 0, locale), ""]} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="space-y-2 mt-2 max-h-40 overflow-y-auto">
@@ -458,7 +590,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
               </div>
 
               {/* Insider trades matching */}
-              <InsiderMatchSection positions={positions} />
+              <InsiderMatchSection positions={positions} locale={locale} />
             </>
           )}
         </div>
@@ -468,46 +600,46 @@ export function PortfolioDashboard({ user }: { user: User }) {
       {tab === "add" && (
         <div className="w-full max-w-lg animate-fade-in">
           <div className="glass-card rounded-2xl p-6">
-            <h2 className="text-base font-semibold text-[var(--tx-1)] mb-5">{editId ? "Modifier la position" : "Ajouter une position"}</h2>
+            <h2 className="text-base font-semibold text-[var(--tx-1)] mb-5">{T.formTitle(!!editId)}</h2>
             <form onSubmit={submitPosition} className="space-y-4">
               {formError && <div className="bg-neg-soft border bd-neg rounded-xl px-4 py-3 text-sm tx-neg">{formError}</div>}
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Nom du titre *</label>
+                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldName}</label>
                   <input type="text" required value={form.name} onChange={setF("name")}
                     className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                     placeholder="ex: NANOBIOTIX" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">ISIN (optionnel)</label>
+                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldIsin}</label>
                   <input type="text" value={form.isin} onChange={setF("isin")}
                     className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                     placeholder="FR0011341205" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Quantité *</label>
+                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldQty}</label>
                   <input type="text" required value={form.quantity} onChange={setF("quantity")}
                     className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                     placeholder="114" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">PRU (prix moyen d'achat) *</label>
+                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldAvgCost}</label>
                   <input type="text" required value={form.buyingPrice} onChange={setF("buyingPrice")}
                     className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                     placeholder="3.54" />
                 </div>
               </div>
               <div className="border-t border-white/8 pt-4">
-                <p className="text-xs text-[var(--tx-3)] mb-3">Alertes de cours (optionnel)</p>
+                <p className="text-xs text-[var(--tx-3)] mb-3">{T.alertsTitle}</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Alerte si cours ≤ €</label>
+                    <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.alertBelow2}</label>
                     <input type="text" value={form.alertBelow} onChange={setF("alertBelow")}
                       className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500/50 transition-all"
                       placeholder="20.00" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Alerte si cours ≥ €</label>
+                    <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.alertAbove2}</label>
                     <input type="text" value={form.alertAbove} onChange={setF("alertAbove")}
                       className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500/50 transition-all"
                       placeholder="50.00" />
@@ -515,18 +647,18 @@ export function PortfolioDashboard({ user }: { user: User }) {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">Notes (optionnel)</label>
+                <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldNotes}</label>
                 <textarea value={form.notes} onChange={setF("notes") as (e: React.ChangeEvent<HTMLTextAreaElement>) => void} rows={2}
                   className="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all resize-none"
-                  placeholder="Raison d'investissement, objectif…" />
+                  placeholder={T.notesPlaceholder} />
               </div>
               <div className="flex gap-3 pt-1">
                 <button type="submit" disabled={formLoading}
                   className="flex-1 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
-                  {formLoading ? "Enregistrement…" : editId ? "Mettre à jour" : "Ajouter la position"}
+                  {formLoading ? T.saving : T.saveBtn(!!editId)}
                 </button>
                 <button type="button" onClick={cancelEdit}
-                  className="px-4 py-3 min-h-[44px] rounded-xl btn-glass text-sm">Annuler</button>
+                  className="px-4 py-3 min-h-[44px] rounded-xl btn-glass text-sm">{T.cancel}</button>
               </div>
             </form>
           </div>
@@ -538,8 +670,8 @@ export function PortfolioDashboard({ user }: { user: User }) {
         <div className="w-full max-w-2xl animate-fade-in space-y-6">
           {/* Model CSV */}
           <div className="glass-card-static rounded-2xl p-6 border border-indigo-500/10">
-            <h2 className="text-sm font-semibold text-[var(--tx-1)] mb-1">Format CSV attendu</h2>
-            <p className="text-xs text-[var(--tx-3)] mb-3">Séparateur : <code className="tx-brand">;</code> · Encodage : UTF-8 · Décimales : virgule</p>
+            <h2 className="text-sm font-semibold text-[var(--tx-1)] mb-1">{T.csvTitle}</h2>
+            <p className="text-xs text-[var(--tx-3)] mb-3">{T.csvSep} <code className="tx-brand">;</code> · {T.csvEnc}</p>
             <div className="bg-black/30 rounded-xl p-3 overflow-x-auto">
               <code className="text-xs whitespace-nowrap" style={{ color: "var(--tx-1)" }}>
                 name;isin;quantity;buyingPrice<br/>
@@ -547,24 +679,21 @@ export function PortfolioDashboard({ user }: { user: User }) {
                 WAGA ENERGY;FR0012532810;66;17,40
               </code>
             </div>
-            <p className="text-xs text-[var(--tx-3)] mt-2">
-              Compatible avec les exports courtiers Boursorama, BNP, Société Générale, etc.
-              Les colonnes <code className="text-[var(--tx-2)]">lastPrice</code>, <code className="text-[var(--tx-2)]">amount</code>, etc. sont ignorées.
-            </p>
+            <p className="text-xs text-[var(--tx-3)] mt-2">{T.csvCompat}</p>
             <a href="#" onClick={(e) => {
               e.preventDefault();
               const csv = "name;isin;quantity;buyingPrice\nNANOBIOTIX;FR0011341205;114;3,54\nWAGA ENERGY;FR0012532810;66;17,40";
               const blob = new Blob([csv], { type: "text/csv" });
               const url = URL.createObjectURL(blob);
-              const a = document.createElement("a"); a.href = url; a.download = "modele-portfolio.csv"; a.click();
+              const a = document.createElement("a"); a.href = url; a.download = "portfolio-template.csv"; a.click();
             }} className="inline-block mt-2 text-xs tx-brand hover:tx-brand transition-colors">
-              ↓ Télécharger le modèle CSV
+              {T.csvDownload}
             </a>
           </div>
 
           {/* File picker */}
           <div className="glass-card rounded-2xl p-6">
-            <h2 className="text-sm font-semibold text-[var(--tx-1)] mb-4">Importer votre fichier</h2>
+            <h2 className="text-sm font-semibold text-[var(--tx-1)] mb-4">{T.importTitle}</h2>
             <div
               onClick={() => fileRef.current?.click()}
               className="border-2 border-dashed border-[var(--border-med)] hover:border-indigo-500/40 rounded-xl p-8 text-center cursor-pointer transition-all"
@@ -572,8 +701,8 @@ export function PortfolioDashboard({ user }: { user: User }) {
               <div className="mx-auto mb-3 flex items-center justify-center w-12 h-12 rounded-xl" style={{ background: "var(--bg-active)", border: "1px solid var(--border-med)" }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ color: "var(--tx-3)" }}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="18" x2="12" y2="12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><line x1="9" y1="15" x2="15" y2="15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
               </div>
-              <p className="text-sm text-[var(--tx-2)]">Cliquez pour choisir un fichier CSV</p>
-              <p className="text-xs text-[var(--tx-3)] mt-1">ou glissez-déposez ici</p>
+              <p className="text-sm text-[var(--tx-2)]">{T.clickToChoose}</p>
+              <p className="text-xs text-[var(--tx-3)] mt-1">{T.dropHere}</p>
               <input ref={fileRef} type="file" accept=".csv,.txt" onChange={handleCsvFile} className="hidden" />
             </div>
 
@@ -585,7 +714,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
 
             {importRows.length > 0 && (
               <div className="mt-4">
-                <div className="text-xs text-[var(--tx-3)] mb-2">Aperçu ({importRows.length} lignes)</div>
+                <div className="text-xs text-[var(--tx-3)] mb-2">{T.preview(importRows.length)}</div>
                 <div className="overflow-x-auto bg-black/20 rounded-xl p-3 max-h-40 overflow-y-auto">
                   <table className="w-full text-xs">
                     <thead><tr className="text-[var(--tx-3)]">{Object.keys(importRows[0]).map((k) => <th key={k} className="text-left pr-3 pb-1">{k}</th>)}</tr></thead>
@@ -596,7 +725,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
                 </div>
                 <button onClick={submitImport} disabled={importLoading}
                   className="mt-3 w-full py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold hover:from-indigo-600 hover:to-violet-700 transition-all disabled:opacity-50">
-                  {importLoading ? "Import en cours…" : `Importer ${importRows.length} positions`}
+                  {importLoading ? T.importLoading : T.importBtn(importRows.length)}
                 </button>
               </div>
             )}
@@ -609,7 +738,8 @@ export function PortfolioDashboard({ user }: { user: User }) {
 
 // ── Insider trade matching ─────────────────────────────────────────────────────
 
-function InsiderMatchSection({ positions }: { positions: Position[] }) {
+function InsiderMatchSection({ positions, locale = "en" }: { positions: Position[]; locale?: Locale }) {
+  const T = DICT[locale];
   const [matches, setMatches] = useState<Array<{
     positionName: string;
     declarations: Array<{
@@ -642,8 +772,8 @@ function InsiderMatchSection({ positions }: { positions: Position[] }) {
     <div className="glass-card-static rounded-2xl p-6 border border-violet-500/10">
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: "var(--c-violet)", flexShrink: 0 }}><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-        <h3 className="text-sm font-semibold text-[var(--tx-1)]">Trades AMF sur vos positions</h3>
-        <span className="text-xs text-[var(--tx-3)] w-full sm:w-auto">dirigeants ayant récemment acheté vos titres</span>
+        <h3 className="text-sm font-semibold text-[var(--tx-1)]">{T.insiderTitle}</h3>
+        <span className="text-xs text-[var(--tx-3)] w-full sm:w-auto">{T.insiderSub}</span>
       </div>
       <div className="space-y-4">
         {matches.map((m) => (
@@ -657,7 +787,7 @@ function InsiderMatchSection({ positions }: { positions: Position[] }) {
                     <span className="text-[var(--tx-3)] ml-2">{d.insiderFunction?.slice(0, 30)}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    {d.transactionDate && <span className="text-[var(--tx-3)]">{new Date(d.transactionDate).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span>}
+                    {d.transactionDate && <span className="text-[var(--tx-3)]">{new Date(d.transactionDate).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short" })}</span>}
                     {d.totalAmount && <span className="text-[var(--tx-2)]">{d.totalAmount >= 1e6 ? `${(d.totalAmount / 1e6).toFixed(1)}M€` : `${(d.totalAmount / 1e3).toFixed(0)}k€`}</span>}
                     {d.signalScore != null && <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${d.signalScore >= 65 ? "bg-pos-soft tx-pos" : "bg-[var(--bg-raised)] text-[var(--tx-2)]"}`}>{Math.round(d.signalScore)}</span>}
                     <Link href={`/company/${d.company.slug}`} className="tx-brand hover:tx-brand transition-colors">→</Link>

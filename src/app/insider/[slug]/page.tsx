@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { DeclarationCard } from "@/components/DeclarationCard";
 import { RelatedEntities } from "@/components/RelatedEntities";
+import { AnimateIn } from "@/components/AnimateIn";
 import { unstable_cache } from "next/cache";
 import { headers } from "next/headers";
 
@@ -158,12 +159,13 @@ export default async function InsiderPage({ params, searchParams }: Props) {
   return (
     <div className="content-wrapper">
       {/* Back */}
-      <Link href="/insiders" className="inline-flex items-center gap-1.5 text-sm text-[var(--tx-3)] hover:text-[var(--tx-2)] transition-colors mb-6">
+      <Link href="/insiders" className="inline-flex items-center gap-1.5 text-sm text-[var(--tx-3)] hover:text-[var(--tx-2)] transition-colors mb-6 animate-fade-in">
         ← Dirigeants
       </Link>
 
       {/* Hero */}
-      <div className="glass-card-static rounded-3xl p-6 mb-6">
+      <AnimateIn single className="animate-fade-in-delay mb-6">
+      <div className="glass-card-static rounded-3xl p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border border-violet-500/25 flex items-center justify-center text-xl font-bold tx-violet flex-shrink-0">
             {initials}
@@ -187,9 +189,10 @@ export default async function InsiderPage({ params, searchParams }: Props) {
           </div>
         </div>
       </div>
+      </AnimateIn>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7">
+      <AnimateIn className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7" stagger={80} baseDelay={80}>
         <div className="glass-card-static rounded-2xl p-4 bg-gradient-to-br from-indigo-500/8 to-transparent border-indigo-500/12">
           <div className="text-xl font-bold text-[var(--tx-1)]">{insider._count.declarations}</div>
           <div className="text-xs text-[var(--tx-3)] mt-1">Déclarations totales</div>
@@ -206,10 +209,10 @@ export default async function InsiderPage({ params, searchParams }: Props) {
           <div className="text-xl font-bold tx-neg">{fmt(sellAgg._sum.totalAmount)}</div>
           <div className="text-xs text-[var(--tx-3)] mt-1">▼ Ventes ({sellAgg._count} opér.)</div>
         </div>
-      </div>
+      </AnimateIn>
 
       {/* Declarations */}
-      <div className="space-y-2">
+      <AnimateIn className="space-y-2" stagger={22}>
         {declarations.length === 0 ? (
           <div className="glass-card rounded-2xl p-12 text-center text-[var(--tx-3)]">
             Aucune déclaration
@@ -217,7 +220,7 @@ export default async function InsiderPage({ params, searchParams }: Props) {
         ) : (
           declarations.map((decl) => <DeclarationCard key={decl.id} declaration={decl} />)
         )}
-      </div>
+      </AnimateIn>
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -241,43 +244,44 @@ export default async function InsiderPage({ params, searchParams }: Props) {
 
       {/* AI-generated insider description */}
       {(isFr ? insiderSeo?.descriptionFr : insiderSeo?.descriptionEn) && (
-        <div
-          className="glass-card-static rounded-3xl p-6"
-          style={{ marginTop: "3rem" }}
-        >
-          <h2
-            style={{
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "var(--tx-3)",
-              marginBottom: "1rem",
-              fontFamily: "'JetBrains Mono', monospace",
-            }}
-          >
-            {isFr ? `À propos de ${insider.name}` : `About ${insider.name}`}
-          </h2>
-          <p
-            style={{
-              color: "var(--tx-2)",
-              fontSize: "0.875rem",
-              lineHeight: 1.75,
-              whiteSpace: "pre-line",
-            }}
-          >
-            {isFr ? insiderSeo?.descriptionFr : insiderSeo?.descriptionEn}
-          </p>
-        </div>
+        <AnimateIn single style={{ marginTop: "3rem" }}>
+          <div className="glass-card-static rounded-3xl p-6">
+            <h2
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--tx-3)",
+                marginBottom: "1rem",
+                fontFamily: "'JetBrains Mono', monospace",
+              }}
+            >
+              {isFr ? `À propos de ${insider.name}` : `About ${insider.name}`}
+            </h2>
+            <p
+              style={{
+                color: "var(--tx-2)",
+                fontSize: "0.875rem",
+                lineHeight: 1.75,
+                whiteSpace: "pre-line",
+              }}
+            >
+              {isFr ? insiderSeo?.descriptionFr : insiderSeo?.descriptionEn}
+            </p>
+          </div>
+        </AnimateIn>
       )}
 
       {/* Related companies and insiders */}
-      <RelatedEntities
-        relatedCompanies={relatedCompaniesData}
-        relatedInsiders={relatedInsidersData}
-        locale={locale}
-        entityType="insider"
-      />
+      <AnimateIn single>
+        <RelatedEntities
+          relatedCompanies={relatedCompaniesData}
+          relatedInsiders={relatedInsidersData}
+          locale={locale}
+          entityType="insider"
+        />
+      </AnimateIn>
     </div>
   );
 }

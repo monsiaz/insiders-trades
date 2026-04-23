@@ -7,6 +7,7 @@ import { EnrichButton } from "@/components/EnrichButton";
 import dynamic from "next/dynamic";
 import { CompanyFinancials } from "@/components/CompanyFinancials";
 import { RelatedEntities } from "@/components/RelatedEntities";
+import { AnimateIn } from "@/components/AnimateIn";
 import { headers } from "next/headers";
 
 const StockChart = dynamic(() => import("@/components/StockChart").then(m => ({ default: m.StockChart })), {
@@ -208,12 +209,13 @@ export default async function CompanyPage({ params, searchParams }: Props) {
   return (
     <div className="content-wrapper">
       {/* Back */}
-      <Link href="/companies" className="inline-flex items-center gap-1.5 text-sm transition-colors mb-6"
+      <Link href="/companies" className="inline-flex items-center gap-1.5 text-sm transition-colors mb-6 animate-fade-in"
         style={{ color: "var(--tx-3)" }}>
         ← Sociétés
       </Link>
 
       {/* Company hero */}
+      <AnimateIn single className="animate-fade-in-delay">
       <div className="glass-card-static rounded-3xl p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
@@ -263,9 +265,10 @@ export default async function CompanyPage({ params, searchParams }: Props) {
           </div>
         </div>
       </div>
+      </AnimateIn>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <AnimateIn className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6" stagger={80} baseDelay={80}>
         <MiniStat label="Déclarations DD" value={(typeMap["DIRIGEANTS"] || 0).toLocaleString("fr-FR")} />
         <MiniStat label="Seuils" value={(typeMap["SEUILS"] || 0).toLocaleString("fr-FR")} />
         <MiniStat
@@ -280,19 +283,19 @@ export default async function CompanyPage({ params, searchParams }: Props) {
           sub={`${sellTotal._count} opér.`}
           sentiment="negative"
         />
-      </div>
+      </AnimateIn>
 
       {/* Stock chart */}
-      <div className="mb-6">
+      <AnimateIn single className="mb-6">
         <StockChart
           isin={isin}
           companyName={company.name}
           trades={tradeEvents}
         />
-      </div>
+      </AnimateIn>
 
       {/* Financial data */}
-      <div className="mb-6">
+      <AnimateIn single className="mb-6">
         <CompanyFinancials
           companyId={company.id}
           companyName={company.name}
@@ -327,17 +330,17 @@ export default async function CompanyPage({ params, searchParams }: Props) {
             source: ["cache"],
           } : null}
         />
-      </div>
+      </AnimateIn>
 
       {/* Backtest mini-widget */}
-      <div className="mb-6">
+      <AnimateIn single className="mb-6">
         <CompanyBacktestWidget companyId={company.id} />
-      </div>
+      </AnimateIn>
 
       {/* Latest news (Google News + Yahoo RSS) */}
-      <div className="mb-6">
+      <AnimateIn single className="mb-6">
         <CompanyNews slug={company.slug} companyName={company.name} />
-      </div>
+      </AnimateIn>
 
       {/* Last declaration date */}
       {lastDecl && (
@@ -374,7 +377,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
       </div>
 
       {/* Declarations list */}
-      <div className="space-y-2">
+      <AnimateIn className="space-y-2" stagger={22}>
         {declarations.length === 0 ? (
           <div className="glass-card rounded-2xl p-12 text-center" style={{ color: "var(--tx-3)" }}>
             Aucune déclaration trouvée
@@ -384,7 +387,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
             <DeclarationCard key={decl.id} declaration={decl} showCompany={false} />
           ))
         )}
-      </div>
+      </AnimateIn>
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -417,43 +420,44 @@ export default async function CompanyPage({ params, searchParams }: Props) {
 
       {/* AI-generated company description */}
       {(isFr ? companySeo?.descriptionFr : companySeo?.descriptionEn) && (
-        <div
-          className="glass-card-static rounded-3xl p-6"
-          style={{ marginTop: "3rem" }}
-        >
-          <h2
-            style={{
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "var(--tx-3)",
-              marginBottom: "1rem",
-              fontFamily: "'JetBrains Mono', monospace",
-            }}
-          >
-            {isFr ? `À propos de ${company.name}` : `About ${company.name}`}
-          </h2>
-          <p
-            style={{
-              color: "var(--tx-2)",
-              fontSize: "0.875rem",
-              lineHeight: 1.75,
-              whiteSpace: "pre-line",
-            }}
-          >
-            {isFr ? companySeo?.descriptionFr : companySeo?.descriptionEn}
-          </p>
-        </div>
+        <AnimateIn single style={{ marginTop: "3rem" }}>
+          <div className="glass-card-static rounded-3xl p-6">
+            <h2
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--tx-3)",
+                marginBottom: "1rem",
+                fontFamily: "'JetBrains Mono', monospace",
+              }}
+            >
+              {isFr ? `À propos de ${company.name}` : `About ${company.name}`}
+            </h2>
+            <p
+              style={{
+                color: "var(--tx-2)",
+                fontSize: "0.875rem",
+                lineHeight: 1.75,
+                whiteSpace: "pre-line",
+              }}
+            >
+              {isFr ? companySeo?.descriptionFr : companySeo?.descriptionEn}
+            </p>
+          </div>
+        </AnimateIn>
       )}
 
       {/* Related companies and insiders */}
-      <RelatedEntities
-        relatedCompanies={relatedCompaniesData}
-        relatedInsiders={relatedInsidersData}
-        locale={locale}
-        entityType="company"
-      />
+      <AnimateIn single>
+        <RelatedEntities
+          relatedCompanies={relatedCompaniesData}
+          relatedInsiders={relatedInsidersData}
+          locale={locale}
+          entityType="company"
+        />
+      </AnimateIn>
     </div>
   );
 }

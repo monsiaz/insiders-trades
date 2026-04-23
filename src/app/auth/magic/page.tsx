@@ -38,7 +38,7 @@ function MagicLoginInner() {
       gap: "24px",
       background: "var(--bg-base)",
     }}>
-      <LogoMark width={48} height={48} style={{ opacity: 0.9 }} />
+      <LogoMark size={48} />
       <div style={{ textAlign: "center" }}>
         <div style={{
           fontFamily: "'Banana Grotesk', 'Inter', system-ui",

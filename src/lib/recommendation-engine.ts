@@ -385,7 +385,7 @@ async function getPersonalRecommendations(
             totalAmount: { gt: 0 },
           },
           orderBy: { pubDate: "desc" },
-          take: 20,
+          take: 30,
           select: DECL_SELECT,
         })
       : ([] as DeclRow[]),
@@ -395,7 +395,9 @@ async function getPersonalRecommendations(
         pdfParsed: true,
         signalScore: { not: null, gt: 35 },
         totalAmount: { gt: 0 },
-        transactionNature: { contains: "acqui", mode: "insensitive" },
+        // Strict acquisition filter: nature must start with "acqui" to avoid
+        // matching "cession d'actions acquises..." which would appear in both lists
+        transactionNature: { startsWith: "acqui", mode: "insensitive" },
       },
       orderBy: { signalScore: "desc" },
       take: limit * 6,
@@ -404,28 +406,45 @@ async function getPersonalRecommendations(
   ]);
 
   const items: RecoItem[] = [];
-  const companyCount = new Map<string, number>();
+  // seenIds: prevents the exact same declaration appearing twice (BUY + SELL)
+  const seenIds = new Set<string>();
+  // seenSlugs: prevents contradictory BUY + SELL signals for the same company
+  const seenSlugs = new Set<string>();
+  // max 1 sell alert per company (avoids flooding when multiple insiders sell the same holding)
+  const sellCompanyCount = new Map<string, number>();
 
   // SELL alerts first (on user's holdings)
   for (const decl of sellDecls) {
     if (isNonMarket(decl.transactionNature)) continue;
+    if (seenIds.has(decl.id)) continue;
+    const sellCnt = sellCompanyCount.get(decl.company.slug) ?? 0;
+    if (sellCnt >= 1) continue; // keep strongest sell per company
+
     const role = normalizeRole(decl.insiderFunction);
     const size = sizeLabel(decl.company.marketCap);
     const bucket = lookupBucket(sellBuckets, role, size);
     items.push(buildRecoItem(decl, "SELL", bucket));
+    seenIds.add(decl.id);
+    seenSlugs.add(decl.company.slug);
+    sellCompanyCount.set(decl.company.slug, sellCnt + 1);
   }
 
-  // BUY signals (general, max 1 per company)
+  // BUY signals (max 1 per company, never on a company already flagged as SELL)
+  const buyCompanyCount = new Map<string, number>();
   for (const decl of buyDecls) {
     if (isNonMarket(decl.transactionNature)) continue;
-    const cnt = companyCount.get(decl.company.slug) ?? 0;
+    if (seenIds.has(decl.id)) continue;
+    if (seenSlugs.has(decl.company.slug)) continue; // skip if company already has a SELL alert
+
+    const cnt = buyCompanyCount.get(decl.company.slug) ?? 0;
     if (cnt >= 1) continue;
 
     const role = normalizeRole(decl.insiderFunction);
     const size = sizeLabel(decl.company.marketCap);
     const bucket = lookupBucket(buyBuckets, role, size);
     items.push(buildRecoItem(decl, "BUY", bucket));
-    companyCount.set(decl.company.slug, cnt + 1);
+    seenIds.add(decl.id);
+    buyCompanyCount.set(decl.company.slug, cnt + 1);
 
     if (items.length >= limit) break;
   }

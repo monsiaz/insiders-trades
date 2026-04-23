@@ -53,7 +53,7 @@ export function CompanyNews({ slug, companyName, locale = "en" }: { slug: string
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetch(`/api/company/${encodeURIComponent(slug)}/news`)
+    fetch(`/api/company/${encodeURIComponent(slug)}/news?locale=${isFr ? "fr" : "en"}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d: ApiResponse | null) => {
         if (!cancelled) {

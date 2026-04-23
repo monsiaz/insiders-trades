@@ -281,6 +281,26 @@ model UserAlert {
   @@index([declarationId])
 }
 
+// ── News cache with EN translations ──────────────────────────────────────────
+// One row per news article per company. linkHash is md5(link) for fast upsert.
+model CompanyNewsItem {
+  id            String    @id @default(cuid())
+  companySlug   String
+  linkHash      String    @unique  // sha256(link).slice(0,16)
+  link          String
+  titleFr       String            // original title from RSS (FR)
+  titleEn       String?           // OpenAI translation (null = not yet translated)
+  publisher     String?
+  pubDate       DateTime
+  description   String?           // FR description
+  descriptionEn String?           // EN description (optional, best-effort)
+  translatedAt  DateTime?         // when titleEn was set
+  createdAt     DateTime  @default(now())
+
+  @@index([companySlug, pubDate(sort: Desc)])
+  @@index([titleEn])
+}
+
 model PortfolioPosition {
   id           String   @id @default(cuid())
   userId       String

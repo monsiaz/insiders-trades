@@ -54,6 +54,11 @@ export async function GET(req: NextRequest) {
       (e) => { console.error("[cron] alerts:", e); return { sent: 0, skipped: 0 }; }
     );
 
+    // 8. Translate news titles (FR → EN) for up to 200 untranslated items
+    const translateResult = await translateNewsItems(200).catch(
+      (e) => { console.error("[cron] translate-news:", e); return { translated: 0, remaining: 0 }; }
+    );
+
     return NextResponse.json({
       success: true,
       source: "daily-deep-sync",
@@ -62,6 +67,7 @@ export async function GET(req: NextRequest) {
       backtest: backtestResult,
       genderGpt: genderResult,
       alerts: alertResult,
+      newsTranslations: translateResult,
     });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
@@ -318,4 +324,67 @@ async function dispatchAlertEmails(): Promise<{
   }
 
   return { sent, skipped };
+}
+
+// ── News translation ──────────────────────────────────────────────────────────
+
+async function translateNewsItems(limit: number): Promise<{ translated: number; remaining: number }> {
+  const OPENAI_KEY = process.env.OPENAI_API_KEY;
+  if (!OPENAI_KEY) return { translated: 0, remaining: 0 };
+
+  const untranslated = await prisma.companyNewsItem.findMany({
+    where: { titleEn: null },
+    orderBy: { pubDate: "asc" },
+    take: limit,
+    select: { id: true, titleFr: true },
+  });
+
+  if (!untranslated.length) return { translated: 0, remaining: 0 };
+
+  const CHUNK = 20;
+  let translated = 0;
+
+  for (let i = 0; i < untranslated.length; i += CHUNK) {
+    const chunk = untranslated.slice(i, i + CHUNK);
+    const numbered = chunk.map((r, j) => `${j + 1}. ${r.titleFr}`).join("\n");
+
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${OPENAI_KEY}` },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        temperature: 0,
+        max_tokens: chunk.length * 40,
+        messages: [
+          { role: "system", content: "Translate each French financial headline to concise English. Keep proper nouns, tickers, numbers. Respond ONLY with a JSON array of strings in the same order." },
+          { role: "user", content: numbered },
+        ],
+      }),
+      signal: AbortSignal.timeout(20_000),
+    }).catch(() => null);
+
+    if (!res?.ok) continue;
+
+    const data = await res.json() as { choices?: { message?: { content?: string } }[] };
+    const content = data.choices?.[0]?.message?.content ?? "[]";
+
+    let titlesEn: string[] = chunk.map((r) => r.titleFr);
+    try {
+      const parsed = JSON.parse(content.trim()) as string[];
+      if (Array.isArray(parsed) && parsed.length === chunk.length) titlesEn = parsed;
+    } catch { /* use originals */ }
+
+    await Promise.all(
+      chunk.map((row, j) =>
+        prisma.companyNewsItem.update({
+          where: { id: row.id },
+          data: { titleEn: titlesEn[j] ?? row.titleFr, translatedAt: new Date() },
+        })
+      )
+    );
+    translated += chunk.length;
+  }
+
+  const remaining = await prisma.companyNewsItem.count({ where: { titleEn: null } });
+  return { translated, remaining };
 }

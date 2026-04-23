@@ -18,6 +18,10 @@
     {
       "path": "/api/backtest/compute",
       "schedule": "0 5 * * 0"
+    },
+    {
+      "path": "/api/translate-news",
+      "schedule": "0 */12 * * *"
     }
   ]
 }

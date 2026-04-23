@@ -81,6 +81,7 @@ const PUBLIC_PREFIXES: string[] = [
   "/api/freshness",
   "/api/home-data",
   "/api/health",
+  "/api/translate-news",
 ];
 
 /** Exact pathnames that are always public (file-extension routes). */

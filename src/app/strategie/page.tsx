@@ -648,7 +648,7 @@ function CriteriaCard({ n, title, detail }: { n: number; title: string; detail: 
         padding: "16px 18px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px", flexWrap: "wrap" }}>
         <span
           style={{
             width: "26px",
@@ -662,6 +662,7 @@ function CriteriaCard({ n, title, detail }: { n: number; title: string; detail: 
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: "0.76rem",
             fontWeight: 700,
+            flexShrink: 0,
           }}
         >
           {n}
@@ -674,6 +675,9 @@ function CriteriaCard({ n, title, detail }: { n: number; title: string; detail: 
             color: "var(--tx-1)",
             letterSpacing: "-0.01em",
             lineHeight: 1.2,
+            flex: 1,
+            minWidth: 0,
+            overflowWrap: "break-word",
           }}
         >
           {title}

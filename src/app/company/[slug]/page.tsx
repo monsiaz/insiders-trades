@@ -152,10 +152,10 @@ export default async function CompanyPage({ params, searchParams }: Props) {
       {/* Company hero */}
       <div className="glass-card-static rounded-3xl p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 min-w-0">
             <CompanyLogo name={company.name} logoUrl={company.logoUrl} size={56} />
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--tx-1)" }}>{company.name}</h1>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--tx-1)", overflowWrap: "break-word", wordBreak: "break-word" }}>{company.name}</h1>
               <div className="flex flex-wrap items-center gap-2 mt-1">
                 <span className="font-mono text-xs" style={{ color: "var(--tx-3)" }}>{company.amfToken}</span>
                 {isin && (
@@ -318,7 +318,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-3 mt-8">
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
           {pageNum > 1 && (
             <Link
               href={`/company/${slug}?${new URLSearchParams({ ...(filterType ? { type: filterType } : {}), page: String(pageNum - 1) })}`}

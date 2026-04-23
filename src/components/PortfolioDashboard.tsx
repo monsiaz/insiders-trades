@@ -233,9 +233,9 @@ export function PortfolioDashboard({ user }: { user: User }) {
       {/* Header */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 animate-fade-in">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card-static tx-brand text-xs font-semibold mb-4 bd-brand">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-            Portfolio PEA · {user.name ?? user.email}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card-static tx-brand text-xs font-semibold mb-4 bd-brand max-w-full overflow-hidden">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0" />
+            <span className="truncate">Portfolio PEA · {user.name ?? user.email}</span>
           </div>
           <h1 className="text-3xl font-bold text-[var(--tx-1)] tracking-tight">Mon <span className="text-gradient-indigo">Portfolio</span></h1>
           <p className="text-[var(--tx-2)] text-sm mt-1">{positions.length} position{positions.length !== 1 ? "s" : ""} · Mis à jour {priced.length > 0 ? "récemment" : "·"}</p>
@@ -345,7 +345,7 @@ export function PortfolioDashboard({ user }: { user: User }) {
             <div className="glass-card rounded-2xl p-12 text-center">
               <div className="flex justify-center mb-3 opacity-30"><BarChart2 size={40} strokeWidth={1.2} /></div>
               <p className="text-[var(--tx-2)] mb-4">Aucune position. Ajoutez des titres ou importez un CSV.</p>
-              <div className="flex justify-center gap-3">
+              <div className="flex flex-wrap justify-center gap-3">
                 <button onClick={() => setTab("add")} className="px-4 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-[var(--tx-1)] text-sm font-semibold">+ Ajouter manuellement</button>
                 <button onClick={() => setTab("import")} className="px-4 py-2.5 min-h-[44px] rounded-xl btn-glass text-sm">Importer CSV</button>
               </div>
@@ -640,10 +640,10 @@ function InsiderMatchSection({ positions }: { positions: Position[] }) {
 
   return (
     <div className="glass-card-static rounded-2xl p-6 border border-violet-500/10">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: "var(--c-violet)", flexShrink: 0 }}><circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
         <h3 className="text-sm font-semibold text-[var(--tx-1)]">Trades AMF sur vos positions</h3>
-        <span className="text-xs text-[var(--tx-3)]">dirigeants ayant récemment acheté vos titres</span>
+        <span className="text-xs text-[var(--tx-3)] w-full sm:w-auto">dirigeants ayant récemment acheté vos titres</span>
       </div>
       <div className="space-y-4">
         {matches.map((m) => (

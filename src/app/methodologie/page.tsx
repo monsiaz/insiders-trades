@@ -349,7 +349,7 @@ function SignalCard({
         gap: "8px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", flexWrap: "wrap" }}>
         <h3
           style={{
             fontFamily: "var(--font-inter), sans-serif",
@@ -357,6 +357,9 @@ function SignalCard({
             fontWeight: 700,
             color: "var(--tx-1)",
             letterSpacing: "-0.01em",
+            flex: 1,
+            minWidth: 0,
+            overflowWrap: "break-word",
           }}
         >
           {name}

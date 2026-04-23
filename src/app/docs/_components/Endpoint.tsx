@@ -143,10 +143,12 @@ function ParamTable({ title, params }: { title: string; params: EndpointParam[] 
           background: "var(--bg-surface)",
           border: "1px solid var(--border)",
           borderRadius: "3px",
-          overflow: "hidden",
+          overflowX: "auto",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          WebkitOverflowScrolling: "touch" as any,
         }}
       >
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.83rem" }}>
+        <table style={{ width: "100%", minWidth: "480px", borderCollapse: "collapse", fontSize: "0.83rem" }}>
           <thead>
             <tr style={{ background: "var(--bg-raised)", borderBottom: "1px solid var(--border-med)" }}>
               {["Nom", "Type", "Défaut", "Description"].map((h) => (

@@ -1552,14 +1552,14 @@ export default function BacktestDashboard({ initialData }: { initialData?: Stats
             return (
               <>
                 {anomalousCnt > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
+                  <div className="flex items-start gap-2 px-3 py-2 rounded-xl text-xs"
                     style={{ background: "var(--c-amber-bg)", border: "1px solid var(--c-amber-bd)", color: "var(--c-amber)" }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
                       <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    <span>
+                    <span style={{ minWidth: 0, overflowWrap: "break-word" }}>
                       <strong>{anomalousCnt} trades</strong> avec une date de transaction aberrante (erreurs de parsing PDF) ont été exclus de cet onglet.
-                      Ils sont correctement inclus dans les calculs de performance, seul l'affichage "par année" les masque.
+                      Ils sont correctement inclus dans les calculs de performance, seul l&apos;affichage &quot;par année&quot; les masque.
                     </span>
                   </div>
                 )}

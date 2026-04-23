@@ -752,10 +752,11 @@ function PlaybookStep({
     >
       <div
         style={{
-          display: "inline-flex",
+          display: "flex",
           alignItems: "center",
           gap: "10px",
           marginBottom: "8px",
+          flexWrap: "wrap",
         }}
       >
         <span
@@ -784,6 +785,9 @@ function PlaybookStep({
             color: "var(--tx-1)",
             letterSpacing: "-0.01em",
             lineHeight: 1.25,
+            flex: 1,
+            minWidth: 0,
+            overflowWrap: "break-word",
           }}
         >
           {title}

@@ -107,7 +107,7 @@ export default async function InsiderPage({ params, searchParams }: Props) {
             {initials}
           </div>
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold text-[var(--tx-1)] tracking-tight">{insider.name}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-[var(--tx-1)] tracking-tight" style={{ overflowWrap: "break-word", wordBreak: "break-word" }}>{insider.name}</h1>
             <div className="flex flex-wrap gap-1.5 mt-2">
               {insider.companies.map((ci) => (
                 <Link
@@ -156,7 +156,7 @@ export default async function InsiderPage({ params, searchParams }: Props) {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-3 mt-8">
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
           {pageNum > 1 && (
             <Link href={`/insider/${slug}?page=${pageNum - 1}`} className="btn-glass px-4 py-2 rounded-xl text-sm font-medium">
               ← Précédent

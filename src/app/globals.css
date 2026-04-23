@@ -1605,6 +1605,10 @@ input[type="search"], textarea, select {
   flex-shrink: 0;
   white-space: nowrap;
 }
+@media (max-width: 380px) {
+  .masthead-count { white-space: normal; flex-shrink: 1; }
+  .masthead-folio { white-space: normal; flex-shrink: 1; }
+}
 
 @media (max-width: 560px) {
   .masthead-dateline {

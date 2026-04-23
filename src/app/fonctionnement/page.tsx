@@ -592,6 +592,8 @@ export default function FonctionnementPage() {
                   cursor: "pointer",
                   listStyle: "none",
                   letterSpacing: "-0.005em",
+                  overflowWrap: "break-word",
+                  wordBreak: "break-word",
                 }}
               >
                 {it.q}

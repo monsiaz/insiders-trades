@@ -331,17 +331,36 @@ function lookupBucket(
   return buckets[`${role}::${size}`] ?? buckets[role] ?? buckets["__overall"] ?? null;
 }
 
-// ── Per-company net directional dominance ─────────────────────────────────────
-// For each company with activity in the lookback window, compute the cumulative
-// BUY amount and SELL amount. A company is "dominant" on a side when that side's
-// total is ≥ 2× the other side. Otherwise it's MIXED (both sides shown, it's
-// legitimate information when different insiders trade in opposite directions).
-// Key: we use startsWith (not contains) to avoid classifying natures like
-// "cession d'actions acquises…" as BOTH buy AND sell, which caused duplicates.
+// ── Cross-trade detection + per-company directional dominance ────────────────
+// Two rules to avoid showing the same company in both BUY and SELL tabs:
+//
+// 1) Cross-trade filter: on the same day / same company, if the sum of BUY
+//    amounts matches the sum of SELL amounts within ±5%, these are family
+//    transmissions / cessions de gré à gré (e.g. Joël Séché president → Maxime
+//    Séché CEO, same amount same day). They carry no directional signal and
+//    are excluded from both tabs entirely.
+//
+// 2) After cross-trade removal, each company is classified into exactly ONE
+//    side: whichever direction has the larger residual amount wins. No more
+//    "MIXED" state — a company is BUY_DOM or SELL_DOM, period.
+//
+// Together with the strict startsWith nature filter, this guarantees that the
+// same company can never appear in both the Buy and Sell recommendation tabs.
 
-type Dominance = "BUY_DOM" | "SELL_DOM" | "MIXED";
+type Dominance = "BUY_DOM" | "SELL_DOM";
+const CROSS_TRADE_TOLERANCE = 0.05;
 
-async function _buildDominance(lookbackDays: number): Promise<Record<string, Dominance>> {
+function directionOf(nature: string | null): "BUY" | "SELL" | null {
+  const n = (nature ?? "").toLowerCase();
+  if (n.startsWith("acqui")) return "BUY";
+  if (n.startsWith("cession")) return "SELL";
+  return null;
+}
+
+async function _buildDominance(lookbackDays: number): Promise<{
+  dominance: Record<string, Dominance>;
+  crossTradeDeclIds: string[];
+}> {
   const cutoff = new Date(Date.now() - lookbackDays * 86400_000);
   const rows = await prisma.declaration.findMany({
     where: {
@@ -354,52 +373,88 @@ async function _buildDominance(lookbackDays: number): Promise<Record<string, Dom
       ],
     },
     select: {
+      id: true,
+      pubDate: true,
       totalAmount: true,
       transactionNature: true,
       company: { select: { slug: true } },
     },
   });
 
-  const agg = new Map<string, { buy: number; sell: number }>();
-  for (const r of rows) {
-    if (isNonMarket(r.transactionNature)) continue;
-    const nature = (r.transactionNature ?? "").toLowerCase();
-    const isBuy = nature.startsWith("acqui");
-    const isSell = nature.startsWith("cession");
-    if (!isBuy && !isSell) continue;
-    const slug = r.company.slug;
-    const cur = agg.get(slug) ?? { buy: 0, sell: 0 };
-    if (isBuy) cur.buy += r.totalAmount ?? 0;
-    else cur.sell += r.totalAmount ?? 0;
-    agg.set(slug, cur);
+  // Step 1: group by (slug, YYYY-MM-DD) to find same-day cross-trades
+  type DayBucket = {
+    buy: number;
+    sell: number;
+    buyIds: string[];
+    sellIds: string[];
+  };
+  const byDay = new Map<string, DayBucket>();
+  const cleanRows = rows.filter((r) => !isNonMarket(r.transactionNature));
+
+  for (const r of cleanRows) {
+    const dir = directionOf(r.transactionNature);
+    if (!dir) continue;
+    const dayKey = `${r.company.slug}::${r.pubDate.toISOString().slice(0, 10)}`;
+    const cur = byDay.get(dayKey) ?? { buy: 0, sell: 0, buyIds: [], sellIds: [] };
+    if (dir === "BUY") { cur.buy += r.totalAmount ?? 0; cur.buyIds.push(r.id); }
+    else               { cur.sell += r.totalAmount ?? 0; cur.sellIds.push(r.id); }
+    byDay.set(dayKey, cur);
   }
 
-  const out: Record<string, Dominance> = {};
-  for (const [slug, { buy, sell }] of agg) {
-    if (sell === 0 && buy > 0) out[slug] = "BUY_DOM";
-    else if (buy === 0 && sell > 0) out[slug] = "SELL_DOM";
-    else if (buy >= sell * 2) out[slug] = "BUY_DOM";
-    else if (sell >= buy * 2) out[slug] = "SELL_DOM";
-    else out[slug] = "MIXED";
+  const crossTradeIds = new Set<string>();
+  for (const b of byDay.values()) {
+    if (b.buy === 0 || b.sell === 0) continue;
+    const ratio = Math.min(b.buy, b.sell) / Math.max(b.buy, b.sell);
+    // Within ±5% → treat as cross-trade (symmetric transfer, no directional info)
+    if (ratio >= 1 - CROSS_TRADE_TOLERANCE) {
+      for (const id of b.buyIds)  crossTradeIds.add(id);
+      for (const id of b.sellIds) crossTradeIds.add(id);
+    }
   }
-  return out;
+
+  // Step 2: aggregate residual buy/sell per company (excluding cross-trades)
+  const agg = new Map<string, { buy: number; sell: number }>();
+  for (const r of cleanRows) {
+    if (crossTradeIds.has(r.id)) continue;
+    const dir = directionOf(r.transactionNature);
+    if (!dir) continue;
+    const cur = agg.get(r.company.slug) ?? { buy: 0, sell: 0 };
+    if (dir === "BUY") cur.buy += r.totalAmount ?? 0;
+    else               cur.sell += r.totalAmount ?? 0;
+    agg.set(r.company.slug, cur);
+  }
+
+  // Step 3: assign each company to exactly one side (whichever has more volume)
+  const dominance: Record<string, Dominance> = {};
+  for (const [slug, { buy, sell }] of agg) {
+    if (buy === 0 && sell === 0) continue;
+    dominance[slug] = buy >= sell ? "BUY_DOM" : "SELL_DOM";
+  }
+
+  return { dominance, crossTradeDeclIds: Array.from(crossTradeIds) };
 }
 
 const getDominanceCached = unstable_cache(
   _buildDominance,
-  ["reco-dominance-v1"],
-  { revalidate: 1800 }, // 30 min
+  ["reco-dominance-v2"],
+  { revalidate: 1800 },
 );
 
-async function getCompanyDominance(_cutoff: Date, lookbackDays = 90): Promise<Map<string, Dominance>> {
-  const obj = await getDominanceCached(lookbackDays);
-  return new Map(Object.entries(obj));
+async function getCompanyDominance(_cutoff: Date, lookbackDays = 90): Promise<{
+  dominance: Map<string, Dominance>;
+  crossTradeDeclIds: Set<string>;
+}> {
+  const { dominance, crossTradeDeclIds } = await getDominanceCached(lookbackDays);
+  return {
+    dominance: new Map(Object.entries(dominance)),
+    crossTradeDeclIds: new Set(crossTradeDeclIds),
+  };
 }
 
 // ── Buy recommendations ───────────────────────────────────────────────────────
 
 async function getBuyRecommendations(cutoff: Date, limit: number): Promise<RecoItem[]> {
-  const [{ buy: buyBuckets }, dominance] = await Promise.all([
+  const [{ buy: buyBuckets }, { dominance, crossTradeDeclIds }] = await Promise.all([
     getBucketStats(),
     getCompanyDominance(cutoff),
   ]);
@@ -426,8 +481,10 @@ async function getBuyRecommendations(cutoff: Date, limit: number): Promise<RecoI
     if (seen.has(decl.id)) continue;
     seen.add(decl.id);
 
-    // Skip companies where sells dominate by ≥ 2× the buys — they belong to SELL tab
-    if (dominance.get(decl.company.slug) === "SELL_DOM") continue;
+    // Exclude cross-trades (same-day matched buy/sell — family transmissions etc.)
+    if (crossTradeDeclIds.has(decl.id)) continue;
+    // Each company belongs to exactly one tab — skip if SELL is dominant
+    if (dominance.get(decl.company.slug) !== "BUY_DOM") continue;
 
     const role = normalizeRole(decl.insiderFunction);
     const size = sizeLabel(decl.company.marketCap);
@@ -449,7 +506,7 @@ async function getBuyRecommendations(cutoff: Date, limit: number): Promise<RecoI
 // ── Sell recommendations ──────────────────────────────────────────────────────
 
 async function getSellRecommendations(cutoff: Date, limit: number): Promise<RecoItem[]> {
-  const [{ sell: sellBuckets }, dominance] = await Promise.all([
+  const [{ sell: sellBuckets }, { dominance, crossTradeDeclIds }] = await Promise.all([
     getBucketStats(),
     getCompanyDominance(cutoff),
   ]);
@@ -475,8 +532,10 @@ async function getSellRecommendations(cutoff: Date, limit: number): Promise<Reco
     if (seen.has(decl.id)) continue;
     seen.add(decl.id);
 
-    // Skip companies where buys dominate by ≥ 2× the sells — they belong to BUY tab
-    if (dominance.get(decl.company.slug) === "BUY_DOM") continue;
+    // Exclude cross-trades (same-day matched buy/sell — family transmissions etc.)
+    if (crossTradeDeclIds.has(decl.id)) continue;
+    // Each company belongs to exactly one tab — skip if BUY is dominant
+    if (dominance.get(decl.company.slug) !== "SELL_DOM") continue;
 
     const role = normalizeRole(decl.insiderFunction);
     const size = sizeLabel(decl.company.marketCap);
@@ -498,7 +557,10 @@ async function getPersonalRecommendations(
   limit: number,
   portfolioIsins: string[],
 ): Promise<RecoItem[]> {
-  const { buy: buyBuckets, sell: sellBuckets } = await getBucketStats();
+  const [{ buy: buyBuckets, sell: sellBuckets }, { crossTradeDeclIds }] = await Promise.all([
+    getBucketStats(),
+    getCompanyDominance(cutoff),
+  ]);
 
   // Parallel fetch: sell alerts on holdings + top buy signals
   const [sellDecls, buyDecls] = await Promise.all([
@@ -542,6 +604,7 @@ async function getPersonalRecommendations(
   // SELL alerts first (on user's holdings)
   for (const decl of sellDecls) {
     if (isNonMarket(decl.transactionNature)) continue;
+    if (crossTradeDeclIds.has(decl.id)) continue; // Skip family transmissions
     if (seenIds.has(decl.id)) continue;
     seenIds.add(decl.id);
 
@@ -555,6 +618,7 @@ async function getPersonalRecommendations(
   // BUY signals — never on a company already flagged as SELL
   for (const decl of buyDecls) {
     if (isNonMarket(decl.transactionNature)) continue;
+    if (crossTradeDeclIds.has(decl.id)) continue; // Skip family transmissions
     if (seenIds.has(decl.id)) continue;
     if (seenSlugs.has(decl.company.slug)) continue;
     seenIds.add(decl.id);

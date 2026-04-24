@@ -8,6 +8,23 @@ import { CompaniesClient, type CompanyRow } from "@/components/CompaniesClient";
 
 export const dynamic = "force-dynamic"; // locale-aware: prevents FR/EN cache conflict on shared internal route
 
+const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+
+export async function generateMetadata() {
+  const hdrs = await headers();
+  const originalPath = hdrs.get("x-original-path") ?? "/companies/";
+  const isFr = originalPath === "/fr" || originalPath.startsWith("/fr/");
+  const canonical = isFr ? `${BASE}/fr/companies/` : `${BASE}/companies/`;
+  return {
+    title: isFr ? "Sociétés cotées · InsiderTrades Sigma" : "Listed Companies · InsiderTrades Sigma",
+    description: isFr
+      ? "Toutes les sociétés françaises ayant fait l'objet d'une déclaration de dirigeant à l'AMF."
+      : "All French-listed companies with insider declarations filed to the AMF.",
+    alternates: { canonical },
+    openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" },
+  };
+}
+
 // Single aggregated SQL query · one round trip, DB-side aggregate, no N+1.
 // Returns: one row per company with pre-computed count and latest declaration.
 interface CompanyAggregateRow {

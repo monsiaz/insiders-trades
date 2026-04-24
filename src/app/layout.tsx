@@ -74,16 +74,25 @@ export default async function RootLayout({
 }>) {
   const headersList = await headers();
   // x-original-path = the URL the browser actually requested (set by middleware).
-  // Use it as the single source of truth for locale, canonical and hreflang.
-  // This is more reliable than x-locale which can be stale in the Next.js RSC router cache.
-  const originalPath = headersList.get("x-original-path") ?? "/";
-  const isFrPath = originalPath === "/fr" || originalPath.startsWith("/fr/");
+  // Fallback chain: x-original-path → x-locale + "/" → "/".
+  // Note: page-level generateMetadata() sets a more precise self-canonical that
+  // overrides this layout canonical for pages that define it explicitly.
+  const originalPath = headersList.get("x-original-path") ?? "";
+  const xLocale      = headersList.get("x-locale") ?? "en";
+
+  // If x-original-path is missing or stale (e.g., "/" from a previous layout render),
+  // fall back to x-locale for at least the language detection.
+  const isFrPath = originalPath
+    ? (originalPath === "/fr" || originalPath.startsWith("/fr/"))
+    : xLocale === "fr";
   const locale: Locale = isFrPath ? "fr" : "en";
 
   // Strip /fr prefix to get the language-neutral path
-  const basePath = isFrPath
-    ? (originalPath.slice(3) || "/")
-    : originalPath;
+  // If originalPath is empty/stale ("/"), the canonical falls back to home ("/" or "/fr/")
+  // which is harmless for non-home pages since their own generateMetadata() overrides it.
+  const basePath = originalPath
+    ? (isFrPath ? (originalPath.slice(3) || "/") : originalPath)
+    : "/";
   // Strip query string, ensure trailing slash on every path except root
   let canonicalPathClean = basePath.split("?")[0];
   if (canonicalPathClean !== "/" && !canonicalPathClean.endsWith("/")) {

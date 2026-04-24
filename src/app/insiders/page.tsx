@@ -5,6 +5,23 @@ import { InsidersClient, type InsiderRow } from "@/components/InsidersClient";
 
 export const dynamic = "force-dynamic"; // locale-aware: prevents FR/EN cache conflict
 
+const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+
+export async function generateMetadata() {
+  const hdrs = await headers();
+  const originalPath = hdrs.get("x-original-path") ?? "/insiders/";
+  const isFr = originalPath === "/fr" || originalPath.startsWith("/fr/");
+  const canonical = isFr ? `${BASE}/fr/insiders/` : `${BASE}/insiders/`;
+  return {
+    title: isFr ? "Dirigeants · InsiderTrades Sigma" : "Executives · InsiderTrades Sigma",
+    description: isFr
+      ? "Tous les dirigeants et initiés ayant effectué des déclarations AMF."
+      : "All executives and insiders who have filed AMF declarations.",
+    alternates: { canonical },
+    openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" },
+  };
+}
+
 // Cache the Prisma query · invalidated every 5min or on demand
 const getInsiders = unstable_cache(
   async () =>

@@ -9,6 +9,20 @@ const PortfolioDashboard = dynamicImport(() => import("@/components/PortfolioDas
 
 export const dynamic = "force-dynamic";
 
+const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+
+export async function generateMetadata() {
+  const hdrs = await headers();
+  const originalPath = hdrs.get("x-original-path") ?? "/portfolio/";
+  const isFr = originalPath === "/fr" || originalPath.startsWith("/fr/");
+  const canonical = isFr ? `${BASE}/fr/portfolio/` : `${BASE}/portfolio/`;
+  return {
+    title: isFr ? "Mon Portfolio · InsiderTrades Sigma" : "My Portfolio · InsiderTrades Sigma",
+    alternates: { canonical },
+    openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" },
+  };
+}
+
 export default async function PortfolioPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login?next=/portfolio/");

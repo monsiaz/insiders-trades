@@ -939,14 +939,9 @@ function SignalCard({ s, isFr }: { s: WinningSignal; isFr: boolean }) {
             ? `${s.signal.insiderCount} ${isFr ? "dirigeants · cluster confirmé" : "insiders · confirmed cluster"}`
             : (
               <>
-                {s.insider.slug ? (
-                  <a href={`/insider/${s.insider.slug}`}
-                    onClick={(e) => e.stopPropagation()}
-                    style={{ color: "var(--tx-1)", fontWeight: 500, textDecoration: "none" }}
-                    className="hover:underline">
-                    {s.insider.name ?? "·"}
-                  </a>
-                ) : (s.insider.name ?? "·")}
+                <strong style={{ color: "var(--tx-1)", fontWeight: 500 }}>
+                  {s.insider.name ?? "·"}
+                </strong>
                 {" · "}{s.insider.role ?? s.insider.function ?? "·"}
               </>
             )

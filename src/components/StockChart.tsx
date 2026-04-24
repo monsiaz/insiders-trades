@@ -158,21 +158,31 @@ export function StockChart({ isin, companyName, trades = [], locale = "en" }: St
 
   const [data, setData] = useState<StockData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [fetchError, setFetchError] = useState(false); // error for THIS range (keeps old data visible)
   const [range, setRange] = useState<RangeOption>("6mo");
   const [filter, setFilter] = useState<TradeFilter>("all");
   const [sortBy, setSortBy] = useState<"date" | "amount">("date");
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    setError(false);
+    setFetchError(false);
     const params = new URLSearchParams({ range });
     if (isin) params.set("isin", isin);
     params.set("name", companyName);
     fetch(`/api/stock?${params}`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((d) => { setData(d); setLoading(false); })
-      .catch(() => { setError(true); setLoading(false); });
+      .then((d) => {
+        if (!cancelled) { setData(d); setLoading(false); }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          // Keep previous data visible — just clear the loading state and mark error
+          setFetchError(true);
+          setLoading(false);
+        }
+      });
+    return () => { cancelled = true; };
   }, [isin, companyName, range]);
 
   // Build price lookup map
@@ -268,7 +278,8 @@ export function StockChart({ isin, companyName, trades = [], locale = "en" }: St
     );
   }
 
-  if (error || !data) return null;
+  // No data at all (first load failed) → hide component entirely
+  if (!data) return null;
 
   const isPositive = data.change >= 0;
   // DA v3: signal-pos / signal-neg · direct hex for Recharts (it can't parse CSS vars)
@@ -322,23 +333,39 @@ export function StockChart({ isin, companyName, trades = [], locale = "en" }: St
           </div>
 
           {/* Range selector */}
-          <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "3px", background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: "10px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "3px", background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: "10px", flexWrap: "wrap", position: "relative", zIndex: 2 }}>
             {RANGE_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => setRange(opt.value)}
                 style={{
-                  padding: "3px 10px", borderRadius: "7px",
+                  padding: "5px 10px", minHeight: "32px", borderRadius: "7px",
                   fontSize: "11px", fontWeight: 600,
                   border: "none", cursor: "pointer",
                   background: range === opt.value ? "var(--bg-active)" : "transparent",
-                  color: range === opt.value ? "var(--tx-1)" : "var(--tx-3)",
+                  color: range === opt.value
+                    ? (fetchError ? "var(--c-amber)" : "var(--tx-1)")  // amber tint when error for this range
+                    : "var(--tx-3)",
                   transition: "all 0.12s",
+                  touchAction: "manipulation",
+                  WebkitTapHighlightColor: "transparent",
+                  position: "relative", zIndex: 3,
                 }}
               >
                 {opt.label}
               </button>
             ))}
+            {/* Subtle badge when the selected range has no data */}
+            {fetchError && (
+              <span style={{
+                fontSize: "9px", color: "var(--c-amber)", fontWeight: 600,
+                padding: "2px 6px", borderRadius: "4px",
+                background: "var(--c-amber-bg)",
+                marginLeft: "2px", whiteSpace: "nowrap",
+              }}>
+                {isFr ? "données limitées" : "limited data"}
+              </span>
+            )}
           </div>
         </div>
 
@@ -415,6 +442,25 @@ export function StockChart({ isin, companyName, trades = [], locale = "en" }: St
         </div>
 
         {/* Legend */}
+        {/* Data coverage note if shorter than requested */}
+        {data.points.length > 0 && (() => {
+          const RANGE_DAYS: Record<RangeOption, number> = { "1mo": 30, "3mo": 90, "6mo": 180, "1y": 365, "2y": 730 };
+          const expectedDays = RANGE_DAYS[range];
+          const firstDate = new Date(data.points[0].date);
+          const lastDate = new Date(data.points[data.points.length - 1].date);
+          const actualDays = Math.round((lastDate.getTime() - firstDate.getTime()) / 86400_000);
+          if (actualDays < expectedDays * 0.7) {
+            return (
+              <div style={{ marginTop: "6px", fontSize: "10px", color: "var(--tx-4)", fontStyle: "italic" }}>
+                {isFr
+                  ? `Données disponibles : ${actualDays}j (historique limité pour ce titre)`
+                  : `Available data: ${actualDays}d (limited history for this stock)`}
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         {tradeBubbles.length > 0 && (
           <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginTop: "8px", paddingTop: "10px", borderTop: "1px solid var(--border)", flexWrap: "wrap" }}>
             <span style={{ fontSize: "11px", color: "var(--tx-4)" }}>

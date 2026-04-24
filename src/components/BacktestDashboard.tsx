@@ -100,7 +100,7 @@ interface StatsData {
     consecutiveBuys: number;
     pctOfMarketCap: number | null;
   }>;
-  insights: Array<{ icon: string; title: string; text: string; highlight: string }>;
+  insights: Array<{ icon: string; title: string; text: string; highlight: string; titleEn?: string; textEn?: string; highlightEn?: string }>;
   coverageByHorizon: {
     totalEligible: number;
     totalWithPrice: number;

@@ -185,28 +185,15 @@ function TransitionInner() {
     }
   }, [currKey, finishLoading]);
 
-  // ── Intercept touches BEFORE navigation (mobile-first) ───────────────────
+  // ── Intercept clicks AFTER the link has processed its own event ──────────
+  // NOTE: we intentionally do NOT use touchstart here.
+  // On mobile, touchstart fires BEFORE the overlay renders. If the overlay
+  // then appears with pointerEvents:"all", it intercepts the subsequent
+  // touchend/click events and the navigation never fires (3s stuck loader).
+  // Using click (which fires after touchend, on the originating element) is
+  // safe: the navigation has already been queued before we show the overlay.
   useEffect(() => {
-    let touchPending = false; // dedup: skip click if touch already handled
-
-    function onTouchStart(e: TouchEvent) {
-      const a = (e.target as Element).closest("a[href]") as HTMLAnchorElement | null;
-      if (!a) return;
-      const href = a.getAttribute("href") ?? "";
-      if (!href || href.startsWith("http") || href.startsWith("//")
-        || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
-      if (a.hasAttribute("download") || a.target === "_blank") return;
-      const dest = href.split("?")[0].split("#")[0];
-      if (dest && dest !== window.location.pathname) {
-        touchPending = true;
-        startLoading();
-        // Reset flag after 1s (in case click never fires)
-        setTimeout(() => { touchPending = false; }, 1000);
-      }
-    }
-
     function onClickCapture(e: MouseEvent) {
-      if (touchPending) { touchPending = false; return; } // already handled
       const a = (e.target as Element).closest("a[href]") as HTMLAnchorElement | null;
       if (!a) return;
       const href = a.getAttribute("href") ?? "";
@@ -217,11 +204,11 @@ function TransitionInner() {
       if (dest && dest !== window.location.pathname) startLoading();
     }
 
-    document.addEventListener("touchstart", onTouchStart, { passive: true });
-    document.addEventListener("click",      onClickCapture);
+    // Use capture phase so we run before other handlers, but NEVER call
+    // preventDefault/stopPropagation — navigation must complete.
+    document.addEventListener("click", onClickCapture, { capture: true });
     return () => {
-      document.removeEventListener("touchstart", onTouchStart);
-      document.removeEventListener("click",      onClickCapture);
+      document.removeEventListener("click", onClickCapture, { capture: true });
     };
   }, [startLoading]);
 
@@ -257,7 +244,8 @@ function TransitionInner() {
           transition: isExit
             ? `opacity ${FADE_MS}ms ease ${BLINK_MS}ms`
             : "opacity 0.2s ease",
-          pointerEvents: isExit ? "none" : "all",
+          // Always none — overlay must NEVER block navigation clicks or taps
+          pointerEvents: "none",
         }}
       >
         {[320, 220, 150].map((size, i) => (

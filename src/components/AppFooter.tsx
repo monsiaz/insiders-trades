@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoWordmark } from "./Logo";
 import { LangSwitcher } from "./LangSwitcher";
@@ -76,13 +75,13 @@ export function AppFooter() {
         <div className="app-footer-grid">
           {/* Brand column */}
           <div className="app-footer-brand">
-            <Link
+            <a
               href={locale === "fr" ? "/fr/" : "/"}
               className="app-footer-logo"
               aria-label="InsiderTrades home"
             >
               <LogoWordmark height={60} />
-            </Link>
+            </a>
             <p className="app-footer-tagline">{tagline}</p>
             {/* Language switcher */}
             <div style={{ marginTop: "16px" }}>
@@ -96,9 +95,9 @@ export function AppFooter() {
             <ul className="app-footer-links">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="app-footer-link">
+                  <a href={link.href} className="app-footer-link">
                     {link.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -110,9 +109,9 @@ export function AppFooter() {
             <ul className="app-footer-links">
               {ABOUT_LINKS.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="app-footer-link">
+                  <a href={link.href} className="app-footer-link">
                     {link.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>

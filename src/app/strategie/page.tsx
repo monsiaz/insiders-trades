@@ -52,7 +52,13 @@ export default async function StrategiePage() {
   const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
   const isFr = locale === "fr";
 
-  const liveSignals = await getWinningStrategySignals({ lookbackDays: 90, limit: 15 });
+  // Fail-soft: if DB is cold/slow, render page with 0 signals rather than throwing a 500.
+  // The page is useful without live signals (historical proof + recipe + guide).
+  const liveSignals = await getWinningStrategySignals({ lookbackDays: 90, limit: 15 })
+    .catch((err) => {
+      console.error("[strategie] getWinningStrategySignals failed:", err);
+      return [] as WinningSignal[];
+    });
   const proof = STRATEGY_PROOF;
   const maxAbsReturn = Math.max(
     ...proof.years.flatMap((y) => [Math.abs(y.strategy), Math.abs(y.cac40)])

@@ -837,21 +837,30 @@ body::before {
 .glass-card-static { background: var(--bg-surface); border: 1px solid var(--border-med); border-radius: 8px; }
 
 /* Related entity cards */
+.related-entity-card {
+  /* Critical for grid + flex ellipsis: without this, a long role name
+     (e.g. "Membre du Directoire et Directeur de la stratégie…") forces
+     the cell to grow to max-content and the whole grid overflows. */
+  min-width: 0;
+  overflow: hidden;
+}
 .related-entity-card:hover {
   border-color: var(--gold) !important;
   background: var(--bg-raised) !important;
 }
-/* 5-column grid that collapses gracefully on smaller screens */
+/* 5-column grid that collapses gracefully on smaller screens.
+   minmax(0, 1fr) — not 1fr — is required so cells can shrink below
+   their content's intrinsic width and let the inner ellipsis kick in. */
 .related-entities-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.75rem;
 }
 @media (max-width: 900px) {
-  .related-entities-grid { grid-template-columns: repeat(3, 1fr); }
+  .related-entities-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 540px) {
-  .related-entities-grid { grid-template-columns: repeat(2, 1fr); }
+  .related-entities-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* ═══════════════════════════════════════════════════════════

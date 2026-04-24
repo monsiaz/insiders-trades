@@ -1,5 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+
+/** Format a monetary amount as a compact string for meta descriptions. */
+function fmtAmtMeta(v: number | bigint | null | undefined): string | null {
+  if (v == null) return null;
+  const n = typeof v === "bigint" ? Number(v) : v;
+  if (n <= 0) return null;
+  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}Md€`;
+  if (n >= 1_000_000)     return `${(n / 1_000_000).toFixed(1)}M€`;
+  if (n >= 1_000)         return `${Math.round(n / 1_000)}k€`;
+  return `${Math.round(n)}€`;
+}
 import Link from "next/link";
 import { DeclarationsLoadMore } from "@/components/DeclarationsLoadMore";
 import { CompanySyncButton } from "@/components/CompanySyncButton";
@@ -156,10 +167,26 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = isFr
     ? `${company.name} · Transactions dirigeants | Sigma`
     : `${company.name} · Insider Transactions | Sigma`;
-  const desc = (isFr ? company.descriptionFr : company.descriptionEn)?.slice(0, 160)
-    ?? (isFr
-      ? `Suivez les transactions d'initiés de ${company.name}.`
-      : `Track insider transactions for ${company.name} on InsiderTrades Sigma.`);
+
+  // Structured meta description ≤130 chars
+  // Parts: sector · ISIN · N décl · Achats XM€ · Ventes XM€ · Cours X€
+  const { isinRow, buyTotal, sellTotal } = cached;
+  const isin    = company.isin ?? isinRow?.isin ?? null;
+  const sector  = isFr ? (company.sectorTag ?? null) : (company.sectorTagEn ?? null);
+  const nbDecls = company._count.declarations;
+  const buyAmt  = fmtAmtMeta(buyTotal._sum.totalAmount);
+  const sellAmt = fmtAmtMeta(sellTotal._sum.totalAmount);
+  const price   = company.currentPrice != null ? `${company.currentPrice.toFixed(2)}€` : null;
+
+  const metaParts: string[] = [];
+  if (sector)   metaParts.push(sector);
+  if (isin)     metaParts.push(`ISIN ${isin}`);
+  metaParts.push(isFr ? `${nbDecls} déclarations` : `${nbDecls} insider filings`);
+  if (buyAmt)   metaParts.push(isFr ? `Achats ${buyAmt}` : `Buys ${buyAmt}`);
+  if (sellAmt)  metaParts.push(isFr ? `Ventes ${sellAmt}` : `Sells ${sellAmt}`);
+  if (price)    metaParts.push(isFr ? `Cours ${price}` : `Price ${price}`);
+
+  const desc = metaParts.join(" · ").slice(0, 130);
   return {
     title,
     description: desc,

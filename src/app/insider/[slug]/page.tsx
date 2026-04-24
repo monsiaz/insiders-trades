@@ -1,5 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+
+/** Compact monetary amount for meta descriptions. */
+function fmtAmtMeta(v: number | bigint | null | undefined): string | null {
+  if (v == null) return null;
+  const n = typeof v === "bigint" ? Number(v) : v;
+  if (n <= 0) return null;
+  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}Md€`;
+  if (n >= 1_000_000)     return `${(n / 1_000_000).toFixed(1)}M€`;
+  if (n >= 1_000)         return `${Math.round(n / 1_000)}k€`;
+  return `${Math.round(n)}€`;
+}
 import Link from "next/link";
 import { DeclarationsLoadMore } from "@/components/DeclarationsLoadMore";
 import { RelatedEntities } from "@/components/RelatedEntities";
@@ -97,10 +108,26 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const canonical = isFr ? `${BASE}/fr/insider/${slug}/` : `${BASE}/insider/${slug}/`;
   const altLocale = isFr ? `${BASE}/insider/${slug}/`    : `${BASE}/fr/insider/${slug}/`;
   const title = `${insider.name}${insider.primaryRole ? ` · ${insider.primaryRole}` : ""} | Sigma`;
-  const desc = (isFr ? insider.descriptionFr : insider.descriptionEn)?.slice(0, 160)
-    ?? (isFr
-      ? `Suivez les déclarations d'initiés de ${insider.name}.`
-      : `Track insider declarations by ${insider.name} on InsiderTrades Sigma.`);
+
+  // Structured meta description ≤130 chars
+  // Parts: role · N déclarations AMF · Achats XM€ · Ventes XM€ · Company names
+  const { buyAgg, sellAgg, defaultTotalCount } = cached;
+  const role     = insider.primaryRole ?? null;
+  const buyAmt   = fmtAmtMeta(buyAgg._sum.totalAmount);
+  const sellAmt  = fmtAmtMeta(sellAgg._sum.totalAmount);
+  const companies = insider.companies
+    .slice(0, 2)
+    .map((r: { company: { name: string } }) => r.company.name)
+    .join(", ");
+
+  const metaParts: string[] = [];
+  if (role) metaParts.push(role);
+  metaParts.push(isFr ? `${defaultTotalCount} déclarations AMF` : `${defaultTotalCount} AMF filings`);
+  if (buyAmt)  metaParts.push(isFr ? `Achats ${buyAmt}` : `Buys ${buyAmt}`);
+  if (sellAmt) metaParts.push(isFr ? `Ventes ${sellAmt}` : `Sells ${sellAmt}`);
+  if (companies) metaParts.push(companies);
+
+  const desc = metaParts.join(" · ").slice(0, 130);
   return {
     title,
     description: desc,

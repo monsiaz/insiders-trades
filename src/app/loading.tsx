@@ -1,26 +1,32 @@
-// Global fallback · shown during cold starts and first page loads
+import { LogoMark } from "@/components/Logo";
+
+/**
+ * Global loading fallback · shown during cold starts and first server renders.
+ *
+ * Design principle: a page in flight should feel *intentional*, not *broken*.
+ * The previous naked-skeleton strip screamed "empty page" before SSR completed.
+ * Now we show a quiet, branded loader — pulsing Sigma eye + wordmark + a thin
+ * gold progress sliver — which reads as "loading" rather than "missing".
+ */
 export default function Loading() {
   return (
-    <div className="content-wrapper">
-      <div className="loading-wrap">
-        <div className="loading-gold-bar" />
+    <div className="brand-loader" aria-live="polite" aria-busy="true">
+      <div className="brand-loader-sliver" aria-hidden="true" />
 
-        <div className="skel skel-h" style={{ height: 11, width: 90 }} />
-        <div className="skel skel-h" style={{ height: 36, width: 280 }} />
-        <div className="skel skel-h" style={{ height: 13, width: 360 }} />
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginTop: 8 }}>
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="skel" style={{ height: 80 }} />
-          ))}
+      <div className="brand-loader-center">
+        <div className="brand-loader-mark">
+          <div className="brand-loader-halo" aria-hidden="true" />
+          <LogoMark size={56} />
         </div>
 
-        <div className="skel" style={{ height: 240 }} />
+        <div className="brand-loader-wordmark">
+          <span>Insiders</span>
+          <span className="brand-loader-accent">Trades</span>
+          <span className="brand-loader-sigma">Sigma</span>
+        </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="skel" style={{ height: 110 }} />
-          ))}
+        <div className="brand-loader-dots" aria-hidden="true">
+          <span /><span /><span />
         </div>
       </div>
     </div>

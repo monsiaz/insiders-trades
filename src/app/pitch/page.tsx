@@ -7,11 +7,30 @@
 import type React from "react";
 import Link from "next/link";
 import { headers } from "next/headers";
+import { unstable_cache } from "next/cache";
 import { LogoMark } from "@/components/Logo";
 import { computePerformanceData } from "@/lib/performance-data";
 import { getBacktestBase } from "@/lib/backtest-compute";
 
 export const dynamic = "force-dynamic"; // locale-aware
+
+/**
+ * Heavy DB computation (backtest universe + CAC monthly + declaration counts) is
+ * cached 1 hour. The underlying data is recomputed at most daily by the cron,
+ * so 1h is plenty; first render fills the cache, subsequent loads are instant
+ * and the skeleton loader never appears.
+ */
+const getPitchDataCached = unstable_cache(
+  async () => {
+    const [d, base] = await Promise.all([
+      computePerformanceData(),
+      getBacktestBase(),
+    ]);
+    return { d, base };
+  },
+  ["pitch-data-v1"],
+  { revalidate: 3600, tags: ["pitch-data"] },
+);
 
 export async function generateMetadata() {
   const hdrs = await headers();
@@ -128,10 +147,7 @@ export default async function PitchPage() {
   const isFr = locale === "fr";
   const numLocale = isFr ? "fr-FR" : "en-US";
 
-  const [d, base] = await Promise.all([
-    computePerformanceData(),
-    getBacktestBase(),
-  ]);
+  const { d, base } = await getPitchDataCached();
 
   const startYear = d.universe.periodStart.slice(0, 4);
   const endYear   = d.universe.periodEnd.slice(0, 4);

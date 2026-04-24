@@ -7,42 +7,44 @@ import { LogoWordmark } from "./Logo";
 import { LangSwitcher } from "./LangSwitcher";
 import type { Locale } from "@/lib/i18n";
 
+// All hrefs include trailing slashes to avoid middleware 301 redirects during
+// client-side navigation (trailingSlash:true in next.config.ts requires them).
 const NAV_LINKS_FR = [
-  { href: "/fr", label: "Accueil" },
-  { href: "/fr/companies", label: "Sociétés" },
-  { href: "/fr/insiders", label: "Dirigeants" },
-  { href: "/fr/recommendations", label: "Recommandations" },
-  { href: "/fr/backtest", label: "Backtest & Signaux" },
-  { href: "/fr/portfolio", label: "Mon portfolio" },
+  { href: "/fr/", label: "Accueil" },
+  { href: "/fr/companies/", label: "Sociétés" },
+  { href: "/fr/insiders/", label: "Dirigeants" },
+  { href: "/fr/recommendations/", label: "Recommandations" },
+  { href: "/fr/backtest/", label: "Backtest & Signaux" },
+  { href: "/fr/portfolio/", label: "Mon portfolio" },
 ];
 const NAV_LINKS_EN = [
   { href: "/", label: "Home" },
-  { href: "/companies", label: "Companies" },
-  { href: "/insiders", label: "Executives" },
-  { href: "/recommendations", label: "Recommendations" },
-  { href: "/backtest", label: "Backtest & Signals" },
-  { href: "/portfolio", label: "My portfolio" },
+  { href: "/companies/", label: "Companies" },
+  { href: "/insiders/", label: "Executives" },
+  { href: "/recommendations/", label: "Recommendations" },
+  { href: "/backtest/", label: "Backtest & Signals" },
+  { href: "/portfolio/", label: "My portfolio" },
 ];
 
 const ABOUT_LINKS_FR = [
-  { href: "/fr/pitch", label: "Le Pitch investisseur" },
-  { href: "/fr/fonctionnement", label: "Comment ça marche" },
-  { href: "/fr/strategie", label: "Stratégie Sigma ★" },
-  { href: "/fr/methodologie", label: "Méthodologie" },
-  { href: "/fr/performance", label: "Performance & transparence" },
-  { href: "/fr/docs", label: "Documentation API" },
-  { href: "/fr/docs/mcp", label: "MCP Server ↗" },
-  { href: "/fr/account/api-keys", label: "Mes clés API" },
+  { href: "/fr/pitch/", label: "Le Pitch investisseur" },
+  { href: "/fr/fonctionnement/", label: "Comment ça marche" },
+  { href: "/fr/strategie/", label: "Stratégie Sigma ★" },
+  { href: "/fr/methodologie/", label: "Méthodologie" },
+  { href: "/fr/performance/", label: "Performance & transparence" },
+  { href: "/fr/docs/", label: "Documentation API" },
+  { href: "/fr/docs/mcp/", label: "MCP Server ↗" },
+  { href: "/fr/account/api-keys/", label: "Mes clés API" },
 ];
 const ABOUT_LINKS_EN = [
-  { href: "/pitch", label: "Investor Pitch" },
-  { href: "/fonctionnement", label: "How it works" },
-  { href: "/strategie", label: "Sigma Strategy ★" },
-  { href: "/methodologie", label: "Methodology" },
-  { href: "/performance", label: "Performance & transparency" },
-  { href: "/docs", label: "API Documentation" },
-  { href: "/docs/mcp", label: "MCP Server ↗" },
-  { href: "/account/api-keys", label: "My API keys" },
+  { href: "/pitch/", label: "Investor Pitch" },
+  { href: "/fonctionnement/", label: "How it works" },
+  { href: "/strategie/", label: "Sigma Strategy ★" },
+  { href: "/methodologie/", label: "Methodology" },
+  { href: "/performance/", label: "Performance & transparency" },
+  { href: "/docs/", label: "API Documentation" },
+  { href: "/docs/mcp/", label: "MCP Server ↗" },
+  { href: "/account/api-keys/", label: "My API keys" },
 ];
 
 export function AppFooter() {
@@ -75,7 +77,7 @@ export function AppFooter() {
           {/* Brand column */}
           <div className="app-footer-brand">
             <Link
-              href={locale === "fr" ? "/fr" : "/"}
+              href={locale === "fr" ? "/fr/" : "/"}
               className="app-footer-logo"
               aria-label="InsiderTrades home"
             >

@@ -23,7 +23,12 @@ const NAV_LABELS: Record<Locale, { home: string; companies: string; insiders: st
 
 function makeNav(locale: Locale) {
   const L = NAV_LABELS[locale];
-  const p = (path: string) => locale === "fr" ? (path === "/" ? "/fr" : `/fr${path}`) : path;
+  // Always include trailing slash to avoid middleware 301 redirects on client navigation
+  const p = (path: string) => {
+    if (path === "/") return locale === "fr" ? "/fr/" : "/";
+    const withSlash = path.endsWith("/") ? path : path + "/";
+    return locale === "fr" ? `/fr${withSlash}` : withSlash;
+  };
   return [
     {
       href: p("/"),
@@ -140,7 +145,7 @@ export function AppNav() {
         <div className="nav-inner">
 
           {/* Logo · full wordmark on desktop, mark-only on mobile */}
-          <Link href={locale === "fr" ? "/fr" : "/"} className="nav-logo" aria-label={locale === "fr" ? "InsiderTrades Sigma accueil" : "InsiderTrades Sigma home"}>
+          <Link href={locale === "fr" ? "/fr/" : "/"} className="nav-logo" aria-label={locale === "fr" ? "InsiderTrades Sigma accueil" : "InsiderTrades Sigma home"}>
             <span className="nav-logo-desktop">
               <LogoWordmark height={36} />
             </span>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { lp } from "@/lib/locale-path";
 import type { RecoItem } from "@/lib/recommendation-engine";
 
 function fmtPct(n: number | null | undefined, d = 1): string {
@@ -115,7 +116,7 @@ export function RecoCard({ item, rank, locale = "en" }: { item: RecoItem; rank: 
         <div className="tearsheet-company">
           <div className="flex items-center gap-3 flex-wrap">
             {companySlug !== "#" ? (
-              <Link href={`/company/${companySlug}`} className="tearsheet-company-name">
+              <Link href={lp(isFr, `/company/${companySlug}`)} className="tearsheet-company-name">
                 {item.company.name}
               </Link>
             ) : (
@@ -149,7 +150,7 @@ export function RecoCard({ item, rank, locale = "en" }: { item: RecoItem; rank: 
                 {item.allInsiders.slice(0, 3).map((ins, idx) => (
                   <span key={idx} style={{ fontSize: "0.72rem", color: "var(--tx-2)", fontWeight: 500 }}>
                     {ins.slug ? (
-                      <Link href={`/insider/${ins.slug}`} style={{ color: "inherit", textDecoration: "none" }}
+                      <Link href={lp(isFr, `/insider/${ins.slug}`)} style={{ color: "inherit", textDecoration: "none" }}
                         className="hover:underline">{ins.name ?? "·"}</Link>
                     ) : (ins.name ?? "·")}
                     {idx < Math.min(item.allInsiders.length, 3) - 1 && <span style={{ color: "var(--tx-4)", margin: "0 2px" }}>·</span>}
@@ -164,7 +165,7 @@ export function RecoCard({ item, rank, locale = "en" }: { item: RecoItem; rank: 
             // Single declaration: classic display
             <div className="tearsheet-insider">
               {item.insider.slug ? (
-                <Link href={`/insider/${item.insider.slug}`} style={{ fontWeight: 500, color: "inherit", textDecoration: "none" }}
+                <Link href={lp(isFr, `/insider/${item.insider.slug}`)} style={{ fontWeight: 500, color: "inherit", textDecoration: "none" }}
                   className="hover:underline transition-opacity hover:opacity-80">
                   {item.insider.name}
                 </Link>

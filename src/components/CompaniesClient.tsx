@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect, memo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { lp } from "@/lib/locale-path";
 import { CompanyLogo } from "./CompanyLogo";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -255,7 +256,7 @@ function CompanyCard({ company, q, isFr = false, numLocale = "en-GB" }: { compan
 
   return (
     <Link
-      href={`/company/${company.slug}`}
+      href={lp(isFr, `/company/${company.slug}`)}
       className="tearsheet"
       style={{
         textDecoration: "none",

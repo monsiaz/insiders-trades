@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { lp } from "@/lib/locale-path";
 
 /**
  * CompanyBadge · company logo + name, used everywhere a company is mentioned.
@@ -57,11 +59,14 @@ export function CompanyBadge({
     </span>
   );
 
+  const pathname = usePathname();
+  const isFr = pathname === "/fr" || pathname.startsWith("/fr/");
+
   if (!linked) return <span className={className}>{content}</span>;
 
   return (
     <Link
-      href={`/company/${slug}`}
+      href={lp(isFr, `/company/${slug}`)}
       className={className}
       style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}
     >

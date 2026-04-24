@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { lp } from "@/lib/locale-path";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -36,7 +37,7 @@ const SORT_LABELS_EN: Record<SortKey, string> = {
 
 // ── InsiderCard ────────────────────────────────────────────────────────────
 
-function InsiderCard({ insider }: { insider: InsiderRow }) {
+function InsiderCard({ insider, isFr = false }: { insider: InsiderRow; isFr?: boolean }) {
   const lastDecl = insider.lastDecl;
   const isSell = (lastDecl?.nature ?? "").toLowerCase().includes("cession");
   const stripeClass = isSell ? "sell" : lastDecl?.totalAmount ? "buy" : "";
@@ -49,7 +50,7 @@ function InsiderCard({ insider }: { insider: InsiderRow }) {
 
   return (
     <Link
-      href={`/insider/${insider.slug}`}
+      href={lp(isFr, `/insider/${insider.slug}`)}
       className="tearsheet"
       style={{ textDecoration: "none", padding: "16px 18px 14px 22px", gap: "10px" }}
     >
@@ -149,7 +150,7 @@ function InsiderCard({ insider }: { insider: InsiderRow }) {
           {insider.companies.map((c, i) => (
             <span key={c.slug}>
               {i === 0 ? " · " : " · "}
-              <a href={`/company/${c.slug}`}
+              <a href={lp(isFr, `/company/${c.slug}`)}
                 onClick={(e) => e.stopPropagation()}
                 style={{ color: "var(--tx-3)", textDecoration: "none" }}
                 className="hover:underline hover:text-[var(--tx-2)]">
@@ -200,7 +201,7 @@ function InsiderCard({ insider }: { insider: InsiderRow }) {
 
 const MemoInsiderCard = memo(
   InsiderCard,
-  (prev, next) => prev.insider.id === next.insider.id
+  (prev, next) => prev.insider.id === next.insider.id && prev.isFr === next.isFr
 );
 
 // ── Main ───────────────────────────────────────────────────────────────────
@@ -421,7 +422,7 @@ export function InsidersClient({ insiders, locale = "en" }: { insiders: InsiderR
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.slice(0, visibleCount).map((insider) => (
-              <MemoInsiderCard key={insider.id} insider={insider} />
+              <MemoInsiderCard key={insider.id} insider={insider} isFr={isFr} />
             ))}
           </div>
           {visibleCount < filtered.length && (

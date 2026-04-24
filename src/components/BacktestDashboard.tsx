@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
+import { lp } from "@/lib/locale-path";
 import Link from "next/link";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -761,7 +762,7 @@ function TopTradesTable({ trades, isFr = false }: { trades: StatsData["topTrades
                 <td className="py-2 text-muted text-xs pr-1">{i + 1}</td>
                 <td className="py-2 pr-2">
                   <Link
-                    href={`/company/${t.company.slug}`}
+                    href={lp(isFr, `/company/${t.company.slug}`)}
                     className="font-medium text-primary hover:text-mint transition-colors text-sm"
                   >
                     {t.company.name.length > 18 ? t.company.name.slice(0, 17) + "…" : t.company.name}
@@ -1573,7 +1574,7 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
                   {data.sellStats.topSellsTrades.map((t, i) => (
                     <tr key={i} className="border-b border-soft/50 hover:bg-surface/50">
                       <td className="py-2 font-medium text-primary max-w-[160px] truncate">
-                        <a href={`/company/${t.company.slug}`} className="hover:text-mint">{t.company.name}</a>
+                        <a href={lp(isFr, `/company/${t.company.slug}`)} className="hover:text-mint">{t.company.name}</a>
                       </td>
                       <td className="py-2 text-xs text-secondary max-w-[140px] truncate">{t.insiderName ?? "·"}</td>
                       <td className="py-2 text-xs text-secondary">{t.role}</td>

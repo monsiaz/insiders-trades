@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, FormEvent } from "react";
 import Link from "next/link";
+import { lp } from "@/lib/locale-path";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import Papa from "papaparse";
 import { BarChart2, Bell } from "lucide-react";
@@ -945,7 +946,7 @@ function InsiderMatchSection({ positions, locale = "en" }: { positions: Position
                     {d.transactionDate && <span className="text-[var(--tx-3)]">{new Date(d.transactionDate).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short" })}</span>}
                     {d.totalAmount && <span className="text-[var(--tx-2)]">{d.totalAmount >= 1e6 ? `${(d.totalAmount / 1e6).toFixed(1)}M€` : `${(d.totalAmount / 1e3).toFixed(0)}k€`}</span>}
                     {d.signalScore != null && <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${d.signalScore >= 65 ? "bg-pos-soft tx-pos" : "bg-[var(--bg-raised)] text-[var(--tx-2)]"}`}>{Math.round(d.signalScore)}</span>}
-                    <Link href={`/company/${d.company.slug}`} className="tx-brand hover:tx-brand transition-colors">→</Link>
+                    <Link href={lp(locale === "fr", `/company/${d.company.slug}`)} className="tx-brand hover:tx-brand transition-colors">→</Link>
                   </div>
                 </div>
               ))}

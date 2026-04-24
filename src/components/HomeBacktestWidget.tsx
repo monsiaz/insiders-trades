@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { lp } from "@/lib/locale-path";
 
 interface BacktestSnapshot {
   total: number;
@@ -87,7 +88,7 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
           )}
         </div>
         <Link
-          href="/backtest/"
+          href={lp(isFr, "/backtest/")}
           className="btn btn-glass flex-shrink-0 self-start"
           style={{ fontSize: "0.78rem", padding: "8px 14px", borderRadius: "8px" }}
         >

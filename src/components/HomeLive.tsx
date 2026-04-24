@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { lp } from "@/lib/locale-path";
 import { DeclarationCard } from "./DeclarationCard";
 import { CompanyAvatar } from "./CompanyBadge";
 import { FileText, Building2, User, TrendingUp, TrendingDown } from "lucide-react";
@@ -273,7 +274,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
               <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">{isFr ? "Sociétés les + actives" : "Most active companies"}</h2>
               <p className="text-xs text-[var(--tx-3)] mt-0.5">{isFr ? "Volume déclaré, 90 derniers jours" : "Volume declared, last 90 days"}</p>
             </div>
-            <Link href="/companies/" className="text-xs tx-brand hover:tx-brand transition-colors font-medium">
+            <Link href={lp(isFr, "/companies/")} className="text-xs tx-brand hover:tx-brand transition-colors font-medium">
               {isFr ? "Voir tout →" : "See all →"}
             </Link>
           </div>
@@ -281,7 +282,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
             {topCompanies.map((row, i) => (
               <li key={row.companyId}>
                 <Link
-                  href={row.company ? `/company/${row.company.slug}` : "#"}
+                  href={row.company ? lp(isFr, `/company/${row.company.slug}`) : "#"}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors group"
                   style={{ minHeight: "44px" }}
                 >
@@ -316,7 +317,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
               <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">{isFr ? "Dirigeants les + actifs" : "Most active insiders"}</h2>
               <p className="text-xs text-[var(--tx-3)] mt-0.5">{isFr ? "Volume total déclaré, tous temps" : "Total volume declared, all time"}</p>
             </div>
-            <Link href="/insiders/" className="text-xs tx-brand hover:tx-brand transition-colors font-medium">
+            <Link href={lp(isFr, "/insiders/")} className="text-xs tx-brand hover:tx-brand transition-colors font-medium">
               {isFr ? "Voir tout →" : "See all →"}
             </Link>
           </div>
@@ -324,7 +325,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
             {topInsiders.map((row, i) => (
               <li key={row.insiderName}>
                 <Link
-                  href={row.insider ? `/insider/${row.insider.slug}` : "#"}
+                  href={row.insider ? lp(isFr, `/insider/${row.insider.slug}`) : "#"}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors group"
                   style={{ minHeight: "44px" }}
                 >
@@ -355,7 +356,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
               {isFr ? "Dernières transactions" : "Latest transactions"}
             </h2>
             <Link
-              href="/companies/"
+              href={lp(isFr, "/companies/")}
               className="text-sm tx-brand hover:tx-brand transition-colors font-medium"
             >
               {isFr ? "Toutes les sociétés →" : "All companies →"}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { DeclarationType } from "@prisma/client";
+import { lp } from "@/lib/locale-path";
 import { CompanyAvatar } from "@/components/CompanyBadge";
 import { translateRole } from "@/lib/i18n";
 
@@ -145,7 +146,7 @@ export function DeclarationCard({ declaration, showCompany = true, locale = "en"
 
             {showCompany && (
               <Link
-                href={`/company/${declaration.company.slug}`}
+                href={lp(isFr, `/company/${declaration.company.slug}`)}
                 style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px" }}
               >
                 <CompanyAvatar name={declaration.company.name} logoUrl={declaration.company.logoUrl} size="sm" />
@@ -166,7 +167,7 @@ export function DeclarationCard({ declaration, showCompany = true, locale = "en"
                 {declaration.insiderName.charAt(0)}
               </div>
               {declaration.insider?.slug ? (
-                <Link href={`/insider/${declaration.insider.slug}`}
+                <Link href={lp(isFr, `/insider/${declaration.insider.slug}`)}
                   className="text-sm font-medium transition-colors hover:underline truncate min-w-0"
                   style={{ color: "var(--tx-1)" }}>
                   {declaration.insiderName}

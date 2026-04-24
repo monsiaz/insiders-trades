@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { lp } from "@/lib/locale-path";
 import {
   LineChart,
   Line,
@@ -84,7 +85,7 @@ export function CompanyBacktestWidget({ companyId, locale = "en" }: { companyId:
               : `${data.count} purchase${data.count > 1 ? "s" : ""} tracked · ${yearsCount} yr${yearsCount > 1 ? "s" : ""} of data`}
           </p>
         </div>
-        <Link href="/backtest/" style={{ fontSize: "0.75rem", color: "var(--c-indigo-2)", textDecoration: "none" }}>
+        <Link href={lp(isFr, "/backtest/")} style={{ fontSize: "0.75rem", color: "var(--c-indigo-2)", textDecoration: "none" }}>
           {isFr ? "Backtesting →" : "Backtesting →"}
         </Link>
       </div>

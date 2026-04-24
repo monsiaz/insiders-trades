@@ -13,13 +13,83 @@ export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
 
+/**
+ * One consolidated, 1h-cached fetch for everything the insider page needs
+ * except non-default pagination. Shared with generateMetadata so no duplicate
+ * DB round-trip is made for the same slug.
+ */
+const getInsiderFullCached = (slug: string) =>
+  unstable_cache(
+    async () => {
+      const insider = await prisma.insider.findUnique({
+        where: { slug },
+        include: {
+          companies: { include: { company: { select: { name: true, slug: true } } } },
+          _count: { select: { declarations: true } },
+        },
+      });
+      if (!insider) return null;
+
+      const DECL_SELECT = {
+        id: true, amfId: true, type: true, pubDate: true, link: true, description: true,
+        insiderName: true, insiderFunction: true, transactionNature: true,
+        instrumentType: true, isin: true, unitPrice: true, volume: true,
+        totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
+        pdfParsed: true, signalScore: true, pctOfMarketCap: true, pctOfInsiderFlow: true,
+        company: { select: { name: true, slug: true } },
+        insider: { select: { name: true, slug: true } },
+      } as const;
+
+      const [buyAgg, sellAgg, defaultDeclarations, defaultTotalCount] = await Promise.all([
+        prisma.declaration.aggregate({
+          where: { insiderId: insider.id, transactionNature: { contains: "Acquisition", mode: "insensitive" } },
+          _sum: { totalAmount: true }, _count: true,
+        }),
+        prisma.declaration.aggregate({
+          where: { insiderId: insider.id, transactionNature: { contains: "Cession", mode: "insensitive" } },
+          _sum: { totalAmount: true }, _count: true,
+        }),
+        prisma.declaration.findMany({
+          where: { insiderId: insider.id },
+          orderBy: { pubDate: "desc" },
+          take: 25, skip: 0,
+          select: DECL_SELECT,
+        }),
+        prisma.declaration.count({ where: { insiderId: insider.id } }),
+      ]);
+
+      const [relatedCompanies, relatedInsiders] = await Promise.all([
+        insider.relatedCompanySlugs?.length
+          ? prisma.company.findMany({
+              where: { slug: { in: insider.relatedCompanySlugs } },
+              select: { slug: true, name: true, logoUrl: true, sectorTag: true, sectorTagEn: true },
+              take: 6,
+            })
+          : Promise.resolve([] as Array<{ slug: string; name: string; logoUrl: string | null; sectorTag: string | null; sectorTagEn: string | null }>),
+        insider.relatedInsiderSlugs?.length
+          ? prisma.insider.findMany({
+              where: { slug: { in: insider.relatedInsiderSlugs } },
+              select: { slug: true, name: true, primaryRole: true },
+              take: 6,
+            })
+          : Promise.resolve([] as Array<{ slug: string; name: string; primaryRole: string | null }>),
+      ]);
+
+      return {
+        insider, buyAgg, sellAgg,
+        defaultDeclarations, defaultTotalCount,
+        relatedCompanies, relatedInsiders,
+      };
+    },
+    [`insider-full-v2-${slug}`],
+    { revalidate: 3600, tags: [`insider-${slug}`] }
+  )();
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const insider = await prisma.insider.findUnique({
-    where: { slug },
-    select: { name: true, primaryRole: true, descriptionEn: true, descriptionFr: true },
-  });
-  if (!insider) return {};
+  const cached = await getInsiderFullCached(slug);
+  if (!cached) return {};
+  const { insider } = cached;
   const hdrs = await headers();
   const metaPath = hdrs.get("x-original-path") ?? "/";
   const isFr = metaPath === "/fr" || metaPath.startsWith("/fr/");
@@ -28,7 +98,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     ?? (isFr
       ? `Suivez les déclarations d'initiés de ${insider.name}.`
       : `Track insider declarations by ${insider.name} on InsiderTrades Sigma.`);
-  // Canonical and hreflang are handled globally by layout.tsx — no alternates here to avoid duplicates.
   return {
     title,
     description: desc,
@@ -41,37 +110,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     },
   };
 }
-
-const getInsiderData = (slug: string) =>
-  unstable_cache(
-    async () => {
-      const insider = await prisma.insider.findUnique({
-        where: { slug },
-        include: {
-          companies: { include: { company: { select: { name: true, slug: true } } } },
-          _count: { select: { declarations: true } },
-        },
-      });
-      if (!insider) return null;
-
-      const [buyAgg, sellAgg] = await Promise.all([
-        prisma.declaration.aggregate({
-          where: { insiderId: insider.id, transactionNature: { contains: "Acquisition", mode: "insensitive" } },
-          _sum: { totalAmount: true },
-          _count: true,
-        }),
-        prisma.declaration.aggregate({
-          where: { insiderId: insider.id, transactionNature: { contains: "Cession", mode: "insensitive" } },
-          _sum: { totalAmount: true },
-          _count: true,
-        }),
-      ]);
-
-      return { insider, buyAgg, sellAgg };
-    },
-    [`insider-data-${slug}`],
-    { revalidate: 300, tags: [`insider-${slug}`] }
-  )();
 
 // Pre-build the top 50 most-active insider pages
 export async function generateStaticParams() {
@@ -105,55 +143,50 @@ export default async function InsiderPage({ params, searchParams }: Props) {
   const locale = (originalPath === "/fr" || originalPath.startsWith("/fr/")) ? "fr" : "en";
   const isFr = locale === "fr";
 
-  const cached = await getInsiderData(slug);
+  const cached = await getInsiderFullCached(slug);
   if (!cached) notFound();
-  const { insider, buyAgg, sellAgg } = cached;
+  const {
+    insider, buyAgg, sellAgg,
+    defaultDeclarations, defaultTotalCount,
+    relatedCompanies: relatedCompaniesData,
+    relatedInsiders:  relatedInsidersData,
+  } = cached;
 
-  // Fetch SEO content + related entities
-  const insiderSeo = await prisma.insider.findUnique({
-    where: { slug },
-    select: {
-      descriptionFr: true, descriptionEn: true,
-      primaryRole: true,
-      relatedCompanySlugs: true, relatedInsiderSlugs: true,
-    },
-  });
+  // SEO fields are now on the insider record itself (fetched in the cached call)
+  const insiderSeo = {
+    descriptionFr: insider.descriptionFr,
+    descriptionEn: insider.descriptionEn,
+    primaryRole: insider.primaryRole,
+  };
 
-  const [relatedCompaniesData, relatedInsidersData] = await Promise.all([
-    insiderSeo?.relatedCompanySlugs?.length
-      ? prisma.company.findMany({
-          where: { slug: { in: insiderSeo.relatedCompanySlugs } },
-          select: { slug: true, name: true, logoUrl: true, sectorTag: true, sectorTagEn: true },
-          take: 6,
-        })
-      : Promise.resolve([]),
-    insiderSeo?.relatedInsiderSlugs?.length
-      ? prisma.insider.findMany({
-          where: { slug: { in: insiderSeo.relatedInsiderSlugs } },
-          select: { slug: true, name: true, primaryRole: true },
-          take: 6,
-        })
-      : Promise.resolve([]),
-  ]);
+  // Fast path: page 1 → reuse cached payload (0 DB round-trips on warm cache).
+  // Slow path: paginated → hit DB.
+  const isDefaultPage = pageNum === 1;
+  let declarations: typeof defaultDeclarations;
+  let totalCount: number;
 
-  const [declarations, totalCount] = await Promise.all([
-    prisma.declaration.findMany({
-      where: { insiderId: insider.id },
-      orderBy: { pubDate: "desc" },
-      take: limit,
-      skip: offset,
-      select: {
-        id: true, amfId: true, type: true, pubDate: true, link: true, description: true,
-        insiderName: true, insiderFunction: true, transactionNature: true,
-        instrumentType: true, isin: true, unitPrice: true, volume: true,
-        totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
-        pdfParsed: true, signalScore: true, pctOfMarketCap: true, pctOfInsiderFlow: true,
-        company: { select: { name: true, slug: true } },
-        insider: { select: { name: true, slug: true } },
-      },
-    }),
-    prisma.declaration.count({ where: { insiderId: insider.id } }),
-  ]);
+  if (isDefaultPage) {
+    declarations = defaultDeclarations;
+    totalCount   = defaultTotalCount;
+  } else {
+    [declarations, totalCount] = await Promise.all([
+      prisma.declaration.findMany({
+        where: { insiderId: insider.id },
+        orderBy: { pubDate: "desc" },
+        take: limit, skip: offset,
+        select: {
+          id: true, amfId: true, type: true, pubDate: true, link: true, description: true,
+          insiderName: true, insiderFunction: true, transactionNature: true,
+          instrumentType: true, isin: true, unitPrice: true, volume: true,
+          totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
+          pdfParsed: true, signalScore: true, pctOfMarketCap: true, pctOfInsiderFlow: true,
+          company: { select: { name: true, slug: true } },
+          insider: { select: { name: true, slug: true } },
+        },
+      }),
+      prisma.declaration.count({ where: { insiderId: insider.id } }),
+    ]);
+  }
 
   const totalPages = Math.ceil(totalCount / limit);
   const initials = insider.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();

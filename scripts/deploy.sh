@@ -44,21 +44,45 @@ sleep 8
 
 LIVE_SHA=$(curl -sf "${PROD_URL}/api/version/" 2>/dev/null | grep -o '"sha":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
 
-# Ping heavy server pages in background to warm up Vercel cold-starts.
-# These pages use DB queries on first call — pre-warm them so users don't see errors.
+# Ping heavy server pages in background to warm up Vercel cold-starts and
+# prime the unstable_cache layer. These pages are the most expensive to render
+# fresh — hitting them now means real visitors get warm caches.
 WARMUP_PAGES=(
+  "${PROD_URL}/"
+  "${PROD_URL}/fr/"
   "${PROD_URL}/strategie/"
   "${PROD_URL}/performance/"
   "${PROD_URL}/backtest/"
   "${PROD_URL}/fonctionnement/"
   "${PROD_URL}/pitch/"
+  "${PROD_URL}/companies/"
+  "${PROD_URL}/insiders/"
+  "${PROD_URL}/fr/companies/"
+  "${PROD_URL}/fr/insiders/"
+  "${PROD_URL}/recommendations/"
 )
 echo "   Warming up ${#WARMUP_PAGES[@]} pages..."
 for page in "${WARMUP_PAGES[@]}"; do
   curl -sf -o /dev/null "$page" 2>/dev/null &
 done
 wait
-echo "   ✓ Warmup complete"
+
+# Warm up the top entity pages (companies + insiders) so the first real
+# visitor hits a warm unstable_cache. We read the sitemap which is already
+# ordered by declaration count (most popular first) — no hardcoded list.
+echo "   Warming up top entity pages..."
+TOP_COMPANY_URLS=$(curl -sf "${PROD_URL}/sitemap-companies.xml" 2>/dev/null \
+  | grep -oE "<loc>[^<]*/company/[^<]*</loc>" | sed -E 's#<loc>(.*)</loc>#\1#' | head -15 || true)
+TOP_INSIDER_URLS=$(curl -sf "${PROD_URL}/sitemap-insiders.xml" 2>/dev/null \
+  | grep -oE "<loc>[^<]*/insider/[^<]*</loc>" | sed -E 's#<loc>(.*)</loc>#\1#' | head -15 || true)
+
+WARMED_ENTITIES=0
+for url in $TOP_COMPANY_URLS $TOP_INSIDER_URLS; do
+  curl -sf -o /dev/null "$url" 2>/dev/null &
+  WARMED_ENTITIES=$((WARMED_ENTITIES + 1))
+done
+wait
+echo "   ✓ Warmup complete (${WARMED_ENTITIES} entity pages primed)"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

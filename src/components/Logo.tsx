@@ -2,33 +2,36 @@
  * Logo system — InsiderTrades Sigma
  *
  * All variants are pure SVG inline components (no external image files).
- * The mark uses the brand Sigma (Σ) path in navy-blue + a pulse ECG line in cyan.
- * Colors are compatible with both light and dark themes without any CSS tricks:
- *   – Sigma:  #0B5CFF  (vivid blue  — readable on both white & dark bg)
- *   – Pulse:  #14D9E6  (cyan        — readable on both white & dark bg)
+ *
+ * Colour scheme — theme-aware via CSS custom properties (no JS required):
+ *   Light mode  →  Σ = var(--tx-1) near-black #0A0C10
+ *                  Pulse = var(--gold) muted gold #B8955A
+ *   Dark mode   →  Σ = var(--tx-1) warm white #F0EDE8
+ *                  Pulse = var(--gold) gold #B8955A  (stays gold, pops on dark bg)
+ *
+ * SVG `stroke` supports CSS var() in all modern browsers — no client component
+ * or JS context needed.
  *
  * Exports:
  *   SigmaLogoMark   – standalone icon SVG
- *   LogoMark        – alias for SigmaLogoMark (compat)
- *   LogoWordmark    – icon + "InsiderTrades" text lockup (nav / footer)
- *   Logo            – alias for LogoWordmark (compat)
- *   LogoLockup      – alias for LogoWordmark (compat)
+ *   LogoMark        – alias (compat)
+ *   LogoWordmark    – icon + "InsiderTrades / SIGMA" lockup (nav / footer)
+ *   Logo            – alias (compat)
+ *   LogoLockup      – alias (compat)
  */
-
-// ─── Brand colours (same on light & dark) ─────────────────────────────────
-const SIGMA_BLUE = "#0B5CFF";
-const PULSE_CYAN = "#14D9E6";
 
 // ─── Core SVG icon ────────────────────────────────────────────────────────
 
 /**
  * The Sigma Σ + pulse ECG mark at any size.
- * Pass custom `stroke` / `pulse` to override brand colours (e.g. monochrome).
+ *
+ * By default uses CSS vars so it adapts to light / dark theme automatically.
+ * Pass explicit hex strings to override (e.g. for OG images or exports).
  */
 export function SigmaLogoMark({
   size = 32,
-  stroke = SIGMA_BLUE,
-  pulse = PULSE_CYAN,
+  stroke = "var(--tx-1)",   // near-black in light, warm white in dark
+  pulse  = "var(--gold)",   // brand gold in both themes
 }: {
   size?: number;
   stroke?: string;
@@ -44,7 +47,7 @@ export function SigmaLogoMark({
       aria-hidden="true"
       style={{ flexShrink: 0, display: "block" }}
     >
-      {/* Sigma Σ path */}
+      {/* Sigma Σ path — adapts to theme via var(--tx-1) */}
       <path
         d="M286 96H160C130 96 115 132 136 154L239 264L138 378C118 401 134 436 164 436H302"
         stroke={stroke}
@@ -52,7 +55,7 @@ export function SigmaLogoMark({
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      {/* Pulse / ECG line */}
+      {/* Pulse / ECG line — always gold */}
       <path
         d="M286 264H326L350 374L386 190L412 300H454"
         stroke={pulse}
@@ -121,7 +124,7 @@ export function LogoWordmark({
             fontSize: subPx,
             letterSpacing: "0.18em",
             textTransform: "uppercase",
-            color: PULSE_CYAN,
+            color: "var(--gold)",
             marginTop: "3px",
             lineHeight: 1,
           }}

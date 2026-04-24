@@ -24,6 +24,10 @@ interface Position {
   alertAbove: number | null;
   notes: string | null;
   fromApp: boolean;
+  assetType?: string | null;
+  annualYield?: number | null;
+  yieldStartDate?: string | null;
+  yieldEndDate?: string | null;
 }
 
 interface User {
@@ -213,8 +217,12 @@ function PnlBadge({ pct }: { pct: number | null }) {
 interface FormState {
   name: string; isin: string; quantity: string; buyingPrice: string;
   alertBelow: string; alertAbove: string; notes: string;
+  assetType: string; annualYield: string; yieldStartDate: string; yieldEndDate: string;
 }
-const EMPTY_FORM: FormState = { name: "", isin: "", quantity: "", buyingPrice: "", alertBelow: "", alertAbove: "", notes: "" };
+const EMPTY_FORM: FormState = {
+  name: "", isin: "", quantity: "", buyingPrice: "", alertBelow: "", alertAbove: "", notes: "",
+  assetType: "STOCK", annualYield: "", yieldStartDate: "", yieldEndDate: "",
+};
 
 export function PortfolioDashboard({ user, locale = "en" }: { user: User; locale?: Locale }) {
   const T = DICT[locale];
@@ -257,10 +265,19 @@ export function PortfolioDashboard({ user, locale = "en" }: { user: User; locale
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   function startEdit(pos: Position) {
+    const isCrowd = pos.assetType === "CROWDFUNDING";
     setForm({
-      name: pos.name, isin: pos.isin ?? "", quantity: String(pos.quantity),
-      buyingPrice: String(pos.buyingPrice), alertBelow: String(pos.alertBelow ?? ""),
-      alertAbove: String(pos.alertAbove ?? ""), notes: pos.notes ?? "",
+      name: pos.name,
+      isin: pos.isin ?? "",
+      quantity: isCrowd ? "" : String(pos.quantity),
+      buyingPrice: isCrowd ? String(pos.totalInvested) : String(pos.buyingPrice),
+      alertBelow: String(pos.alertBelow ?? ""),
+      alertAbove: String(pos.alertAbove ?? ""),
+      notes: pos.notes ?? "",
+      assetType: pos.assetType ?? "STOCK",
+      annualYield: pos.annualYield != null ? String(pos.annualYield) : "",
+      yieldStartDate: pos.yieldStartDate ? pos.yieldStartDate.slice(0, 10) : "",
+      yieldEndDate: pos.yieldEndDate ? pos.yieldEndDate.slice(0, 10) : "",
     });
     setEditId(pos.id);
     setTab("add");
@@ -275,20 +292,28 @@ export function PortfolioDashboard({ user, locale = "en" }: { user: User; locale
   async function submitPosition(e: FormEvent) {
     e.preventDefault();
     setFormError("");
-    if (!form.name || !form.quantity || !form.buyingPrice) {
+    const isCrowd = form.assetType === "CROWDFUNDING";
+    if (!form.name || !form.buyingPrice || (!isCrowd && !form.quantity)) {
       setFormError(T.required); return;
     }
     setFormLoading(true);
     try {
-      const body = {
+      const body: Record<string, unknown> = {
         id: editId,
-        name: form.name, isin: form.isin,
-        quantity: parseFloat(form.quantity.replace(",", ".")),
+        name: form.name,
+        isin: form.isin || null,
+        assetType: form.assetType,
         buyingPrice: parseFloat(form.buyingPrice.replace(",", ".")),
         alertBelow: form.alertBelow ? parseFloat(form.alertBelow.replace(",", ".")) : null,
         alertAbove: form.alertAbove ? parseFloat(form.alertAbove.replace(",", ".")) : null,
         notes: form.notes,
       };
+      if (!isCrowd) body.quantity = parseFloat(form.quantity.replace(",", "."));
+      if (isCrowd) {
+        body.annualYield = form.annualYield ? parseFloat(form.annualYield.replace(",", ".")) : null;
+        body.yieldStartDate = form.yieldStartDate || null;
+        body.yieldEndDate = form.yieldEndDate || null;
+      }
       const method = editId ? "PUT" : "POST";
       const res = await fetch("/api/portfolio/positions", {
         method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
@@ -348,7 +373,7 @@ export function PortfolioDashboard({ user, locale = "en" }: { user: User; locale
   const totalValue = positions.reduce((s, p) => s + (p.currentValue ?? p.totalInvested), 0);
   const totalPnl = totalValue - totalInvested;
   const totalPnlPct = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
-  const priced = positions.filter((p) => p.currentPrice != null);
+  const priced = positions.filter((p) => p.currentPrice != null || p.assetType === "CROWDFUNDING");
   const gainers = positions.filter((p) => (p.pnlPct ?? 0) > 0).length;
   const losers = positions.filter((p) => (p.pnlPct ?? 0) < 0).length;
 
@@ -528,8 +553,19 @@ export function PortfolioDashboard({ user, locale = "en" }: { user: User; locale
                           return (
                             <tr key={pos.id} className={`hover:bg-white/3 transition-colors ${alertTriggered ? "bg-amber-500/5" : ""}`}>
                               <td className="px-4 py-3">
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
                                   <span className="font-medium text-[var(--tx-1)] text-sm">{pos.name}</span>
+                                  {pos.assetType === "CROWDFUNDING" && (
+                                    <span style={{
+                                      display: "inline-flex", alignItems: "center", gap: "3px",
+                                      padding: "1px 6px", borderRadius: "4px",
+                                      fontSize: "0.58rem", fontWeight: 800, letterSpacing: "0.05em",
+                                      background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)",
+                                      color: "rgb(52,211,153)", flexShrink: 0,
+                                    }}>
+                                      🏗️ CROWD
+                                    </span>
+                                  )}
                                   {pos.fromApp && (
                                     <span style={{
                                       display: "inline-flex", alignItems: "center", gap: "3px",
@@ -547,11 +583,32 @@ export function PortfolioDashboard({ user, locale = "en" }: { user: User; locale
                                 </div>
                                 {pos.isin && <div className="text-[11px] text-[var(--tx-3)] font-mono">{pos.isin}</div>}
                                 {pos.yahooSymbol && <div className="text-[11px] tx-brand">{pos.yahooSymbol}</div>}
+                                {pos.assetType === "CROWDFUNDING" && pos.annualYield != null && (
+                                  <div className="text-[11px] text-emerald-400 font-semibold">{pos.annualYield}% / an</div>
+                                )}
                               </td>
-                              <td className="px-4 py-3 text-right tabular-nums text-[var(--tx-2)] text-xs">{fmt(pos.quantity, 2, locale)}</td>
-                              <td className="px-4 py-3 text-right tabular-nums text-[var(--tx-2)] text-xs">{fmtEur(pos.buyingPrice, 2, locale)}</td>
+                              <td className="px-4 py-3 text-right tabular-nums text-[var(--tx-2)] text-xs">
+                                {pos.assetType === "CROWDFUNDING" ? (
+                                  pos.yieldEndDate ? (
+                                    <span className="text-[11px] text-[var(--tx-3)]">
+                                      {locale === "fr" ? "Fin" : "End"} {new Date(pos.yieldEndDate).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", { month: "short", year: "2-digit" })}
+                                    </span>
+                                  ) : <span className="text-[var(--tx-3)]">·</span>
+                                ) : fmt(pos.quantity, 2, locale)}
+                              </td>
+                              <td className="px-4 py-3 text-right tabular-nums text-[var(--tx-2)] text-xs">
+                                {pos.assetType === "CROWDFUNDING" ? (
+                                  <span className="text-emerald-400 text-[11px] font-semibold">
+                                    {fmtEur(pos.totalInvested, 0, locale)}
+                                  </span>
+                                ) : fmtEur(pos.buyingPrice, 2, locale)}
+                              </td>
                               <td className="px-4 py-3 text-right tabular-nums text-xs">
-                                {pos.currentPrice != null ? (
+                                {pos.assetType === "CROWDFUNDING" ? (
+                                  pos.pnl != null ? (
+                                    <span className="text-emerald-400">+{fmtEur(pos.pnl, 2, locale)}</span>
+                                  ) : <span className="text-[var(--tx-3)]">·</span>
+                                ) : pos.currentPrice != null ? (
                                   <span className="text-[var(--tx-1)]">{fmtEur(pos.currentPrice, 2, locale)}</span>
                                 ) : <span className="text-[var(--tx-3)]">·</span>}
                               </td>
@@ -560,7 +617,7 @@ export function PortfolioDashboard({ user, locale = "en" }: { user: User; locale
                               </td>
                               <td className="px-4 py-3 text-right">
                                 <PnlBadge pct={pos.pnlPct} />
-                                {pos.pnl != null && <div className="text-[11px] tabular-nums text-[var(--tx-3)] mt-0.5">{fmtEur(pos.pnl, 0, locale)}</div>}
+                                {pos.pnl != null && pos.assetType !== "CROWDFUNDING" && <div className="text-[11px] tabular-nums text-[var(--tx-3)] mt-0.5">{fmtEur(pos.pnl, 0, locale)}</div>}
                               </td>
                               <td className="px-4 py-3 text-center">
                                 {alertTriggered ? <Bell size={13} className="tx-gold" /> :
@@ -624,49 +681,126 @@ export function PortfolioDashboard({ user, locale = "en" }: { user: User; locale
             <h2 className="text-base font-semibold text-[var(--tx-1)] mb-5">{T.formTitle(!!editId)}</h2>
             <form onSubmit={submitPosition} className="space-y-4">
               {formError && <div className="bg-neg-soft border bd-neg rounded-xl px-4 py-3 text-sm tx-neg">{formError}</div>}
+
+              {/* Asset type selector */}
+              {!editId && (
+                <div className="flex gap-2 p-1 bg-white/5 rounded-xl">
+                  {(["STOCK", "CROWDFUNDING"] as const).map((t) => (
+                    <button key={t} type="button"
+                      onClick={() => setForm((f) => ({ ...f, assetType: t }))}
+                      className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${form.assetType === t ? "bg-indigo-500/30 text-indigo-300 border border-indigo-500/40" : "text-[var(--tx-3)] hover:text-[var(--tx-2)]"}`}>
+                      {t === "STOCK" ? (locale === "fr" ? "📈 Action / ETF" : "📈 Stock / ETF") : (locale === "fr" ? "🏗️ Crowdfunding" : "🏗️ Crowdfunding")}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
                   <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldName}</label>
                   <input type="text" required value={form.name} onChange={setF("name")}
                     className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
-                    placeholder="ex: NANOBIOTIX" />
+                    placeholder={form.assetType === "CROWDFUNDING" ? "ex: BAUER BOX - PHASE 2" : "ex: NANOBIOTIX"} />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldIsin}</label>
-                  <input type="text" value={form.isin} onChange={setF("isin")}
-                    className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
-                    placeholder="FR0011341205" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldQty}</label>
-                  <input type="text" required value={form.quantity} onChange={setF("quantity")}
-                    className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
-                    placeholder="114" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldAvgCost}</label>
-                  <input type="text" required value={form.buyingPrice} onChange={setF("buyingPrice")}
-                    className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
-                    placeholder="3.54" />
-                </div>
+
+                {form.assetType === "STOCK" && (
+                  <>
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldIsin}</label>
+                      <input type="text" value={form.isin} onChange={setF("isin")}
+                        className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
+                        placeholder="FR0011341205" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldQty}</label>
+                      <input type="text" required value={form.quantity} onChange={setF("quantity")}
+                        className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
+                        placeholder="114" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldAvgCost}</label>
+                      <input type="text" required value={form.buyingPrice} onChange={setF("buyingPrice")}
+                        className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
+                        placeholder="3.54" />
+                    </div>
+                  </>
+                )}
+
+                {form.assetType === "CROWDFUNDING" && (
+                  <>
+                    <div className="col-span-2">
+                      <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">
+                        {locale === "fr" ? "Capital investi (€) *" : "Invested capital (€) *"}
+                      </label>
+                      <input type="text" required value={form.buyingPrice} onChange={setF("buyingPrice")}
+                        className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
+                        placeholder="5000" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">
+                        {locale === "fr" ? "Rendement annuel (%) *" : "Annual yield (%) *"}
+                      </label>
+                      <input type="text" required value={form.annualYield} onChange={setF("annualYield")}
+                        className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500/50 transition-all"
+                        placeholder="9.75" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">
+                        {locale === "fr" ? "Date de début *" : "Start date *"}
+                      </label>
+                      <input type="date" required value={form.yieldStartDate} onChange={setF("yieldStartDate")}
+                        className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all" />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">
+                        {locale === "fr" ? "Date de fin prévisionnelle (optionnel)" : "Expected end date (optional)"}
+                      </label>
+                      <input type="date" value={form.yieldEndDate} onChange={setF("yieldEndDate")}
+                        className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500/50 transition-all" />
+                    </div>
+                    {/* Accrued interest preview */}
+                    {form.buyingPrice && form.annualYield && form.yieldStartDate && (
+                      <div className="col-span-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3 text-sm">
+                        {(() => {
+                          const capital = parseFloat(form.buyingPrice.replace(",", ".")) || 0;
+                          const yield_ = parseFloat(form.annualYield.replace(",", ".")) || 0;
+                          const days = (Date.now() - new Date(form.yieldStartDate).getTime()) / 86400_000;
+                          const accrued = Math.round(capital * (yield_ / 100) * (days / 365) * 100) / 100;
+                          const total = Math.round((capital + accrued) * 100) / 100;
+                          return (
+                            <span className="text-emerald-400">
+                              {locale === "fr"
+                                ? `Intérêts courus : +${accrued.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} € · Valeur actuelle : ${total.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`
+                                : `Accrued interest: +${accrued.toFixed(2)} € · Current value: ${total.toFixed(2)} €`}
+                            </span>
+                          );
+                        })()}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
-              <div className="border-t border-white/8 pt-4">
-                <p className="text-xs text-[var(--tx-3)] mb-3">{T.alertsTitle}</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.alertBelow2}</label>
-                    <input type="text" value={form.alertBelow} onChange={setF("alertBelow")}
-                      className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500/50 transition-all"
-                      placeholder="20.00" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.alertAbove2}</label>
-                    <input type="text" value={form.alertAbove} onChange={setF("alertAbove")}
-                      className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500/50 transition-all"
-                      placeholder="50.00" />
+
+              {form.assetType === "STOCK" && (
+                <div className="border-t border-white/8 pt-4">
+                  <p className="text-xs text-[var(--tx-3)] mb-3">{T.alertsTitle}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.alertBelow2}</label>
+                      <input type="text" value={form.alertBelow} onChange={setF("alertBelow")}
+                        className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500/50 transition-all"
+                        placeholder="20.00" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.alertAbove2}</label>
+                      <input type="text" value={form.alertAbove} onChange={setF("alertAbove")}
+                        className="w-full glass-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500/50 transition-all"
+                        placeholder="50.00" />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+
               <div>
                 <label className="block text-xs font-medium text-[var(--tx-2)] mb-1.5">{T.fieldNotes}</label>
                 <textarea value={form.notes} onChange={setF("notes") as (e: React.ChangeEvent<HTMLTextAreaElement>) => void} rows={2}

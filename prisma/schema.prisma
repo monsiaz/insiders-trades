@@ -327,17 +327,27 @@ model PortfolioPosition {
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  /// "STOCK" (default) | "CROWDFUNDING" | "BOND" | "CRYPTO"
+  assetType    String   @default("STOCK")
+
   name         String
   isin         String?
   yahooSymbol  String?
   quantity     Float
-  buyingPrice  Float    // average cost price per share
+  buyingPrice  Float    // per share (stock) or total invested (crowdfunding)
   currentPrice Float?
   lastUpdated  DateTime?
 
+  /// Annual yield % — used for CROWDFUNDING / BOND positions (e.g. 9.75 for 9.75%)
+  annualYield  Float?
+  /// Investment start date — for crowdfunding accrued-interest calculation
+  yieldStartDate DateTime?
+  /// Investment end date / maturity
+  yieldEndDate   DateTime?
+
   // Computed
-  totalInvested Float    // quantity * buyingPrice
-  currentValue  Float?   // quantity * currentPrice
+  totalInvested Float    // quantity * buyingPrice (or capital for crowdfunding)
+  currentValue  Float?   // quantity * currentPrice (or capital + accrued interest)
   pnl           Float?   // currentValue - totalInvested
   pnlPct        Float?   // pnl / totalInvested * 100
 

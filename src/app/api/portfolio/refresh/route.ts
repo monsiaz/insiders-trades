@@ -34,6 +34,22 @@ export async function POST(req: NextRequest) {
 
   for (const pos of positions) {
     try {
+      // Crowdfunding / Bond: recalculate accrued interest (no Yahoo needed)
+      if (pos.assetType === "CROWDFUNDING" || pos.assetType === "BOND") {
+        if (pos.annualYield && pos.yieldStartDate) {
+          const daysElapsed = (Date.now() - pos.yieldStartDate.getTime()) / 86400_000;
+          const currentValue = Math.round(pos.totalInvested * (1 + (pos.annualYield / 100) * (daysElapsed / 365)) * 100) / 100;
+          const pnl = Math.round((currentValue - pos.totalInvested) * 100) / 100;
+          const pnlPct = (pnl / pos.totalInvested) * 100;
+          await prisma.portfolioPosition.update({
+            where: { id: pos.id },
+            data: { currentValue, pnl, pnlPct, lastUpdated: new Date() },
+          });
+          updated.push(pos.name);
+        }
+        continue;
+      }
+
       let symbol = pos.yahooSymbol;
 
       if (!symbol) {

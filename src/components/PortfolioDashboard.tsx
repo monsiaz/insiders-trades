@@ -26,14 +26,35 @@ interface Position {
   fromApp: boolean;
 }
 
-interface User { id: string; email: string; name: string | null }
+interface User {
+  id: string;
+  email: string;
+  name: string | null;
+  /** PEA | PEA_PME | CTO | OTHER — used for the badge label + (future) eligibility filters */
+  accountType?: string | null;
+}
 interface PortfolioSummary { portfolioCash: number | null }
 
 type Locale = "en" | "fr";
 
+/**
+ * Map the DB accountType enum to the visible badge label (FR + EN).
+ * PEA_PME is the default since the v3 Sigma strategy (mid-cap 200M-1B€)
+ * is aligned with PEA-PME eligibility rules (<5000 employees, <1.5B€ CA).
+ */
+function accountBadge(accountType: string | null | undefined, locale: Locale): string {
+  const t = (accountType ?? "PEA_PME").toUpperCase();
+  switch (t) {
+    case "PEA_PME":   return "Portfolio PEA-PME";
+    case "PEA":       return "Portfolio PEA";
+    case "CTO":       return locale === "fr" ? "Portfolio CTO" : "Portfolio (CTO)";
+    default:          return locale === "fr" ? "Portfolio" : "Portfolio";
+  }
+}
+
 const DICT = {
   en: {
-    badge: "Portfolio PEA",
+    badge: "Portfolio",
     title: "My",
     titleSpan: "Portfolio",
     updatedRecently: "Updated recently",
@@ -96,7 +117,7 @@ const DICT = {
     estimatedCurve: "Estimated curve",
   },
   fr: {
-    badge: "Portfolio PEA",
+    badge: "Portfolio",
     title: "Mon",
     titleSpan: "Portfolio",
     updatedRecently: "Mis à jour récemment",
@@ -367,7 +388,7 @@ export function PortfolioDashboard({ user, locale = "en" }: { user: User; locale
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card-static tx-brand text-xs font-semibold mb-4 bd-brand max-w-full overflow-hidden">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0" />
-            <span className="truncate">{T.badge} · {user.name ?? user.email}</span>
+            <span className="truncate">{accountBadge(user.accountType, locale)} · {user.name ?? user.email}</span>
           </div>
           <h1 className="text-3xl font-bold text-[var(--tx-1)] tracking-tight">{T.title} <span className="text-gradient-indigo">{T.titleSpan}</span></h1>
           <p className="text-[var(--tx-2)] text-sm mt-1">{positions.length} position{positions.length !== 1 ? "s" : ""} · {priced.length > 0 ? T.updatedRecently : "·"}</p>

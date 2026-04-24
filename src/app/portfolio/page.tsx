@@ -32,7 +32,15 @@ export default async function PortfolioPage() {
 
   return (
     <div className="content-wrapper">
-      <PortfolioDashboard user={{ id: user.id, email: user.email, name: user.name }} locale={locale} />
+      <PortfolioDashboard
+        user={{
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          accountType: user.accountType ?? "PEA_PME",
+        }}
+        locale={locale}
+      />
     </div>
   );
 }

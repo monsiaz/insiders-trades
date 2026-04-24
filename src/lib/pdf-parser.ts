@@ -67,19 +67,32 @@ function normalizeFieldBreaks(text: string): string {
 
 /**
  * Extract the value following a labelled field in AMF PDF text.
- * 
+ *
  * The text passed here should already be normalized by normalizeFieldBreaks(),
  * meaning each known label is on its own line. So we simply take everything
  * from the colon to the end of the line (no complex lookaheads needed).
+ *
+ * If opts.stopAtLabel is true, we also cut the captured value if it starts
+ * containing another known label text — guards against pdfjs-dist runs where
+ * field labels are concatenated on the same line.
  */
-function extractField(text: string, label: string): string | undefined {
+function extractField(text: string, label: string, opts: { maxLen?: number } = {}): string | undefined {
   const l = normalizeApostrophes(label);
   const escaped = l.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  // Each label is on its own line after normalization → take to end of line
   const m = text.match(new RegExp(`${escaped}\\s*:\\s*([^\n]+)`, "i"));
   if (m) {
-    const val = m[1].trim().replace(/ {2,}/g, " ");
+    let val = m[1].trim().replace(/ {2,}/g, " ");
+    // Guard: if the value contains another known AMF label that bled in,
+    // cut at the boundary.
+    for (const otherLabel of KNOWN_LABELS) {
+      if (otherLabel === l) continue;
+      const idx = val.toUpperCase().indexOf(otherLabel);
+      if (idx > 0) { val = val.substring(0, idx).trim(); break; }
+    }
+    // Also strip trailing "DESCRIPTION ...", "CODE ...", "PRIX ...", "VOLUME ..."
+    val = val.replace(/\s+(DESCRIPTION|CODE|PRIX|VOLUME|DATE|LIEU|NATURE)\s+.*$/i, "").trim();
+    if (opts.maxLen && val.length > opts.maxLen) val = val.substring(0, opts.maxLen).trim();
     if (val) return val;
   }
 
@@ -232,19 +245,100 @@ function extractIsin(text: string): string | undefined {
 
 // ── Insider name & function ────────────────────────────────────────────────
 
+/**
+ * Phrases that are label-text (NOT a real insider name). If the extracted
+ * "name" matches one of these, we reject it and retry with a different strategy.
+ * This guards against the pdfjs-dist collapse bug where the regex captures the
+ * label header itself ("PERSONNE ETROITEMENT LIEE :") as the name.
+ */
+const LABEL_NOISE = [
+  /^PERSONNE\s+ETROITEMENT\s+LIEE\s*:?$/i,
+  /^PERSONNE\s+EXERCANT\s+DES\s+RESPONSABILITES/i,
+  /^NOM\s*[/\\]?\s*FONCTION/i,
+  /^NOTIFICATION\s+INITIALE/i,
+  /^COORDONNEES/i,
+  /^DETAIL\s+DE\s+LA\s+TRANSACTION/i,
+  /^SOUS\s+LA\s+RESPONSABILITE/i,
+  /^LA\s+PRESENTE\s+NOTIFICATION/i,
+];
+
+function isLabelNoise(s: string): boolean {
+  const norm = s.trim();
+  if (norm.length === 0) return true;
+  return LABEL_NOISE.some((re) => re.test(norm));
+}
+
+/**
+ * Clean a captured function/role string: strip trailing/leading punctuation,
+ * cut at dangling open parenthesis ("(par personnes morales..." → "(par personnes morales)"
+ * or truncate at the word boundary if unbalanced), cap length.
+ */
+function cleanFunction(s: string | undefined): string | undefined {
+  if (!s) return undefined;
+  let cleaned = s.trim();
+  // Remove trailing orphan punctuation
+  cleaned = cleaned.replace(/[,.\s;:]+$/, "").trim();
+  // If it ends with an unbalanced open paren, cut before it
+  const opens = (cleaned.match(/\(/g) ?? []).length;
+  const closes = (cleaned.match(/\)/g) ?? []).length;
+  if (opens > closes) {
+    const lastOpen = cleaned.lastIndexOf("(");
+    if (lastOpen > 0) cleaned = cleaned.substring(0, lastOpen).trim();
+  }
+  cleaned = cleaned.substring(0, 120).trim();
+  return cleaned.length >= 2 ? cleaned : undefined;
+}
+
+function cleanName(s: string | undefined): string | undefined {
+  if (!s) return undefined;
+  const cleaned = s.trim().replace(/\s+/g, " ").substring(0, 160).trim();
+  if (cleaned.length < 2) return undefined;
+  if (isLabelNoise(cleaned)) return undefined;
+  return cleaned;
+}
+
+/**
+ * Tokenise a raw "NAME, FUNCTION" or "NAME FUNCTION" candidate line.
+ * Handles both "Claude GUILLEMOT, PRESIDENT DIRECTEUR GENERAL"
+ * and "Claude GUILLEMOT PRESIDENT DIRECTEUR GENERAL" (comma lost by pdfjs).
+ */
+function splitNameFunction(raw: string): { name?: string; function?: string } {
+  const line = raw.trim();
+
+  // Case 1: "NAME, FUNCTION" with comma
+  const commaIdx = line.indexOf(",");
+  if (commaIdx > 2) {
+    const name = line.substring(0, commaIdx);
+    const fn = line.substring(commaIdx + 1);
+    return { name: cleanName(name), function: cleanFunction(fn) };
+  }
+
+  // Case 2: no comma → try to split on transition from name-case to role-case.
+  // A name is typically "Firstname LASTNAME" (Proper + UPPER), role is UPPER.
+  // Match: "(Capital lowercase-capital UPPER) (UPPER+)" pattern.
+  const m = line.match(/^([A-ZÉÈÊËÀÂÙÛÎÏÔÇ][a-zéèêëàâùûîïôç]+(?:\s+[A-ZÉÈÊËÀÂÙÛÎÏÔÇ][A-ZÉÈÊËÀÂÙÛÎÏÔÇ\-'']+)+)\s+(PRESIDENT|DIRECTEUR|CHAIRMAN|CEO|CFO|ADMINISTRATEUR|MEMBRE|GERANT|DGD|DGA|PDG|PCA|DAF)/);
+  if (m) {
+    return { name: cleanName(m[1]), function: cleanFunction(line.substring(m[1].length)) };
+  }
+
+  // Case 3: just take the whole line as name (no function separated)
+  return { name: cleanName(line) };
+}
+
 function extractInsiderInfo(text: string): { name?: string; function?: string } {
   // Normalize for matching
   const norm = normalizeApostrophes(text).replace(/\r\n/g, "\n");
 
-  // Section between "NOM /FONCTION..." header and "NOTIFICATION INITIALE"
-  const sectionMatch = norm.match(
-    /NOM\s*[/\/]\s*FONCTION[\s\S]{0,300}?LIEE\s*:\s*\n([\s\S]*?)(?=\n(?:NOTIFICATION|COORDONNEES|$))/i
+  // Strategy 1: tolerant capture after "LIEE :" (with \s+ instead of strict \n,
+  // because pdfjs-dist sometimes emits a single space between the label and
+  // the name instead of a newline). We look for the next non-empty span.
+  const sectionMatchV2 = norm.match(
+    /NOM\s*[/\\]\s*FONCTION[\s\S]{0,400}?LIEE\s*:\s*([\s\S]{2,800}?)(?=\n\s*(?:NOTIFICATION|COORDONNEES|DETAIL\s+DE\s+LA)|$)/i
   );
-
-  let raw = sectionMatch ? sectionMatch[1].trim() : "";
+  let raw = sectionMatchV2 ? sectionMatchV2[1].trim() : "";
 
   if (!raw) {
-    // Alternative: section after the long disclaimer line
+    // Strategy 2: section after the long disclaimer line
     const alt = norm.match(
       /SOUS LA RESPONSABILITE EXCLUSIVE DU DECLARANT\.[\s\S]*?\n\n([\s\S]*?)(?=\nNOTIFICATION|\nCOORDONNEES)/i
     );
@@ -252,35 +346,30 @@ function extractInsiderInfo(text: string): { name?: string; function?: string } 
   }
 
   if (!raw) {
-    // Last resort: look for "NOM /FONCTION" and take the next non-empty lines
-    const directMatch = norm.match(/NOM\s*[/\/]\s*FONCTION[^\n]*\n\n?([\s\S]{1,300}?)(?=\nNOTIFICATION|\nCOORDONNEES|\n\n)/i);
+    // Strategy 3: look for "NOM /FONCTION" and take the next non-empty lines
+    const directMatch = norm.match(/NOM\s*[/\\]\s*FONCTION[^\n]*\n\n?([\s\S]{1,300}?)(?=\nNOTIFICATION|\nCOORDONNEES|\n\n)/i);
     if (directMatch) raw = directMatch[1].trim();
   }
 
   if (!raw) return {};
 
-  // "Personne liée à FIRSTNAME LASTNAME, FUNCTION"
+  // Handle: "Personne liée à FIRSTNAME LASTNAME, FUNCTION"
   const lieMatch = raw.match(/li[eé]e?\s+à\s+([\w\s\-ÉÈÊËÀÂÙÛÎÏÔÇ]+?)(?:,\s*(.+?))?(?:\n|$)/i);
   if (lieMatch) {
-    return {
-      name: lieMatch[1].trim().replace(/\s+/g, " ") || undefined,
-      function: lieMatch[2]?.trim() || undefined,
-    };
+    const name = cleanName(lieMatch[1]);
+    if (name) {
+      return { name, function: cleanFunction(lieMatch[2]) };
+    }
   }
 
-  // "FIRSTNAME LASTNAME, FUNCTION" on first line
-  const firstLine = raw.split("\n")[0].trim();
-  const commaIdx = firstLine.indexOf(",");
-  if (commaIdx > 2) {
-    return {
-      name: firstLine.substring(0, commaIdx).trim().substring(0, 120),
-      function: firstLine.substring(commaIdx + 1).trim().substring(0, 120) || undefined,
-    };
-  }
-
-  // Name only on first line
-  if (firstLine.length > 2) {
-    return { name: firstLine.substring(0, 120) };
+  // Iterate lines and find the FIRST that isn't label noise.
+  // This is the key fix: if line 1 captured is "PERSONNE ETROITEMENT LIEE :",
+  // we skip it and try line 2 (the real name).
+  const lines = raw.split("\n").map((l) => l.trim()).filter(Boolean);
+  for (const line of lines) {
+    if (isLabelNoise(line)) continue;
+    const result = splitNameFunction(line);
+    if (result.name) return result;
   }
 
   return {};
@@ -311,9 +400,10 @@ export function parsePdfText(rawText: string, pdfUrl?: string): TradeDetails {
   result.insiderFunction = insiderInfo.function;
 
   // ── Transaction metadata ──
-  result.transactionNature = extractField(text, "NATURE DE LA TRANSACTION");
-  result.instrumentType = extractField(text, "DESCRIPTION DE L'INSTRUMENT FINANCIER");
-  result.transactionVenue = extractField(text, "LIEU DE LA TRANSACTION");
+  // Cap lengths to avoid field bleed (v3 data-quality fix)
+  result.transactionNature = extractField(text, "NATURE DE LA TRANSACTION", { maxLen: 60 });
+  result.instrumentType = extractField(text, "DESCRIPTION DE L'INSTRUMENT FINANCIER", { maxLen: 80 });
+  result.transactionVenue = extractField(text, "LIEU DE LA TRANSACTION", { maxLen: 80 });
 
   // ── ISIN ──
   result.isin = extractIsin(text);
@@ -355,7 +445,9 @@ export function parsePdfText(rawText: string, pdfUrl?: string): TradeDetails {
 
   if (result.unitPrice != null && result.unitPrice > 0 && result.volume != null) {
     // Standard: price × volume
-    result.totalAmount = Math.round(result.unitPrice * result.volume * 100) / 100;
+    const computed = Math.round(result.unitPrice * result.volume * 100) / 100;
+    // Sanity cap: single-insider trades > 1B€ are implausible, reject as garbage OCR.
+    result.totalAmount = computed > 1_000_000_000 ? undefined : computed;
   } else if ((isAttribution || isExercice) && result.volume != null && result.volume > 0) {
     // For free share attributions: try to compute value from opening price
     const openPrice = extractOpeningPrice(text);

@@ -94,7 +94,7 @@ export async function getCurrentUser() {
   if (!session) return null;
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, email: true, name: true, firstName: true, lastName: true, role: true, emailVerified: true, isBanned: true },
+    select: { id: true, email: true, name: true, firstName: true, lastName: true, role: true, emailVerified: true, isBanned: true, accountType: true },
   });
   // Revoked users are treated as logged out
   if (!user || user.isBanned) return null;

@@ -310,18 +310,30 @@ export default async function StrategiePage() {
           />
           <CriteriaCard
             n={5}
-            title={isFr ? "Mid-cap (200 M€ – 1 B€)" : "Mid-cap (€200M – €1B)"}
+            title={isFr ? "Mid-cap (200 M€ – 1 B€) · éligible PEA-PME" : "Mid-cap (€200M – €1B) · PEA-PME eligible"}
             detail={isFr ? (
               <>
                 <strong>Sweet spot</strong> : assez gros pour la liquidité (on peut trader sans slippage),
                 assez petit pour que les insiders aient une info significative. Les large-caps sont sur-suivies,
                 les small-caps trop volatiles.
+                <br /><br />
+                <strong style={{ color: "var(--gold)" }}>★ Bonus fiscal PEA-PME.</strong> Cette fenêtre
+                de capitalisation (200 M€ – 1 Md€) recoupe quasi intégralement l&apos;éligibilité PEA-PME
+                (PME &lt; 5&nbsp;000 salariés, CA &lt; 1,5 Md€ ou bilan &lt; 2 Md€). Si tu tiens un
+                PEA-PME, tu peux loger la stratégie dedans et bénéficier de l&apos;exonération des
+                plus-values après 5 ans (prélèvements sociaux 17,2% seulement).
               </>
             ) : (
               <>
                 <strong>Sweet spot</strong>: large enough for liquidity (tradable without slippage),
                 small enough for insiders to have meaningful information. Large-caps are over-followed,
                 small-caps too volatile.
+                <br /><br />
+                <strong style={{ color: "var(--gold)" }}>★ PEA-PME bonus.</strong> This market-cap
+                window (€200M – €1Bn) almost entirely overlaps with French PEA-PME eligibility
+                (SMEs &lt; 5,000 employees, revenue &lt; €1.5Bn or total assets &lt; €2Bn). If you
+                hold a PEA-PME account, you can run this strategy inside it and enjoy capital-gains
+                exemption after 5 years (only 17.2% social charges).
               </>
             )}
           />

@@ -112,6 +112,20 @@ export async function syncLatest(
       if (enrichPdfs) {
         try {
           const details = await fetchDeclarationDetail(item.numero);
+
+          // Date coherence validation (v3 data-quality fix).
+          // MAR obliges declaration within 3 business days of trade, so:
+          //   - tx > pub is impossible (parser OCR bug)
+          //   - pub > tx + 365d is almost always a year OCR bug (e.g. "24" → "2019")
+          // When either happens, we DROP transactionDate rather than storing garbage;
+          // downstream logic falls back to pubDate.
+          const pubDate = new Date(item.datePublication);
+          let safeTxDate = details?.transactionDate ?? null;
+          if (safeTxDate) {
+            if (safeTxDate > pubDate) safeTxDate = null;
+            else if (pubDate.getTime() - safeTxDate.getTime() > 365 * 86400_000) safeTxDate = null;
+          }
+
           await prisma.declaration.update({
             where: { id: decl.id },
             data: {
@@ -125,7 +139,7 @@ export async function syncLatest(
               volume: details?.volume ?? null,
               totalAmount: details?.totalAmount ?? null,
               currency: details?.currency ?? null,
-              transactionDate: details?.transactionDate ?? null,
+              transactionDate: safeTxDate,
               transactionVenue: details?.transactionVenue ?? null,
               pdfUrl: details?.pdfUrl ?? null,
             },

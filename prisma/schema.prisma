@@ -221,6 +221,13 @@ model User {
   lastLoginAt   DateTime?
   // Portfolio cash balance (solde espèces du courtier)
   portfolioCash Float?
+  // Tax wrapper / account type: influences the "Portfolio XXX" badge display
+  // and future eligibility filters on recommendations.
+  //   "PEA_PME" · Plan d'Épargne en Actions PME (SME-focused, ceiling 225 000 €)
+  //   "PEA"     · Plan d'Épargne en Actions classique (ceiling 150 000 €)
+  //   "CTO"     · Compte-Titres Ordinaire (no ceiling, unrestricted)
+  //   "OTHER"   · other / not specified
+  accountType   String?   @default("PEA_PME")
   // Beta / premium credits — used to gate premium actions (reco unmask, email sends, etc.)
   credits       Int       @default(0)
   creditsUpdatedAt DateTime?

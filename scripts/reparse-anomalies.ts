@@ -35,10 +35,10 @@ const C = {
 };
 
 // Concurrency control
-const CONCURRENCY = 5;
-const PAUSE_MS = 150; // between individual fetches (inside batch)
-const BATCH_PAUSE_MS = 1500; // between batches (to let AMF breathe)
-const BATCH_SIZE = 50;
+const CONCURRENCY = 15;
+const PAUSE_MS = 80;  // between individual fetches (inside batch)
+const BATCH_PAUSE_MS = 800; // between batches (to let AMF breathe)
+const BATCH_SIZE = 150;
 
 async function buildTargetIds(): Promise<string[]> {
   const ids = new Set<string>();

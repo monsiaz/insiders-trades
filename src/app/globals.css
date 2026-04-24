@@ -125,7 +125,7 @@
   color-scheme: dark;
 }
 
-/* ── LIGHT MODE ── */
+/* ── LIGHT MODE (explicit class) ── */
 .light {
   --bg-base:    #F4F1EC;   /* warm cream · Bloomberg terminal reverse */
   --bg-surface: #FDFBF7;   /* paper white */
@@ -169,6 +169,56 @@
   --gold-2:       var(--gold-3);
 
   color-scheme: light;
+}
+
+/* ── SYSTEM LIGHT PREFERENCE (no-JS / before-script fallback) ──
+ * When the user's OS is set to light mode and no explicit .dark class
+ * has been applied yet, use light vars immediately — zero flicker.
+ * The inline script in <head> will later add .light / .dark to lock it in. */
+@media (prefers-color-scheme: light) {
+  :root:not(.dark) {
+    --bg-base:    #F4F1EC;
+    --bg-surface: #FDFBF7;
+    --bg-raised:  #EDE9E1;
+    --bg-hover:    #E4E0D7;
+    --bg-active:   #D8D3C8;
+    --bg-elevated: #F7F5F0;
+
+    --border:        rgba(100,80,50,0.08);
+    --border-med:    rgba(100,80,50,0.13);
+    --border-strong: rgba(100,80,50,0.22);
+
+    --tx-1: #0A0C10;
+    --tx-2: #3D3428;
+    --tx-3: #6B5D4E;
+    --tx-4: #948776;
+
+    --shadow-sm: 0 1px 2px rgba(30,20,10,0.08), 0 1px 0 rgba(30,20,10,0.04);
+    --shadow-md: 0 4px 16px rgba(30,20,10,0.10), 0 2px 4px rgba(30,20,10,0.06);
+    --shadow-lg: 0 16px 40px rgba(30,20,10,0.14), 0 6px 12px rgba(30,20,10,0.08);
+    --shadow-card: 0 2px 0 rgba(30,20,10,0.04), 0 4px 16px rgba(30,20,10,0.08);
+
+    --nav-bg: rgba(253,251,247,0.97);
+
+    --bg-card:    #FDFBF7;
+    --bg-sub:     #F4F1EC;
+    --border-sub: rgba(100,80,50,0.08);
+
+    --c-emerald:    #009E62;
+    --c-emerald-2:  #00C078;
+    --c-mint:       #009E62;
+    --c-mint-2:     #00C078;
+    --signal-pos:   #009E62;
+    --signal-pos-2: #00C078;
+    --c-crimson:    #C82038;
+    --c-crimson-2:  #E8364A;
+    --c-red:        #C82038;
+    --signal-neg:   #C82038;
+    --c-indigo-2:   var(--c-indigo-3);
+    --gold-2:       var(--gold-3);
+
+    color-scheme: light;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════

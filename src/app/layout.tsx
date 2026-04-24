@@ -109,10 +109,30 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`dark ${inter.variable} ${dmSerif.variable}`}
+      className={`${inter.variable} ${dmSerif.variable}`}
       suppressHydrationWarning
     >
       <head>
+        {/*
+          Theme-detection script — MUST be first in <head>, runs synchronously
+          before any CSS is applied, so no flash of wrong theme ever occurs.
+          Reads localStorage → applies .dark or .light to <html> immediately.
+          The @media (prefers-color-scheme: light) rule in globals.css handles
+          the no-JS / before-script case for system-light users.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{
+  var s=localStorage.getItem('it-theme');
+  var sys=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  var t=s&&s!=='system'?s:sys;
+  document.documentElement.classList.remove('dark','light');
+  document.documentElement.classList.add(t);
+  document.documentElement.dataset.themeMode=s||'system';
+}catch(e){}})();`,
+          }}
+        />
+
         {/* Robots: index, follow on all public pages */}
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
 
@@ -126,18 +146,6 @@ export default async function RootLayout({
         {/* Pre-connect to image CDN for faster logo loading */}
         <link rel="preconnect" href="https://public.blob.vercel-storage.com" />
         <link rel="dns-prefetch" href="https://public.blob.vercel-storage.com" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{
-  var s=localStorage.getItem('it-theme');
-  var sys=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
-  var t=s&&s!=='system'?s:sys;
-  document.documentElement.classList.remove('dark','light');
-  document.documentElement.classList.add(t);
-  document.documentElement.dataset.themeMode=s||'system';
-}catch(e){}})();`,
-          }}
-        />
       </head>
       <body>
         <ThemeProvider>

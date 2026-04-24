@@ -14,7 +14,7 @@ interface ThemeCtxValue {
 
 const ThemeCtx = createContext<ThemeCtxValue>({
   mode: "system",
-  theme: "dark",
+  theme: "light",
   setMode: () => {},
   toggle: () => {},
 });

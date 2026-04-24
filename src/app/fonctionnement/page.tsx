@@ -139,24 +139,30 @@ export default async function FonctionnementPage() {
     pipelineBody: "Six étapes automatisées, toutes horodatées et reproductibles. Ce schéma s\u0027anime pour montrer le flux réel des données.",
     stepsEyebrow: "Quatre moments clés",
     stepsBody: "Chaque étape est visualisée ci-dessous avec les vraies données du site.",
-    scoringEyebrow: "Scoring composite",
-    scoringH2Line1: "Sept composantes",
+    scoringEyebrow: "Scoring composite v3",
+    scoringH2Line1: "Dix composantes",
     scoringH2Line2: "pour un score sur 100",
-    scoringBody1: "Chaque déclaration est scorée sur 100 points avec un barème déterministe et transparent. La roue à droite illustre la pondération exacte de chaque composante.",
-    scoringLi1Strong: "% capitalisation",
-    scoringLi1Tail: ", un achat qui pèse 1% du mcap compte plus qu\u0027un achat symbolique",
-    scoringLi2Strong: "% flux de l\u0027insider",
-    scoringLi2Tail: " · est-ce son plus gros mouvement sur ce titre ?",
-    scoringLi3Strong: "Fonction",
-    scoringLi3Tail: " · PDG > CFO > Directeur > Membre du CA",
-    scoringLi4Strong: "Cluster",
-    scoringLi4Tail: " · plusieurs dirigeants en ±30 jours ?",
-    scoringLi5Strong: "Conviction",
-    scoringLi5Tail: " · l\u0027insider est-il net-acheteur cumulé ?",
-    scoringLi6Strong: "Fondamentaux",
-    scoringLi6Tail: " · consensus analyste, P/E, leverage",
-    scoringLi7Strong: "Signaux composites Yahoo",
-    scoringLi7Tail: " · 8 flags additionnels (momentum, value, qualité, upside\u2026)",
+    scoringBody1: "Chaque déclaration est scorée sur 100 points avec un barème déterministe, transparent et versionné. La v3 redistribue le poids vers les signaux propres à l\u0027insider (track record, DCA, cluster directionnel) au détriment de l\u0027information publique. La roue à droite illustre la pondération exacte.",
+    scoringLi1Strong: "Cluster directionnel ±30j",
+    scoringLi1Tail: " · ≥2 dirigeants dans le MÊME sens (BUY vs SELL strictement séparés en v3)",
+    scoringLi2Strong: "% capitalisation",
+    scoringLi2Tail: " · un achat qui pèse 1% du mcap compte plus qu\u0027un achat symbolique",
+    scoringLi3Strong: "Track record dirigeant ★",
+    scoringLi3Tail: " · alpha historique moyen de cet insider, avec shrinkage bayésien (NEW v3)",
+    scoringLi4Strong: "Fonction",
+    scoringLi4Tail: " · PDG > CFO > Directeur > Membre du CA",
+    scoringLi5Strong: "Signaux composites Yahoo",
+    scoringLi5Tail: " · 7 flags affinés, near-52w-low GATED sur cluster/PDG (anti-knife-catching)",
+    scoringLi6Strong: "% flux de l\u0027insider",
+    scoringLi6Tail: " · est-ce son plus gros mouvement sur ce titre ?",
+    scoringLi7Strong: "DCA / accumulation ★",
+    scoringLi7Tail: " · ≥2 achats prior par le même (insider, société) sur 12 mois (NEW v3)",
+    scoringLi8Strong: "Analyst-contrarian ★",
+    scoringLi8Tail: " · achat dirigeant vs consensus neutre/bearish (NEW v3)",
+    scoringLi9Strong: "Conviction cumulée",
+    scoringLi9Tail: " · l\u0027insider est-il net-acheteur cumulé ?",
+    scoringLi10Strong: "Fondamentaux",
+    scoringLi10Tail: " · consensus analyste, P/E, leverage (poids réduit)",
     backtestEyebrow: "Backtest rigoureux",
     backtestH2Line1: "22 620 trades testés,",
     backtestH2Line2: "six horizons",
@@ -226,24 +232,30 @@ export default async function FonctionnementPage() {
     pipelineBody: "Six automated steps, all timestamped and reproducible. This diagram animates to show the real data flow.",
     stepsEyebrow: "Four key stages",
     stepsBody: "Each stage is visualised below using real site data.",
-    scoringEyebrow: "Composite scoring",
-    scoringH2Line1: "Seven components",
+    scoringEyebrow: "Composite scoring v3",
+    scoringH2Line1: "Ten components",
     scoringH2Line2: "for a score out of 100",
-    scoringBody1: "Every filing is scored out of 100 points using a deterministic, transparent rubric. The wheel on the right illustrates the exact weighting of each component.",
-    scoringLi1Strong: "% of market cap",
-    scoringLi1Tail: " — a purchase worth 1% of market cap counts more than a symbolic one",
-    scoringLi2Strong: "% of insider flow",
-    scoringLi2Tail: " · is this their largest move on this stock?",
-    scoringLi3Strong: "Role",
-    scoringLi3Tail: " · CEO > CFO > Director > Board member",
-    scoringLi4Strong: "Cluster",
-    scoringLi4Tail: " · multiple executives within ±30 days?",
-    scoringLi5Strong: "Conviction",
-    scoringLi5Tail: " · is the insider a net cumulative buyer?",
-    scoringLi6Strong: "Fundamentals",
-    scoringLi6Tail: " · analyst consensus, P/E, leverage",
-    scoringLi7Strong: "Yahoo composite signals",
-    scoringLi7Tail: " · 8 additional flags (momentum, value, quality, upside\u2026)",
+    scoringBody1: "Every filing is scored out of 100 points using a deterministic, transparent, versioned rubric. v3 redistributes weight toward insider-specific features (track record, DCA, directional cluster) and away from public information. The wheel on the right illustrates the exact weighting.",
+    scoringLi1Strong: "Directional cluster ±30d",
+    scoringLi1Tail: " · ≥2 insiders in the SAME direction (BUY vs SELL strictly separated in v3)",
+    scoringLi2Strong: "% of market cap",
+    scoringLi2Tail: " · a purchase worth 1% of market cap counts more than a symbolic one",
+    scoringLi3Strong: "Insider track record ★",
+    scoringLi3Tail: " · historical mean alpha of the insider with Bayesian shrinkage (NEW v3)",
+    scoringLi4Strong: "Role",
+    scoringLi4Tail: " · CEO > CFO > Director > Board member",
+    scoringLi5Strong: "Yahoo composite signals",
+    scoringLi5Tail: " · 7 refined flags, near-52w-low GATED on cluster/CEO (anti-knife-catching)",
+    scoringLi6Strong: "% of insider flow",
+    scoringLi6Tail: " · is this their largest move on this stock?",
+    scoringLi7Strong: "DCA / accumulation ★",
+    scoringLi7Tail: " · ≥2 prior buys by the same (insider, company) within 12 months (NEW v3)",
+    scoringLi8Strong: "Analyst-contrarian ★",
+    scoringLi8Tail: " · insider buys when sell-side consensus is neutral/bearish (NEW v3)",
+    scoringLi9Strong: "Cumulative conviction",
+    scoringLi9Tail: " · is the insider a net cumulative buyer?",
+    scoringLi10Strong: "Fundamentals",
+    scoringLi10Tail: " · analyst consensus, P/E, leverage (reduced weight)",
     backtestEyebrow: "Rigorous backtesting",
     backtestH2Line1: "22,620 trades tested,",
     backtestH2Line2: "six horizons",
@@ -572,6 +584,15 @@ export default async function FonctionnementPage() {
               </li>
               <li>
                 <strong style={{ color: "var(--tx-1)" }}>{T.scoringLi7Strong}</strong>{T.scoringLi7Tail}
+              </li>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>{T.scoringLi8Strong}</strong>{T.scoringLi8Tail}
+              </li>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>{T.scoringLi9Strong}</strong>{T.scoringLi9Tail}
+              </li>
+              <li>
+                <strong style={{ color: "var(--tx-1)" }}>{T.scoringLi10Strong}</strong>{T.scoringLi10Tail}
               </li>
             </ul>
           </div>
@@ -1483,10 +1504,13 @@ const FAQ_ITEMS_FR = [
     q: "Comment le score composite est-il calculé ?",
     a: (
       <>
-        100 points répartis sur 7 composantes déterministes : % du capital engagé (28 pts),
-        % du flux de l&apos;insider (16 pts), fonction occupée (12 pts), force du cluster
-        (8 pts), conviction directionnelle (4 pts), fondamentaux de base (−4 à 12 pts),
-        signaux composites Yahoo (0 à 20 pts). Tous les barèmes sont publics sur la{" "}
+        <strong style={{ color: "var(--tx-1)" }}>Scoring v3 · 10 composantes · 100 pts.</strong> Cluster directionnel ±30j (18), %
+        capitalisation (16), <strong>track record dirigeant</strong> avec shrinkage bayésien (-2 à 14),
+        fonction (14), composite Yahoo 7 flags gated (10), % flux insider (8), <strong>DCA</strong> sur
+        12 mois (6), <strong>analyst-contrarian</strong> (6), conviction cumulée (4), fondamentaux
+        réduits (-2 à 4). La v3 (2026-04) redistribue ≈20 pts de l&apos;information publique vers les
+        signaux propres à l&apos;insider. La pénalité de staleness n&apos;est plus embarquée dans le
+        score stocké (elle est appliquée à l&apos;affichage). Tous les barèmes sont publics sur la{" "}
         <Link href="/methodologie/" style={{ color: "var(--gold)" }}>
           page méthodologie
         </Link>
@@ -1611,10 +1635,13 @@ const FAQ_ITEMS_EN = [
     q: "How is the composite score calculated?",
     a: (
       <>
-        100 points split across 7 deterministic components: % of capital invested (28 pts),
-        % of insider flow (16 pts), role held (12 pts), cluster strength (8 pts), directional
-        conviction (4 pts), basic fundamentals (−4 to 12 pts), Yahoo composite signals (0 to 20 pts).
-        All scoring rules are published on the{" "}
+        <strong style={{ color: "var(--tx-1)" }}>Scoring v3 · 10 components · 100 pts.</strong>{" "}
+        Directional cluster ±30d (18), % market cap (16), <strong>insider track record</strong> with
+        Bayesian shrinkage (-2 to 14), role (14), Yahoo composite 7 gated flags (10), % insider flow (8),{" "}
+        <strong>DCA</strong> over 12 months (6), <strong>analyst-contrarian</strong> (6), cumulative
+        conviction (4), reduced fundamentals (-2 to 4). v3 (2026-04) redistributes ~20 pts from public
+        information toward insider-specific features. The staleness penalty is no longer baked into the
+        stored score (it is applied at display time). All scoring rules are published on the{" "}
         <Link href="/methodologie/" style={{ color: "var(--gold)" }}>
           methodology page
         </Link>

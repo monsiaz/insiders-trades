@@ -3,20 +3,27 @@
 import { useEffect, useState } from "react";
 
 /**
- * Animated donut chart showing the 7 components of signalScore.
+ * Animated donut chart showing the 10 components of signalScore (v3, 2026-04).
  * Pure SVG + CSS, no canvas, animates on mount + on hover.
+ *
+ * v3 shifts weight from generic fundamentals (public info, already priced in)
+ * toward insider-centric features: track record, DCA, directional cluster,
+ * analyst-contrarian. Total remains 100 pts.
  */
 
-// DA v3 2026-04: monochrome gold → navy scale (darkest = largest weight). No rainbow.
-// Each segment uses a shade between corporate navy (#112A46) and gold (#B8955A).
+// Gold family = insider-centric signals (alpha sources)
+// Navy family = context / public-info signals (confirmatory)
 const COMPONENTS = [
-  { name: "% capitalisation (mcap)", pts: 22, color: "#B8955A", hint: "Barème log 0.001% → 1%+" },   // primary gold
-  { name: "Cluster ±30j",            pts: 18, color: "#A07F47", hint: "★ Seul signal robuste (+2.8% CAGR)" }, // gold 2
-  { name: "Composite Yahoo",         pts: 20, color: "#C9A772", hint: "Momentum, value, qualité…" }, // gold light
-  { name: "Fonction (PDG/CFO)",      pts: 16, color: "#17305C", hint: "PDG > CFO > Dir > CA" },     // navy 2
-  { name: "% flux insider",          pts: 12, color: "#3A5687", hint: "Part dans son flux total" }, // navy 3
-  { name: "Fondamentaux",            pts: 8,  color: "#1F3A6A", hint: "Consensus, P/E, D/E" },      // navy 4
-  { name: "Conviction",              pts: 4,  color: "#0F2540", hint: "Net-acheteur cumulé" },      // navy deep
+  { name: "Cluster directionnel ±30j", pts: 18, color: "#B8955A", hint: "★ ≥2 dirigeants même sens · alpha confirmé" },
+  { name: "% capitalisation (mcap)",   pts: 16, color: "#C9A772", hint: "Barème log 0.001% → 1%+" },
+  { name: "Track record dirigeant",    pts: 14, color: "#A07F47", hint: "★ Alpha historique de l'insider (shrinkage)" },
+  { name: "Fonction (PDG/CFO)",        pts: 14, color: "#8B6B37", hint: "PDG/DG → CFO → Dir → CA" },
+  { name: "Composite Yahoo",           pts: 10, color: "#D4BA8E", hint: "Momentum, value, qualité (52w-low gated)" },
+  { name: "% flux insider",            pts: 8,  color: "#17305C", hint: "Part dans son flux total" },
+  { name: "DCA / accumulation",        pts: 6,  color: "#3A5687", hint: "★ ≥2 achats sur 12 mois" },
+  { name: "Analyst-contrarian",        pts: 6,  color: "#1F3A6A", hint: "★ Achat vs consensus neutre/bearish" },
+  { name: "Conviction cumulée",        pts: 4,  color: "#0F2540", hint: "Net-acheteur cumulé sur le titre" },
+  { name: "Fondamentaux",              pts: 4,  color: "#0A1B30", hint: "Consensus + P/E + D/E (réduit)" },
 ];
 
 const TOTAL = COMPONENTS.reduce((s, c) => s + c.pts, 0); // = 100

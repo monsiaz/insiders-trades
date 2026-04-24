@@ -86,15 +86,19 @@ function aggregateGroup(rows: ReturnRow[]): GroupStats {
 
 function roleLabel(fn: string | null): string { return normalizeRole(fn); }
 
+// v3: must match sizeLabel in recommendation-engine.ts (6-bucket taxonomy).
+// The 300M-1B "Sweet" bucket was split out because that's where the grid-search
+// found the winning strategy's alpha concentrates (liquid, under-covered).
 function sizeLabel(mcap: bigint | number | null | undefined): string {
   if (mcap == null) return "Unknown";
   const mc = Number(mcap);
   if (!mc) return "Unknown";
-  if (mc < 50_000_000)     return "Micro";
-  if (mc < 300_000_000)    return "Small";
-  if (mc < 2_000_000_000)  return "Mid";
-  if (mc < 10_000_000_000) return "Large";
-  return "Mega";
+  if (mc < 50_000_000)     return "Micro";      // <50M
+  if (mc < 300_000_000)    return "Small";      // 50-300M
+  if (mc < 1_000_000_000)  return "Sweet";      // 300M-1B ★
+  if (mc < 3_000_000_000)  return "Mid";        // 1-3B
+  if (mc < 15_000_000_000) return "Large";      // 3-15B
+  return "Mega";                                 // 15B+
 }
 
 function mcapPctLabel(pct: number | null): string {
@@ -401,11 +405,13 @@ async function _computeBacktestBase(): Promise<BacktestBase | null> {
     { name: ">0.5% mcap PDG/DG",       category: "Conviction", rows: buyRows.filter((r) => r.role === "PDG/DG" && (r.declaration.pctOfMarketCap ?? 0) >= 0.5) },
     { name: "Premier achat + >1% mcap",category: "Conviction", rows: buyRows.filter((r) => r.isFirstBuy && (r.declaration.pctOfMarketCap ?? 0) >= 1) },
     { name: ">500k€ + PDG",            category: "Conviction", rows: buyRows.filter((r) => r.role === "PDG/DG" && (r.declaration.totalAmount ? Number(r.declaration.totalAmount) : 0) >= 500_000) },
-    { name: "Mid-cap (300M-2B€)",  category: "Taille",     rows: buyRows.filter((r) => r.size === "Mid") },
-    { name: "Small-cap (<300M€)",  category: "Taille",     rows: buyRows.filter((r) => r.size === "Small") },
-    { name: "Micro-cap (<50M€)",   category: "Taille",     rows: buyRows.filter((r) => r.size === "Micro") },
-    { name: "CFO + Mid-cap",       category: "Taille",     rows: buyRows.filter((r) => r.role === "CFO/DAF" && r.size === "Mid") },
-    { name: "CFO + Small/Micro",   category: "Taille",     rows: buyRows.filter((r) => r.role === "CFO/DAF" && ["Small", "Micro"].includes(r.size)) },
+    { name: "Sweet-spot (300M-1B€)", category: "Taille", rows: buyRows.filter((r) => r.size === "Sweet") },
+    { name: "Mid-cap (1-3B€)",       category: "Taille", rows: buyRows.filter((r) => r.size === "Mid") },
+    { name: "Small-cap (50-300M€)",  category: "Taille", rows: buyRows.filter((r) => r.size === "Small") },
+    { name: "Micro-cap (<50M€)",     category: "Taille", rows: buyRows.filter((r) => r.size === "Micro") },
+    { name: "CFO + Sweet/Mid",       category: "Taille", rows: buyRows.filter((r) => r.role === "CFO/DAF" && ["Sweet", "Mid"].includes(r.size)) },
+    { name: "PDG + Sweet-spot",      category: "Taille", rows: buyRows.filter((r) => r.role === "PDG/DG" && r.size === "Sweet") },
+    { name: "CFO + Small/Micro",     category: "Taille", rows: buyRows.filter((r) => r.role === "CFO/DAF" && ["Small", "Micro"].includes(r.size)) },
     { name: "Score ≥65",           category: "Score",      rows: buyRows.filter((r) => (r.declaration.signalScore ?? 0) >= 65) },
     { name: "Score ≥80 (ultra)",   category: "Score",      rows: buyRows.filter((r) => (r.declaration.signalScore ?? 0) >= 80) },
     { name: "Score ≥65 + PDG/DG",  category: "Score",      rows: buyRows.filter((r) => (r.declaration.signalScore ?? 0) >= 65 && r.role === "PDG/DG") },
@@ -501,16 +507,16 @@ async function _computeBacktestBase(): Promise<BacktestBase | null> {
       highlightEn: `${g.count} trades`,
     });
   }
-  const mid = bySize["Mid"]; const small = bySize["Small"];
-  if (mid && small) {
+  const sweet = bySize["Sweet"]; const large = bySize["Large"];
+  if (sweet && large) {
     insights.push({
       icon: "Building2",
-      title: "Small & Mid-cap : le meilleur terrain",
-      text: `Les insiders de mid-cap génèrent +${mid.avgReturn365d?.toFixed(1) ?? "·"}% sur 1 an vs +${bySize["Large"]?.avgReturn365d?.toFixed(1) ?? "·"}% sur Large-cap. Moins de couverture analytique = alpha plus accessible.`,
-      highlight: "Mid > Large",
-      titleEn: "Small & Mid-cap: the sweet spot",
-      textEn: `Mid-cap insiders generate +${mid.avgReturn365d?.toFixed(1) ?? "·"}% over 1 year vs +${bySize["Large"]?.avgReturn365d?.toFixed(1) ?? "·"}% for Large-cap. Less analyst coverage = more accessible alpha.`,
-      highlightEn: "Mid > Large",
+      title: "Sweet-spot 300M-1B€ : l'alpha se concentre là",
+      text: `Les insiders dans la fenêtre 300M-1B€ génèrent +${sweet.avgReturn365d?.toFixed(1) ?? "·"}% sur 1 an vs +${large.avgReturn365d?.toFixed(1) ?? "·"}% sur Large-cap. Assez liquide pour trader, assez sous-couvert pour qu'un signal dirigeant compte encore.`,
+      highlight: "Sweet > Large",
+      titleEn: "Sweet-spot 300M-1B€: where alpha concentrates",
+      textEn: `Insiders in the 300M-1B€ window generate +${sweet.avgReturn365d?.toFixed(1) ?? "·"}% over 1 year vs +${large.avgReturn365d?.toFixed(1) ?? "·"}% for Large-cap. Liquid enough to trade, under-covered enough for an insider signal to still matter.`,
+      highlightEn: "Sweet > Large",
     });
   }
   const cascade = byBehavior["Cascade (4+ insiders)"];

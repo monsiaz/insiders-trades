@@ -840,89 +840,125 @@ export default async function MethodologiePage() {
         <ScoreTable
           rows={isFr ? [
             {
-              label: "% capitalisation",
-              pts: "0–28",
-              desc: "montant du trade / market cap, barème logarithmique. 0.001% → 1pt, 0.1% → 16pts, 1%+ → 28pts.",
+              label: "Cluster directionnel ±30j",
+              pts: "0–18",
+              desc: "★ Nombre de dirigeants DISTINCTS ayant tradé la société dans le même sens sur ±30 jours. 2→12pts, 3→15pts, 4+→18pts. v3 : la directionnalité est stricte (un BUY n'est scoré que contre d'autres BUY).",
               accent: "var(--gold)",
             },
             {
-              label: "% flux du dirigeant",
+              label: "% capitalisation",
               pts: "0–16",
-              desc: "part de ce trade dans le flux total de cet insider sur cette société. 100% (seul trade) → 16pts.",
+              desc: "montant du trade / market cap, barème logarithmique. 0.001% → 1pt, 0.1% → 10pts, 1%+ → 16pts.",
+              accent: "var(--gold)",
+            },
+            {
+              label: "Track record dirigeant",
+              pts: "-2 à 14",
+              desc: "★ NEW v3. Alpha historique moyen de ce dirigeant (returns T+90 sur ses trades passés) avec shrinkage bayésien (k=5) vers la moyenne globale. Alpha < -5% → -2pt. Alpha 2-5% → 7pts. Alpha > 10% → 14pts.",
               accent: "var(--gold)",
             },
             {
               label: "Fonction",
-              pts: "0–12",
-              desc: "PDG/DG → 12, CFO/DAF → 11, Directeur → 8, CA/Board → 6, Autre → 2.",
+              pts: "0–14",
+              desc: "PDG/DG → 14, CFO/DAF → 13, Directeur → 9, CA/Board → 6, Autre → 2. Poids renforcé en v3.",
               accent: "var(--c-indigo-2)",
             },
             {
-              label: "Force du cluster",
-              pts: "0–8",
-              desc: "nombre de dirigeants distincts ayant tradé sur la même société en ±30 jours. 2→4pts, 3→6pts, 4+→8pts.",
+              label: "Signaux composites",
+              pts: "0–10",
+              desc: "Bonus construit sur 7 signaux Yahoo (momentum, value, qualité, upside). En v3, le flag near-52w-low n'est actif que si cluster OU PDG/CFO (anti-knife-catching).",
               accent: "var(--c-indigo-2)",
+            },
+            {
+              label: "% flux du dirigeant",
+              pts: "0–8",
+              desc: "part de ce trade dans le flux total de cet insider sur cette société.",
+              accent: "var(--c-indigo-2)",
+            },
+            {
+              label: "DCA / accumulation",
+              pts: "0–6",
+              desc: "★ NEW v3. Nombre d'achats prior par le même (dirigeant, société) sur 12 mois. 1→2pts, 2→4pts, 3+→6pts. Un dirigeant qui accumule régulièrement est un signal historiquement aussi fort que le cluster.",
+              accent: "var(--gold)",
+            },
+            {
+              label: "Analyst-contrarian",
+              pts: "0–6",
+              desc: "★ NEW v3. Si le dirigeant ACHÈTE alors que le consensus sell-side est neutre ou baissier (≥3.0). Littérature : insider buying contrarian produit historiquement +6% d'alpha vs +2% quand aligné au consensus.",
+              accent: "var(--gold)",
             },
             {
               label: "Conviction directionnelle",
               pts: "0–4",
               desc: "bonus si l'insider est net acheteur cumulé sur ce titre avant la transaction.",
-              accent: "var(--gold)",
-            },
-            {
-              label: "Fondamentaux de base",
-              pts: "-4 à 12",
-              desc: "consensus analyste (1.0 → +6, 3.0 → 0), P/E (<10 → +3, <20 → +1), dette/equity (<30 → +3).",
               accent: "var(--c-indigo-2)",
             },
             {
-              label: "Signaux composites",
-              pts: "0–20",
-              desc: "Bonus additionnel construit sur 8 signaux Yahoo (momentum, value, qualité, upside, etc.). Voir section suivante.",
-              accent: "var(--gold)",
+              label: "Fondamentaux de base",
+              pts: "-2 à 4",
+              desc: "Réduit en v3 (de 12 à 4 pts max). Consensus analyste, P/E < 10, D/E < 30. Information publique, déjà pricée — poids volontairement réduit.",
+              accent: "var(--c-indigo-2)",
             },
           ] : [
             {
-              label: "% market cap",
-              pts: "0–28",
-              desc: "trade amount / market cap, logarithmic scale. 0.001% → 1pt, 0.1% → 16pts, 1%+ → 28pts.",
+              label: "Directional cluster ±30d",
+              pts: "0–18",
+              desc: "★ Number of DISTINCT insiders who traded the same company in the SAME direction within ±30 days. 2→12pts, 3→15pts, 4+→18pts. v3: strict directionality (a BUY is only scored against other BUYs).",
               accent: "var(--gold)",
             },
             {
-              label: "% insider flow",
+              label: "% market cap",
               pts: "0–16",
-              desc: "share of this trade in the insider's total flow for this company. 100% (only trade) → 16pts.",
+              desc: "trade amount / market cap, logarithmic scale. 0.001% → 1pt, 0.1% → 10pts, 1%+ → 16pts.",
+              accent: "var(--gold)",
+            },
+            {
+              label: "Insider track record",
+              pts: "-2 to 14",
+              desc: "★ NEW v3. Historical mean alpha of this insider (T+90 returns on past trades) with Bayesian shrinkage (k=5) toward the global mean. Alpha < -5% → -2pt. Alpha 2-5% → 7pts. Alpha > 10% → 14pts.",
               accent: "var(--gold)",
             },
             {
               label: "Role",
-              pts: "0–12",
-              desc: "CEO/MD → 12, CFO → 11, Director → 8, Board → 6, Other → 2.",
+              pts: "0–14",
+              desc: "CEO/MD → 14, CFO → 13, Director → 9, Board → 6, Other → 2. Weight strengthened in v3.",
               accent: "var(--c-indigo-2)",
             },
             {
-              label: "Cluster strength",
-              pts: "0–8",
-              desc: "number of distinct executives who traded the same company within ±30 days. 2→4pts, 3→6pts, 4+→8pts.",
+              label: "Composite signals",
+              pts: "0–10",
+              desc: "Bonus built on 7 Yahoo signals (momentum, value, quality, upside). In v3, the near-52w-low flag only activates if cluster OR CEO/CFO (anti-knife-catching).",
               accent: "var(--c-indigo-2)",
+            },
+            {
+              label: "% insider flow",
+              pts: "0–8",
+              desc: "share of this trade in the insider's total flow for this company.",
+              accent: "var(--c-indigo-2)",
+            },
+            {
+              label: "DCA / accumulation",
+              pts: "0–6",
+              desc: "★ NEW v3. Count of prior buys by the same (insider, company) over 12 months. 1→2pts, 2→4pts, 3+→6pts. A repeat-accumulating insider is historically as strong a signal as cluster.",
+              accent: "var(--gold)",
+            },
+            {
+              label: "Analyst-contrarian",
+              pts: "0–6",
+              desc: "★ NEW v3. Activates when the insider BUYS while sell-side consensus is neutral or bearish (≥3.0). Literature: contrarian insider buying historically produces +6% alpha vs +2% when aligned with consensus.",
+              accent: "var(--gold)",
             },
             {
               label: "Directional conviction",
               pts: "0–4",
               desc: "bonus if the insider is a net cumulative buyer on this stock before the transaction.",
-              accent: "var(--gold)",
-            },
-            {
-              label: "Basic fundamentals",
-              pts: "-4 to 12",
-              desc: "analyst consensus (1.0 → +6, 3.0 → 0), P/E (<10 → +3, <20 → +1), debt/equity (<30 → +3).",
               accent: "var(--c-indigo-2)",
             },
             {
-              label: "Composite signals",
-              pts: "0–20",
-              desc: "Additional bonus built on 8 Yahoo signals (momentum, value, quality, upside, etc.). See next section.",
-              accent: "var(--gold)",
+              label: "Basic fundamentals",
+              pts: "-2 to 4",
+              desc: "Reduced in v3 (from 12 to 4 pts max). Analyst consensus, P/E < 10, D/E < 30. Public info, already priced in — weight deliberately reduced.",
+              accent: "var(--c-indigo-2)",
             },
           ]}
         />
@@ -952,14 +988,14 @@ export default async function MethodologiePage() {
         </div>
       </section>
 
-      {/* ── Section 4 · Composite signals (NEW) ── */}
+      {/* ── Section 4 · Composite signals (v3: cap 10 pts, 52w-low gated) ── */}
       <section className="mb-16">
         <SectionTitle
           eyebrow={isFr ? "4. Signaux composites" : "4. Composite signals"}
-          title={isFr ? "Huit signaux Yahoo qui se combinent" : "Eight Yahoo signals that combine"}
+          title={isFr ? "Sept signaux Yahoo qui se combinent" : "Seven Yahoo signals that combine"}
           sub={isFr
-            ? "En plus de la transaction elle-même, nous analysons 8 dimensions de la société pour affiner le score. Chacun émet un flag visible sur les cartes et contribue au bonus final (cap +20 pts)."
-            : "In addition to the transaction itself, we analyse 8 dimensions of the company to refine the score. Each emits a visible flag on the cards and contributes to the final bonus (cap +20 pts)."}
+            ? "En plus de la transaction elle-même, nous analysons 7 dimensions de la société pour affiner le score. v3 : cap total réduit à +10 pts (information publique, déjà pricée). Le flag near-52w-low est GATED — il n'est actif que si un cluster ≥2 existe OU si le dirigeant est PDG/CFO, pour éviter les couteaux qui tombent."
+            : "In addition to the transaction itself, we analyse 7 dimensions of the company to refine the score. v3: total cap reduced to +10 pts (public info, already priced in). The near-52w-low flag is GATED — it only activates if a cluster ≥2 exists OR if the insider is CEO/CFO, to avoid knife-catching."}
         />
         <div
           className="grid"
@@ -970,23 +1006,33 @@ export default async function MethodologiePage() {
         >
           <SignalCard
             isFr={isFr}
-            name={isFr ? "Près plus bas 52s" : "Near 52-week low"}
+            name={isFr ? "Près plus bas 52s (gated)" : "Near 52-week low (gated)"}
             desc={isFr
-              ? "Achat d'un dirigeant alors que le cours est proche du plus bas sur 52 semaines, contrarian classique."
-              : "Executive buy when the price is near its 52-week low — classic contrarian setup."}
-            threshold={isFr ? "position < 20% du range 52s" : "position < 20% of 52w range"}
-            points="+3 pts"
+              ? "Achat près du plus bas 52 semaines — contrarian classique. v3 : activé uniquement si cluster ≥ 2 OU rôle PDG/CFO. Sans cette condition, le bonus n'est pas accordé (anti-knife-catching)."
+              : "Buy near 52-week low — classic contrarian setup. v3: only activates if cluster ≥ 2 OR role CEO/CFO. Without this condition, the bonus is not granted (anti-knife-catching)."}
+            threshold={isFr ? "pos < 20% du range 52s · gated" : "pos < 20% of 52w range · gated"}
+            points="+2 pts"
             badge={isFr ? "Près plus bas 52s" : "Near 52w low"}
           />
           <SignalCard
             isFr={isFr}
             name={isFr ? "Momentum long terme" : "Long-term momentum"}
             desc={isFr
-              ? "Cours au-dessus de sa moyenne mobile 200 jours : tendance de fond haussière, conforté par l'achat dirigeant."
-              : "Price above its 200-day moving average: underlying uptrend, reinforced by the insider buy."}
+              ? "Cours au-dessus de sa moyenne mobile 200 jours : tendance de fond haussière confortée par l'achat dirigeant."
+              : "Price above its 200-day moving average: underlying uptrend reinforced by the insider buy."}
             threshold={isFr ? "prix ≥ MA200 × 1.05" : "price ≥ MA200 × 1.05"}
-            points="+2 pts"
+            points="+1 pt"
             badge="Momentum"
+          />
+          <SignalCard
+            isFr={isFr}
+            name={isFr ? "Oversold (gated)" : "Oversold (gated)"}
+            desc={isFr
+              ? "Cours ≥ 15% sous la MA200. Activé uniquement si cluster OU PDG/CFO. Setup contrarian couplé à une validation insider."
+              : "Price ≥ 15% below MA200. Only activates if cluster OR CEO/CFO. Contrarian setup paired with insider validation."}
+            threshold={isFr ? "prix ≤ MA200 × 0.85 · gated" : "price ≤ MA200 × 0.85 · gated"}
+            points="+1 pt"
+            badge="Oversold"
           />
           <SignalCard
             isFr={isFr}
@@ -995,18 +1041,8 @@ export default async function MethodologiePage() {
               ? "Objectif cours moyen analystes supérieur de 25%+ au cours actuel. Consensus bullish chiffré."
               : "Average analyst price target more than 25% above the current price. Quantified bullish consensus."}
             threshold={isFr ? "(target − prix) / prix ≥ 25%" : "(target − price) / price ≥ 25%"}
-            points="+3 pts"
-            badge="Upside ≥25%"
-          />
-          <SignalCard
-            isFr={isFr}
-            name={isFr ? "Strong Buy analystes" : "Analyst Strong Buy"}
-            desc={isFr
-              ? "Consensus moyen ≤ 1.75 (échelle Yahoo 1 = Strong Buy, 5 = Strong Sell). Minimum 3 analystes."
-              : "Average consensus ≤ 1.75 (Yahoo scale: 1 = Strong Buy, 5 = Strong Sell). Minimum 3 analysts."}
-            threshold="analystScore ≤ 1.75"
             points="+2 pts"
-            badge="Strong Buy"
+            badge="Upside ≥25%"
           />
           <SignalCard
             isFr={isFr}
@@ -1015,7 +1051,7 @@ export default async function MethodologiePage() {
               ? "P/E < 15, P/B < 2, free cash flow positif. Aligné avec l'école Graham / Buffett."
               : "P/E < 15, P/B < 2, positive free cash flow. Aligned with the Graham / Buffett school."}
             threshold="P/E<15 & P/B<2 & FCF>0"
-            points="+2 pts"
+            points="+1 pt"
             badge="Value"
           />
           <SignalCard
@@ -1025,7 +1061,7 @@ export default async function MethodologiePage() {
               ? "ROE ≥ 15%, marge nette ≥ 10%, D/E < 80. Société capable de générer du rendement durable."
               : "ROE ≥ 15%, net margin ≥ 10%, D/E < 80. A company capable of generating durable returns."}
             threshold={isFr ? "ROE≥15% & marge≥10% & D/E<80" : "ROE≥15% & margin≥10% & D/E<80"}
-            points="+3 pts"
+            points="+2 pts"
             badge={isFr ? "Qualité" : "Quality"}
           />
           <SignalCard
@@ -1035,7 +1071,7 @@ export default async function MethodologiePage() {
               ? "Les dirigeants possèdent déjà une part significative du capital. Achat = renforcement d'un alignement existant."
               : "Executives already own a significant share of the capital. The buy reinforces an existing alignment."}
             threshold="heldByInsiders ≥ 20%"
-            points="+2 pts"
+            points="+1 pt"
             badge={isFr ? "Dirigeants ≥20%" : "Insiders ≥20%"}
           />
           <SignalCard
@@ -1045,9 +1081,16 @@ export default async function MethodologiePage() {
               ? "Short ratio élevé + achat dirigeant = setup contrarian avec catalyseur de couverture possible."
               : "High short ratio + insider buy = contrarian setup with possible short-covering catalyst."}
             threshold="shortRatio ≥ 5"
-            points="+2 pts"
+            points="+1 pt"
             badge="Short squeeze"
           />
+        </div>
+        <div style={{ marginTop: "14px", padding: "12px 16px", background: "var(--bg-raised)", border: "1px solid var(--border)", borderLeft: "2px solid var(--gold)", borderRadius: "2px", fontSize: "0.82rem", color: "var(--tx-3)", lineHeight: 1.6, fontFamily: "var(--font-inter), sans-serif" }}>
+          {isFr ? (
+            <><strong style={{ color: "var(--tx-1)" }}>Note v3 · le signal Strong Buy analyste a été retiré du composite.</strong> Il est remplacé par un signal dédié &laquo; analyst-contrarian &raquo; (voir Section 3) qui prime le cas inverse — achat dirigeant quand le consensus est neutre ou baissier — empiriquement plus prédictif.</>
+          ) : (
+            <><strong style={{ color: "var(--tx-1)" }}>v3 note · the Strong Buy analyst signal was removed from the composite.</strong> It is replaced by a dedicated &quot;analyst-contrarian&quot; signal (see Section 3) which rewards the opposite setup — insider buy when consensus is neutral or bearish — empirically more predictive.</>
+          )}
         </div>
       </section>
 
@@ -1069,27 +1112,27 @@ export default async function MethodologiePage() {
               accent: "var(--gold)",
             },
             {
-              label: "Win rate historique",
+              label: "Win rate historique (shrinkage)",
               pts: "25",
-              desc: "% de trades gagnants T+90 pour ce type de signal (fonction + taille société).",
+              desc: "v3 · % trades gagnants T+90 pour le bucket (rôle + taille). Shrinkage bayésien (k=20) vers la moyenne globale — un bucket à faible n est tiré vers le prior et ne peut plus surcoter sur du bruit.",
               accent: "var(--gold)",
             },
             {
-              label: "Retour estimé T+90",
+              label: "Retour estimé T+90 (shrinkage)",
               pts: "20",
-              desc: "rendement moyen T+90 pour ce profil historique. Cap à 20% = 20pts.",
+              desc: "v3 · Rendement moyen T+90 du bucket avec shrinkage bayésien (k=20). Cap +13% → 20pts. Plus aucun bucket sous-échantillonné ne maxe les points sur quelques trades chanceux.",
               accent: "var(--signal-pos)",
             },
             {
-              label: "Récence",
+              label: "Récence (v3 half-life 45j)",
               pts: "15",
-              desc: "décroissance exponentielle depuis la date de publication. Demi-vie de 21 jours.",
+              desc: "v3 · Décroissance exponentielle depuis la publication. Demi-vie portée de 21 à 45 jours — alignée sur l'horizon de hold T+90. Pénalité staleness appliquée ici (pas dans le signalScore).",
               accent: "var(--c-indigo-2)",
             },
             {
               label: "Conviction",
               pts: "10",
-              desc: "bonus cluster (10), % mcap ≥ 2% (9), ≥ 0.5% (6), montant ≥ 500k€ (4).",
+              desc: "Bonus cluster (5), % mcap ≥ 0.5% (3), montant ≥ 500k€ (2).",
               accent: "var(--gold)",
             },
           ] : [
@@ -1100,27 +1143,27 @@ export default async function MethodologiePage() {
               accent: "var(--gold)",
             },
             {
-              label: "Historical win rate",
+              label: "Historical win rate (shrinkage)",
               pts: "25",
-              desc: "% of winning trades at T+90 for this signal type (role + company size).",
+              desc: "v3 · % of winning T+90 trades for the bucket (role + size). Bayesian shrinkage (k=20) toward the global mean — a low-n bucket is pulled toward the prior and can no longer over-rank from noise.",
               accent: "var(--gold)",
             },
             {
-              label: "Estimated T+90 return",
+              label: "Estimated T+90 return (shrinkage)",
               pts: "20",
-              desc: "Average T+90 return for this historical profile. Cap at 20% = 20pts.",
+              desc: "v3 · Bucket's average T+90 return with Bayesian shrinkage (k=20). Cap +13% → 20pts. Under-sampled buckets can no longer max the points from a few lucky trades.",
               accent: "var(--signal-pos)",
             },
             {
-              label: "Recency",
+              label: "Recency (v3 half-life 45d)",
               pts: "15",
-              desc: "Exponential decay since the filing date. Half-life of 21 days.",
+              desc: "v3 · Exponential decay since filing. Half-life raised from 21 to 45 days — aligned with T+90 hold horizon. Staleness penalty applied here (not baked into signalScore).",
               accent: "var(--c-indigo-2)",
             },
             {
               label: "Conviction",
               pts: "10",
-              desc: "cluster bonus (10), % mcap ≥ 2% (9), ≥ 0.5% (6), amount ≥ €500k (4).",
+              desc: "Cluster bonus (5), % mcap ≥ 0.5% (3), amount ≥ €500k (2).",
               accent: "var(--gold)",
             },
           ]}

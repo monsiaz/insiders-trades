@@ -11,7 +11,7 @@ const STAGES = [
   { id: "amf",      label: "AMF BDIF",     sub: "Polling 1h",       x: 60,  y: 90  },
   { id: "parse",    label: "Parse PDF",    sub: "Regex + pdftotext", x: 280, y: 90  },
   { id: "yahoo",    label: "Enrich Yahoo", sub: "Mcap, fondamentaux", x: 500, y: 90  },
-  { id: "score",    label: "Score 0–100",  sub: "7 composantes",    x: 720, y: 90  },
+  { id: "score",    label: "Score 0–100",  sub: "10 composantes v3", x: 720, y: 90  },
   { id: "backtest", label: "Backtest",     sub: "T+30 à T+730",      x: 280, y: 220 },
   { id: "signal",   label: "Signal",       sub: "Reco actionnable", x: 720, y: 220 },
 ];

@@ -650,21 +650,24 @@ export default async function AdminTechPage() {
         </Para>
       </Section>
 
-      {/* ── 6. Scoring engine ── */}
+      {/* ── 6. Scoring engine (v3) ── */}
       <Section
-        eyebrow="6. Moteur de scoring"
-        title="signalScore · décomposition 100 pts"
-        sub={<>Calculé par <Code>src/lib/signals.ts</Code> à chaque <Code>scoreDeclarations()</Code>. Re-scoring manuel via l&apos;onglet Cron admin. Budget total strict de 100.</>}
+        eyebrow="6. Moteur de scoring · v3"
+        title="signalScore · décomposition 100 pts (v3, 2026-04)"
+        sub={<>Calculé par <Code>src/lib/signals.ts</Code> à chaque <Code>scoreDeclarations()</Code>. Re-scoring manuel via l&apos;onglet Cron admin. Budget total strict de 100. v3 : redistribution vers les signaux insider-centrés (track record, DCA, cluster directionnel, analyst-contrarian).</>}
       >
         <div style={{ border: "1px solid var(--border-med)", borderRadius: "3px", overflow: "hidden" }}>
           {[
-            { label: "% capitalisation", pts: "28", desc: "log(pct) échelle : 0.001%=1pt, 0.1%=16pts, 1%=28pts" },
-            { label: "% flux dirigeant", pts: "16", desc: "part du trade dans le flux total insider sur cette société" },
-            { label: "Fonction rôle", pts: "12", desc: "PDG/DG=12 · CFO/DAF=11 · Directeur=8 · CA/Board=6 · Autre=2" },
-            { label: "Force du cluster", pts: "8", desc: "≥4 insiders ±30j → 8 · 3 → 6 · 2 → 4 · 1 → 0" },
-            { label: "Conviction dir.", pts: "4", desc: "insider net-acheteur cumulé avant le trade" },
-            { label: "Fondamentaux", pts: "-4 à 12", desc: "consensus analyste (1.0→+6, 3.0→0, 4→-4) · P/E<15 +2 · D/E<80 +2" },
-            { label: "Composite Yahoo", pts: "0–20", desc: "8 signaux additionnels, voir section 7" },
+            { label: "Cluster directionnel ±30j", pts: "0–18",  desc: "★ ≥2 insiders MÊME sens (BUY xor SELL) · 2→12, 3→15, 4+→18" },
+            { label: "% capitalisation",          pts: "0–16",  desc: "log(pct) : 0.001%=1, 0.1%=10, 1%+=16" },
+            { label: "Track record insider ★",    pts: "-2–14", desc: "alpha prior · shrinkage bayésien k=5 · 2-5%=7, >10%=14" },
+            { label: "Fonction rôle",             pts: "0–14",  desc: "PDG/DG=14 · CFO/DAF=13 · Directeur=9 · CA/Board=6 · Autre=2" },
+            { label: "Composite Yahoo",           pts: "0–10",  desc: "7 flags, near-52w-low GATED sur cluster/PDG/CFO (anti-knife-catching)" },
+            { label: "% flux dirigeant",          pts: "0–8",   desc: "part du trade dans le flux total insider sur cette société" },
+            { label: "DCA / accumulation ★",      pts: "0–6",   desc: "NEW · ≥2 buys prior 12m sur (insider, co) · 1→2, 2→4, 3+→6" },
+            { label: "Analyst-contrarian ★",      pts: "0–6",   desc: "NEW · BUY + consensus ≥ 3.0 · 3.0-3.5→3, ≥3.5→6" },
+            { label: "Conviction dir.",           pts: "0–4",   desc: "insider net-acheteur cumulé avant le trade" },
+            { label: "Fondamentaux (réduit)",     pts: "-2–4",  desc: "v3 · poids réduit · consensus (1.0→+2) · P/E<10 +1 · D/E<30 +1" },
           ].map((r, i, all) => (
             <div
               key={r.label}
@@ -696,22 +699,23 @@ export default async function AdminTechPage() {
         </div>
       </Section>
 
-      {/* ── 7. Composite signals ── */}
+      {/* ── 7. Composite signals (v3 · cap 10, rescaled, gated) ── */}
       <Section
-        eyebrow="7. Signaux composites"
-        title="Huit composantes Yahoo qui boostent le score"
-        sub="Documentés exhaustivement sur la page méthodologie publique. Source : src/lib/signals.ts computeComposite()."
+        eyebrow="7. Signaux composites · v3"
+        title="Sept flags Yahoo, cap 10 pts, near-52w-low GATED"
+        sub={<>v3 : sub-bonuses rescaled 0.5×, cap global 10 pts (vs 20 en v2), le flag <Code>near-52w-low</Code> et <Code>oversold</Code> exigent désormais cluster ≥ 2 OU PDG/CFO. Le flag <Code>analyst-strong-buy</Code> est retiré (remplacé par un composant dédié <em>analyst-contrarian</em>). Source : <Code>src/lib/signals.ts</Code> computeComposite().</>}
       >
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "10px" }}>
           {[
-            { name: "near-52w-low",         thr: "position < 20% du range 52s", pts: "+3" },
-            { name: "above-ma200",          thr: "prix ≥ MA200 × 1.05",          pts: "+2" },
-            { name: "upside-25pct",         thr: "target / prix ≥ 1.25",         pts: "+3" },
-            { name: "analyst-strong-buy",   thr: "analystScore ≤ 1.75",          pts: "+2" },
-            { name: "value-combo",          thr: "P/E<15 & P/B<2 & FCF>0",       pts: "+2" },
-            { name: "quality-combo",        thr: "ROE≥15% & marge≥10% & D/E<80", pts: "+3" },
-            { name: "insider-owned-high",   thr: "heldByInsiders ≥ 20%",          pts: "+2" },
-            { name: "short-squeeze",        thr: "shortRatio ≥ 5",                pts: "+2" },
+            { name: "near-52w-low (gated)", thr: "pos < 20% range 52s · cluster/PDG/CFO", pts: "+2" },
+            { name: "above-ma200",          thr: "prix ≥ MA200 × 1.05",                  pts: "+1" },
+            { name: "oversold (gated)",     thr: "prix ≤ MA200 × 0.85 · cluster/PDG/CFO", pts: "+1" },
+            { name: "upside-25pct",         thr: "target / prix ≥ 1.25",                 pts: "+2" },
+            { name: "upside-15pct",         thr: "target / prix ≥ 1.15",                 pts: "+1" },
+            { name: "value-combo",          thr: "P/E<15 & P/B<2 & FCF>0",               pts: "+1" },
+            { name: "quality-combo",        thr: "ROE≥15% & marge≥10% & D/E<80",         pts: "+2" },
+            { name: "insider-owned-high",   thr: "heldByInsiders ≥ 20%",                 pts: "+1" },
+            { name: "short-squeeze",        thr: "shortRatio ≥ 5",                       pts: "+1" },
           ].map((s) => (
             <Card key={s.name} accent="var(--gold)" padding="12px 14px">
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "8px" }}>
@@ -743,11 +747,11 @@ export default async function AdminTechPage() {
       >
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "10px" }}>
           {[
-            { label: "Signal brut",      pts: "30", desc: "signalScore / 100 × 30" },
-            { label: "Win rate 90d",     pts: "25", desc: "bucket role×size historique" },
-            { label: "Retour T+90",      pts: "20", desc: "cap à +20% (buy) / -15% (sell)" },
-            { label: "Récence",          pts: "15", desc: "exp decay half-life 21j" },
-            { label: "Conviction",       pts: "10", desc: "cluster / % mcap / amount" },
+            { label: "Signal brut v3",       pts: "30", desc: "signalScore v3 / 100 × 30" },
+            { label: "Win rate 90d (shr.)",  pts: "25", desc: "bucket role×size + shrinkage k=20" },
+            { label: "Retour T+90 (shr.)",   pts: "20", desc: "cap +13%, shrinkage bayésien" },
+            { label: "Récence (v3)",         pts: "15", desc: "exp decay half-life 45j + staleness" },
+            { label: "Conviction",           pts: "10", desc: "cluster / % mcap / amount" },
           ].map((s) => (
             <Card key={s.label} accent="var(--c-indigo-2)" padding="14px 16px">
               <div style={{ fontSize: "0.82rem", color: "var(--tx-1)", fontWeight: 600, marginBottom: "3px" }}>{s.label}</div>

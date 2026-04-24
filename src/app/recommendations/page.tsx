@@ -172,18 +172,18 @@ function MethodologyCard({ locale = "en" }: { locale?: "en" | "fr" }) {
   const isFr = locale === "fr";
   const pts = isFr
     ? [
-        { label: "Signal AMF",  pts: "30", desc: "Score propriétaire + comportement insider" },
-        { label: "Win rate",    pts: "25", desc: "% trades gagnants pour ce profil" },
-        { label: "Retour T+90", pts: "20", desc: "Rendement moyen historique" },
-        { label: "Récence",     pts: "15", desc: "Décroissance exp. · demi-vie 21j" },
-        { label: "Conviction",  pts: "10", desc: "Cluster · % mcap · taille ticket" },
+        { label: "Signal AMF v3",   pts: "30", desc: "Score propriétaire 10 composantes (track record, DCA…)" },
+        { label: "Win rate (shr.)", pts: "25", desc: "% trades gagnants, shrinkage bayésien vers la moyenne" },
+        { label: "Retour T+90 (shr.)", pts: "20", desc: "Rendement moyen historique, shrinkage bayésien" },
+        { label: "Récence",         pts: "15", desc: "Décroissance exp. · demi-vie 45j (v3) + staleness" },
+        { label: "Conviction",      pts: "10", desc: "Cluster · % mcap · taille ticket" },
       ]
     : [
-        { label: "AMF signal",   pts: "30", desc: "Proprietary score + insider behaviour" },
-        { label: "Win rate",     pts: "25", desc: "% winning trades for this profile" },
-        { label: "T+90 return",  pts: "20", desc: "Average historical return" },
-        { label: "Recency",      pts: "15", desc: "Exp. decay · half-life 21d" },
-        { label: "Conviction",   pts: "10", desc: "Cluster · % mcap · ticket size" },
+        { label: "AMF signal v3",   pts: "30", desc: "Proprietary 10-component score (track record, DCA…)" },
+        { label: "Win rate (shr.)", pts: "25", desc: "% winning trades, Bayesian shrinkage toward mean" },
+        { label: "T+90 return (shr.)", pts: "20", desc: "Average historical return, Bayesian shrinkage" },
+        { label: "Recency",         pts: "15", desc: "Exp. decay · half-life 45d (v3) + staleness" },
+        { label: "Conviction",      pts: "10", desc: "Cluster · % mcap · ticket size" },
       ];
   return (
     <div className="mb-8" style={{

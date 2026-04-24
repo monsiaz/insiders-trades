@@ -330,13 +330,17 @@ export default async function StrategiePage() {
             title={`Score ≥ ${WINNING_STRATEGY.minScore}`}
             detail={isFr ? (
               <>
-                Notre scoring composite (0–100) sert de filtre bas. Les autres filtres ci-dessus
-                font l&apos;essentiel du tri, inutile d&apos;exiger score ≥ 70.
+                Notre scoring composite v3 (0–100, 10 composantes) sert de filtre bas. Seuil relevé
+                à {WINNING_STRATEGY.minScore} avec la v3 car la redistribution des poids vers les
+                features insider-centrées (track record, DCA, cluster directionnel) rend un score v3 de
+                {" "}{WINNING_STRATEGY.minScore} équivalent à un v2 de ~50 en pouvoir informationnel.
               </>
             ) : (
               <>
-                Our composite score (0–100) acts as a floor filter. The other filters above
-                do most of the sorting — no need to require score ≥ 70.
+                Our v3 composite score (0–100, 10 components) acts as a floor filter. Raised to{" "}
+                {WINNING_STRATEGY.minScore} with v3 because the weight redistribution toward
+                insider-centric features (track record, DCA, directional cluster) makes a v3 score of
+                {" "}{WINNING_STRATEGY.minScore} carry similar informational value to a v2 ~50.
               </>
             )}
           />

@@ -31,9 +31,14 @@ import { normalizeRole } from "./role-utils";
 // ── Configurable thresholds (exported for transparency) ─────────────────────
 
 export const WINNING_STRATEGY = {
-  minScore: 30,
+  // Updated for signal-score v3. The minScore threshold was raised from 30 to
+  // 40 because v3 redistributes ~20 pts of the score from generic fundamentals
+  // toward insider-centric features (track record, DCA, analyst-contrarian,
+  // directional cluster). A v3 score of 40 carries similar informational value
+  // to a v2 score of ~50, and filters more noise at the same conviction level.
+  minScore: 40,
   minMarketCapEur: 200_000_000,    // 200 M€
-  maxMarketCapEur: 1_000_000_000,  // 1 B€
+  maxMarketCapEur: 1_000_000_000,  // 1 B€  (aligned with "Sweet" size bucket)
   maxPubDelayDays: 7,
   acquisitionOnly: true,
   excludeBoardRole: true,

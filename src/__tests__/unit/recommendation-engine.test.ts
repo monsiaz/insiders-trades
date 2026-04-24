@@ -23,11 +23,12 @@ function normalizeRole(fn: string | null | undefined): string {
 
 function sizeLabel(marketCap: bigint | number | null): string {
   const mc = marketCap ? Number(marketCap) : 0;
-  if (mc <= 0)          return "Unknown";
-  if (mc < 50_000_000)  return "Micro";
-  if (mc < 300_000_000) return "Small";
-  if (mc < 2_000_000_000) return "Mid";
-  if (mc < 10_000_000_000) return "Large";
+  if (mc <= 0)             return "Unknown";
+  if (mc < 50_000_000)     return "Micro";
+  if (mc < 300_000_000)    return "Small";
+  if (mc < 1_000_000_000)  return "Sweet";
+  if (mc < 3_000_000_000)  return "Mid";
+  if (mc < 15_000_000_000) return "Large";
   return "Mega";
 }
 
@@ -92,20 +93,24 @@ describe("sizeLabel", () => {
     expect(sizeLabel(50_000_000)).toBe("Small");
     expect(sizeLabel(299_999_999)).toBe("Small");
   });
-  it("classifies Mid (300M–2B€)", () => {
-    expect(sizeLabel(300_000_000)).toBe("Mid");
-    expect(sizeLabel(1_999_999_999)).toBe("Mid");
+  it("classifies Sweet (300M–1B€) — the v3 alpha zone", () => {
+    expect(sizeLabel(300_000_000)).toBe("Sweet");
+    expect(sizeLabel(999_999_999)).toBe("Sweet");
   });
-  it("classifies Large (2B–10B€)", () => {
-    expect(sizeLabel(2_000_000_000)).toBe("Large");
-    expect(sizeLabel(9_999_999_999)).toBe("Large");
+  it("classifies Mid (1B–3B€)", () => {
+    expect(sizeLabel(1_000_000_000)).toBe("Mid");
+    expect(sizeLabel(2_999_999_999)).toBe("Mid");
   });
-  it("classifies Mega (>10B€)", () => {
-    expect(sizeLabel(10_000_000_000)).toBe("Mega");
-    expect(sizeLabel(100_000_000_000)).toBe("Mega");
+  it("classifies Large (3B–15B€)", () => {
+    expect(sizeLabel(3_000_000_000)).toBe("Large");
+    expect(sizeLabel(14_999_999_999)).toBe("Large");
+  });
+  it("classifies Mega (>15B€)", () => {
+    expect(sizeLabel(15_000_000_000)).toBe("Mega");
+    expect(sizeLabel(400_000_000_000)).toBe("Mega");
   });
   it("handles BigInt input", () => {
-    expect(sizeLabel(BigInt(500_000_000))).toBe("Mid");
+    expect(sizeLabel(BigInt(500_000_000))).toBe("Sweet");
   });
 });
 

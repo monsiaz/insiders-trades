@@ -72,15 +72,19 @@ export function roleLabelForReco(fn: string | null): string {
   return normalizeRole(fn);
 }
 
+// v3: refined buckets. The 300M-1B sweet spot is where the grid search found the
+// winning strategy's edge lives (liquid enough to trade, small enough to be
+// under-covered by sell-side). Splitting it out gives cleaner bucket stats.
 function sizeLabel(mcap: bigint | number | null | undefined): string {
   if (mcap == null) return "Unknown";
   const mc = Number(mcap);
   if (!mc) return "Unknown";
-  if (mc < 50_000_000)     return "Micro";
-  if (mc < 300_000_000)    return "Small";
-  if (mc < 2_000_000_000)  return "Mid";
-  if (mc < 10_000_000_000) return "Large";
-  return "Mega";
+  if (mc < 50_000_000)        return "Micro";     // <50M
+  if (mc < 300_000_000)       return "Small";     // 50-300M
+  if (mc < 1_000_000_000)     return "Sweet";     // 300M-1B (★ alpha zone)
+  if (mc < 3_000_000_000)     return "Mid";       // 1-3B
+  if (mc < 15_000_000_000)    return "Large";     // 3-15B
+  return "Mega";                                  // 15B+
 }
 
 const NON_MARKET_KW = [
@@ -103,10 +107,21 @@ interface BucketStat {
   avgReturn365d: number | null;
 }
 
-async function _buildBucketStats(): Promise<{
+interface BucketCatalog {
   buy: Record<string, BucketStat>;
   sell: Record<string, BucketStat>;
-}> {
+  /**
+   * Overall BUY priors used for Bayesian shrinkage when a specific bucket has
+   * too few observations (F4). overallBuyWinRate/return replace the hard-coded
+   * 40% prior from v2 (F9).
+   */
+  overallBuyWinRate: number | null;
+  overallBuyReturn90d: number | null;
+  overallSellWinRate: number | null;
+  overallSellReturn90d: number | null;
+}
+
+async function _buildBucketStats(): Promise<BucketCatalog> {
   const results = await prisma.backtestResult.findMany({
     where: { returnFromPub90d: { not: null } },
     select: {
@@ -157,14 +172,54 @@ async function _buildBucketStats(): Promise<{
     return out;
   }
 
-  return { buy: summarize(buyAcc), sell: summarize(sellAcc) };
+  const buy  = summarize(buyAcc);
+  const sell = summarize(sellAcc);
+
+  return {
+    buy, sell,
+    overallBuyWinRate:   buy["__overall"]?.winRate90d ?? null,
+    overallBuyReturn90d: buy["__overall"]?.avgReturn90d ?? null,
+    overallSellWinRate:  sell["__overall"]?.winRate90d ?? null,
+    overallSellReturn90d:sell["__overall"]?.avgReturn90d ?? null,
+  };
 }
 
 const getBucketStats = unstable_cache(
   _buildBucketStats,
-  ["reco-bucket-stats-v3"],
+  ["reco-bucket-stats-v4"],
   { revalidate: 1800 },
 );
+
+// ────────────────────────────────────────────────────────────────────────────
+// v3 shrinkage helpers
+// Bayesian shrinkage: a bucket with n observations and mean m gets pulled
+// toward the prior with strength k. Effective = (n·m + k·prior) / (n + k).
+// ────────────────────────────────────────────────────────────────────────────
+const SHRINKAGE_K = 20;          // soft prior strength · ~20 trades
+const RECENCY_HALFLIFE_DAYS = 45; // v3: aligned with 90-day hold (was 21 in v2)
+const STALENESS_THRESHOLDS = [   // display-time only, in days
+  { maxDays: 7,  penalty:  0 },
+  { maxDays: 14, penalty: -1 },
+  { maxDays: 30, penalty: -3 },
+  { maxDays: Infinity, penalty: -5 },
+] as const;
+
+function shrinkMean(
+  sampleMean: number | null,
+  sampleN: number,
+  priorMean: number | null,
+  k: number = SHRINKAGE_K,
+): number | null {
+  if (priorMean == null && sampleMean == null) return null;
+  if (priorMean == null) return sampleMean;
+  if (sampleMean == null || sampleN === 0) return priorMean;
+  return (sampleN * sampleMean + k * priorMean) / (sampleN + k);
+}
+
+function displayStalenessPenalty(daysOld: number): number {
+  for (const t of STALENESS_THRESHOLDS) if (daysOld <= t.maxDays) return t.penalty;
+  return -5;
+}
 
 // ── Prisma select shared by all queries ──────────────────────────────────────
 
@@ -209,20 +264,39 @@ function buildRecoItem(
   decl: DeclRow,
   action: "BUY" | "SELL",
   bucket: BucketStat | null,
+  priors: { winRate: number | null; return90d: number | null },
 ): RecoItem {
   const role = normalizeRole(decl.insiderFunction);
   const size = sizeLabel(decl.company.marketCap);
-  const expectedReturn90d = bucket?.avgReturn90d ?? null;
-  const winRate = bucket?.winRate90d ?? null;
+  const rawBucketReturn = bucket?.avgReturn90d ?? null;
+  const rawBucketWinRate = bucket?.winRate90d ?? null;
+  const bucketN = bucket?.count ?? 0;
   const daysOld = (Date.now() - decl.pubDate.getTime()) / 86400_000;
+
+  // v3: Bayesian shrinkage against overall priors (F4 + F9).
+  // A bucket with n=5 trades no longer over-rewards noise; it's pulled toward
+  // the global BUY/SELL average until enough data accumulates (k=20).
+  const shrunkWinRate  = shrinkMean(rawBucketWinRate,  bucketN, priors.winRate);
+  const shrunkReturn   = shrinkMean(rawBucketReturn,   bucketN, priors.return90d);
+
+  // Display-visible expected stats use the SHRUNK versions (honest numbers).
+  const expectedReturn90d = shrunkReturn;
+  const winRate = shrunkWinRate;
 
   // Score breakdown
   const signalPts = Math.round(((decl.signalScore ?? 0) / 100) * 30);
-  const winRatePts = winRate != null ? Math.round((winRate / 100) * 25) : 10; // prior ~40%
+  const winRatePts = winRate != null
+    ? Math.round((winRate / 100) * 25)
+    : 12; // neutral prior (~50% cold start)
   const returnPts = expectedReturn90d != null
     ? Math.min(20, Math.max(0, Math.round(expectedReturn90d * 1.5)))
-    : 8; // prior
-  const recencyPts = Math.round(15 * Math.pow(0.5, daysOld / 21)); // half-life 21d
+    : 8;
+  // v3: half-life aligned with 90-day hold. A 45-day-old trade keeps ~50% weight.
+  const rawRecencyPts = 15 * Math.pow(0.5, daysOld / RECENCY_HALFLIFE_DAYS);
+  // v3: staleness penalty applied HERE (display time), not baked into signalScore.
+  const stalenessPen = displayStalenessPenalty(daysOld);
+  const recencyPts = Math.max(0, Math.round(rawRecencyPts + stalenessPen));
+
   let convictionPts = 0;
   if (decl.isCluster) convictionPts += 5;
   if ((decl.pctOfMarketCap ?? 0) > 0.5) convictionPts += 3;
@@ -454,10 +528,12 @@ async function getCompanyDominance(_cutoff: Date, lookbackDays = 90): Promise<{
 // ── Buy recommendations ───────────────────────────────────────────────────────
 
 async function getBuyRecommendations(cutoff: Date, limit: number): Promise<RecoItem[]> {
-  const [{ buy: buyBuckets }, { dominance, crossTradeDeclIds }] = await Promise.all([
+  const [stats, { dominance, crossTradeDeclIds }] = await Promise.all([
     getBucketStats(),
     getCompanyDominance(cutoff),
   ]);
+  const buyBuckets = stats.buy;
+  const buyPriors = { winRate: stats.overallBuyWinRate, return90d: stats.overallBuyReturn90d };
 
   const decls = await prisma.declaration.findMany({
     where: {
@@ -493,7 +569,7 @@ async function getBuyRecommendations(cutoff: Date, limit: number): Promise<RecoI
 
     if (er != null && er < 2 && (decl.signalScore ?? 0) < 50) continue;
 
-    items.push(buildRecoItem(decl, "BUY", bucket));
+    items.push(buildRecoItem(decl, "BUY", bucket, buyPriors));
   }
 
   items.sort((a, b) => b.recoScore - a.recoScore);
@@ -506,10 +582,12 @@ async function getBuyRecommendations(cutoff: Date, limit: number): Promise<RecoI
 // ── Sell recommendations ──────────────────────────────────────────────────────
 
 async function getSellRecommendations(cutoff: Date, limit: number): Promise<RecoItem[]> {
-  const [{ sell: sellBuckets }, { dominance, crossTradeDeclIds }] = await Promise.all([
+  const [stats, { dominance, crossTradeDeclIds }] = await Promise.all([
     getBucketStats(),
     getCompanyDominance(cutoff),
   ]);
+  const sellBuckets = stats.sell;
+  const sellPriors = { winRate: stats.overallSellWinRate, return90d: stats.overallSellReturn90d };
 
   const decls = await prisma.declaration.findMany({
     where: {
@@ -541,7 +619,7 @@ async function getSellRecommendations(cutoff: Date, limit: number): Promise<Reco
     const size = sizeLabel(decl.company.marketCap);
     const bucket = lookupBucket(sellBuckets, role, size);
 
-    items.push(buildRecoItem(decl, "SELL", bucket));
+    items.push(buildRecoItem(decl, "SELL", bucket, sellPriors));
   }
 
   items.sort((a, b) => (b.totalAmount ?? 0) - (a.totalAmount ?? 0));
@@ -557,10 +635,14 @@ async function getPersonalRecommendations(
   limit: number,
   portfolioIsins: string[],
 ): Promise<RecoItem[]> {
-  const [{ buy: buyBuckets, sell: sellBuckets }, { crossTradeDeclIds }] = await Promise.all([
+  const [stats, { crossTradeDeclIds }] = await Promise.all([
     getBucketStats(),
     getCompanyDominance(cutoff),
   ]);
+  const buyBuckets = stats.buy;
+  const sellBuckets = stats.sell;
+  const buyPriors  = { winRate: stats.overallBuyWinRate,  return90d: stats.overallBuyReturn90d };
+  const sellPriors = { winRate: stats.overallSellWinRate, return90d: stats.overallSellReturn90d };
 
   // Parallel fetch: sell alerts on holdings + top buy signals
   const [sellDecls, buyDecls] = await Promise.all([
@@ -611,7 +693,7 @@ async function getPersonalRecommendations(
     const role = normalizeRole(decl.insiderFunction);
     const size = sizeLabel(decl.company.marketCap);
     const bucket = lookupBucket(sellBuckets, role, size);
-    sellItems.push(buildRecoItem(decl, "SELL", bucket));
+    sellItems.push(buildRecoItem(decl, "SELL", bucket, sellPriors));
     seenSlugs.add(decl.company.slug);
   }
 
@@ -626,7 +708,7 @@ async function getPersonalRecommendations(
     const role = normalizeRole(decl.insiderFunction);
     const size = sizeLabel(decl.company.marketCap);
     const bucket = lookupBucket(buyBuckets, role, size);
-    buyItems.push(buildRecoItem(decl, "BUY", bucket));
+    buyItems.push(buildRecoItem(decl, "BUY", bucket, buyPriors));
   }
 
   // Merge same-company cards within each action group

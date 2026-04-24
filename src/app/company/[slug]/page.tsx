@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { DeclarationCard } from "@/components/DeclarationCard";
+import { DeclarationsLoadMore } from "@/components/DeclarationsLoadMore";
 import { CompanySyncButton } from "@/components/CompanySyncButton";
 import { EnrichButton } from "@/components/EnrichButton";
 import nextDynamic from "next/dynamic";
@@ -150,6 +150,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const hdrs = await headers();
   const metaPath = hdrs.get("x-original-path") ?? "/";
   const isFr = metaPath === "/fr" || metaPath.startsWith("/fr/");
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+  const canonical    = isFr ? `${BASE}/fr/company/${slug}/` : `${BASE}/company/${slug}/`;
+  const altLocale    = isFr ? `${BASE}/company/${slug}/`    : `${BASE}/fr/company/${slug}/`;
   const title = isFr
     ? `${company.name} · Transactions dirigeants | Sigma`
     : `${company.name} · Insider Transactions | Sigma`;
@@ -160,9 +163,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title,
     description: desc,
+    alternates: {
+      canonical,
+      languages: { [isFr ? "fr" : "en"]: canonical, [isFr ? "en" : "fr"]: altLocale },
+    },
     openGraph: {
       title: isFr ? `${company.name} · Transactions dirigeants` : `${company.name} · Insider Transactions`,
       description: desc,
+      url: canonical,
       type: "website",
       locale: isFr ? "fr_FR" : "en_US",
       alternateLocale: [isFr ? "en_US" : "fr_FR"],
@@ -192,10 +200,8 @@ interface Props {
 
 export default async function CompanyPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const { type, page } = await searchParams;
-  const pageNum = Math.max(1, parseInt(page || "1", 10));
+  const { type } = await searchParams;
   const limit = 25;
-  const offset = (pageNum - 1) * limit;
   const filterType = type as DeclarationType | undefined;
 
   // Detect locale from x-original-path (ground truth URL, not x-locale which can be stale in cache)
@@ -221,25 +227,20 @@ export default async function CompanyPage({ params, searchParams }: Props) {
     descriptionEn: company.descriptionEn,
   };
 
-  // Fast path: default page, no filter → use cached payload (0 DB round-trips).
-  // Slow path: filtered or non-default page → uncached query (rare, explicit user action).
-  const isDefaultPage = pageNum === 1 && !filterType;
+  // Fast path: no filter → use cached payload. Slow path: filtered → uncached query.
   let declarations: typeof defaultDeclarations;
   let totalCount: number;
 
-  if (isDefaultPage) {
+  if (!filterType) {
     declarations = defaultDeclarations;
     totalCount   = defaultTotalCount;
   } else {
-    const where = {
-      companyId: company.id,
-      ...(filterType ? { type: filterType } : {}),
-    };
+    const where = { companyId: company.id, type: filterType };
     [declarations, totalCount] = await Promise.all([
       prisma.declaration.findMany({
         where,
         orderBy: { pubDate: "desc" },
-        take: limit, skip: offset,
+        take: limit,
         select: {
           id: true, amfId: true, type: true, pubDate: true, link: true, description: true,
           insiderName: true, insiderFunction: true, transactionNature: true,
@@ -255,7 +256,6 @@ export default async function CompanyPage({ params, searchParams }: Props) {
   }
 
   const typeMap = Object.fromEntries(typeCounts.map((t) => [t.type, t._count]));
-  const totalPages = Math.ceil(totalCount / limit);
   const isin = isinRow?.isin ?? company.isin ?? null;
 
   // Build ALL trade events for chart (uses raw ISO string so chart can normalize timezone)
@@ -445,49 +445,16 @@ export default async function CompanyPage({ params, searchParams }: Props) {
         ))}
       </div>
 
-      {/* Declarations list */}
-      <AnimateIn className="space-y-2" stagger={22}>
-        {declarations.length === 0 ? (
-          <div className="glass-card rounded-2xl p-12 text-center" style={{ color: "var(--tx-3)" }}>
-            {isFr ? "Aucune déclaration trouvée" : "No declarations found"}
-          </div>
-        ) : (
-          declarations.map((decl) => (
-            <DeclarationCard key={decl.id} declaration={decl} showCompany={false} locale={locale} />
-          ))
-        )}
-      </AnimateIn>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
-          {pageNum > 1 && (
-            <Link
-              href={`/company/${slug}?${new URLSearchParams({ ...(filterType ? { type: filterType } : {}), page: String(pageNum - 1) })}`}
-              className="btn-glass px-4 py-2 rounded-xl text-sm font-medium"
-            >
-              {isFr ? "← Précédent" : "← Previous"}
-            </Link>
-          )}
-          <span className="text-sm" style={{ color: "var(--tx-3)" }}>
-            Page {pageNum} / {totalPages}
-          </span>
-          {pageNum < totalPages && (
-            <Link
-              href={`/company/${slug}?${new URLSearchParams({ ...(filterType ? { type: filterType } : {}), page: String(pageNum + 1) })}`}
-              className="btn-glass px-4 py-2 rounded-xl text-sm font-medium"
-            >
-              {isFr ? "Suivant →" : "Next →"}
-            </Link>
-          )}
-        </div>
-      )}
-
-      <div className="mt-4 text-center text-xs" style={{ color: "var(--tx-3)" }}>
-        {isFr
-          ? <>{totalCount} déclaration{totalCount !== 1 ? "s" : ""} au total</>
-          : <>{totalCount} declaration{totalCount !== 1 ? "s" : ""} total</>}
-      </div>
+      {/* Declarations — load more on click (no pagination URLs) */}
+      <DeclarationsLoadMore
+        initial={declarations as Parameters<typeof DeclarationsLoadMore>[0]["initial"]}
+        total={totalCount}
+        entityId={company.id}
+        entityType="company"
+        filterType={filterType}
+        showCompany={false}
+        locale={locale}
+      />
 
       {/* AI-generated company description */}
       {(isFr ? companySeo?.descriptionFr : companySeo?.descriptionEn) && (

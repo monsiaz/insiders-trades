@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { DeclarationCard } from "@/components/DeclarationCard";
+import { DeclarationsLoadMore } from "@/components/DeclarationsLoadMore";
 import { RelatedEntities } from "@/components/RelatedEntities";
 import { AnimateIn } from "@/components/AnimateIn";
 import { unstable_cache } from "next/cache";
@@ -93,6 +93,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const hdrs = await headers();
   const metaPath = hdrs.get("x-original-path") ?? "/";
   const isFr = metaPath === "/fr" || metaPath.startsWith("/fr/");
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+  const canonical = isFr ? `${BASE}/fr/insider/${slug}/` : `${BASE}/insider/${slug}/`;
+  const altLocale = isFr ? `${BASE}/insider/${slug}/`    : `${BASE}/fr/insider/${slug}/`;
   const title = `${insider.name}${insider.primaryRole ? ` · ${insider.primaryRole}` : ""} | Sigma`;
   const desc = (isFr ? insider.descriptionFr : insider.descriptionEn)?.slice(0, 160)
     ?? (isFr
@@ -101,9 +104,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title,
     description: desc,
+    alternates: {
+      canonical,
+      languages: { [isFr ? "fr" : "en"]: canonical, [isFr ? "en" : "fr"]: altLocale },
+    },
     openGraph: {
-      title: `${insider.name} · Insider Declarations`,
+      title: `${insider.name} · ${isFr ? "Déclarations d'initiés" : "Insider Declarations"}`,
       description: desc,
+      url: canonical,
       type: "website",
       locale: isFr ? "fr_FR" : "en_US",
       alternateLocale: [isFr ? "en_US" : "fr_FR"],
@@ -128,15 +136,12 @@ export async function generateStaticParams() {
 
 interface Props {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<Record<string, string>>;
 }
 
-export default async function InsiderPage({ params, searchParams }: Props) {
+export default async function InsiderPage({ params }: Props) {
   const { slug } = await params;
-  const { page } = await searchParams;
-  const pageNum = Math.max(1, parseInt(page || "1", 10));
   const limit = 25;
-  const offset = (pageNum - 1) * limit;
 
   const headersList = await headers();
   const originalPath = headersList.get("x-original-path") ?? "/";
@@ -159,36 +164,10 @@ export default async function InsiderPage({ params, searchParams }: Props) {
     primaryRole: insider.primaryRole,
   };
 
-  // Fast path: page 1 → reuse cached payload (0 DB round-trips on warm cache).
-  // Slow path: paginated → hit DB.
-  const isDefaultPage = pageNum === 1;
-  let declarations: typeof defaultDeclarations;
-  let totalCount: number;
-
-  if (isDefaultPage) {
-    declarations = defaultDeclarations;
-    totalCount   = defaultTotalCount;
-  } else {
-    [declarations, totalCount] = await Promise.all([
-      prisma.declaration.findMany({
-        where: { insiderId: insider.id },
-        orderBy: { pubDate: "desc" },
-        take: limit, skip: offset,
-        select: {
-          id: true, amfId: true, type: true, pubDate: true, link: true, description: true,
-          insiderName: true, insiderFunction: true, transactionNature: true,
-          instrumentType: true, isin: true, unitPrice: true, volume: true,
-          totalAmount: true, currency: true, transactionDate: true, transactionVenue: true,
-          pdfParsed: true, signalScore: true, pctOfMarketCap: true, pctOfInsiderFlow: true,
-          company: { select: { name: true, slug: true } },
-          insider: { select: { name: true, slug: true } },
-        },
-      }),
-      prisma.declaration.count({ where: { insiderId: insider.id } }),
-    ]);
-  }
-
-  const totalPages = Math.ceil(totalCount / limit);
+  // Always use cached first-page payload — more pages loaded client-side via API.
+  const declarations = defaultDeclarations;
+  const totalCount   = defaultTotalCount;
+  void limit; // pageSize passed to DeclarationsLoadMore
   const initials = insider.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
 
   const fmt = (v: number | null | undefined) =>
@@ -256,38 +235,15 @@ export default async function InsiderPage({ params, searchParams }: Props) {
         </div>
       </AnimateIn>
 
-      {/* Declarations */}
-      <AnimateIn className="space-y-2" stagger={22}>
-        {declarations.length === 0 ? (
-          <div className="glass-card rounded-2xl p-12 text-center text-[var(--tx-3)]">
-            {isFr ? "Aucune déclaration" : "No declarations"}
-          </div>
-        ) : (
-          declarations.map((decl) => <DeclarationCard key={decl.id} declaration={decl} locale={locale} />)
-        )}
-      </AnimateIn>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
-          {pageNum > 1 && (
-            <Link href={`/insider/${slug}?page=${pageNum - 1}`} className="btn-glass px-4 py-2 rounded-xl text-sm font-medium">
-              {isFr ? "← Précédent" : "← Previous"}
-            </Link>
-          )}
-          <span className="text-sm text-[var(--tx-3)]">Page {pageNum} / {totalPages}</span>
-          {pageNum < totalPages && (
-            <Link href={`/insider/${slug}?page=${pageNum + 1}`} className="btn-glass px-4 py-2 rounded-xl text-sm font-medium">
-              {isFr ? "Suivant →" : "Next →"}
-            </Link>
-          )}
-        </div>
-      )}
-      <div className="mt-4 text-center text-xs" style={{ color: "var(--tx-3)" }}>
-        {isFr
-          ? <>{totalCount} déclaration{totalCount !== 1 ? "s" : ""} au total</>
-          : <>{totalCount} declaration{totalCount !== 1 ? "s" : ""} total</>}
-      </div>
+      {/* Declarations — load more on click (no pagination URLs) */}
+      <DeclarationsLoadMore
+        initial={declarations as Parameters<typeof DeclarationsLoadMore>[0]["initial"]}
+        total={totalCount}
+        entityId={insider.id}
+        entityType="insider"
+        showCompany
+        locale={locale}
+      />
 
       {/* AI-generated insider description */}
       {(isFr ? insiderSeo?.descriptionFr : insiderSeo?.descriptionEn) && (

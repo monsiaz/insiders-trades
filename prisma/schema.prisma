@@ -281,6 +281,20 @@ model UserAlert {
   @@index([declarationId])
 }
 
+// ── Admin-generated invite / magic links ─────────────────────────────────────
+model MagicLink {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  label       String                   // "Pour Jean-Marc", "Bêta testeurs"…
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime?                // null = permanent
+  usageCount  Int       @default(0)
+  maxUses     Int?                     // null = unlimited
+  revokedAt   DateTime?
+
+  @@index([token])
+}
+
 // ── News cache with EN translations ──────────────────────────────────────────
 // One row per news article per company. linkHash is md5(link) for fast upsert.
 model CompanyNewsItem {

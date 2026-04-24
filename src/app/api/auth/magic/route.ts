@@ -18,26 +18,43 @@ import { createSession, setSessionCookie } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-// The owner email whose session will be created for magic-link visitors
+// The owner email whose session will be created for all magic-link visitors.
 const OWNER_EMAIL = "simon.azoulay.pro@gmail.com";
 
 export async function GET(req: NextRequest) {
   const token    = req.nextUrl.searchParams.get("t") ?? "";
   const nextPath = req.nextUrl.searchParams.get("next") ?? "/";
-  const secret   = (process.env.MAGIC_LINK_TOKEN ?? "").trim();
 
-  // ── 1. Validate token ──────────────────────────────────────────────────────
-  if (!secret) {
-    return NextResponse.json({ error: "Magic links not configured" }, { status: 503 });
-  }
-  if (!token || token !== secret) {
-    return NextResponse.json(
-      { error: "Invalid or expired magic link." },
-      { status: 401 }
-    );
+  if (!token) {
+    return NextResponse.json({ error: "Token required" }, { status: 401 });
   }
 
-  // ── 2. Find the owner account ──────────────────────────────────────────────
+  // ── 1. Check master token (env var) first ─────────────────────────────────
+  const masterSecret = (process.env.MAGIC_LINK_TOKEN ?? "").trim();
+  const isMaster     = masterSecret && token === masterSecret;
+
+  // ── 2. If not master, look up in DB ───────────────────────────────────────
+  if (!isMaster) {
+    const dbLink = await prisma.magicLink.findUnique({ where: { token } });
+
+    if (!dbLink || dbLink.revokedAt) {
+      return NextResponse.json({ error: "Invalid or revoked magic link." }, { status: 401 });
+    }
+    if (dbLink.expiresAt && new Date() > dbLink.expiresAt) {
+      return NextResponse.json({ error: "Magic link has expired." }, { status: 401 });
+    }
+    if (dbLink.maxUses != null && dbLink.usageCount >= dbLink.maxUses) {
+      return NextResponse.json({ error: "Magic link usage limit reached." }, { status: 401 });
+    }
+
+    // Increment usage counter (fire-and-forget)
+    prisma.magicLink.update({
+      where: { id: dbLink.id },
+      data:  { usageCount: { increment: 1 } },
+    }).catch(() => {});
+  }
+
+  // ── 3. Find the owner account ─────────────────────────────────────────────
   const user = await prisma.user.findUnique({
     where: { email: OWNER_EMAIL },
     select: { id: true, email: true, name: true, role: true, isBanned: true },
@@ -47,7 +64,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Owner account not found." }, { status: 404 });
   }
 
-  // ── 3. Create a full session (30 days) ────────────────────────────────────
+  // ── 4. Create a 30-day session ────────────────────────────────────────────
   const jwt = await createSession({
     userId: user.id,
     email:  user.email,
@@ -55,7 +72,6 @@ export async function GET(req: NextRequest) {
     role:   user.role,
   });
 
-  // ── 4. Set the session cookie + redirect ──────────────────────────────────
   await setSessionCookie(jwt);
 
   const dest = new URL(nextPath.startsWith("/") ? nextPath : "/", req.url);

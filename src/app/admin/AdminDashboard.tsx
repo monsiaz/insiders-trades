@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertsTab } from "./AlertsTab";
 import { AiTab } from "./AiTab";
 import { ApiKeysTab } from "./ApiKeysTab";
+import { MagicLinksTab } from "./MagicLinksTab";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -56,7 +57,7 @@ interface CronJob {
   category: string;
 }
 
-type Tab = "users" | "cron" | "alerts" | "ai" | "apikeys" | "system";
+type Tab = "users" | "cron" | "alerts" | "ai" | "apikeys" | "magic" | "system";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -103,6 +104,7 @@ export default function AdminDashboard() {
           <TabButton active={tab === "alerts"} onClick={() => setTab("alerts")}>Alertes</TabButton>
           <TabButton active={tab === "ai"}     onClick={() => setTab("ai")}>Assistant IA</TabButton>
           <TabButton active={tab === "apikeys"} onClick={() => setTab("apikeys")}>Clés API</TabButton>
+          <TabButton active={tab === "magic"}  onClick={() => setTab("magic")}>✦ Magic Links</TabButton>
           <TabButton active={tab === "system"} onClick={() => setTab("system")}>Système</TabButton>
         </div>
 
@@ -111,6 +113,7 @@ export default function AdminDashboard() {
         {tab === "alerts" && <AlertsTab showToast={showToast} />}
         {tab === "ai"     && <AiTab     showToast={showToast} />}
         {tab === "apikeys" && <ApiKeysTab showToast={showToast} />}
+        {tab === "magic"   && <MagicLinksTab showToast={showToast} />}
         {tab === "system" && <SystemTab />}
       </div>
 

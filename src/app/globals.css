@@ -531,34 +531,51 @@ body::before {
 }
 
 .data-ticker-track-wrapper {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0; /* allow shrinking inside flex parent so overflow works on mobile */
   overflow: hidden;
   height: 100%;
   display: flex;
   align-items: center;
+  position: relative;
   mask-image: linear-gradient(to right, transparent 0, black 32px, black calc(100% - 32px), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0, black 32px, black calc(100% - 32px), transparent 100%);
+  /* Allow touch-pan on mobile (reduced-motion users) */
+  -webkit-overflow-scrolling: touch;
 }
 
 .data-ticker-track {
-  display: flex;
+  display: inline-flex;   /* shrink-wrap to content, don't inherit parent width */
   align-items: center;
   white-space: nowrap;
-  animation: ticker-scroll 40s linear infinite;
+  width: max-content;     /* explicit: track is exactly as wide as its content */
+  animation: ticker-scroll 45s linear infinite;
   gap: 0;
+  /* GPU acceleration — fixes stuttery or invisible animation on iOS Safari */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .data-ticker-track:hover {
   animation-play-state: paused;
 }
 
+/* Reduced-motion users: stop the infinite scroll but keep content
+   accessible via horizontal touch-pan (NOT a blank/static strip). */
 @media (prefers-reduced-motion: reduce) {
+  .data-ticker-track-wrapper {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .data-ticker-track-wrapper::-webkit-scrollbar { display: none; }
   .data-ticker-track { animation: none; }
 }
 
 @keyframes ticker-scroll {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 
 .data-ticker-item {
@@ -566,6 +583,7 @@ body::before {
   align-items: center;
   padding: 0 2px;
   color: var(--tx-3);
+  flex-shrink: 0; /* don't collapse when viewport is narrow */
 }
 
 .data-ticker-sep {
@@ -575,11 +593,11 @@ body::before {
   font-size: 0.7rem;
 }
 
-/* Mobile: ticker visible, adapté */
+/* Mobile: slower scroll for readability + tighter spacing */
 @media (max-width: 640px) {
   .data-ticker {
-    height: 26px;
-    font-size: 0.65rem;
+    height: 28px;
+    font-size: 0.68rem;
   }
   .data-ticker-badge {
     padding: 0 8px;
@@ -588,6 +606,15 @@ body::before {
   }
   .data-ticker-dot { width: 4px; height: 4px; }
   .data-ticker-sep { margin: 0 10px; }
+  .data-ticker-track {
+    /* Slower on mobile so users have time to read each segment */
+    animation-duration: 55s;
+  }
+  /* Smaller mask so short segments aren't hidden by the fade */
+  .data-ticker-track-wrapper {
+    mask-image: linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
+  }
 }
 
 .nav-inner {

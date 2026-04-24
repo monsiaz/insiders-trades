@@ -92,7 +92,7 @@ export function DataTicker() {
   const allSegments = [...segments, ...segments];
 
   return (
-    <div className="data-ticker" aria-label={locale === "fr" ? "Fraîcheur des données AMF" : "AMF data freshness"} role="marquee">
+    <div className="data-ticker" aria-label={locale === "fr" ? "Fraîcheur des données AMF" : "AMF data freshness"}>
       <span className="data-ticker-badge">
         <span className="data-ticker-dot" />
         Live

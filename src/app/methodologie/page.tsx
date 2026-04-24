@@ -13,13 +13,16 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata() {
   const hdrs = await headers();
   const isFr = (hdrs.get("x-locale") ?? "en") === "fr";
-  return isFr ? {
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+  const canonical = isFr ? `${BASE}/fr/methodologie/` : `${BASE}/methodologie/`;
+  const meta = isFr ? {
     title: "Méthodologie · InsiderTrades",
     description: "Comment nous collectons les déclarations AMF, calculons les signaux, backtestons les performances et gérons les périodes temporelles. Transparence totale.",
   } : {
     title: "Methodology · InsiderTrades",
     description: "How we collect AMF filings, calculate signals, backtest performance and handle time periods. Full transparency.",
   };
+  return { ...meta, alternates: { canonical, languages: { fr: `${BASE}/fr/methodologie/`, en: `${BASE}/methodologie/` } }, openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" } };
 }
 
 async function getLiveStats() {

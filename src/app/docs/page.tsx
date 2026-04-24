@@ -25,13 +25,15 @@ export async function generateMetadata() {
   const hdrs = await headers();
   const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
   const isFr = locale === "fr";
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+  const canonical = isFr ? `${BASE}/fr/docs/` : `${BASE}/docs/`;
   return {
-    title: isFr
-      ? "Documentation API · Insiders Trades Sigma"
-      : "API Documentation · Insiders Trades Sigma",
+    title: isFr ? "Documentation API · Insiders Trades Sigma" : "API Documentation · Insiders Trades Sigma",
     description: isFr
       ? "Référence complète de l'API REST publique d'Insiders Trades Sigma : déclarations AMF, signaux scorés, backtests, fondamentaux Yahoo. Exemples en cURL, Python, JavaScript."
       : "Complete reference for the Insiders Trades Sigma public REST API: AMF filings, scored signals, backtests, Yahoo fundamentals. Examples in cURL, Python, JavaScript.",
+    alternates: { canonical, languages: { fr: `${BASE}/fr/docs/`, en: `${BASE}/docs/` } },
+    openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" },
   };
 }
 

@@ -36,13 +36,15 @@ export async function generateMetadata() {
   const hdrs = await headers();
   const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
   const isFr = locale === "fr";
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+  const canonical = isFr ? `${BASE}/fr/pitch/` : `${BASE}/pitch/`;
   return {
-    title: isFr
-      ? "Le Pitch · Insiders Trades Sigma"
-      : "The Pitch · Insiders Trades Sigma",
+    title: isFr ? "Le Pitch · Insiders Trades Sigma" : "The Pitch · Insiders Trades Sigma",
     description: isFr
       ? "InsiderTrades Sigma en chiffres : signaux T+90 et T+365 réels, méthode AMF, comparaison CAC 40, guide pratique."
       : "Insiders Trades Sigma by the numbers: real T+90 and T+365 signals, AMF methodology, CAC 40 comparison, practical guide.",
+    alternates: { canonical, languages: { fr: `${BASE}/fr/pitch/`, en: `${BASE}/pitch/` } },
+    openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" },
   };
 }
 

@@ -136,12 +136,15 @@ export default async function RootLayout({
         {/* Robots: index, follow on all public pages */}
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
 
-        {/* Hreflang — cross-link sister pages for SEO */}
+        {/*
+          Hreflang — layout-level fallback for pages without explicit alternates.
+          Each page's generateMetadata() sets a more precise canonical + languages.
+          NOTE: do NOT add <link rel="canonical"> here — it would not update on
+          client-side navigation (layout doesn't re-render), causing stale canonicals.
+        */}
         <link rel="alternate" hrefLang="en" href={hreflangEn} />
         <link rel="alternate" hrefLang="fr" href={hreflangFr} />
         <link rel="alternate" hrefLang="x-default" href={hreflangEn} />
-        {/* Self-canonical — always the exact URL with trailing slash */}
-        <link rel="canonical" href={locale === "fr" ? hreflangFr : hreflangEn} />
 
         {/* Pre-connect to image CDN for faster logo loading */}
         <link rel="preconnect" href="https://public.blob.vercel-storage.com" />

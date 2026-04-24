@@ -29,13 +29,16 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata() {
   const hdrs = await headers();
   const isFr = (hdrs.get("x-locale") ?? "en") === "fr";
-  return isFr ? {
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+  const canonical = isFr ? `${BASE}/fr/strategie/` : `${BASE}/strategie/`;
+  const meta = isFr ? {
     title: "Stratégie Sigma · bat le CAC 40 chaque année · Insiders Trades",
     description: "La stratégie Sigma découverte par grid-search sur 583 200 combinaisons de filtres. Bat le CAC 40 chaque année depuis 2022 : +16.3% annualisé, Sharpe 1.00, alpha +10.4 pts/an. Signaux live.",
   } : {
     title: "Sigma Strategy · beats the CAC 40 every year · Insiders Trades",
     description: "The Sigma strategy discovered by grid-search on 583,200 filter combinations. Beats the CAC 40 every year since 2022: +16.3% annualised, Sharpe 1.00, alpha +10.4 pts/yr. Live signals.",
   };
+  return { ...meta, alternates: { canonical, languages: { fr: `${BASE}/fr/strategie/`, en: `${BASE}/strategie/` } }, openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" } };
 }
 
 const fmtPct = (n: number, d = 1) => (n > 0 ? "+" : "") + n.toFixed(d) + "%";

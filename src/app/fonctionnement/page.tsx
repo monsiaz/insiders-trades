@@ -20,13 +20,15 @@ export async function generateMetadata() {
   const hdrs = await headers();
   const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
   const isFr = locale === "fr";
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+  const canonical = isFr ? `${BASE}/fr/fonctionnement/` : `${BASE}/fonctionnement/`;
   return {
-    title: isFr
-      ? "Comment ça marche · Insiders Trades Sigma"
-      : "How it works · Insiders Trades Sigma",
+    title: isFr ? "Comment ça marche · Insiders Trades Sigma" : "How it works · Insiders Trades Sigma",
     description: isFr
       ? "Découvrez comment Insiders Trades Sigma transforme les déclarations AMF des dirigeants en signaux d'investissement actionnables. Collecte, scoring, backtest historique, recommandations."
       : "Discover how Insiders Trades Sigma turns executive AMF filings into actionable investment signals. Data collection, scoring, historical backtesting, recommendations.",
+    alternates: { canonical, languages: { fr: `${BASE}/fr/fonctionnement/`, en: `${BASE}/fonctionnement/` } },
+    openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" },
   };
 }
 

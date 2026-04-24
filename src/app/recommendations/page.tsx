@@ -23,13 +23,15 @@ export async function generateMetadata() {
   const hdrs = await headers();
   const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
   const isFr = locale === "fr";
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+  const canonical = isFr ? `${BASE}/fr/recommendations/` : `${BASE}/recommendations/`;
   return {
-    title: isFr
-      ? "Recommandations · InsiderTrades Sigma"
-      : "Recommendations · InsiderTrades Sigma",
+    title: isFr ? "Recommandations · InsiderTrades Sigma" : "Recommendations · InsiderTrades Sigma",
     description: isFr
       ? "Top signaux d'achat et de vente basés sur les performances historiques et les transactions récentes des dirigeants AMF."
       : "Top buy and sell signals based on historical performance and recent AMF insider transactions.",
+    alternates: { canonical, languages: { fr: `${BASE}/fr/recommendations/`, en: `${BASE}/recommendations/` } },
+    openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" },
   };
 }
 

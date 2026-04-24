@@ -12,19 +12,28 @@
  */
 
 import Link from "next/link";
+import { headers } from "next/headers";
 import { LogoMark } from "@/components/Logo";
 import { CodeBlock, CodeTabs } from "../_components/CodeBlock";
 import { TOC } from "../_components/TOC";
 import { ClientTabs } from "./_components/ClientTabs";
 import { TOOLS } from "@/lib/mcp/tools";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "MCP Server · Insiders Trades Sigma",
-  description:
-    "Serveur MCP (Model Context Protocol) pour Insiders Trades Sigma. 20 outils donnant à Claude, Cursor, Windsurf et tout agent IA l'accès aux données AMF, signaux scorés et backtests.",
-};
+const BASE = "https://insiders-trades-sigma.vercel.app";
+
+export async function generateMetadata() {
+  const hdrs = await headers();
+  const isFr = (hdrs.get("x-locale") ?? "en") === "fr";
+  const canonical = isFr ? `${BASE}/fr/docs/mcp/` : `${BASE}/docs/mcp/`;
+  return {
+    title: "MCP Server · Insiders Trades Sigma",
+    description: "Serveur MCP (Model Context Protocol) pour Insiders Trades Sigma. 20 outils donnant à Claude, Cursor, Windsurf et tout agent IA l'accès aux données AMF, signaux scorés et backtests.",
+    alternates: { canonical, languages: { fr: `${BASE}/fr/docs/mcp/`, en: `${BASE}/docs/mcp/` } },
+    openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" },
+  };
+}
 
 const MCP_URL = "https://insiders-trades-sigma.vercel.app/api/mcp";
 const APP_URL = "https://insiders-trades-sigma.vercel.app";

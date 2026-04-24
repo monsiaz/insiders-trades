@@ -30,13 +30,16 @@ const getPerformanceDataCached = unstable_cache(
 export async function generateMetadata() {
   const hdrs = await headers();
   const isFr = (hdrs.get("x-locale") ?? "en") === "fr";
-  return isFr ? {
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+  const canonical = isFr ? `${BASE}/fr/performance/` : `${BASE}/performance/`;
+  const meta = isFr ? {
     title: "Performance & transparence · Insiders Trades Sigma",
     description: "Transparence complète sur la performance réelle de notre système. Backtest 5 ans sur 24 000 trades, comparaison vs CAC 40, stratégie recommandée pour petit investisseur.",
   } : {
     title: "Performance & Transparency · Insiders Trades Sigma",
     description: "Full transparency on the real performance of our system. 5-year backtest on 24,000 trades, comparison vs CAC 40, recommended strategy for the retail investor.",
   };
+  return { ...meta, alternates: { canonical, languages: { fr: `${BASE}/fr/performance/`, en: `${BASE}/performance/` } }, openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" } };
 }
 
 const fmt = {

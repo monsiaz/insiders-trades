@@ -18,6 +18,8 @@ export async function generateMetadata() {
   const hdrs = await headers();
   const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
   const isFr = locale === "fr";
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+  const canonical = isFr ? `${BASE}/fr/` : `${BASE}/`;
   return {
     title: isFr
       ? "InsidersTrades · Transactions dirigeants AMF"
@@ -25,6 +27,11 @@ export async function generateMetadata() {
     description: isFr
       ? "Suivez chaque déclaration AMF, détectez les signaux d'accumulation et analysez les patterns historiques des insiders français."
       : "Track every AMF declaration, detect accumulation signals and analyse the historical trading patterns of French insiders.",
+    alternates: {
+      canonical,
+      languages: { fr: `${BASE}/fr/`, en: `${BASE}/` },
+    },
+    openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" },
   };
 }
 

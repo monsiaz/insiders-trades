@@ -331,10 +331,78 @@ function lookupBucket(
   return buckets[`${role}::${size}`] ?? buckets[role] ?? buckets["__overall"] ?? null;
 }
 
+// ── Per-company net directional dominance ─────────────────────────────────────
+// For each company with activity in the lookback window, compute the cumulative
+// BUY amount and SELL amount. A company is "dominant" on a side when that side's
+// total is ≥ 2× the other side. Otherwise it's MIXED (both sides shown, it's
+// legitimate information when different insiders trade in opposite directions).
+// Key: we use startsWith (not contains) to avoid classifying natures like
+// "cession d'actions acquises…" as BOTH buy AND sell, which caused duplicates.
+
+type Dominance = "BUY_DOM" | "SELL_DOM" | "MIXED";
+
+async function _buildDominance(lookbackDays: number): Promise<Record<string, Dominance>> {
+  const cutoff = new Date(Date.now() - lookbackDays * 86400_000);
+  const rows = await prisma.declaration.findMany({
+    where: {
+      pubDate: { gte: cutoff },
+      pdfParsed: true,
+      totalAmount: { gt: 0 },
+      OR: [
+        { transactionNature: { startsWith: "acqui", mode: "insensitive" } },
+        { transactionNature: { startsWith: "cession", mode: "insensitive" } },
+      ],
+    },
+    select: {
+      totalAmount: true,
+      transactionNature: true,
+      company: { select: { slug: true } },
+    },
+  });
+
+  const agg = new Map<string, { buy: number; sell: number }>();
+  for (const r of rows) {
+    if (isNonMarket(r.transactionNature)) continue;
+    const nature = (r.transactionNature ?? "").toLowerCase();
+    const isBuy = nature.startsWith("acqui");
+    const isSell = nature.startsWith("cession");
+    if (!isBuy && !isSell) continue;
+    const slug = r.company.slug;
+    const cur = agg.get(slug) ?? { buy: 0, sell: 0 };
+    if (isBuy) cur.buy += r.totalAmount ?? 0;
+    else cur.sell += r.totalAmount ?? 0;
+    agg.set(slug, cur);
+  }
+
+  const out: Record<string, Dominance> = {};
+  for (const [slug, { buy, sell }] of agg) {
+    if (sell === 0 && buy > 0) out[slug] = "BUY_DOM";
+    else if (buy === 0 && sell > 0) out[slug] = "SELL_DOM";
+    else if (buy >= sell * 2) out[slug] = "BUY_DOM";
+    else if (sell >= buy * 2) out[slug] = "SELL_DOM";
+    else out[slug] = "MIXED";
+  }
+  return out;
+}
+
+const getDominanceCached = unstable_cache(
+  _buildDominance,
+  ["reco-dominance-v1"],
+  { revalidate: 1800 }, // 30 min
+);
+
+async function getCompanyDominance(_cutoff: Date, lookbackDays = 90): Promise<Map<string, Dominance>> {
+  const obj = await getDominanceCached(lookbackDays);
+  return new Map(Object.entries(obj));
+}
+
 // ── Buy recommendations ───────────────────────────────────────────────────────
 
 async function getBuyRecommendations(cutoff: Date, limit: number): Promise<RecoItem[]> {
-  const { buy: buyBuckets } = await getBucketStats();
+  const [{ buy: buyBuckets }, dominance] = await Promise.all([
+    getBucketStats(),
+    getCompanyDominance(cutoff),
+  ]);
 
   const decls = await prisma.declaration.findMany({
     where: {
@@ -342,14 +410,15 @@ async function getBuyRecommendations(cutoff: Date, limit: number): Promise<RecoI
       pdfParsed: true,
       signalScore: { not: null, gt: 0 },
       totalAmount: { gt: 0 },
-      transactionNature: { contains: "acqui", mode: "insensitive" },
+      // Strict: nature must START with "acqui" (avoids "cession d'actions acquises…")
+      transactionNature: { startsWith: "acqui", mode: "insensitive" },
     },
     orderBy: { signalScore: "desc" },
     take: limit * 8,
     select: DECL_SELECT,
   });
 
-  const seen = new Set<string>(); // track declaration IDs already processed
+  const seen = new Set<string>();
   const items: RecoItem[] = [];
 
   for (const decl of decls) {
@@ -357,21 +426,20 @@ async function getBuyRecommendations(cutoff: Date, limit: number): Promise<RecoI
     if (seen.has(decl.id)) continue;
     seen.add(decl.id);
 
+    // Skip companies where sells dominate by ≥ 2× the buys — they belong to SELL tab
+    if (dominance.get(decl.company.slug) === "SELL_DOM") continue;
+
     const role = normalizeRole(decl.insiderFunction);
     const size = sizeLabel(decl.company.marketCap);
     const bucket = lookupBucket(buyBuckets, role, size);
     const er = bucket?.avgReturn90d ?? null;
 
-    // Gate: expected return > 2%, OR no bucket data but signal score is strong
     if (er != null && er < 2 && (decl.signalScore ?? 0) < 50) continue;
 
     items.push(buildRecoItem(decl, "BUY", bucket));
   }
 
-  // Sort before merge so best-score declaration is always the primary card
   items.sort((a, b) => b.recoScore - a.recoScore);
-
-  // Merge same-company declarations into a single card (aggregate amounts)
   const merged = mergeByCompany(items);
   merged.sort((a, b) => b.recoScore - a.recoScore);
 
@@ -381,15 +449,18 @@ async function getBuyRecommendations(cutoff: Date, limit: number): Promise<RecoI
 // ── Sell recommendations ──────────────────────────────────────────────────────
 
 async function getSellRecommendations(cutoff: Date, limit: number): Promise<RecoItem[]> {
-  const { sell: sellBuckets } = await getBucketStats();
+  const [{ sell: sellBuckets }, dominance] = await Promise.all([
+    getBucketStats(),
+    getCompanyDominance(cutoff),
+  ]);
 
-  // Cast net wide: "cession" covers most sell natures in AMF data
   const decls = await prisma.declaration.findMany({
     where: {
       pubDate: { gte: cutoff },
       pdfParsed: true,
       totalAmount: { gt: 0 },
-      transactionNature: { contains: "cession", mode: "insensitive" },
+      // Strict: nature must START with "cession" (avoids "acquisition suite à cession…")
+      transactionNature: { startsWith: "cession", mode: "insensitive" },
     },
     orderBy: [{ totalAmount: "desc" }, { pubDate: "desc" }],
     take: limit * 6,
@@ -404,6 +475,9 @@ async function getSellRecommendations(cutoff: Date, limit: number): Promise<Reco
     if (seen.has(decl.id)) continue;
     seen.add(decl.id);
 
+    // Skip companies where buys dominate by ≥ 2× the sells — they belong to BUY tab
+    if (dominance.get(decl.company.slug) === "BUY_DOM") continue;
+
     const role = normalizeRole(decl.insiderFunction);
     const size = sizeLabel(decl.company.marketCap);
     const bucket = lookupBucket(sellBuckets, role, size);
@@ -411,7 +485,6 @@ async function getSellRecommendations(cutoff: Date, limit: number): Promise<Reco
     items.push(buildRecoItem(decl, "SELL", bucket));
   }
 
-  // Sort before merge so largest sell is primary
   items.sort((a, b) => (b.totalAmount ?? 0) - (a.totalAmount ?? 0));
   const merged = mergeByCompany(items);
   merged.sort((a, b) => (b.totalAmount ?? 0) - (a.totalAmount ?? 0));
@@ -435,7 +508,8 @@ async function getPersonalRecommendations(
             pubDate: { gte: cutoff },
             pdfParsed: true,
             isin: { in: portfolioIsins },
-            transactionNature: { contains: "cession", mode: "insensitive" },
+            // Strict: nature must START with "cession" (avoids "acquisition suite à cession…")
+            transactionNature: { startsWith: "cession", mode: "insensitive" },
             totalAmount: { gt: 0 },
           },
           orderBy: { pubDate: "desc" },

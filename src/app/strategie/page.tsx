@@ -14,7 +14,7 @@
 
 import { headers } from "next/headers";
 import Link from "next/link";
-import Image from "next/image";
+import { CompanyAvatar } from "@/components/CompanyBadge";
 import { LogoMark } from "@/components/Logo";
 import {
   getWinningStrategySignals,
@@ -882,24 +882,7 @@ function SignalCard({ s, isFr }: { s: WinningSignal; isFr: boolean }) {
         transition: "border-color 0.15s ease",
       }}
     >
-      <div
-        style={{
-          width: "44px", height: "44px",
-          borderRadius: "50%",
-          background: "var(--bg-raised)",
-          border: "1px solid var(--border)",
-          overflow: "hidden",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}
-      >
-        {s.company.logoUrl ? (
-          <Image src={s.company.logoUrl} alt={s.company.name} width={44} height={44} style={{ objectFit: "cover" }} />
-        ) : (
-          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.78rem", color: "var(--gold)", fontWeight: 700 }}>
-            {s.company.name.slice(0, 2).toUpperCase()}
-          </span>
-        )}
-      </div>
+      <CompanyAvatar name={s.company.name} logoUrl={s.company.logoUrl} size="lg" />
       <div style={{ minWidth: 0, overflow: "hidden" }}>
         <div
           style={{

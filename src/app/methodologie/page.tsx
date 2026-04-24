@@ -1189,20 +1189,80 @@ export default async function MethodologiePage() {
         </div>
       </section>
 
-      {/* ── Section 6 · Backtest methodology ── */}
+      {/* ── Section 6 · Backtest methodology + return semantics ── */}
       <section className="mb-16">
         <SectionTitle
           eyebrow={isFr ? "6. Backtest" : "6. Backtest"}
-          title={isFr ? "Comment on mesure la performance" : "How we measure performance"}
+          title={isFr ? "Comment on mesure les rendements" : "How we measure returns"}
+          sub={isFr
+            ? "Deux conventions coexistent dans notre base, et le site n'affiche publiquement que la deuxième — celle qu'un investisseur particulier peut réellement capter."
+            : "Two conventions coexist in our database, and the public site only displays the second one — the one a retail investor can actually capture."}
         />
+
+        {/* Two-view convention panel */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "12px",
+            marginBottom: "18px",
+          }}
+        >
+          <div style={{
+            padding: "16px 18px",
+            background: "var(--bg-raised)",
+            border: "1px solid var(--border)",
+            borderLeft: "3px solid var(--tx-4)",
+            borderRadius: "2px",
+          }}>
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.14em",
+              color: "var(--tx-3)", textTransform: "uppercase", marginBottom: "6px",
+            }}>{isFr ? "Vue insider (non-publiée)" : "Insider view (not public)"}</div>
+            <div style={{
+              fontFamily: "'Banana Grotesk', sans-serif",
+              fontSize: "1.15rem", fontWeight: 700, color: "var(--tx-1)",
+              letterSpacing: "-0.02em", marginBottom: "6px",
+            }}><code className="mono">return90d</code></div>
+            <div style={{ fontSize: "0.82rem", color: "var(--tx-2)", lineHeight: 1.6 }}>
+              {isFr
+                ? <>Entrée au cours de la <strong>transactionDate</strong> (prix d&apos;exécution interne du dirigeant). Capture l&apos;alpha que l&apos;initié voit AVANT la publication — alpha que <em>vous</em> ne pouvez pas capter.</>
+                : <>Entry at the <strong>transactionDate</strong> close (insider&apos;s internal execution price). Captures the alpha the insider sees BEFORE the filing — alpha <em>you</em> cannot capture.</>}
+            </div>
+          </div>
+          <div style={{
+            padding: "16px 18px",
+            background: "var(--bg-raised)",
+            border: "1px solid var(--border)",
+            borderLeft: "3px solid var(--gold)",
+            borderRadius: "2px",
+          }}>
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.14em",
+              color: "var(--gold)", textTransform: "uppercase", marginBottom: "6px",
+            }}>★ {isFr ? "Vue retail (toutes les pages publiques)" : "Retail view (all public pages)"}</div>
+            <div style={{
+              fontFamily: "'Banana Grotesk', sans-serif",
+              fontSize: "1.15rem", fontWeight: 700, color: "var(--tx-1)",
+              letterSpacing: "-0.02em", marginBottom: "6px",
+            }}><code className="mono">returnFromPub90d</code></div>
+            <div style={{ fontSize: "0.82rem", color: "var(--tx-2)", lineHeight: 1.6 }}>
+              {isFr
+                ? <>Entrée au cours de <strong>pubDate+1</strong> — le lendemain de la publication AMF, premier moment où vous, investisseur particulier, pouvez vraiment acheter. C&apos;est cette valeur qu&apos;affichent <em>toutes</em> les pages publiques (/performance, /pitch, /backtest, /recommendations).</>
+                : <>Entry at the <strong>pubDate+1</strong> close — the day after the AMF filing, the first moment you, a retail investor, can actually buy. This is the value shown on <em>all</em> public pages (/performance, /pitch, /backtest, /recommendations).</>}
+            </div>
+          </div>
+        </div>
+
         <Paragraph>
           {isFr ? (
-            <>Pour chaque déclaration d&apos;acquisition parsée dans les 10+
-            dernières années, nous calculons le rendement du titre à 6
-            horizons fixes depuis la date d&apos;exécution :</>
+            <>Pour chaque déclaration d&apos;acquisition parsée, nous calculons le rendement du titre à 6
+            horizons fixes, <strong>depuis pubDate+1</strong> pour la vue retail :</>
           ) : (
-            <>For each parsed acquisition filing over the last 10+ years, we calculate
-            the stock&apos;s return at 6 fixed horizons from the execution date:</>
+            <>For each parsed acquisition filing, we calculate the stock&apos;s return at 6 fixed
+            horizons, <strong>from pubDate+1</strong> for the retail view:</>
           )}
         </Paragraph>
         <div
@@ -1265,6 +1325,59 @@ export default async function MethodologiePage() {
             </div>
           ))}
         </div>
+        {/* Worked example */}
+        <div
+          style={{
+            marginTop: "12px",
+            marginBottom: "18px",
+            padding: "18px 20px",
+            background: "var(--bg-raised)",
+            border: "1px solid var(--border)",
+            borderLeft: "3px solid var(--gold)",
+            borderRadius: "2px",
+          }}
+        >
+          <div style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.14em",
+            color: "var(--gold)", textTransform: "uppercase", marginBottom: "10px",
+          }}>
+            {isFr ? "Exemple chiffré" : "Worked example"}
+          </div>
+          <p style={{ fontSize: "0.9rem", color: "var(--tx-2)", lineHeight: 1.7, margin: 0 }}>
+            {isFr ? (
+              <>Le 15 mars, un dirigeant de LVMH déclare l&apos;achat de 5 M€ d&apos;actions à l&apos;AMF.
+              Le 16 mars (ouverture du lendemain), le cours ouvre à <strong style={{ color: "var(--tx-1)" }}>700 €</strong> — c&apos;est <code className="mono">P0</code>, votre prix d&apos;entrée.
+              <br /><br />
+              Le 15 avril, 30 jours plus tard, le cours est à{" "}<strong style={{ color: "var(--tx-1)" }}>715 €</strong>.{" "}
+              <code className="mono">returnFromPub30d = (715 − 700) / 700 = +2,1%</code>.
+              <br /><br />
+              Le 16 juin, 90 jours plus tard, le cours est à{" "}<strong style={{ color: "var(--signal-pos)" }}>742 €</strong>.{" "}
+              <code className="mono">returnFromPub90d = +6,0%</code>.
+              <br /><br />
+              Le 16 mars de l&apos;année suivante, 365 jours après la publication AMF, le cours est à{" "}
+              <strong style={{ color: "var(--signal-pos)" }}>840 €</strong>.{" "}
+              <code className="mono">returnFromPub365d = +20,0%</code>.
+              <br /><br />
+              <span style={{ color: "var(--tx-3)" }}>Aucune annualisation, aucun composé : ce sont des rendements absolus sur la fenêtre indiquée. Lorsque plusieurs trades sont agrégés (par fonction, par taille, par combinaison), la valeur affichée est la moyenne arithmétique (ou la médiane, selon la colonne) des rendements individuels.</span></>
+            ) : (
+              <>On March 15, an LVMH executive files a €5M stock purchase with the AMF.
+              On March 16 (next-day open), the stock opens at <strong style={{ color: "var(--tx-1)" }}>€700</strong> — that&apos;s <code className="mono">P0</code>, your entry price.
+              <br /><br />
+              On April 15, 30 days later, the price is <strong style={{ color: "var(--tx-1)" }}>€715</strong>.{" "}
+              <code className="mono">returnFromPub30d = (715 − 700) / 700 = +2.1%</code>.
+              <br /><br />
+              On June 16, 90 days later, the price is <strong style={{ color: "var(--signal-pos)" }}>€742</strong>.{" "}
+              <code className="mono">returnFromPub90d = +6.0%</code>.
+              <br /><br />
+              On March 16 the following year, 365 days after the AMF filing, the price is <strong style={{ color: "var(--signal-pos)" }}>€840</strong>.{" "}
+              <code className="mono">returnFromPub365d = +20.0%</code>.
+              <br /><br />
+              <span style={{ color: "var(--tx-3)" }}>No annualisation, no compounding: these are absolute returns over the stated window. When multiple trades are aggregated (by role, by size, by combination), the displayed value is the arithmetic mean (or median, depending on the column) of individual returns.</span></>
+            )}
+          </p>
+        </div>
+
         <Paragraph>
           {isFr ? (
             <>Prix fournis par <code className="mono">Yahoo v8/chart</code> avec une fenêtre de
@@ -1277,6 +1390,22 @@ export default async function MethodologiePage() {
             <strong style={{ color: "var(--tx-1)" }}>±12 calendar days</strong> around each target
             (weekends, public holidays, trading suspensions). If no price is available in this window,
             the corresponding return is left null, never extrapolated.</>
+          )}
+        </Paragraph>
+        <Paragraph>
+          {isFr ? (
+            <><strong style={{ color: "var(--tx-1)" }}>Ne pas confondre rendement par trade et CAGR de stratégie.</strong> T+90 et T+365
+            mesurent ce qu&apos;un trade <em>individuel</em> rapporte sur la fenêtre. Le CAGR de la stratégie
+            Sigma (page /performance, page /strategie) est une métrique différente : c&apos;est le rendement
+            annualisé d&apos;un portefeuille qui détient simultanément les 20 meilleurs signaux et rebalance
+            tous les 3 mois. Un trade à +6% T+90 ne devient pas +27% annualisé dans nos tableaux — le
+            CAGR est calculé à part en simulant le portefeuille.</>
+          ) : (
+            <><strong style={{ color: "var(--tx-1)" }}>Don&apos;t confuse per-trade return and strategy CAGR.</strong> T+90 and T+365 measure what
+            an <em>individual</em> trade yields over the window. The Sigma strategy CAGR (on /performance and /strategie)
+            is a different metric: it&apos;s the annualised return of a portfolio that simultaneously holds the top 20 signals
+            and rebalances every 3 months. A +6% T+90 trade does not become +27% annualised in our tables — CAGR is
+            computed separately by simulating the portfolio.</>
           )}
         </Paragraph>
         <Paragraph>

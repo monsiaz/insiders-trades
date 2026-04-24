@@ -575,19 +575,33 @@ function SignalsTable({ combos, isFr = false }: { combos: SignalCombo[]; isFr?: 
               <th className="text-center pb-2 text-xs text-muted font-medium">
                 {horizonLabel}
                 {horizon === "90d" && <span className="block text-[10px] font-normal opacity-60">moy · médiane</span>}
+                <InfoTip wide text={isFr
+                  ? `Rendement ${horizonLabel} d'un trade moyen du groupe. Entrée : cours au lendemain de la publication AMF (pubDate+1). Sortie : cours ${horizonLabel === "T+30" ? "30" : horizonLabel === "T+60" ? "60" : horizonLabel === "T+90" ? "90" : horizonLabel === "T+160" ? "160" : horizonLabel === "T+365" ? "365" : "730"} jours calendaires plus tard. Valeur = moyenne arithmétique des rendements individuels. Exemple : +6% = un trade moyen du groupe a progressé de 6% sur la fenêtre.`
+                  : `Average ${horizonLabel} return per trade in this group. Entry: close the day after the AMF filing (pubDate+1). Exit: close ${horizonLabel === "T+30" ? "30" : horizonLabel === "T+60" ? "60" : horizonLabel === "T+90" ? "90" : horizonLabel === "T+160" ? "160" : horizonLabel === "T+365" ? "365" : "730"} calendar days later. Value = arithmetic mean of individual returns. Example: +6% = the average trade in this group gained 6% over the window.`} />
               </th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">T+365</th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">
+                T+365
+                <InfoTip wide text={isFr
+                  ? "Rendement moyen à 1 an d'un trade du groupe (entrée pubDate+1, sortie 365j après). C'est un rendement absolu par trade — il ne mesure pas un portefeuille annualisé. Pour le CAGR d'un portefeuille simulé, voir la section combinaisons."
+                  : "Average 1-year return per trade in this group (entry pubDate+1, exit 365d later). Absolute per-trade return — NOT an annualised portfolio yield. For simulated portfolio CAGR, see the combinations section."} />
+              </th>
               <th className="text-center pb-2 text-xs text-muted font-medium">
                 T+2ans
-                <InfoTip text="Affiché uniquement si au moins 5 trades ont un recul de 2 ans. En dessous, la moyenne est trop sensible aux outliers." />
+                <InfoTip wide text={isFr
+                  ? "Rendement moyen à 2 ans. Affiché uniquement si ≥ 5 trades ont 2 ans de recul, sinon la moyenne est trop sensible aux outliers."
+                  : "Average 2-year return. Only shown if ≥ 5 trades have 2 years of history, otherwise the mean is too outlier-sensitive."} />
               </th>
               <th className="text-center pb-2 text-xs text-muted font-medium">
                 Win%/90j
-                <InfoTip text="% de trades avec un cours en hausse à T+90. Référence : le marché actions clôture en hausse ~55-60% des fois sur 90j historiquement (biais haussier). Un taux >65% est donc significatif pour ce signal." />
+                <InfoTip wide text={isFr
+                  ? "% de trades du groupe avec un rendement strictement positif à T+90 (entrée pubDate+1). Référence marché : le CAC 40 clôture en hausse ~55-60% des fenêtres glissantes de 90j historiquement (biais haussier). Un Win% > 65% est donc significatif pour ce signal."
+                  : "% of trades in this group with a strictly positive return at T+90 (entry pubDate+1). Market baseline: the CAC 40 closes up in ~55-60% of rolling 90d windows historically (bullish bias). A Win% > 65% is therefore meaningful for this signal."} />
               </th>
               <th className="text-center pb-2 text-xs text-muted font-medium">
                 Win%/1an
-                <InfoTip text="% de trades avec un cours en hausse à T+365." />
+                <InfoTip wide text={isFr
+                  ? "% de trades du groupe avec un rendement strictement positif à T+365 (sortie 1 an après la publication AMF)."
+                  : "% of trades in this group with a strictly positive return at T+365 (exit 1 year after the AMF filing)."} />
               </th>
               <th className="text-center pb-2 text-xs text-muted font-medium">
                 {isFr ? "Ratio R/σ 90j" : "Return/Risk 90d"}
@@ -714,10 +728,30 @@ function TopTradesTable({ trades, isFr = false }: { trades: StatsData["topTrades
               <th className="text-center pb-2 text-xs text-muted font-medium">Date</th>
               <th className="text-center pb-2 text-xs text-muted font-medium">{isFr ? "Montant" : "Amount"}</th>
               <th className="text-center pb-2 text-xs text-muted font-medium">Score</th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">T+30</th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">T+90</th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">T+365</th>
-              <th className="text-center pb-2 text-xs text-muted font-medium">{isFr ? "T+2ans" : "T+2y"}</th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">
+                T+30
+                <InfoTip wide text={isFr
+                  ? "Rendement de ce trade 30 jours après la publication AMF (entrée pubDate+1)."
+                  : "Return of this trade 30 days after the AMF filing (entry pubDate+1)."} />
+              </th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">
+                T+90
+                <InfoTip wide text={isFr
+                  ? "Rendement à 3 mois · entrée lendemain publication AMF, sortie 90j calendaires après. C'est l'horizon de hold recommandé par la stratégie Sigma."
+                  : "3-month return · entry day after AMF filing, exit 90 calendar days later. This is the hold horizon recommended by the Sigma strategy."} />
+              </th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">
+                T+365
+                <InfoTip wide text={isFr
+                  ? "Rendement à 1 an de ce trade (entrée pubDate+1, sortie 365j après). Rendement absolu par trade, pas une annualisation."
+                  : "1-year return of this trade (entry pubDate+1, exit 365d later). Absolute per-trade return, not an annualisation."} />
+              </th>
+              <th className="text-center pb-2 text-xs text-muted font-medium">
+                {isFr ? "T+2ans" : "T+2y"}
+                <InfoTip wide text={isFr
+                  ? "Rendement à 2 ans. Disponible uniquement pour les déclarations assez anciennes (pubDate < il y a 2 ans)."
+                  : "2-year return. Only available for filings old enough (pubDate < 2 years ago)."} />
+              </th>
               <th className="text-left pb-2 text-xs text-muted font-medium">Tags</th>
             </tr>
           </thead>
@@ -1220,6 +1254,30 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
                   {data.signalCombos.length} {isFr ? "combinaisons analysées sur" : "combinations across"} {data.total} {isFr ? "transactions historiques · triées par Sharpe (régularité du signal)" : "historical transactions · sorted by Sharpe (signal consistency)"}
                 </p>
               </div>
+            </div>
+            <div
+              className="mb-4 rounded border border-soft bg-surface p-3 text-xs leading-relaxed text-secondary"
+              style={{ borderLeft: "2px solid var(--gold)" }}
+            >
+              <strong className="text-primary">
+                {isFr ? "Comment lire le tableau" : "How to read the table"}
+              </strong>{" "}
+              ·{" "}
+              {isFr ? (
+                <>Chaque ligne agrège <em>n</em> trades historiques qui matchent le filtre (ex : &laquo; Cluster 2+ insiders &raquo;).{" "}
+                <strong>T+90</strong> = rendement moyen 3 mois après la publication AMF (entrée au cours du lendemain, sortie 90 jours calendaires plus tard).{" "}
+                <strong>T+365</strong> = même principe sur 1 an. Ce sont des rendements <strong>absolus par trade</strong>, pas annualisés.{" "}
+                <strong>Win%</strong> = proportion de trades avec un rendement positif (rappel : le marché clôt en hausse ~55-60% des fenêtres 90j, tout ce qui est au-dessus est un vrai signal).{" "}
+                <strong>Ratio R/σ</strong> = rendement moyen ÷ écart-type · plus le ratio est haut, plus le signal est régulier.{" "}
+                Survolez l&apos;icône <span className="font-mono">?</span> sur chaque en-tête pour le détail.</>
+              ) : (
+                <>Each row aggregates <em>n</em> historical trades matching the filter (e.g. &quot;Cluster 2+ insiders&quot;).{" "}
+                <strong>T+90</strong> = average return 3 months after the AMF filing (entry at the next day&apos;s close, exit 90 calendar days later).{" "}
+                <strong>T+365</strong> = same principle over 1 year. These are <strong>absolute per-trade returns</strong>, not annualised.{" "}
+                <strong>Win%</strong> = share of trades with a positive return (reminder: the market closes up in ~55-60% of 90d windows historically, anything above that is a real signal).{" "}
+                <strong>R/σ ratio</strong> = mean return ÷ std dev · the higher, the steadier the signal.{" "}
+                Hover the <span className="font-mono">?</span> icon on each header for details.</>
+              )}
             </div>
             <SignalsTable combos={data.signalCombos} isFr={isFr} />
           </div>

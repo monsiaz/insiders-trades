@@ -183,6 +183,111 @@ export default async function PerformancePage() {
         </Callout>
       </Section>
 
+      {/* ── HOW TO READ RETURNS ─────────────────────────────────────────── */}
+      <Section
+        id="how-to-read"
+        eyebrow={isFr ? "Mode d'emploi" : "How to read"}
+        title={isFr ? "Comment lire nos chiffres de rendement" : "How to read our return figures"}
+      >
+        <p style={pBody}>
+          {isFr
+            ? "Toutes nos métriques de rendement suivent la même convention. Elles sont volontairement conservatrices — c'est le rendement qu'un investisseur particulier peut réellement capter, pas celui du dirigeant lui-même."
+            : "All our return metrics follow the same convention. They are deliberately conservative — it's the return a retail investor can actually capture, not the insider's own return."}
+        </p>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: "12px",
+            marginTop: "18px",
+          }}
+        >
+          <Breakdown
+            label="T+90"
+            value={isFr ? "Rendement à 3 mois" : "3-month return"}
+            sub={isFr
+              ? "Variation du cours entre le lendemain de la publication AMF (pubDate+1) et 90 jours calendaires plus tard. Notre horizon de hold recommandé."
+              : "Price change between the day after the AMF filing (pubDate+1) and 90 calendar days later. Our recommended hold horizon."}
+            color="var(--gold)"
+          />
+          <Breakdown
+            label="T+365"
+            value={isFr ? "Rendement à 1 an" : "1-year return"}
+            sub={isFr
+              ? "Même principe sur 365 jours. Utile pour voir si le signal tient longtemps — pas pour annualiser, c'est déjà un retour absolu sur 12 mois."
+              : "Same principle over 365 days. Useful to see if the signal holds long-term — not for annualising, it's already a 12-month absolute return."}
+            color="var(--c-indigo-2)"
+          />
+          <Breakdown
+            label={isFr ? "Médiane vs Moyenne" : "Median vs Mean"}
+            value={isFr ? "Lisez la médiane" : "Read the median"}
+            sub={isFr
+              ? "La médiane, c'est le trade \"du milieu\" — plus représentatif. La moyenne est tirée par les gros coups (un trade à +400% gonfle artificiellement la moyenne)."
+              : "The median is the \"middle\" trade — more representative. The mean is dragged by outliers (a +400% trade artificially inflates the mean)."}
+            color="var(--tx-2)"
+          />
+        </div>
+
+        <div
+          style={{
+            marginTop: "22px",
+            padding: "18px 20px",
+            background: "var(--bg-raised)",
+            border: "1px solid var(--border)",
+            borderLeft: "3px solid var(--gold)",
+            borderRadius: "2px",
+          }}
+        >
+          <div style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.14em",
+            color: "var(--gold)", textTransform: "uppercase", marginBottom: "10px",
+          }}>
+            {isFr ? "Exemple concret" : "Worked example"}
+          </div>
+          <p style={{ fontSize: "0.9rem", color: "var(--tx-2)", lineHeight: 1.7, margin: 0 }}>
+            {isFr ? (
+              <>Le 15 mars, un dirigeant de LVMH déclare à l&apos;AMF l&apos;achat de 5 M€ d&apos;actions. Le 16 mars (ouverture du lendemain), le cours est à{" "}
+              <strong style={{ color: "var(--tx-1)" }}>700 €</strong> — c&apos;est votre <code style={codeInline}>P0</code>, le prix auquel VOUS auriez pu entrer.
+              <br /><br />
+              Le 16 juin, 90 jours plus tard, le cours est à{" "}
+              <strong style={{ color: "var(--signal-pos)" }}>742 €</strong>. Rendement <code style={codeInline}>T+90 = (742 − 700) / 700 = +6,0%</code>.
+              <br /><br />
+              Le 16 mars de l&apos;année suivante, 365 jours plus tard, le cours est à{" "}
+              <strong style={{ color: "var(--signal-pos)" }}>840 €</strong>. Rendement <code style={codeInline}>T+365 = (840 − 700) / 700 = +20,0%</code>.
+              <br /><br />
+              <span style={{ color: "var(--tx-3)" }}>Sur un tableau, si ce trade faisait partie d&apos;une cohorte de 50 trades "cluster PDG/CFO", ses +6,0% / +20,0% compteraient comme un point dans le calcul de la médiane et de la moyenne affichées.</span></>
+            ) : (
+              <>On March 15, an LVMH executive files a €5M stock purchase with the AMF. On March 16 (next day open), the price is{" "}
+              <strong style={{ color: "var(--tx-1)" }}>€700</strong> — that&apos;s your <code style={codeInline}>P0</code>, the price YOU could have entered at.
+              <br /><br />
+              On June 16, 90 days later, the price is{" "}
+              <strong style={{ color: "var(--signal-pos)" }}>€742</strong>. Return <code style={codeInline}>T+90 = (742 − 700) / 700 = +6.0%</code>.
+              <br /><br />
+              On March 16 the following year, 365 days later, the price is{" "}
+              <strong style={{ color: "var(--signal-pos)" }}>€840</strong>. Return <code style={codeInline}>T+365 = (840 − 700) / 700 = +20.0%</code>.
+              <br /><br />
+              <span style={{ color: "var(--tx-3)" }}>On a table, if this trade were part of a 50-trade &quot;cluster CEO/CFO&quot; cohort, its +6.0% / +20.0% would count as one data point in the displayed median and mean.</span></>
+            )}
+          </p>
+        </div>
+
+        <Callout tone="info">
+          {isFr ? (
+            <><strong>Attention à ne pas confondre.</strong> T+90 et T+365 sont des <strong>rendements absolus par trade</strong>.
+            Ils ne sont PAS annualisés, PAS composés. Le <strong>CAGR de la stratégie</strong> (section 3) est différent : c&apos;est le rendement annualisé d&apos;un portefeuille qui
+            rebalance tous les 3 mois et tient en simultané les 20 meilleurs signaux du moment. Les deux métriques répondent à deux questions différentes :{" "}
+            <em>&laquo; combien rapporte un trade typique ? &raquo;</em> vs <em>&laquo; combien rapporte le portefeuille total sur un an ? &raquo;</em>.</>
+          ) : (
+            <><strong>Don&apos;t confuse the two.</strong> T+90 and T+365 are <strong>per-trade absolute returns</strong>.
+            They are NOT annualised, NOT compounded. The <strong>strategy CAGR</strong> (section 3) is different: it&apos;s the annualised return of a portfolio that
+            rebalances every 3 months and holds the top 20 current signals simultaneously. The two metrics answer different questions:{" "}
+            <em>&quot;how much does a typical trade yield?&quot;</em> vs <em>&quot;how much does the whole portfolio yield over a year?&quot;</em>.</>
+          )}
+        </Callout>
+      </Section>
+
       {/* ── FRESHNESS ─────────────────────────────────────────────────── */}
       <Section
         id="freshness"

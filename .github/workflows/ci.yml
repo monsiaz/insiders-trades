@@ -42,6 +42,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://user:pass@localhost:5432/db
           NEXTAUTH_SECRET: ci-placeholder-secret-32chars-min
+          JWT_SECRET: ci-placeholder-jwt-secret-32chars-min
           CRON_SECRET: ci-placeholder
           OPENAI_API_KEY: sk-placeholder
           BLOB_READ_WRITE_TOKEN: placeholder

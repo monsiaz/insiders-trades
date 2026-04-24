@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchDeclarationDetail } from "@/lib/amf-detail";
+import { getCurrentUser } from "@/lib/auth";
 
 export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
+  // Accept either a cron/server call (Bearer CRON_SECRET) or an admin user session
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const isCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
+
+  if (!isCron) {
+    const user = await getCurrentUser();
+    if (!user || user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
   }
 
   try {

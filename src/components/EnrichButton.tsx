@@ -20,6 +20,10 @@ export function EnrichButton({ companyId }: { companyId: string }) {
       });
       const data = await res.json();
 
+      if (!res.ok) {
+        setResult(res.status === 401 ? "Admin only" : "Error");
+        return;
+      }
       if (data.success) {
         setResult(`✓ ${data.enriched} enriched`);
         router.refresh();

@@ -462,10 +462,13 @@ export default async function PitchPage() {
           {T.heroH1Line1}<br />
           <em style={{ color: "var(--gold)", fontStyle: "italic" }}>{T.heroH1Line2}</em>
         </h1>
-        <p style={{ fontSize: "0.84rem", color: "var(--tx-3)", lineHeight: 1.6, textAlign: "center", maxWidth: 520 }}>
+        <p style={{ fontSize: "0.84rem", color: "var(--tx-3)", lineHeight: 1.8, textAlign: "center", maxWidth: 480 }}>
           {fmtNum(d.universe.totalDeclarations)} {T.heroSub1} &middot;{" "}
           {fmtNum(d.universe.totalBacktests)} {T.heroSub2} &middot; {startYear}–{endYear}
-          &middot; {isFr ? "retours mesurés depuis pubDate+1 (vue retail)" : "returns measured from pubDate+1 (retail view)"}
+          <br />
+          <span style={{ opacity: 0.75 }}>
+            {isFr ? "retours mesurés depuis pubDate+1 (vue retail)" : "returns measured from pubDate+1 (retail view)"}
+          </span>
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
           {T.heroBadges.map((t, i) => (

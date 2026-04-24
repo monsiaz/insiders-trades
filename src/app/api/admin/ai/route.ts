@@ -22,21 +22,28 @@ import { ADMIN_TOOLS_SCHEMA, runAdminTool } from "@/lib/admin-ai-tools";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
-const DEFAULT_MODEL = "gpt-4o-mini";
+const DEFAULT_MODEL = "gpt-5.4-mini";
+
+// Keep in sync with MODELS array in AiTab.tsx
 const ALLOWED_MODELS = new Set([
-  // GPT-4o family
-  "gpt-4o-mini",
-  "gpt-4o",
+  // GPT-5.4 family (latest)
+  "gpt-5.4-mini",
   // GPT-4.1 family
   "gpt-4.1",
   "gpt-4.1-mini",
-  // o-series reasoning models
+  // GPT-4o family
+  "gpt-4o",
+  "gpt-4o-mini",
+  // o-series reasoning models (no temperature)
   "o1",
   "o3",
   "o4-mini",
-  "gpt-4.1-mini",
-  "gpt-5.2",
 ]);
+
+// Models that do NOT support the temperature parameter.
+// Rule: only o-series (o1, o3, o4-*) are reasoning models without temperature.
+// GPT-5.x models are standard GPT models and DO support temperature.
+const REASONING_MODELS = new Set(["o1", "o3", "o4-mini"]);
 
 const SYSTEM_PROMPT = `Tu es Sigma Copilote, l'assistant IA du back-office d'Insiders Trades Sigma.
 Tu aides l'administrateur à :
@@ -129,14 +136,15 @@ export async function POST(req: NextRequest) {
   for (let round = 0; round < MAX_ROUNDS; round++) {
     let completion;
     try {
-      // o-series reasoning models (o1, o3, o4-mini) do not support temperature.
-      const isReasoningModel = /^o\d/i.test(model) || /^gpt-5/i.test(model);
+      // o-series reasoning models (o1, o3, o4-mini) do NOT support temperature.
+      // GPT-5.4-mini and all GPT-4.x/5.x models DO support temperature.
+      const isReasoning = REASONING_MODELS.has(model);
       completion = await openai.chat.completions.create({
         model,
         messages: messages as never,
         tools: ADMIN_TOOLS_SCHEMA as never,
         tool_choice: "auto",
-        ...(isReasoningModel ? {} : { temperature }),
+        ...(isReasoning ? {} : { temperature }),
       });
     } catch (err) {
       return NextResponse.json(

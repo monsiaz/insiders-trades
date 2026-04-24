@@ -14,17 +14,22 @@ interface ChatMessage {
   usage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number };
 }
 
+// Temperature support per family (based on OpenAI API docs):
+//   ✅ GPT models (4o, 4.1, 5.x) → support temperature
+//   ❌ o-series (o1, o3, o4-mini) → NO temperature (reasoning models)
 const MODELS = [
-  // ── GPT-4o family ──────────────────────────────────────────────────────────
-  { value: "gpt-4o-mini",  label: "GPT-4o mini",   hint: "Rapide · recommandé" },
-  { value: "gpt-4o",       label: "GPT-4o",         hint: "Précis · multimodal" },
+  // ── GPT-5.4 family (latest) ────────────────────────────────────────────────
+  { value: "gpt-5.4-mini", label: "GPT-5.4 mini ★", hint: "Le plus récent · rapide · recommandé", temp: true },
   // ── GPT-4.1 family ─────────────────────────────────────────────────────────
-  { value: "gpt-4.1-mini", label: "GPT-4.1 mini",  hint: "Rapide · économique" },
-  { value: "gpt-4.1",      label: "GPT-4.1",        hint: "Précis · 1M context" },
+  { value: "gpt-4.1",      label: "GPT-4.1",         hint: "Précis · 1M context",                  temp: true },
+  { value: "gpt-4.1-mini", label: "GPT-4.1 mini",    hint: "Rapide · économique",                  temp: true },
+  // ── GPT-4o family ──────────────────────────────────────────────────────────
+  { value: "gpt-4o",       label: "GPT-4o",          hint: "Multimodal · vision",                  temp: true },
+  { value: "gpt-4o-mini",  label: "GPT-4o mini",     hint: "Ultra rapide · léger",                 temp: true },
   // ── o-series reasoning ─────────────────────────────────────────────────────
-  { value: "o4-mini",      label: "o4-mini",        hint: "Raisonnement rapide · NEW" },
-  { value: "o3",           label: "o3",             hint: "Raisonnement avancé · NEW" },
-  { value: "o1",           label: "o1",             hint: "Raisonnement · long CoT" },
+  { value: "o4-mini",      label: "o4-mini",         hint: "Raisonnement rapide · sans temp.",      temp: false },
+  { value: "o3",           label: "o3",              hint: "Raisonnement avancé · sans temp.",      temp: false },
+  { value: "o1",           label: "o1",              hint: "Raisonnement long CoT · sans temp.",    temp: false },
 ] as const;
 
 const CANNED_PROMPTS: { label: string; prompt: string }[] = [
@@ -50,9 +55,10 @@ export function AiTab({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [model, setModel] = useState<string>("gpt-4o-mini");
+  const [model, setModel] = useState<string>("gpt-5.4-mini");
   const [temperature, setTemperature] = useState(0.3);
-  const isReasoningModel = model.startsWith("o1") || model.startsWith("o3") || model.startsWith("o4");
+  // Derive from the MODELS table — single source of truth for temperature support
+  const isReasoningModel = MODELS.find((m) => m.value === model)?.temp === false;
   const [showTools, setShowTools] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 

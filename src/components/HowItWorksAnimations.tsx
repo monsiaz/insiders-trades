@@ -479,7 +479,7 @@ export function HowItWorksAnimations() {
         pill="03 · Backtest"
         title={isFr ? "Validation sur données historiques" : "Validation on historical data"}
         body={isFr
-          ? "Chaque pattern est backtesté sur 22 000+ transactions depuis 2021. Win rate, Sharpe, retour médian T+90 / T+365 vérifiés."
+          ? "Chaque pattern est backtesté sur 24 000+ transactions depuis 2021. Win rate, Sharpe, retour médian T+90 / T+365 vérifiés."
           : "Every pattern is backtested on 22,000+ transactions since 2021. Win rate, Sharpe, median return at T+90 / T+365 verified."}
       >
         <AnimBacktest isFr={isFr} />

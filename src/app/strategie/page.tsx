@@ -107,12 +107,12 @@ export default async function StrategiePage() {
           }}
         >
           {isFr ? (
-            <>Nous avons testé <strong>583 200 combinaisons de filtres</strong> sur 15 171 backtests
-            historiques. Une seule combinaison bat le CAC 40 chaque année de 2022 à 2025.
+            <>Nous avons testé <strong>583 200 combinaisons de filtres</strong> sur plus de 24 000 backtests
+            historiques (2021–2026). Une seule combinaison bat le CAC 40 chaque année de 2022 à 2025.
             Voici la recette exacte, les résultats, et les signaux qui la matchent <em>aujourd&apos;hui</em>.</>
           ) : (
-            <>We tested <strong>583,200 filter combinations</strong> on 15,171 historical backtests.
-            Only one combination beats the CAC 40 every year from 2022 to 2025.
+            <>We tested <strong>583,200 filter combinations</strong> on more than 24,000 historical backtests
+            (2021–2026). Only one combination beats the CAC 40 every year from 2022 to 2025.
             Here is the exact recipe, the results, and the signals matching it <em>today</em>.</>
           )}
         </p>

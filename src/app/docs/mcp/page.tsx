@@ -86,7 +86,7 @@ export default function McpDocsPage() {
           }}
         >
           Connectez votre IA<br />
-          à <span style={{ fontStyle: "italic", color: "var(--gold)" }}>25 500 déclarations AMF</span>
+          à <span style={{ fontStyle: "italic", color: "var(--gold)" }}>25 600 déclarations AMF</span>
         </h1>
         <p
           style={{
@@ -829,7 +829,7 @@ curl -s "$URL" -X POST \\
               }}
             >
               Une URL, une clé, c&apos;est en ligne. Votre agent IA préféré accède
-              instantanément aux 25 500 déclarations AMF, signaux scorés et backtests.
+              instantanément aux 25 600 déclarations AMF, signaux scorés et backtests.
             </p>
             <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
               <Link href="/account/api-keys/" style={btnGold}>Générer ma clé →</Link>

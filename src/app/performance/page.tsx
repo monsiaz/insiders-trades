@@ -32,10 +32,10 @@ export async function generateMetadata() {
   const isFr = (hdrs.get("x-locale") ?? "en") === "fr";
   return isFr ? {
     title: "Performance & transparence · Insiders Trades Sigma",
-    description: "Transparence complète sur la performance réelle de notre système. Backtest 4 ans sur 21 000 trades, comparaison vs CAC 40, stratégie recommandée pour petit investisseur.",
+    description: "Transparence complète sur la performance réelle de notre système. Backtest 5 ans sur 24 000 trades, comparaison vs CAC 40, stratégie recommandée pour petit investisseur.",
   } : {
     title: "Performance & Transparency · Insiders Trades Sigma",
-    description: "Full transparency on the real performance of our system. 4-year backtest on 21,000 trades, comparison vs CAC 40, recommended strategy for the retail investor.",
+    description: "Full transparency on the real performance of our system. 5-year backtest on 24,000 trades, comparison vs CAC 40, recommended strategy for the retail investor.",
   };
 }
 
@@ -907,8 +907,8 @@ export default async function PerformancePage() {
           }}
         >
           {isFr
-            ? "585 sociétés passées au crible, 25 500 déclarations scorées, 22 000 backtests. Utilisez-le pour pré-filtrer votre univers et concentrer votre analyse sur les 10-20 sociétés qui méritent vraiment votre attention cette semaine."
-            : "585 companies screened, 25,500 scored filings, 22,000 backtests. Use it to pre-filter your universe and focus your analysis on the 10-20 companies that truly deserve your attention this week."}
+            ? "585 sociétés passées au crible, 25 600 déclarations scorées, 24 000 backtests. Utilisez-le pour pré-filtrer votre univers et concentrer votre analyse sur les 10-20 sociétés qui méritent vraiment votre attention cette semaine."
+            : "585 companies screened, 25,600 scored filings, 24,000 backtests. Use it to pre-filter your universe and focus your analysis on the 10-20 companies that truly deserve your attention this week."}
         </p>
         <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
           <Link href="/recommendations/" style={btnGold}>

@@ -132,7 +132,7 @@ export default async function FonctionnementPage() {
     prob2Body: "Un achat de 100k€ a-t-il du sens sur une société de 10Md€ ? Sans le ratio, le signal est inutile. Les PDF ne contiennent pas la capitalisation.",
     prob3Eyebrow: "Problème · 03",
     prob3Title: "Aucune validation historique",
-    prob3Body: "La question clé reste ouverte : quand un PDG achète, le titre monte-t-il vraiment ? Il faut un backtest sur 22 000+ trades historiques pour le dire.",
+    prob3Body: "La question clé reste ouverte : quand un PDG achète, le titre monte-t-il vraiment ? Il faut un backtest sur 24 000+ trades historiques pour le dire.",
     pipelineEyebrow: "Pipeline",
     pipelineH2Main: "De la déclaration AMF",
     pipelineH2Italic: "au signal actionnable",
@@ -164,7 +164,7 @@ export default async function FonctionnementPage() {
     scoringLi10Strong: "Fondamentaux",
     scoringLi10Tail: " · consensus analyste, P/E, leverage (poids réduit)",
     backtestEyebrow: "Backtest rigoureux",
-    backtestH2Line1: "22 620 trades testés,",
+    backtestH2Line1: "24 016 trades testés,",
     backtestH2Line2: "six horizons",
     backtestP2: "Prix fournis par Yahoo Finance avec une fenêtre de tolérance de ±12 jours pour éviter les week-ends, jours fériés et suspensions de cotation. Aucune extrapolation.",
     backtestP3: "Les recommandations qui s\u0027affichent sur le site sont filtrées selon les statistiques historiques : seuls les profils avec un retour moyen ≥ +4% à T+90 sont présentés comme signaux d\u0027achat.",
@@ -225,7 +225,7 @@ export default async function FonctionnementPage() {
     prob2Body: "Does a €100k purchase make sense for a €10bn company? Without the ratio, the signal is useless. PDFs don't include market cap.",
     prob3Eyebrow: "Problem · 03",
     prob3Title: "No historical validation",
-    prob3Body: "The key question remains open: when a CEO buys, does the stock actually rise? You need a backtest on 22,000+ historical trades to answer that.",
+    prob3Body: "The key question remains open: when a CEO buys, does the stock actually rise? You need a backtest on 24,000+ historical trades to answer that.",
     pipelineEyebrow: "Pipeline",
     pipelineH2Main: "From the AMF filing",
     pipelineH2Italic: "to an actionable signal",
@@ -257,7 +257,7 @@ export default async function FonctionnementPage() {
     scoringLi10Strong: "Fundamentals",
     scoringLi10Tail: " · analyst consensus, P/E, leverage (reduced weight)",
     backtestEyebrow: "Rigorous backtesting",
-    backtestH2Line1: "22,620 trades tested,",
+    backtestH2Line1: "24,016 trades tested,",
     backtestH2Line2: "six horizons",
     backtestP2: "Prices sourced from Yahoo Finance with a ±12-day tolerance window to account for weekends, public holidays and trading suspensions. No extrapolation.",
     backtestP3: "Recommendations shown on the site are filtered by historical statistics: only profiles with a mean return ≥ +4% at T+90 are presented as buy signals.",
@@ -1322,15 +1322,15 @@ export default async function FonctionnementPage() {
 
 function KeyFigures({ isFr }: { isFr: boolean }) {
   const figs = isFr ? [
-    { v: "25 500+", l: "déclarations AMF", s: "depuis 2015" },
+    { v: "25 600+", l: "déclarations AMF", s: "depuis 2015" },
     { v: "585",     l: "sociétés suivies", s: "cotées FR" },
-    { v: "22 620",  l: "backtests réalisés", s: "T+30 à T+730" },
-    { v: "86%",     l: "sociétés enrichies", s: "fondamentaux Yahoo" },
+    { v: "24 000+", l: "backtests réalisés", s: "T+30 à T+730" },
+    { v: "87%",     l: "sociétés enrichies", s: "fondamentaux Yahoo" },
   ] : [
     { v: "25,500+", l: "AMF filings", s: "since 2015" },
     { v: "585",     l: "companies tracked", s: "listed in France" },
-    { v: "22,620",  l: "backtests run", s: "T+30 to T+730" },
-    { v: "86%",     l: "companies enriched", s: "Yahoo fundamentals" },
+    { v: "24,000+", l: "backtests run", s: "T+30 to T+730" },
+    { v: "87%",     l: "companies enriched", s: "Yahoo fundamentals" },
   ];
   return (
     <div

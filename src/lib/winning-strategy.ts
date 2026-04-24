@@ -293,5 +293,5 @@ export const STRATEGY_PROOF: StrategyProof = {
   maxDrawdownPct: -12,
   // Fixed date — reflects the actual grid-search run, not "now".
   // Update by re-running scripts/grid-search-v2.mjs and setting the ISO date here.
-  lastUpdatedAt: "2025-04-01T00:00:00.000Z",
+  lastUpdatedAt: "2026-04-24T00:00:00.000Z",
 };

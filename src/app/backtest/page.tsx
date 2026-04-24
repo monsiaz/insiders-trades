@@ -29,7 +29,7 @@ const getBacktestMeta = unstable_cache(
         : 2021;
       return { total, totalBuys, earliestYear };
     } catch {
-      return { total: 22000, totalBuys: 16000, earliestYear: 2021 };
+      return { total: 24000, totalBuys: 18000, earliestYear: 2021 };
     }
   },
   ["backtest-meta-v1"],

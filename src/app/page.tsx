@@ -223,8 +223,8 @@ async function FeatureStripSection({ earliestYear, locale }: { earliestYear: num
           icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><polyline points="17 6 23 6 23 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           title={isFr ? "Backtesting historique" : "Historical backtesting"}
           body={isFr
-            ? `Performance réelle de ${snap ? snap.total.toLocaleString("fr-FR") : "22 000"}+ transactions depuis ${earliestYear}. Win rate, Sharpe, retour médian à T+30, T+90, T+365. Données vérifiées sur Yahoo Finance.`
-            : `Real performance across ${snap ? snap.total.toLocaleString("en-US") : "22,000"}+ transactions since ${earliestYear}. Win rate, Sharpe, median return at T+30, T+90, T+365. Data verified on Yahoo Finance.`}
+            ? `Performance réelle de ${snap ? snap.total.toLocaleString("fr-FR") : "24 000"}+ transactions depuis ${earliestYear}. Win rate, Sharpe, retour médian à T+30, T+90, T+365. Données vérifiées sur Yahoo Finance.`
+            : `Real performance across ${snap ? snap.total.toLocaleString("en-US") : "24,000"}+ transactions since ${earliestYear}. Win rate, Sharpe, median return at T+30, T+90, T+365. Data verified on Yahoo Finance.`}
           accent="var(--corporate)"
         />
         <FeatureCard

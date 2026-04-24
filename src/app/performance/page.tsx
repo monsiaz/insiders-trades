@@ -11,10 +11,21 @@
 
 import { headers } from "next/headers";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { LogoMark } from "@/components/Logo";
 import { computePerformanceData, type StrategyResult } from "@/lib/performance-data";
 
 export const dynamic = "force-dynamic";
+
+// /performance recomputes ~15k backtest rows + fetches CAC40 monthly from Yahoo.
+// Uncached it takes ~3s to stream the full HTML. The underlying data only moves
+// on the weekly backtest cron, so a 1h TTL is plenty and brings Total down to
+// ~300ms on cache hits.
+const getPerformanceDataCached = unstable_cache(
+  async () => computePerformanceData(),
+  ["performance-data-v1"],
+  { revalidate: 3600, tags: ["performance-data"] },
+);
 
 export async function generateMetadata() {
   const hdrs = await headers();
@@ -47,7 +58,7 @@ export default async function PerformancePage() {
   const daysSuffix = isFr ? " j" : "d";
   const dateLocale = isFr ? "fr-FR" : "en-GB";
 
-  const d = await computePerformanceData();
+  const d = await getPerformanceDataCached();
   const startYear = d.universe.periodStart.slice(0, 4);
   const endYear = d.universe.periodEnd.slice(0, 4);
 

@@ -25,6 +25,7 @@
  * combination with that property out of 583k tested.
  */
 
+import { unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
 import { normalizeRole } from "./role-utils";
 
@@ -90,13 +91,14 @@ function roleCategory(fn: string | null): "ceo" | "cfo" | "director" | "board" |
 }
 
 // ── Public: fetch live signals matching the winning strategy ────────────────
+// Results are cached at the (limit, lookbackDays) level for 30 min. The
+// underlying signalScore only changes on the hourly scoring cron, so a 30-min
+// TTL is conservative and cuts /strategie page render from ~700ms to ~200ms.
 
-export async function getWinningStrategySignals(opts: {
-  limit?: number;
-  lookbackDays?: number;
-} = {}): Promise<WinningSignal[]> {
-  const limit = Math.max(1, Math.min(50, opts.limit ?? 20));
-  const lookbackDays = Math.max(1, Math.min(365, opts.lookbackDays ?? 90));
+async function _fetchWinningStrategySignals(
+  limit: number,
+  lookbackDays: number,
+): Promise<WinningSignal[]> {
   const since = new Date(Date.now() - lookbackDays * 86400_000);
 
   const rows = await prisma.declaration.findMany({
@@ -231,6 +233,21 @@ export async function getWinningStrategySignals(opts: {
       ],
     };
   });
+}
+
+const getWinningStrategySignalsCached = unstable_cache(
+  _fetchWinningStrategySignals,
+  ["winning-strategy-signals-v3"],
+  { revalidate: 1800, tags: ["winning-strategy"] },
+);
+
+export async function getWinningStrategySignals(opts: {
+  limit?: number;
+  lookbackDays?: number;
+} = {}): Promise<WinningSignal[]> {
+  const limit = Math.max(1, Math.min(50, opts.limit ?? 20));
+  const lookbackDays = Math.max(1, Math.min(365, opts.lookbackDays ?? 90));
+  return getWinningStrategySignalsCached(limit, lookbackDays);
 }
 
 // ── Historical proof (cached, displayed on /strategie page) ────────────────

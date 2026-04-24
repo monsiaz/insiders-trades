@@ -25,6 +25,8 @@ function sampleReco(over: Partial<RecoItem>): RecoItem {
     action: "BUY",
     company: { name: "ABEO", slug: "abeo", yahooSymbol: "ABEO.PA", logoUrl: null },
     insider: { name: "Olivier ESTEVES", slug: null, function: "Président-Directeur Général", role: "PDG/DG" },
+    allInsiders: [{ name: "Olivier ESTEVES", slug: null, role: "PDG/DG" }],
+    declarationCount: 1,
     totalAmount: 3_300_000,
     pctOfMarketCap: 4.73,
     signalScore: 55,

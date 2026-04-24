@@ -127,7 +127,41 @@ export function RecoCard({ item, rank, locale = "en" }: { item: RecoItem; rank: 
             </span>
           </div>
 
-          {item.insider.name && (
+          {/* Insiders — handles merged multi-declaration cards */}
+          {item.declarationCount > 1 ? (
+            // Multi-declaration card: show "N opérations" badge + list all unique insiders
+            <div className="tearsheet-insider" style={{ flexDirection: "column", alignItems: "flex-start", gap: "3px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                <span style={{
+                  fontSize: "0.62rem", fontWeight: 700, padding: "1px 7px", borderRadius: "20px",
+                  background: "var(--c-indigo-bg)", border: "1px solid var(--c-indigo-bd)", color: "var(--c-indigo-2)",
+                  letterSpacing: "0.04em",
+                }}>
+                  {item.declarationCount} {isFr ? "opérations" : "operations"}
+                </span>
+                {item.allInsiders.length > 1 && (
+                  <span style={{ fontSize: "0.7rem", color: "var(--tx-3)" }}>
+                    · {item.allInsiders.length} {isFr ? "initiés" : "insiders"}
+                  </span>
+                )}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                {item.allInsiders.slice(0, 3).map((ins, idx) => (
+                  <span key={idx} style={{ fontSize: "0.72rem", color: "var(--tx-2)", fontWeight: 500 }}>
+                    {ins.slug ? (
+                      <Link href={`/insider/${ins.slug}`} style={{ color: "inherit", textDecoration: "none" }}
+                        className="hover:underline">{ins.name ?? "·"}</Link>
+                    ) : (ins.name ?? "·")}
+                    {idx < Math.min(item.allInsiders.length, 3) - 1 && <span style={{ color: "var(--tx-4)", margin: "0 2px" }}>·</span>}
+                  </span>
+                ))}
+                {item.allInsiders.length > 3 && (
+                  <span style={{ fontSize: "0.72rem", color: "var(--tx-4)" }}>+{item.allInsiders.length - 3}</span>
+                )}
+              </div>
+            </div>
+          ) : item.insider.name ? (
+            // Single declaration: classic display
             <div className="tearsheet-insider">
               {item.insider.slug ? (
                 <Link href={`/insider/${item.insider.slug}`} style={{ fontWeight: 500, color: "inherit", textDecoration: "none" }}
@@ -144,7 +178,7 @@ export function RecoCard({ item, rank, locale = "en" }: { item: RecoItem; rank: 
                 </>
               )}
             </div>
-          )}
+          ) : null}
 
           {item.badges.length > 0 && (
             <div className="tearsheet-tags">
@@ -199,7 +233,11 @@ export function RecoCard({ item, rank, locale = "en" }: { item: RecoItem; rank: 
           </span>
         </div>
         <div className="tearsheet-strip-cell">
-          <span className="tearsheet-strip-label">{isFr ? "Montant déclaré" : "Declared amount"}</span>
+          <span className="tearsheet-strip-label">
+            {item.declarationCount > 1
+              ? (isFr ? "Total déclaré" : "Total declared")
+              : (isFr ? "Montant déclaré" : "Declared amount")}
+          </span>
           <span className="tearsheet-strip-value">{fmtAmt(item.totalAmount, isFr)}</span>
           {pctMcapStr && <span className="tearsheet-strip-sub">{pctMcapStr}</span>}
         </div>

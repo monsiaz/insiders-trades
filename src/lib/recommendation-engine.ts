@@ -22,8 +22,13 @@ export interface RecoItem {
   declarationId: string;
   action: "BUY" | "SELL";
   company: { name: string; slug: string; yahooSymbol: string | null; logoUrl: string | null };
+  /** Primary insider (highest signal score declaration) */
   insider: { name: string | null; slug: string | null; function: string | null; role: string };
+  /** All insiders involved when multiple declarations are merged into one card */
+  allInsiders: Array<{ name: string | null; slug: string | null; role: string }>;
   totalAmount: number | null;
+  /** Number of declarations merged into this card (1 = single declaration) */
+  declarationCount: number;
   pctOfMarketCap: number | null;
   signalScore: number | null;
   pubDate: string;
@@ -252,6 +257,8 @@ function buildRecoItem(
       function: decl.insiderFunction,
       role,
     },
+    allInsiders: [{ name: decl.insiderName, slug: decl.insider?.slug ?? null, role }],
+    declarationCount: 1,
     totalAmount: decl.totalAmount,
     pctOfMarketCap: decl.pctOfMarketCap,
     signalScore: decl.signalScore,
@@ -273,6 +280,45 @@ function buildRecoItem(
     currentPrice: decl.company.currentPrice ?? null,
     badges,
   };
+}
+
+// ── Merge duplicate company cards ─────────────────────────────────────────────
+// Groups recommendations by company slug. When multiple declarations exist for
+// the same company, keeps the best score as the primary and aggregates amounts.
+
+function mergeByCompany(items: RecoItem[]): RecoItem[] {
+  const map = new Map<string, RecoItem>();
+
+  for (const item of items) {
+    const key = item.company.slug;
+    const existing = map.get(key);
+
+    if (!existing) {
+      map.set(key, { ...item });
+    } else {
+      // Accumulate amount
+      existing.totalAmount = (existing.totalAmount ?? 0) + (item.totalAmount ?? 0) || null;
+      existing.declarationCount += 1;
+
+      // Add insider to allInsiders if not already listed
+      const already = existing.allInsiders.some(
+        (i) => i.name === item.insider.name
+      );
+      if (!already) {
+        existing.allInsiders = [...existing.allInsiders, {
+          name: item.insider.name,
+          slug: item.insider.slug,
+          role: item.insider.role,
+        }];
+      }
+
+      // Mark as cluster if multiple declarations
+      if (!existing.isCluster) existing.isCluster = true;
+      if (!existing.badges.includes("cluster")) existing.badges = ["cluster", ...existing.badges];
+    }
+  }
+
+  return Array.from(map.values());
 }
 
 // ── Lookup helper ─────────────────────────────────────────────────────────────
@@ -303,13 +349,13 @@ async function getBuyRecommendations(cutoff: Date, limit: number): Promise<RecoI
     select: DECL_SELECT,
   });
 
-  const companyCount = new Map<string, number>();
+  const seen = new Set<string>(); // track declaration IDs already processed
   const items: RecoItem[] = [];
 
   for (const decl of decls) {
     if (isNonMarket(decl.transactionNature)) continue;
-    const cnt = companyCount.get(decl.company.slug) ?? 0;
-    if (cnt >= 2) continue;
+    if (seen.has(decl.id)) continue;
+    seen.add(decl.id);
 
     const role = normalizeRole(decl.insiderFunction);
     const size = sizeLabel(decl.company.marketCap);
@@ -320,11 +366,16 @@ async function getBuyRecommendations(cutoff: Date, limit: number): Promise<RecoI
     if (er != null && er < 2 && (decl.signalScore ?? 0) < 50) continue;
 
     items.push(buildRecoItem(decl, "BUY", bucket));
-    companyCount.set(decl.company.slug, cnt + 1);
   }
 
+  // Sort before merge so best-score declaration is always the primary card
   items.sort((a, b) => b.recoScore - a.recoScore);
-  return items.slice(0, limit);
+
+  // Merge same-company declarations into a single card (aggregate amounts)
+  const merged = mergeByCompany(items);
+  merged.sort((a, b) => b.recoScore - a.recoScore);
+
+  return merged.slice(0, limit);
 }
 
 // ── Sell recommendations ──────────────────────────────────────────────────────
@@ -345,25 +396,26 @@ async function getSellRecommendations(cutoff: Date, limit: number): Promise<Reco
     select: DECL_SELECT,
   });
 
-  const companyCount = new Map<string, number>();
+  const seen = new Set<string>();
   const items: RecoItem[] = [];
 
   for (const decl of decls) {
     if (isNonMarket(decl.transactionNature)) continue;
-    const cnt = companyCount.get(decl.company.slug) ?? 0;
-    if (cnt >= 2) continue;
+    if (seen.has(decl.id)) continue;
+    seen.add(decl.id);
 
     const role = normalizeRole(decl.insiderFunction);
     const size = sizeLabel(decl.company.marketCap);
     const bucket = lookupBucket(sellBuckets, role, size);
 
     items.push(buildRecoItem(decl, "SELL", bucket));
-    companyCount.set(decl.company.slug, cnt + 1);
   }
 
-  // Sort sells by totalAmount (conviction): the bigger the sale, the stronger the signal
+  // Sort before merge so largest sell is primary
   items.sort((a, b) => (b.totalAmount ?? 0) - (a.totalAmount ?? 0));
-  return items.slice(0, limit);
+  const merged = mergeByCompany(items);
+  merged.sort((a, b) => (b.totalAmount ?? 0) - (a.totalAmount ?? 0));
+  return merged.slice(0, limit);
 }
 
 // ── Personal recommendations ──────────────────────────────────────────────────
@@ -407,51 +459,43 @@ async function getPersonalRecommendations(
     }),
   ]);
 
-  const items: RecoItem[] = [];
-  // seenIds: prevents the exact same declaration appearing twice (BUY + SELL)
-  const seenIds = new Set<string>();
-  // seenSlugs: prevents contradictory BUY + SELL signals for the same company
-  const seenSlugs = new Set<string>();
-  // max 1 sell alert per company (avoids flooding when multiple insiders sell the same holding)
-  const sellCompanyCount = new Map<string, number>();
+  const seenIds   = new Set<string>();
+  const seenSlugs = new Set<string>(); // companies already flagged SELL
+
+  const sellItems: RecoItem[] = [];
+  const buyItems:  RecoItem[] = [];
 
   // SELL alerts first (on user's holdings)
   for (const decl of sellDecls) {
     if (isNonMarket(decl.transactionNature)) continue;
     if (seenIds.has(decl.id)) continue;
-    const sellCnt = sellCompanyCount.get(decl.company.slug) ?? 0;
-    if (sellCnt >= 1) continue; // keep strongest sell per company
+    seenIds.add(decl.id);
 
     const role = normalizeRole(decl.insiderFunction);
     const size = sizeLabel(decl.company.marketCap);
     const bucket = lookupBucket(sellBuckets, role, size);
-    items.push(buildRecoItem(decl, "SELL", bucket));
-    seenIds.add(decl.id);
+    sellItems.push(buildRecoItem(decl, "SELL", bucket));
     seenSlugs.add(decl.company.slug);
-    sellCompanyCount.set(decl.company.slug, sellCnt + 1);
   }
 
-  // BUY signals (max 1 per company, never on a company already flagged as SELL)
-  const buyCompanyCount = new Map<string, number>();
+  // BUY signals — never on a company already flagged as SELL
   for (const decl of buyDecls) {
     if (isNonMarket(decl.transactionNature)) continue;
     if (seenIds.has(decl.id)) continue;
-    if (seenSlugs.has(decl.company.slug)) continue; // skip if company already has a SELL alert
-
-    const cnt = buyCompanyCount.get(decl.company.slug) ?? 0;
-    if (cnt >= 1) continue;
+    if (seenSlugs.has(decl.company.slug)) continue;
+    seenIds.add(decl.id);
 
     const role = normalizeRole(decl.insiderFunction);
     const size = sizeLabel(decl.company.marketCap);
     const bucket = lookupBucket(buyBuckets, role, size);
-    items.push(buildRecoItem(decl, "BUY", bucket));
-    seenIds.add(decl.id);
-    buyCompanyCount.set(decl.company.slug, cnt + 1);
-
-    if (items.length >= limit) break;
+    buyItems.push(buildRecoItem(decl, "BUY", bucket));
   }
 
-  return items.slice(0, limit);
+  // Merge same-company cards within each action group
+  const mergedSells = mergeByCompany(sellItems);
+  const mergedBuys  = mergeByCompany(buyItems);
+
+  return [...mergedSells, ...mergedBuys].slice(0, limit);
 }
 
 // ── Public entry point ────────────────────────────────────────────────────────

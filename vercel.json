@@ -9,7 +9,8 @@
     "src/app/api/sync/route.ts":           { "maxDuration": 60,  "memory": 512  },
     "src/app/api/sync-latest/route.ts":    { "maxDuration": 60,  "memory": 512  },
     "src/app/api/enrich/route.ts":         { "maxDuration": 60,  "memory": 512  },
-    "src/app/api/admin/ai/route.ts":       { "maxDuration": 120, "memory": 512  }
+    "src/app/api/admin/ai/route.ts":       { "maxDuration": 120, "memory": 512  },
+    "src/app/api/weekly-digest/route.ts":  { "maxDuration": 300, "memory": 1024 }
   },
   "crons": [
     {
@@ -31,6 +32,10 @@
     {
       "path": "/api/translate-news",
       "schedule": "0 */12 * * *"
+    },
+    {
+      "path": "/api/weekly-digest",
+      "schedule": "0 8 * * 1"
     }
   ]
 }

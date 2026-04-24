@@ -647,3 +647,166 @@ function digestFooterCta(): string {
     </table>
   `;
 }
+
+// ── Weekly digest (OpenAI-powered) ───────────────────────────────────────────
+
+import type { WeeklyDigestPayload, PortfolioSnap, WeeklyAction, ActionType } from "./weekly-digest";
+
+const ACTION_COLORS = {
+  SELL:      { label: "À vendre",    emoji: "🔴", color: BRAND.red,      bg: "rgba(200,32,56,0.07)"  },
+  REINFORCE: { label: "Renforcer",   emoji: "🟢", color: BRAND.green,    bg: "rgba(0,158,98,0.07)"   },
+  WATCH:     { label: "Surveiller",  emoji: "🟡", color: BRAND.gold,     bg: "rgba(184,149,90,0.07)" },
+  BUY:       { label: "Opportunité", emoji: "⬆️",  color: BRAND.navy,    bg: "rgba(17,42,70,0.05)"   },
+} as const;
+
+function portfolioSnapRow(p: PortfolioSnap): string {
+  const isCrowd = p.assetType === "CROWDFUNDING";
+  const pnlColor = (p.pnlPct ?? 0) >= 0 ? BRAND.green : BRAND.red;
+  const pnlStr = p.pnlPct != null ? `${p.pnlPct >= 0 ? "+" : ""}${p.pnlPct.toFixed(1)}%` : "·";
+  const valueStr = p.currentValue != null ? fmtEur(p.currentValue) : fmtEur(p.totalInvested);
+  const accStr = isCrowd && p.accruedInterest != null
+    ? `<span style="font-size:11px;color:${BRAND.green}">+${fmtEur(p.accruedInterest)} intérêts</span>`
+    : "";
+
+  return `
+    <tr>
+      <td style="padding:7px 0;border-bottom:1px solid ${BRAND.border}">
+        <span style="font-size:13px;font-weight:600;color:${BRAND.tx1}">${escape(p.name)}</span>
+        ${isCrowd ? `<span style="font-size:10px;background:rgba(0,158,98,0.1);color:${BRAND.green};padding:1px 5px;border-radius:3px;margin-left:6px;font-weight:700">CROWD ${p.annualYield ?? "?"}%</span>` : ""}
+        ${accStr ? `<br>${accStr}` : ""}
+      </td>
+      <td align="right" style="padding:7px 0 7px 8px;border-bottom:1px solid ${BRAND.border};font-size:13px;color:${BRAND.tx2};white-space:nowrap">
+        ${valueStr}
+      </td>
+      <td align="right" style="padding:7px 0 7px 8px;border-bottom:1px solid ${BRAND.border};font-size:13px;font-weight:700;color:${pnlColor};white-space:nowrap">
+        ${pnlStr}
+      </td>
+    </tr>`;
+}
+
+function weeklyActionCard(a: WeeklyAction): string {
+  const cfg = ACTION_COLORS[a.type];
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+           style="margin-bottom:8px;background:${cfg.bg};border-left:3px solid ${cfg.color};border-radius:0 4px 4px 0">
+      <tr>
+        <td style="padding:10px 14px">
+          <div style="font-size:12px;font-weight:800;color:${cfg.color};letter-spacing:0.05em;margin-bottom:2px">
+            ${cfg.emoji} ${cfg.label.toUpperCase()} · ${escape(a.company)}
+          </div>
+          <div style="font-size:13px;color:${BRAND.tx2}">${escape(a.reason)}</div>
+        </td>
+        <td align="right" style="padding:10px 14px;white-space:nowrap">
+          ${btnGhost(`${APP_URL}/company/${a.companySlug}`, "Voir →")}
+        </td>
+      </tr>
+    </table>`;
+}
+
+export function renderWeeklyDigest(p: WeeklyDigestPayload): { subject: string; html: string; text: string } {
+  const firstName = p.firstName ? escape(p.firstName) : null;
+
+  const totalInvested = p.portfolioSnap.reduce((s, pos) => s + pos.totalInvested, 0);
+  const totalValue    = p.portfolioSnap.reduce((s, pos) => s + (pos.currentValue ?? pos.totalInvested), 0);
+  const totalPnl      = totalValue - totalInvested;
+  const totalPnlPct   = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
+  const pnlColor      = totalPnl >= 0 ? BRAND.green : BRAND.red;
+  const pnlSign       = totalPnl >= 0 ? "+" : "";
+
+  const sells    = p.actions.filter((a) => a.type === "SELL");
+  const reinf    = p.actions.filter((a) => a.type === "REINFORCE");
+  const buys     = p.actions.filter((a) => a.type === "BUY");
+  const hasActions = p.actions.length > 0;
+
+  const subject = `[Sigma] Bilan hebdo ${p.weekLabel}${sells.length ? ` · ⚠️ ${sells.length} alerte${sells.length > 1 ? "s" : ""} vente` : ""}`;
+  const previewText = p.narrative
+    ? p.narrative.slice(0, 120)
+    : `Votre bilan de la semaine · ${p.portfolioSnap.length} positions · ${topBuysPreview(p.topBuys)}`;
+
+  const content = `
+    <!-- Greeting -->
+    <p style="font-family:Georgia,serif;font-size:22px;font-weight:400;color:${BRAND.navy};margin:0 0 6px">
+      ${firstName ? `${firstName},` : "Bonjour,"} votre bilan
+      <em style="color:${BRAND.gold}">${escape(p.weekLabel)}</em>.
+    </p>
+
+    <!-- OpenAI narrative -->
+    ${p.narrative ? `
+    <p style="font-size:15px;color:${BRAND.tx2};line-height:1.7;margin:0 0 24px;padding:16px 20px;background:${BRAND.goldSoft};border-left:3px solid ${BRAND.gold};border-radius:0 4px 4px 0">
+      ${escape(p.narrative)}
+    </p>` : ""}
+
+    <!-- Portfolio snapshot -->
+    ${p.portfolioSnap.length > 0 ? `
+    <div style="font-family:Georgia,serif;font-size:13px;font-weight:600;color:${BRAND.navy};letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px">
+      📊 Mon portefeuille PEA-PME
+    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px">
+      ${p.portfolioSnap.map(portfolioSnapRow).join("")}
+      <tr>
+        <td style="padding:10px 0 0;font-size:13px;font-weight:700;color:${BRAND.tx1}">Total portefeuille</td>
+        <td align="right" style="padding:10px 0 0 8px;font-size:13px;font-weight:700;color:${BRAND.tx1}">${fmtEur(totalValue)}</td>
+        <td align="right" style="padding:10px 0 0 8px;font-size:14px;font-weight:800;color:${pnlColor}">${pnlSign}${totalPnlPct.toFixed(1)}%</td>
+      </tr>
+    </table>
+    <div style="font-size:12px;color:${BRAND.tx4};margin-bottom:24px">
+      Capital investi : ${fmtEur(totalInvested)} · P&amp;L : <span style="color:${pnlColor};font-weight:700">${pnlSign}${fmtEur(totalPnl)}</span>
+    </div>` : ""}
+
+    <!-- Actions to take -->
+    ${hasActions ? `
+    <div style="font-family:Georgia,serif;font-size:13px;font-weight:600;color:${BRAND.navy};letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px">
+      ⚡ Actions de la semaine
+    </div>
+    ${[...sells, ...reinf, ...buys].map(weeklyActionCard).join("")}
+    <div style="margin-bottom:24px"></div>` : ""}
+
+    <!-- Top BUY recos -->
+    ${p.topBuys.length > 0 ? `
+    <div style="font-family:Georgia,serif;font-size:13px;font-weight:600;color:${BRAND.navy};letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px">
+      🟢 Top ${p.topBuys.length} signaux achat
+    </div>
+    ${p.topBuys.map((r, i) => recoCompactCard(r, i + 1, "BUY")).join("")}
+    <div style="margin-bottom:8px"></div>` : ""}
+
+    <!-- Top SELL recos -->
+    ${p.topSells.length > 0 ? `
+    <div style="font-family:Georgia,serif;font-size:13px;font-weight:600;color:${BRAND.navy};letter-spacing:0.06em;text-transform:uppercase;margin:12px 0 12px">
+      🔴 Top ${p.topSells.length} signaux vente
+    </div>
+    ${p.topSells.map((r, i) => recoCompactCard(r, i + 1, "SELL")).join("")}` : ""}
+
+    ${digestFooterCta()}
+  `;
+
+  const text = [
+    `[Sigma] ${p.weekLabel}`,
+    ``,
+    p.narrative,
+    ``,
+    p.portfolioSnap.length > 0 ? `PORTEFEUILLE\n${p.portfolioSnap.map((pos) =>
+      `${pos.name}: ${pos.pnlPct != null ? `${pos.pnlPct >= 0 ? "+" : ""}${pos.pnlPct.toFixed(1)}%` : "NC"} (${fmtEur(pos.currentValue ?? pos.totalInvested)})`
+    ).join("\n")}` : "",
+    ``,
+    hasActions ? `ACTIONS:\n${p.actions.map((a) => `• ${ACTION_COLORS[a.type].label} ${a.company}: ${a.reason}`).join("\n")}` : "",
+    ``,
+    p.topBuys.length > 0 ? `TOP ACHATS:\n${p.topBuys.map((r) => `• ${r.company.name} (score ${r.recoScore})`).join("\n")}` : "",
+    ``,
+    `Voir : ${APP_URL}/recommendations`,
+  ].filter(Boolean).join("\n");
+
+  return {
+    subject,
+    html: brandedLayout({ content, previewText }),
+    text,
+  };
+}
+
+export async function sendWeeklyDigestEmail(p: WeeklyDigestPayload) {
+  const { subject, html, text } = renderWeeklyDigest(p);
+  return sendEmail({ to: p.to, subject, html, text });
+}
+
+function topBuysPreview(buys: RecoItem[]): string {
+  return buys.slice(0, 2).map((r) => r.company.name).join(", ") || "aucun signal fort";
+}

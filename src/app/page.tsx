@@ -388,19 +388,19 @@ export default async function HomePage() {
 
             {/* CTA row */}
             <div className="hero-cta-row mb-10">
-              <Link href="/companies" className="btn btn-cta-gradient hero-cta">
+              <Link href="/companies/" className="btn btn-cta-gradient hero-cta">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M3 3h18v4H3zM3 10h11v4H3zM3 17h7v4H3z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 {isFr ? "Explorer les sociétés" : "Explore companies"}
               </Link>
-              <Link href="/recommendations" className="btn btn-glass hero-cta">
+              <Link href="/recommendations/" className="btn btn-glass hero-cta">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 {isFr ? "Top signaux" : "Top signals"}
               </Link>
-              <Link href="/backtest" className="btn btn-outline hero-cta">
+              <Link href="/backtest/" className="btn btn-outline hero-cta">
                 Backtesting →
               </Link>
             </div>
@@ -487,7 +487,7 @@ export default async function HomePage() {
       <section className="mb-16">
         <AnimateIn single>
         <Link
-          href="/strategie"
+          href="/strategie/"
           style={{
             display: "block",
             padding: "28px 32px",

@@ -273,7 +273,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
               <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">{isFr ? "Sociétés les + actives" : "Most active companies"}</h2>
               <p className="text-xs text-[var(--tx-3)] mt-0.5">{isFr ? "Volume déclaré, 90 derniers jours" : "Volume declared, last 90 days"}</p>
             </div>
-            <Link href="/companies" className="text-xs tx-brand hover:tx-brand transition-colors font-medium">
+            <Link href="/companies/" className="text-xs tx-brand hover:tx-brand transition-colors font-medium">
               {isFr ? "Voir tout →" : "See all →"}
             </Link>
           </div>
@@ -316,7 +316,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
               <h2 className="text-base font-semibold text-[var(--tx-1)] tracking-tight">{isFr ? "Dirigeants les + actifs" : "Most active insiders"}</h2>
               <p className="text-xs text-[var(--tx-3)] mt-0.5">{isFr ? "Volume total déclaré, tous temps" : "Total volume declared, all time"}</p>
             </div>
-            <Link href="/insiders" className="text-xs tx-brand hover:tx-brand transition-colors font-medium">
+            <Link href="/insiders/" className="text-xs tx-brand hover:tx-brand transition-colors font-medium">
               {isFr ? "Voir tout →" : "See all →"}
             </Link>
           </div>
@@ -355,7 +355,7 @@ export function HomeLive({ initial }: { initial: HomeData }) {
               {isFr ? "Dernières transactions" : "Latest transactions"}
             </h2>
             <Link
-              href="/companies"
+              href="/companies/"
               className="text-sm tx-brand hover:tx-brand transition-colors font-medium"
             >
               {isFr ? "Toutes les sociétés →" : "All companies →"}

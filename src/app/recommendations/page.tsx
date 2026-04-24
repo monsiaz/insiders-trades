@@ -108,7 +108,7 @@ function EmptyState({ mode, locale = "fr" }: { mode: "general" | "personal"; loc
             : "Check back in a few hours — AMF data is synced daily."}
       </p>
       {mode === "personal" && (
-        <Link href="/portfolio" className="btn btn-primary mt-6 inline-flex">
+        <Link href="/portfolio/" className="btn btn-primary mt-6 inline-flex">
           {isFr ? "Gérer mon portfolio" : "Manage my portfolio"}
         </Link>
       )}
@@ -213,7 +213,7 @@ function MethodologyCard({ locale = "en" }: { locale?: "en" | "fr" }) {
  · {isFr ? "Score composite / 100 pts" : "Composite score / 100 pts"}
         </span>
         <Link
-          href="/methodologie"
+          href="/methodologie/"
           style={{
             marginLeft: "auto",
             fontFamily: "var(--font-inter), sans-serif",
@@ -269,7 +269,7 @@ function Tabs({ activeTab, isAuth, locale = "en" }: { activeTab: "general" | "se
   return (
     <div className="flex gap-0 mb-8 overflow-x-auto" style={{ borderBottom: "1px solid var(--border-med)" }}>
       <Link
-        href="/recommendations"
+        href="/recommendations/"
         className="reco-tab"
         style={{
           color: activeTab === "general" ? "var(--tx-1)" : "var(--tx-3)",
@@ -480,7 +480,7 @@ async function PersonalTabContent({ userId, locale = "en" }: { userId: string; l
                 </>
               )}
             </p>
-            <Link href="/portfolio" className="btn btn-primary mt-3 text-xs py-1.5 px-3">
+            <Link href="/portfolio/" className="btn btn-primary mt-3 text-xs py-1.5 px-3">
               {isFr ? "Ajouter mon portfolio →" : "Add my portfolio →"}
             </Link>
           </div>

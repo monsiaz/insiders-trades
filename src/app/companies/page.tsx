@@ -198,7 +198,7 @@ export default async function CompaniesPage({ searchParams }: Props) {
               }}
             >
               <Link
-                href="/companies"
+                href="/companies/"
                 style={{
                   padding: "10px 14px",
                   minHeight: "44px",

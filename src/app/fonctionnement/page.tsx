@@ -360,7 +360,7 @@ export default async function FonctionnementPage() {
             {T.ctaBeta}
           </Link>
           <Link
-            href="/methodologie"
+            href="/methodologie/"
             style={{
               display: "inline-flex", alignItems: "center", minHeight: "44px",
               padding: "12px 24px",
@@ -748,14 +748,14 @@ export default async function FonctionnementPage() {
           <p style={{ fontSize: "0.82rem", color: "var(--tx-3)", lineHeight: 1.6, margin: 0 }}>
             {isFr ? (
               <>Tout notre processus est documenté en détail sur la page{" "}
-              <Link href="/methodologie" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "underline" }}>
+              <Link href="/methodologie/" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "underline" }}>
                 méthodologie
               </Link>
               . Les calculs sont déterministes. Le code s&apos;appuie sur Next.js, React, Prisma, Postgres (Neon)
               et Vercel. Aucune boîte noire.</>
             ) : (
               <>Our entire process is documented in detail on the{" "}
-              <Link href="/methodologie" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "underline" }}>
+              <Link href="/methodologie/" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "underline" }}>
                 methodology
               </Link>
               {" "}page. Calculations are deterministic. The code uses Next.js, React, Prisma, Postgres (Neon)
@@ -1264,7 +1264,7 @@ export default async function FonctionnementPage() {
               {T.ctaBtn1}
             </Link>
             <Link
-              href="/methodologie"
+              href="/methodologie/"
               style={{
                 display: "inline-flex", alignItems: "center", minHeight: "44px",
                 padding: "13px 26px",
@@ -1487,7 +1487,7 @@ const FAQ_ITEMS_FR = [
         % du flux de l&apos;insider (16 pts), fonction occupée (12 pts), force du cluster
         (8 pts), conviction directionnelle (4 pts), fondamentaux de base (−4 à 12 pts),
         signaux composites Yahoo (0 à 20 pts). Tous les barèmes sont publics sur la{" "}
-        <Link href="/methodologie" style={{ color: "var(--gold)" }}>
+        <Link href="/methodologie/" style={{ color: "var(--gold)" }}>
           page méthodologie
         </Link>
         .
@@ -1615,7 +1615,7 @@ const FAQ_ITEMS_EN = [
         % of insider flow (16 pts), role held (12 pts), cluster strength (8 pts), directional
         conviction (4 pts), basic fundamentals (−4 to 12 pts), Yahoo composite signals (0 to 20 pts).
         All scoring rules are published on the{" "}
-        <Link href="/methodologie" style={{ color: "var(--gold)" }}>
+        <Link href="/methodologie/" style={{ color: "var(--gold)" }}>
           methodology page
         </Link>
         .

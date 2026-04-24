@@ -52,7 +52,7 @@ export default function AddCompanyPage() {
 
   return (
     <div className="max-w-2xl mx-auto content-wrapper">
-      <Link href="/companies" className="inline-flex items-center gap-1.5 text-sm text-[var(--tx-3)] hover:text-[var(--tx-2)] transition-colors mb-6">
+      <Link href="/companies/" className="inline-flex items-center gap-1.5 text-sm text-[var(--tx-3)] hover:text-[var(--tx-2)] transition-colors mb-6">
         ← Retour aux sociétés
       </Link>
       <h1 className="text-3xl font-bold text-gradient tracking-tight mb-2">Ajouter une société</h1>
@@ -141,7 +141,7 @@ export default function AddCompanyPage() {
                 </>
               ) : "Ajouter la société"}
             </button>
-            <Link href="/companies" className="btn-glass px-5 py-2.5 rounded-xl text-sm font-semibold">
+            <Link href="/companies/" className="btn-glass px-5 py-2.5 rounded-xl text-sm font-semibold">
               Annuler
             </Link>
           </div>

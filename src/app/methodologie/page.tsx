@@ -1480,10 +1480,10 @@ export default async function MethodologiePage() {
             : "This information is provided for educational purposes and does not constitute investment advice. Investing involves a risk of capital loss."}
         </p>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <Link href="/recommendations" className="btn btn-primary" style={{ fontSize: "0.82rem", minHeight: "44px" }}>
+          <Link href="/recommendations/" className="btn btn-primary" style={{ fontSize: "0.82rem", minHeight: "44px" }}>
             {isFr ? "Voir les recommandations" : "View recommendations"}
           </Link>
-          <Link href="/backtest" className="btn btn-outline" style={{ fontSize: "0.82rem", minHeight: "44px" }}>
+          <Link href="/backtest/" className="btn btn-outline" style={{ fontSize: "0.82rem", minHeight: "44px" }}>
             {isFr ? "Explorer le backtest" : "Explore the backtest"}
           </Link>
         </div>

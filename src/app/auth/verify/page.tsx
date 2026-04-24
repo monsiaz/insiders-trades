@@ -11,7 +11,7 @@ export default function VerifyPage() {
           </div>
           <h1 className="text-xl font-bold text-[var(--tx-1)] mb-2">Vérifiez vos emails</h1>
           <p className="text-[var(--tx-2)] text-sm mb-6">Un email de vérification a été envoyé. Cliquez sur le lien pour activer votre compte.</p>
-          <Link href="/portfolio" className="tx-brand hover:tx-brand text-sm transition-colors">
+          <Link href="/portfolio/" className="tx-brand hover:tx-brand text-sm transition-colors">
             Continuer sans vérification →
           </Link>
         </div>

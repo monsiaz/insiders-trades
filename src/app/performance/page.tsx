@@ -768,13 +768,13 @@ export default async function PerformancePage() {
             : "585 companies screened, 25,500 scored filings, 22,000 backtests. Use it to pre-filter your universe and focus your analysis on the 10-20 companies that truly deserve your attention this week."}
         </p>
         <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
-          <Link href="/recommendations" style={btnGold}>
+          <Link href="/recommendations/" style={btnGold}>
             {isFr ? "Voir les recommandations actuelles →" : "View current recommendations →"}
           </Link>
-          <Link href="/methodologie" style={btnGhost}>
+          <Link href="/methodologie/" style={btnGhost}>
             {isFr ? "Méthodologie détaillée ↗" : "Detailed methodology ↗"}
           </Link>
-          <Link href="/fonctionnement" style={btnGhost}>
+          <Link href="/fonctionnement/" style={btnGhost}>
             {isFr ? "Comment ça marche ↗" : "How it works ↗"}
           </Link>
         </div>

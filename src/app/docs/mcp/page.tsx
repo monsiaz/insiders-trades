@@ -104,8 +104,8 @@ export default function McpDocsPage() {
         </p>
         <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
           <a href="#install" style={btnGold}>Guide d&apos;installation ↓</a>
-          <Link href="/account/api-keys" style={btnGhost}>Générer une clé API ↗</Link>
-          <Link href="/docs" style={btnGhost}>Référence API REST ↗</Link>
+          <Link href="/account/api-keys/" style={btnGhost}>Générer une clé API ↗</Link>
+          <Link href="/docs/" style={btnGhost}>Référence API REST ↗</Link>
         </div>
 
         {/* Key figures */}
@@ -173,7 +173,7 @@ export default function McpDocsPage() {
             </ul>
 
             <Callout tone="info">
-              Tout ce que fait l&apos;API REST (<Link href="/docs" style={linkGold}>voir docs</Link>)
+              Tout ce que fait l&apos;API REST (<Link href="/docs/" style={linkGold}>voir docs</Link>)
               est aussi exposé en MCP. Mais en plus, vous y gagnez 6 outils composites
               qui enchaînent plusieurs requêtes, optimisés pour les prompts vagues du style
               <em>&laquo; donne-moi tout sur LVMH &raquo;</em>.
@@ -335,7 +335,7 @@ export default function McpDocsPage() {
 
             <p style={pBody}>
               Pour <strong>générer une clé</strong>, rendez-vous sur{" "}
-              <Link href="/account/api-keys" style={linkGold}>
+              <Link href="/account/api-keys/" style={linkGold}>
                 /account/api-keys
               </Link>{" "}
               (5 secondes). La clé s&apos;affiche une seule fois, copiez-la immédiatement.
@@ -721,7 +721,7 @@ curl -s "$URL" -X POST \\
                     <>
                       Oui. Contrairement à la documentation Swagger que nous publions aussi
                       librement, le MCP consomme votre quota. Générez une clé depuis{" "}
-                      <Link href="/account/api-keys" style={linkGold}>/account/api-keys</Link>
+                      <Link href="/account/api-keys/" style={linkGold}>/account/api-keys</Link>
                       {" "}(gratuit en beta, 5 000 requêtes/jour).
                     </>
                   ),
@@ -832,7 +832,7 @@ curl -s "$URL" -X POST \\
               instantanément aux 25 500 déclarations AMF, signaux scorés et backtests.
             </p>
             <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
-              <Link href="/account/api-keys" style={btnGold}>Générer ma clé →</Link>
+              <Link href="/account/api-keys/" style={btnGold}>Générer ma clé →</Link>
               <a href="#install" style={btnGhost}>Revenir à l&apos;installation ↑</a>
             </div>
           </section>

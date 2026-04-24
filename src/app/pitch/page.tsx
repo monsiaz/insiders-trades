@@ -865,7 +865,7 @@ export default async function PitchPage() {
           {T.ctaSub3}
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-          <Link href="/backtest" style={{
+          <Link href="/backtest/" style={{
             display: "inline-flex", alignItems: "center", minHeight: 44,
             padding: "12px 22px", background: "var(--gold)", color: "#0A0C10",
             fontWeight: 700, fontSize: "0.88rem", textDecoration: "none",
@@ -873,7 +873,7 @@ export default async function PitchPage() {
           }}>
             {T.ctaBtn1}
           </Link>
-          <Link href="/recommendations" style={{
+          <Link href="/recommendations/" style={{
             display: "inline-flex", alignItems: "center", minHeight: 44,
             padding: "12px 22px", background: "var(--gold)", color: "#0A0C10",
             fontWeight: 700, fontSize: "0.88rem", textDecoration: "none",
@@ -881,7 +881,7 @@ export default async function PitchPage() {
           }}>
             {T.ctaBtn2}
           </Link>
-          <Link href="/methodologie" style={{
+          <Link href="/methodologie/" style={{
             display: "inline-flex", alignItems: "center", minHeight: 44,
             padding: "12px 22px", border: "1px solid var(--border-strong)",
             color: "var(--tx-2)", fontWeight: 600, fontSize: "0.88rem",

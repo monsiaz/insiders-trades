@@ -409,7 +409,7 @@ export default async function AdminTechPage() {
         </p>
         <div style={{ marginTop: "14px" }}>
           <Link
-            href="/methodologie"
+            href="/methodologie/"
             style={{
               fontFamily: "var(--font-inter), sans-serif",
               fontSize: "0.78rem",
@@ -898,10 +898,10 @@ export default async function AdminTechPage() {
           Documentation interne · se met à jour automatiquement avec les compteurs live.
         </p>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <Link href="/admin" className="btn btn-outline" style={{ fontSize: "0.82rem" }}>
+          <Link href="/admin/" className="btn btn-outline" style={{ fontSize: "0.82rem" }}>
             ← Retour admin
           </Link>
-          <Link href="/methodologie" className="btn btn-primary" style={{ fontSize: "0.82rem" }}>
+          <Link href="/methodologie/" className="btn btn-primary" style={{ fontSize: "0.82rem" }}>
             Méthodologie publique ↗
           </Link>
         </div>

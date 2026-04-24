@@ -50,9 +50,9 @@ export async function GET() {
     <div class="sigma-eye" aria-hidden></div>
     <h1>Insiders Trades Sigma · API Reference</h1>
     <div class="right">
-      <a href="/fonctionnement">Comment ça marche ↗</a>
-      <a href="/methodologie">Méthodologie ↗</a>
-      <a href="/account/api-keys">Mes clés API ↗</a>
+      <a href="/fonctionnement/">Comment ça marche ↗</a>
+      <a href="/methodologie/">Méthodologie ↗</a>
+      <a href="/account/api-keys/">Mes clés API ↗</a>
     </div>
   </div>
   <div id="swagger-ui"></div>

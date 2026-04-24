@@ -601,10 +601,10 @@ export default async function StrategiePage() {
           <Link href="/recommendations?mode=winning" style={btnGold}>
             {isFr ? "Voir les recommandations →" : "View recommendations →"}
           </Link>
-          <Link href="/performance" style={btnGhost}>
+          <Link href="/performance/" style={btnGhost}>
             {isFr ? "Performance globale ↗" : "Global performance ↗"}
           </Link>
-          <Link href="/fonctionnement" style={btnGhost}>
+          <Link href="/fonctionnement/" style={btnGhost}>
             {isFr ? "Comment ça marche ↗" : "How it works ↗"}
           </Link>
         </div>

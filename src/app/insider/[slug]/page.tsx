@@ -164,7 +164,7 @@ export default async function InsiderPage({ params, searchParams }: Props) {
   return (
     <div className="content-wrapper">
       {/* Back */}
-      <Link href="/insiders" className="inline-flex items-center gap-1.5 text-sm text-[var(--tx-3)] hover:text-[var(--tx-2)] transition-colors mb-6 animate-fade-in">
+      <Link href="/insiders/" className="inline-flex items-center gap-1.5 text-sm text-[var(--tx-3)] hover:text-[var(--tx-2)] transition-colors mb-6 animate-fade-in">
         {isFr ? "← Dirigeants" : "← Executives"}
       </Link>
 

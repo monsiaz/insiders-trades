@@ -95,7 +95,7 @@ export function NavUser() {
             <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--tx-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name ?? "Mon compte"}</div>
             <div style={{ fontSize: "0.72rem", color: "var(--tx-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>
           </div>
-          <Link href="/portfolio" onClick={() => setOpen(false)}
+          <Link href="/portfolio/" onClick={() => setOpen(false)}
             style={{ display: "flex", alignItems: "center", gap: "10px", padding: "11px 16px", minHeight: "44px", fontSize: "0.85rem", color: "var(--tx-2)", textDecoration: "none" }}
             className="hover:bg-[var(--bg-hover)] hover:text-[var(--tx-1)] transition-colors">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
@@ -104,7 +104,7 @@ export function NavUser() {
           {user.role === "admin" && (
             <>
               <div style={{ margin: "4px 0", borderTop: "1px solid var(--border)" }} />
-              <Link href="/admin" onClick={() => setOpen(false)}
+              <Link href="/admin/" onClick={() => setOpen(false)}
                 style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 16px", minHeight: "44px", fontSize: "0.85rem", color: "var(--c-indigo-2)", textDecoration: "none", background: "var(--c-indigo-bg)" }}
                 className="hover:opacity-90 transition-opacity">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none">

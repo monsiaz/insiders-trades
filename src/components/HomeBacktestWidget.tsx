@@ -87,7 +87,7 @@ export function HomeBacktestWidget({ snapshot }: { snapshot: BacktestSnapshot })
           )}
         </div>
         <Link
-          href="/backtest"
+          href="/backtest/"
           className="btn btn-glass flex-shrink-0 self-start"
           style={{ fontSize: "0.78rem", padding: "8px 14px", borderRadius: "8px" }}
         >

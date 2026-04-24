@@ -231,7 +231,7 @@ export default async function CompanyPage({ params, searchParams }: Props) {
   return (
     <div className="content-wrapper">
       {/* Back */}
-      <Link href="/companies" className="inline-flex items-center gap-1.5 text-sm transition-colors mb-6 animate-fade-in"
+      <Link href="/companies/" className="inline-flex items-center gap-1.5 text-sm transition-colors mb-6 animate-fade-in"
         style={{ color: "var(--tx-3)" }}>
         {isFr ? "← Sociétés" : "← Companies"}
       </Link>

@@ -6,6 +6,88 @@ import { useState } from "react";
 import { lp } from "@/lib/locale-path";
 import type { RecoItem } from "@/lib/recommendation-engine";
 
+// ── Score badge: SVG arc gauge + large number ───────────────────────────────
+function ScoreBadge({ score, tier }: { score: number; tier: "high" | "mid" | "low" }) {
+  // Arc parameters
+  const R = 26; // radius
+  const cx = 36; const cy = 36;
+  const circumference = 2 * Math.PI * R;
+  // Arc covers 270° (from 135° to 405°). Fill = score/100 of that arc.
+  const arcLen = (score / 100) * (circumference * 0.75);
+  const dashOffset = circumference - arcLen;
+  const strokeColor = tier === "high" ? "var(--signal-pos)" : tier === "mid" ? "var(--gold)" : "var(--tx-3)";
+  const glowColor   = tier === "high" ? "rgba(0,192,120,0.18)" : tier === "mid" ? "rgba(184,149,90,0.18)" : "transparent";
+  const bgColor     = tier === "high" ? "rgba(0,192,120,0.06)" : tier === "mid" ? "rgba(184,149,90,0.06)" : "rgba(255,255,255,0.03)";
+
+  return (
+    <div style={{
+      flexShrink: 0,
+      display: "flex", flexDirection: "column", alignItems: "center",
+      gap: 0,
+      position: "relative", zIndex: 1,
+    }}>
+      {/* SCORE label above */}
+      <span style={{
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: "0.48rem", fontWeight: 700,
+        letterSpacing: "0.2em", textTransform: "uppercase",
+        color: "var(--tx-4)", marginBottom: "2px",
+      }}>SCORE</span>
+
+      {/* SVG arc */}
+      <div style={{
+        position: "relative", width: 72, height: 72,
+        background: bgColor,
+        borderRadius: "50%",
+        border: `1.5px solid ${tier === "low" ? "var(--border-med)" : strokeColor}`,
+        boxShadow: tier !== "low" ? `0 0 12px ${glowColor}` : "none",
+      }}>
+        <svg width="72" height="72" viewBox="0 0 72 72" style={{ position: "absolute", inset: 0, transform: "rotate(135deg)" }}>
+          {/* Track */}
+          <circle
+            cx={cx} cy={cy} r={R}
+            fill="none"
+            stroke="var(--bg-raised)"
+            strokeWidth="4"
+            strokeDasharray={`${circumference * 0.75} ${circumference}`}
+            strokeLinecap="round"
+          />
+          {/* Progress arc */}
+          <circle
+            cx={cx} cy={cy} r={R}
+            fill="none"
+            stroke={strokeColor}
+            strokeWidth="4"
+            strokeDasharray={`${arcLen} ${circumference - arcLen + circumference * 0.25}`}
+            strokeLinecap="round"
+            style={{ transition: "stroke-dasharray 0.4s ease" }}
+          />
+        </svg>
+
+        {/* Score number centered */}
+        <div style={{
+          position: "absolute", inset: 0,
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          gap: 0, paddingTop: "4px",
+        }}>
+          <span style={{
+            fontFamily: "'Banana Grotesk', var(--font-inter), system-ui, sans-serif",
+            fontSize: "1.75rem", fontWeight: 800,
+            letterSpacing: "-0.04em", lineHeight: 1,
+            color: strokeColor,
+          }}>{score}</span>
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "0.42rem", fontWeight: 600,
+            color: "var(--tx-4)", letterSpacing: "0.08em",
+          }}>/ 100</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function fmtPct(n: number | null | undefined, d = 1): string {
   if (n == null) return "·";
   return `${n >= 0 ? "+" : ""}${n.toFixed(d)}%`;
@@ -192,13 +274,7 @@ export function RecoCard({ item, rank, locale = "en" }: { item: RecoItem; rank: 
           )}
         </div>
 
-        <div className="tearsheet-score">
-          <div className={`tearsheet-score-num ${scoreTier}`}>{scoreRound}</div>
-          <div className="tearsheet-score-sub">/ 100 · score</div>
-          <div className={`tearsheet-score-bar ${scoreTier}`}>
-            <div style={{ width: `${Math.max(4, scoreRound)}%` }} />
-          </div>
-        </div>
+        <ScoreBadge score={scoreRound} tier={scoreTier} />
       </div>
 
       {/* Data strip */}

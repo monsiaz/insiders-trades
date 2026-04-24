@@ -1,95 +1,79 @@
-import Image from "next/image";
-
-interface LogoProps {
-  size?: number;
-  showText?: boolean;
-  className?: string;
-}
-
 /**
- * LogoMark ; the brand icon only (eye + upward arrow).
+ * Logo system — InsiderTrades Sigma
  *
- * Theme-aware: renders both light and dark variants and relies on CSS classes
- * (.light / .dark on <html>) to show the right one. No JS/flicker.
+ * All variants are pure SVG inline components (no external image files).
+ * The mark uses the brand Sigma (Σ) path in navy-blue + a pulse ECG line in cyan.
+ * Colors are compatible with both light and dark themes without any CSS tricks:
+ *   – Sigma:  #0B5CFF  (vivid blue  — readable on both white & dark bg)
+ *   – Pulse:  #14D9E6  (cyan        — readable on both white & dark bg)
+ *
+ * Exports:
+ *   SigmaLogoMark   – standalone icon SVG
+ *   LogoMark        – alias for SigmaLogoMark (compat)
+ *   LogoWordmark    – icon + "InsiderTrades" text lockup (nav / footer)
+ *   Logo            – alias for LogoWordmark (compat)
+ *   LogoLockup      – alias for LogoWordmark (compat)
  */
-export function LogoMark({ size = 32 }: { size?: number }) {
+
+// ─── Brand colours (same on light & dark) ─────────────────────────────────
+const SIGMA_BLUE = "#0B5CFF";
+const PULSE_CYAN = "#14D9E6";
+
+// ─── Core SVG icon ────────────────────────────────────────────────────────
+
+/**
+ * The Sigma Σ + pulse ECG mark at any size.
+ * Pass custom `stroke` / `pulse` to override brand colours (e.g. monochrome).
+ */
+export function SigmaLogoMark({
+  size = 32,
+  stroke = SIGMA_BLUE,
+  pulse = PULSE_CYAN,
+}: {
+  size?: number;
+  stroke?: string;
+  pulse?: string;
+}) {
   return (
-    <span
-      className="logo-mark"
-      style={{
-        display: "inline-block",
-        width: size,
-        height: size,
-        position: "relative",
-        flexShrink: 0,
-      }}
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 512 512"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
+      style={{ flexShrink: 0, display: "block" }}
     >
-      <Image
-        src="/logo-mark.webp"
-        alt=""
-        width={size * 2}
-        height={size * 2}
-        priority
-        className="logo-mark-light"
-        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+      {/* Sigma Σ path */}
+      <path
+        d="M286 96H160C130 96 115 132 136 154L239 264L138 378C118 401 134 436 164 436H302"
+        stroke={stroke}
+        strokeWidth="28"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
-      <Image
-        src="/logo-mark-dark.webp"
-        alt=""
-        width={size * 2}
-        height={size * 2}
-        priority
-        className="logo-mark-dark"
-        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+      {/* Pulse / ECG line */}
+      <path
+        d="M286 264H326L350 374L386 190L412 300H454"
+        stroke={pulse}
+        strokeWidth="28"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
-    </span>
+    </svg>
   );
 }
 
-/**
- * Logo · mark + "InsiderTrades" text inline (used in nav).
- */
-export function Logo({ size = 32, showText = true, className = "" }: LogoProps) {
-  return (
-    <div className={`flex items-center gap-2.5 ${className}`}>
-      <LogoMark size={size} />
-      {showText && (
-        <div className="flex flex-col leading-none">
-          <span
-            style={{
-              fontSize: size * 0.46,
-              fontFamily: "'Banana Grotesk', 'Inter', system-ui, sans-serif",
-              fontWeight: 800,
-              letterSpacing: "-0.03em",
-              color: "var(--tx-1)",
-              lineHeight: 1,
-            }}
-          >
-            InsiderTrades
-          </span>
-          <span
-            style={{
-              fontSize: size * 0.24,
-              fontFamily: "'Inter', system-ui, sans-serif",
-              fontWeight: 600,
-              letterSpacing: "0.09em",
-              textTransform: "uppercase" as const,
-              color: "var(--tx-2)",
-              marginTop: "3px",
-            }}
-          >
-            AMF · France
-          </span>
-        </div>
-      )}
-    </div>
-  );
+/** Alias — backwards-compat with existing `<LogoMark>` imports. */
+export function LogoMark({ size = 32 }: { size?: number }) {
+  return <SigmaLogoMark size={size} />;
 }
 
+// ─── Full wordmark lockup ─────────────────────────────────────────────────
+
 /**
- * LogoWordmark ; the full "INSIDERS TRADES SIGMA" lockup with mark above.
- * Perfect for hero / footer / social cards. Theme-aware.
+ * Icon + "InsiderTrades" / "SIGMA" text lockup.
+ * Used in the nav bar (height ≈ 34–36) and footer (height ≈ 48–60).
  */
 export function LogoWordmark({
   height = 44,
@@ -98,43 +82,73 @@ export function LogoWordmark({
   height?: number;
   className?: string;
 }) {
-  // Aspect ratio of the processed wordmark ~ 1000×410 → 2.44:1
-  const ratio = 1000 / 410;
-  const width = Math.round(height * ratio);
+  const iconSize = Math.round(height * 0.92);
+  const gap      = Math.round(height * 0.28);
+  const titlePx  = Math.round(height * 0.44);
+  const subPx    = Math.round(height * 0.21);
+
   return (
     <span
-      className={`logo-wordmark ${className}`}
-      style={{
-        display: "inline-block",
-        width,
-        height,
-        position: "relative",
-        flexShrink: 0,
-      }}
+      className={className}
       aria-label="InsiderTrades Sigma"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap,
+        flexShrink: 0,
+        textDecoration: "none",
+      }}
     >
-      <Image
-        src="/logo-wordmark.webp"
-        alt="InsiderTrades Sigma"
-        width={width * 2}
-        height={height * 2}
-        className="logo-wordmark-light"
-        style={{ width: "100%", height: "100%", objectFit: "contain" }}
-      />
-      <Image
-        src="/logo-wordmark-dark.webp"
-        alt=""
-        aria-hidden="true"
-        width={width * 2}
-        height={height * 2}
-        className="logo-wordmark-dark"
-        style={{ width: "100%", height: "100%", objectFit: "contain" }}
-      />
+      <SigmaLogoMark size={iconSize} />
+
+      <span style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
+        <span
+          style={{
+            fontFamily: "'Banana Grotesk', var(--font-inter), system-ui, sans-serif",
+            fontWeight: 800,
+            fontSize: titlePx,
+            letterSpacing: "-0.03em",
+            color: "var(--tx-1)",
+            lineHeight: 1,
+          }}
+        >
+          InsiderTrades
+        </span>
+        <span
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontWeight: 700,
+            fontSize: subPx,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: PULSE_CYAN,
+            marginTop: "3px",
+            lineHeight: 1,
+          }}
+        >
+          SIGMA
+        </span>
+      </span>
     </span>
   );
 }
 
-/** Legacy export kept for compat with older imports. */
+/** Legacy alias — compat with older Logo imports. */
+export function Logo({
+  size = 32,
+  showText = true,
+  className = "",
+}: {
+  size?: number;
+  showText?: boolean;
+  className?: string;
+}) {
+  return showText
+    ? <LogoWordmark height={size} className={className} />
+    : <SigmaLogoMark size={size} />;
+}
+
+/** Legacy alias — compat with older LogoLockup imports. */
 export function LogoLockup({ className = "" }: { className?: string }) {
   return <LogoWordmark height={44} className={className} />;
 }

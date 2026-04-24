@@ -1537,27 +1537,7 @@ input[type="search"], textarea, select {
    Prevents FOUC / JS-based flicker.
    ═══════════════════════════════════════════════════════════ */
 
-.logo-mark > .logo-mark-dark,
-.logo-wordmark > .logo-wordmark-dark {
-  display: none;
-}
-.logo-mark > .logo-mark-light,
-.logo-wordmark > .logo-wordmark-light {
-  display: block;
-}
-.dark .logo-mark > .logo-mark-light,
-.dark .logo-wordmark > .logo-wordmark-light {
-  display: none;
-}
-.dark .logo-mark > .logo-mark-dark,
-.dark .logo-wordmark > .logo-wordmark-dark {
-  display: block;
-}
-.logo-mark > img,
-.logo-wordmark > img {
-  position: absolute;
-  inset: 0;
-}
+/* Logo is now pure inline SVG — no image-swap CSS needed */
 
 /* Smooth transitions · cheap properties only (perf-optimized) */
 .btn, .nav-link, .theme-toggle, .search-bar, .badge, .score-pill {

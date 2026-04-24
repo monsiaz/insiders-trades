@@ -38,15 +38,19 @@ const getBacktestMeta = unstable_cache(
 
 export async function generateMetadata() {
   const hdrs = await headers();
-  const locale = (hdrs.get("x-locale") ?? "en") as "en" | "fr";
-  const isFr = locale === "fr";
+  const originalPath = hdrs.get("x-original-path") ?? "/backtest/";
+  const isFr = originalPath === "/fr" || originalPath.startsWith("/fr/");
   const { total, earliestYear } = await getBacktestMeta();
   const fmt = isFr ? "fr-FR" : "en-US";
+  const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://insiders-trades-sigma.vercel.app";
+  const canonical = isFr ? `${BASE}/fr/backtest/` : `${BASE}/backtest/`;
   return {
     title: isFr ? "Backtest & Signaux · InsiderTrades" : "Backtest & Signals · InsiderTrades",
     description: isFr
       ? `Analyse quantitative de ${total.toLocaleString(fmt)}+ transactions d'initiés sur 6 horizons de temps (T+30 à T+2ans) depuis ${earliestYear}.`
       : `Quantitative analysis of ${total.toLocaleString(fmt)}+ insider transactions across 6 time horizons (T+30 to T+2y) since ${earliestYear}.`,
+    alternates: { canonical },
+    openGraph: { url: canonical, locale: isFr ? "fr_FR" : "en_US" },
   };
 }
 

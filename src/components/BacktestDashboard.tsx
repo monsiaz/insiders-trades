@@ -1056,14 +1056,18 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
                 {INSIGHT_ICON[ins.icon] ?? <TrendingUp size={18} strokeWidth={1.8} />}
               </div>
               <div>
-                <div className="font-semibold text-primary text-sm mb-1">{ins.title}</div>
-                <div className="text-xs text-secondary leading-relaxed">{ins.text}</div>
+                <div className="font-semibold text-primary text-sm mb-1">
+                  {isFr ? ins.title : (ins.titleEn ?? ins.title)}
+                </div>
+                <div className="text-xs text-secondary leading-relaxed">
+                  {isFr ? ins.text : (ins.textEn ?? ins.text)}
+                </div>
                 <div className="mt-2">
                   <span
                     className="inline-block text-xs font-bold font-mono px-2 py-0.5 rounded"
                     style={{ background: "var(--c-mint-bg)", color: "var(--c-mint)" }}
                   >
-                    {ins.highlight}
+                    {isFr ? ins.highlight : (ins.highlightEn ?? ins.highlight)}
                   </span>
                 </div>
               </div>

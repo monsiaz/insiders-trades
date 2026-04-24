@@ -761,8 +761,7 @@ export default async function AdminTechPage() {
           ))}
         </div>
         <Para>
-          <strong style={{ color: "var(--tx-1)" }}>Filtres.</strong> Les recos BUY n&apos;apparaissent que si le retour historique T+90 de leur profil est ≥ +4%.
-          Les SELL n&apos;apparaissent que si ≤ -2% (ou score ≥ 55 sans historique). Tout est par bucket (role × taille société) avec 3 niveaux de fallback.
+          <strong style={{ color: "var(--tx-1)" }}>Filtres v3.</strong> Les recos BUY sont écartées si le retour T+90 shrunk du bucket est &lt; 2% ET signalScore &lt; 50 (combo signal faible + bucket faible). Les SELL utilisent la dominance directionnelle par société + filtre cross-trades (pas de seuil de return). Tout est par bucket role × taille avec 3 niveaux de fallback et shrinkage bayésien k=20 vers la moyenne globale BUY/SELL.
         </Para>
       </Section>
 
@@ -863,7 +862,7 @@ export default async function AdminTechPage() {
             { title: "Audit log persistent", body: "Table AuditEvent {id, userId, action, meta, at} pour tracer chaque action admin (ban, promote, set_credits, run-cron). Historique consultable dans l'admin." },
             { title: "Rate-limit côté app", body: "Middleware edge qui limite les appels /api/auth/login à 5/min par IP pour contrer le brute force (en complément du retry exponentiel UI)." },
             { title: "Cache distribué Redis", body: "Remplacer unstable_cache (per-region Vercel) par un cache Redis unique (Upstash) pour recos, logos, backtest stats. Gain : cohérence multi-région, TTL plus fins, invalidation ciblée." },
-            { title: "Scoring v2 · régression historique", body: "Au lieu du barème fixe (28/16/12/…), régresser les poids sur le return T+90 historique (logistic regression ou gradient boosting). Cross-validation walk-forward pour éviter le look-ahead." },
+            { title: "Scoring v4 · régression historique", body: "La v3 utilise un barème fixe (18/16/14/14/10/…). Prochaine étape : régresser ces poids sur le return T+90 historique (logistic regression ou gradient boosting). Cross-validation walk-forward pour éviter le look-ahead." },
             { title: "Cluster detection probabiliste", body: "Actuellement : binaire (≥2 insiders distincts en 30j). Passer à un score continu basé sur la densité temporelle + taille de chaque trade + diversité des rôles." },
             { title: "Prix intraday + événements corporate", body: "Yahoo n'a pas les split/dividends structurés. Intégrer une source payante (Stooq, EOD, Alpaca) pour ajuster les backtests des annonces de dividende/split rétroactivement." },
             { title: "SEC EDGAR (ADR US cotés FR)", body: "Certaines sociétés cotées à Paris ont aussi des filings US (Form 4). Permettrait de croiser les insider trades FR avec les trades US." },

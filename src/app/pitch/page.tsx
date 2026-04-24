@@ -185,7 +185,7 @@ export default async function PitchPage() {
     methodCards: [
       { n: "01", title: "Obligation légale, pas une opinion", body: "MAR 596/2014 oblige tout dirigeant à déclarer toute transaction sur ses propres titres dans les 3 jours ouvrés. Ce n'est pas du storytelling — c'est de l'argent réel engagé." },
       { n: "02", title: "Signal cluster : conviction collective", body: "Quand 2+ dirigeants achètent indépendamment la même société en 30 jours, ils lisent les mêmes indicateurs internes. C'est un signal de conviction non orchestré — notre variable alpha n°1." },
-      { n: "03", title: "Score composite v2 (0–100 pts)", body: "Rôle (PDG/CFO > board), montant en % market cap, cluster, DCA, délai tx→pub. Un score ≥ 65 + cluster = condition d'entrée. Les simulations montrent que ce filtre donne un profil risque/rendement supérieur." },
+      { n: "03", title: "Score composite v3 (0–100 pts, 10 composantes)", body: "Cluster directionnel ±30j, % market cap, track record dirigeant avec shrinkage bayésien, rôle (PDG/CFO > board), DCA, analyst-contrarian, délai tx→pub. Condition d'entrée : cluster + score ≥ 40 + fresh + mid-cap. La v3 (2026-04) redistribue le poids vers les signaux propres à l'insider pour réduire la pollution par l'information déjà publique." },
       { n: "04", title: "Vue retail honnête (pubDate+1)", body: "Nos retours sont calculés depuis le lendemain de la publication AMF — le moment où vous pouvez réagir. Pas depuis la date d'achat interne (qui capture l'alpha que vous ne pouvez pas capturer)." },
     ],
     combosOverline: "04 · Meilleures combinaisons de signaux",
@@ -208,7 +208,7 @@ export default async function PitchPage() {
         amount: "10 000 €", tag: "Débutant", featured: false,
         rows: [
           ["Positions simultanées", "4 sociétés · 2 500 € chacune"],
-          ["Filtre recommandé", "Cluster uniquement · score ≥ 70"],
+          ["Filtre recommandé", "Cluster uniquement · score v3 ≥ 55"],
           ["Horizon de détention", "6 à 12 mois par position"],
           ["Signaux étudiés / an", "~20–30 évalués · 4–6 retenus"],
           ["Frais A/R estimés", "~200 € / an (1% × 4 positions × 2)"],
@@ -220,7 +220,7 @@ export default async function PitchPage() {
         rows: [
           ["Allocation recommandée", "30 000 € ETF · 20 000 € Sigma"],
           ["Positions Sigma", "5 sociétés · 4 000 € chacune"],
-          ["Filtre recommandé", "Score ≥ 65 · PDG/CFO · cluster prioritaire"],
+          ["Filtre recommandé", "Score v3 ≥ 50 · PDG/CFO · cluster prioritaire"],
           ["Horizon de détention", "6 mois min · 12 mois si conviction forte"],
           ["Signaux étudiés / an", "~50–80 évalués · 5–10 retenus"],
         ],
@@ -231,7 +231,7 @@ export default async function PitchPage() {
         rows: [
           ["Allocation recommandée", "120 000 € multi-ETF · 80 000 € Sigma"],
           ["Positions Sigma", "15–20 sociétés · 4–5 000 € chacune"],
-          ["Filtre recommandé", "Score ≥ 60 · tous rôles · cluster prioritaire"],
+          ["Filtre recommandé", "Score v3 ≥ 45 · tous rôles · cluster prioritaire"],
           ["Horizon de détention", "Rebalancement trimestriel"],
           ["Volume min de liquidité", "200 000 € / jour pour ne pas déplacer le cours"],
         ],
@@ -291,7 +291,7 @@ export default async function PitchPage() {
     methodCards: [
       { n: "01", title: "A legal obligation, not an opinion", body: "MAR 596/2014 requires every executive to report any transaction in their own company\u2019s securities within 3 business days. This is not storytelling \u2014 it is real money committed." },
       { n: "02", title: "Cluster signal: collective conviction", body: "When 2+ executives independently buy the same company within 30 days, they are reading the same internal indicators. This is an unorchestrated conviction signal \u2014 our #1 alpha variable." },
-      { n: "03", title: "Composite score v2 (0\u2013100 pts)", body: "Role (CEO/CFO > board), amount as % of market cap, cluster, DCA, tx\u2192pub delay. A score \u2265 65 + cluster = entry condition. Simulations show this filter yields a superior risk/return profile." },
+      { n: "03", title: "Composite score v3 (0\u2013100 pts, 10 components)", body: "Directional cluster \u00b130d, % market cap, insider track record with Bayesian shrinkage, role (CEO/CFO > board), DCA, analyst-contrarian, tx\u2192pub delay. Entry condition: cluster + score \u2265 40 + fresh + mid-cap. v3 (2026-04) redistributes weight toward insider-specific features to reduce contamination by already-public information." },
       { n: "04", title: "Honest retail view (pubDate+1)", body: "Our returns are calculated from the day after AMF publication \u2014 when you can act. Not from the internal purchase date (which captures alpha you cannot capture)." },
     ],
     combosOverline: "04 · Best signal combinations",
@@ -314,7 +314,7 @@ export default async function PitchPage() {
         amount: "€10,000", tag: "Beginner", featured: false,
         rows: [
           ["Simultaneous positions", "4 companies \u00b7 €2,500 each"],
-          ["Recommended filter", "Cluster only \u00b7 score \u2265 70"],
+          ["Recommended filter", "Cluster only \u00b7 score v3 \u2265 55"],
           ["Holding horizon", "6 to 12 months per position"],
           ["Signals reviewed / year", "~20\u201330 evaluated \u00b7 4\u20136 retained"],
           ["Estimated round-trip fees", "~€200 / year (1% \u00d7 4 positions \u00d7 2)"],
@@ -326,7 +326,7 @@ export default async function PitchPage() {
         rows: [
           ["Recommended allocation", "€30,000 ETF \u00b7 €20,000 Sigma"],
           ["Sigma positions", "5 companies \u00b7 €4,000 each"],
-          ["Recommended filter", "Score \u2265 65 \u00b7 CEO/CFO \u00b7 cluster priority"],
+          ["Recommended filter", "Score v3 \u2265 50 \u00b7 CEO/CFO \u00b7 cluster priority"],
           ["Holding horizon", "6 months min \u00b7 12 months if strong conviction"],
           ["Signals reviewed / year", "~50\u201380 evaluated \u00b7 5\u201310 retained"],
         ],
@@ -337,7 +337,7 @@ export default async function PitchPage() {
         rows: [
           ["Recommended allocation", "€120,000 multi-ETF \u00b7 €80,000 Sigma"],
           ["Sigma positions", "15\u201320 companies \u00b7 €4\u20135,000 each"],
-          ["Recommended filter", "Score \u2265 60 \u00b7 all roles \u00b7 cluster priority"],
+          ["Recommended filter", "Score v3 \u2265 45 \u00b7 all roles \u00b7 cluster priority"],
           ["Holding horizon", "Quarterly rebalancing"],
           ["Min liquidity volume", "€200,000 / day to avoid moving the price"],
         ],

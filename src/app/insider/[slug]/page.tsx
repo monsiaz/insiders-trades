@@ -81,7 +81,7 @@ const getInsiderFullCached = (slug: string) =>
         relatedCompanies, relatedInsiders,
       };
     },
-    [`insider-full-v2-${slug}`],
+    [`insider-full-v3-${slug}`],
     { revalidate: 3600, tags: [`insider-${slug}`] }
   )();
 

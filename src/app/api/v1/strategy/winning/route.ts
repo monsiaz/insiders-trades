@@ -3,10 +3,13 @@
  *
  * Returns live signals matching the Sigma Winning Strategy :
  *   - beats CAC 40 every year 2022-2025
- *   - 6 filters (cluster, mid-cap, PDG/CFO/Dir, fresh ≤ 7j, acquisition, score ≥ 30)
+ *   - 6 filters (cluster, mid-cap 200M-1B€, PDG/CFO/Dir, fresh ≤ 7j, acquisition, score v3 ≥ 40)
  *   - +16.3% avg annual, Sharpe 1.00, alpha +10.4 pts/year
  *
  * Also returns the static historical proof in the response.
+ *
+ * Note: minScore raised 30 → 40 with signal score v3 (2026-04) to preserve the
+ * v2-equivalent conviction level after weight redistribution.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -35,7 +38,8 @@ export async function GET(req: NextRequest) {
       {
         strategy: {
           name: "Sigma Winning Strategy v1",
-          description: "Bat le CAC 40 chaque année depuis 2022. Filtres multiples (cluster + mid-cap + not-board + fresh ≤ 7j + acquisition pure + score ≥ 30). Horizon T+90.",
+          scoringVersion: "v3 (2026-04)",
+          description: "Bat le CAC 40 chaque année depuis 2022. Filtres multiples (cluster directionnel + mid-cap 200M-1B€ + not-board + fresh ≤ 7j + acquisition pure + score v3 ≥ 40). Horizon T+90.",
           criteria: WINNING_STRATEGY,
           proof: STRATEGY_PROOF,
         },

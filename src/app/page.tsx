@@ -76,7 +76,7 @@ const getHighScoreSignals = unstable_cache(
       }));
     } catch { return []; }
   },
-  ["home-high-score-signals-v1"],
+  ["home-high-score-signals-v3"],
   { revalidate: 300 }
 );
 

@@ -80,8 +80,8 @@ function AnimScoring({ isFr }: { isFr: boolean }) {
   const target = 87;
   const barTargets = [92, 85, 78, 65, 72];
   const barLabels = isFr
-    ? ["Montant/Mcap", "Rôle dirigeant", "Backtest", "Cluster", "Historique"]
-    : ["Amount/Mcap", "Insider role", "Backtest", "Cluster", "Historical"];
+    ? ["Cluster dir. ±30j", "Track record ★", "Montant/Mcap", "Rôle PDG/CFO", "DCA + contrarian"]
+    : ["Directional cluster", "Track record ★", "Amount/Mcap", "Role CEO/CFO", "DCA + contrarian"];
   // DA v3: monochrome gold scale · no rainbow
   const barColors = ["var(--gold)", "var(--gold-2)", "var(--corporate)", "var(--corporate-2)", "var(--gold)"];
 
@@ -468,8 +468,8 @@ export function HowItWorksAnimations() {
         pill="02 · Scoring"
         title={isFr ? "Score de conviction algorithmique" : "Algorithmic conviction score"}
         body={isFr
-          ? "100 points composites : taille vs capitalisation, rôle du dirigeant, performances historiques de la catégorie, signaux cluster."
-          : "100 composite points: size vs market cap, insider role, historical category performance, cluster signals."}
+          ? "100 points composites v3 · 10 composantes : cluster directionnel, taille, track record dirigeant, rôle, composite gated, DCA, analyst-contrarian, conviction cumulée, fondamentaux."
+          : "100 composite v3 points · 10 components: directional cluster, size, insider track record, role, gated composite, DCA, analyst-contrarian, cumulative conviction, fundamentals."}
       >
         <AnimScoring isFr={isFr} />
       </AnimPanel>

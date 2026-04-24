@@ -1,12 +1,21 @@
 /**
- * Recommendation Engine · InsiderTrades Sigma
+ * Recommendation Engine · InsiderTrades Sigma (v3 · 2026-04)
  *
  * Composite reco score (0–100 pts):
- *   [30pts] Signal score          – from the scored declaration
- *   [25pts] Historical win rate   – per role×size bucket from BacktestResult
- *   [20pts] Expected return T+90  – per bucket
- *   [15pts] Recency               – exponential decay, 21-day half-life
+ *   [30pts] Signal score          – from the scored declaration (v3, 10 components)
+ *   [25pts] Historical win rate   – per role×size bucket from BacktestResult,
+ *                                    Bayesian shrinkage (k=20) toward the global BUY/SELL mean
+ *   [20pts] Expected return T+90  – per bucket, same shrinkage prior
+ *   [15pts] Recency               – exponential decay, 45-day half-life (v3) + display-time
+ *                                    staleness penalty applied here (removed from signalScore)
  *   [10pts] Conviction bonus      – cluster / %mcap / ticket size
+ *
+ * Cold-start priors (new in v3, replacing the hard-coded ~40% from v2):
+ *   - winRate prior = measured overall BUY / SELL win rate
+ *   - return90d prior = measured overall BUY / SELL mean return
+ *
+ * Size buckets (v3): Micro <50M · Small 50-300M · Sweet 300M-1B (★) · Mid 1-3B ·
+ *                    Large 3-15B · Mega 15B+
  *
  * Public API:
  *   getRecommendations(opts: RecoOptions): Promise<RecoItem[]>

@@ -670,8 +670,22 @@ export default async function PerformancePage() {
           {isFr ? (
             <>
               <li>
-                <strong>Scoring v2 déployé (avril 2026).</strong> Recalibré après analyse rétrospective :
-                poids du cluster multiplié par 2, pénalité de staleness, fondamentaux downweighted.
+                <strong>Scoring v3 déployé (avril 2026).</strong> Refonte après audit méthodologique :
+                cluster désormais strictement directionnel, ajout du <em>track record dirigeant</em> (shrinkage
+                bayésien), du bonus <em>DCA</em> et du signal <em>analyst-contrarian</em>. Pénalité de staleness
+                sortie du score stocké (appliquée à l&apos;affichage seulement). Poids redistribué de l&apos;information
+                publique (fondamentaux, composite) vers les signaux propres à l&apos;insider.
+              </li>
+              <li>
+                <strong>Shrinkage bayésien sur les recos.</strong> Les buckets sous-échantillonnés (role × taille)
+                sont désormais tirés vers la moyenne globale avec un prior k=20. Plus aucune promotion structurelle
+                des buckets à faible n sur du bruit. La demi-vie de récence passe de 21 à 45 jours (alignée sur le
+                hold T+90).
+              </li>
+              <li>
+                <strong>Bucket &quot;Sweet spot&quot; (300M-1B€).</strong> Split du bucket Mid pour isoler la zone
+                où le grid-search a trouvé la concentration d&apos;alpha (liquide, sous-couvert). Taxonomie en
+                6 tailles désormais : Micro / Small / Sweet / Mid / Large / Mega.
               </li>
               <li>
                 <strong>Retours retail-réels stockés.</strong> Chaque backtest contient désormais
@@ -687,15 +701,28 @@ export default async function PerformancePage() {
                 (disponible aujourd&apos;hui : {startYear} → {endYear}).
               </li>
               <li>
-                <strong>Signaux de vente.</strong> La v2 de notre engine supporte BUY et SELL, utile
+                <strong>Signaux de vente.</strong> Notre engine supporte BUY et SELL, utile
                 pour la gestion de position sur un titre détenu.
               </li>
             </>
           ) : (
             <>
               <li>
-                <strong>Scoring v2 deployed (April 2026).</strong> Recalibrated after retrospective analysis:
-                cluster weight doubled, staleness penalty added, fundamentals downweighted.
+                <strong>Scoring v3 deployed (April 2026).</strong> Methodology overhaul after audit:
+                cluster detection is now strictly directional, added <em>insider track record</em> (Bayesian
+                shrinkage), <em>DCA</em> bonus and <em>analyst-contrarian</em> signal. Staleness penalty
+                removed from the stored score (applied at display time only). Weight redistributed from public
+                information (fundamentals, composite) toward insider-specific signals.
+              </li>
+              <li>
+                <strong>Bayesian shrinkage on recommendations.</strong> Under-sampled buckets (role × size) are
+                now pulled toward the global mean with a k=20 prior. No more structural over-ranking of low-n
+                buckets on noise. The recency half-life was raised from 21 to 45 days (aligned with the 90-day hold).
+              </li>
+              <li>
+                <strong>New &quot;Sweet spot&quot; bucket (€300M-€1B).</strong> Split from Mid to isolate the
+                zone where the grid search found alpha concentrates (liquid, under-covered). Taxonomy now in
+                6 sizes: Micro / Small / Sweet / Mid / Large / Mega.
               </li>
               <li>
                 <strong>Real retail returns stored.</strong> Each backtest now contains
@@ -711,7 +738,7 @@ export default async function PerformancePage() {
                 (currently available: {startYear} → {endYear}).
               </li>
               <li>
-                <strong>Sell signals.</strong> Our v2 engine supports BUY and SELL, useful
+                <strong>Sell signals.</strong> Our engine supports BUY and SELL, useful
                 for position management on a held stock.
               </li>
             </>

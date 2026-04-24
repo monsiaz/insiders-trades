@@ -1121,14 +1121,14 @@ export default function BacktestDashboard({ initialData, locale }: { initialData
             <div className="card p-4">
               <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
                 {isFr ? "Par taille de société" : "By company size"} · {HORIZON_LABEL}
-                <InfoTip text={isFr ? "Micro <50M€ · Small <300M€ · Mid <2Md€ · Large <10Md€ · Mega >10Md€." : "Micro <€50M · Small <€300M · Mid <€2Bn · Large <€10Bn · Mega >€10Bn."} wide />
+                <InfoTip text={isFr ? "Micro <50M€ · Small 50-300M€ · Sweet 300M-1Md€ · Mid 1-3Md€ · Large 3-15Md€ · Mega >15Md€ (taxonomie v3, 6 buckets)." : "Micro <€50M · Small €50-300M · Sweet €300M-1Bn · Mid €1-3Bn · Large €3-15Bn · Mega >€15Bn (v3 taxonomy, 6 buckets)."} wide />
               </h3>
               <GroupChart data={data.bySize} horizon={groupHorizon} height={200} />
             </div>
             <div className="card p-4">
               <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
                 {isFr ? "Par score de signal" : "By signal score"} · {HORIZON_LABEL}
-                <InfoTip text={isFr ? "Score composite 0-100 intégrant : rôle insider, montant, % market cap, cluster, DCA, fonction. Un score ≥65 est considéré comme un signal fort." : "Composite score 0-100 incorporating: insider role, amount, % market cap, cluster, DCA, function. A score ≥65 is considered a strong signal."} wide />
+                <InfoTip text={isFr ? "Score composite v3 · 0-100, 10 composantes : cluster directionnel ±30j, % market cap, track record dirigeant (shrinkage), rôle, composite Yahoo gated, % flux, DCA, analyst-contrarian, conviction cumulée, fondamentaux. Un score ≥65 reste considéré comme un signal fort en v3." : "v3 composite score · 0-100, 10 components: directional cluster ±30d, % market cap, insider track record (shrinkage), role, gated Yahoo composite, % flow, DCA, analyst-contrarian, cumulative conviction, fundamentals. A score ≥65 is still considered a strong signal in v3."} wide />
               </h3>
               <GroupChart data={data.byScore} horizon={groupHorizon} height={200} />
             </div>

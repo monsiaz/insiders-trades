@@ -25,20 +25,24 @@ export interface CompanyRow {
   } | null;
 }
 
-type CapFilter   = "all" | "micro" | "small" | "mid" | "large" | "mega";
+type CapFilter   = "all" | "micro" | "small" | "sweet" | "mid" | "large" | "mega";
 type ActivityFilter = "all" | "7d" | "30d" | "90d";
 type ActionFilter = "all" | "buy" | "sell";
 type SortKey = "name" | "activity" | "count" | "cap";
 
 // ── Filter config — FR / EN ─────────────────────────────────────────────────
 
+// v3: 6-bucket taxonomy — aligned with recommendation-engine.ts and backtest-compute.ts.
+// "Sweet" 300M-1B€ is the alpha concentration zone identified by the grid search.
 const CAP_LABELS_FR: Record<CapFilter, string> = {
   all: "Toutes", micro: "Micro (<50M€)", small: "Small (50-300M€)",
-  mid: "Mid (0.3-2Md€)", large: "Large (2-10Md€)", mega: "Mega (>10Md€)",
+  sweet: "Sweet (300M-1Md€)", mid: "Mid (1-3Md€)",
+  large: "Large (3-15Md€)", mega: "Mega (>15Md€)",
 };
 const CAP_LABELS_EN: Record<CapFilter, string> = {
   all: "All", micro: "Micro (<€50M)", small: "Small (€50-300M)",
-  mid: "Mid (€0.3-2Bn)", large: "Large (€2-10Bn)", mega: "Mega (>€10Bn)",
+  sweet: "Sweet (€300M-1Bn)", mid: "Mid (€1-3Bn)",
+  large: "Large (€3-15Bn)", mega: "Mega (>€15Bn)",
 };
 
 const ACTIVITY_LABELS_FR: Record<ActivityFilter, string> = {
@@ -85,9 +89,10 @@ function capOf(row: CompanyRow): CapFilter {
   if (!mc) return "all"; // unknown
   if (mc < 50e6)    return "micro";
   if (mc < 300e6)   return "small";
-  if (mc < 2e9)     return "mid";
-  if (mc < 10e9)    return "large";
-  return "mega";
+  if (mc < 1e9)     return "sweet";   // v3: 300M-1B sweet spot
+  if (mc < 3e9)     return "mid";     // v3: 1-3B
+  if (mc < 15e9)    return "large";   // v3: 3-15B
+  return "mega";                       // v3: 15B+
 }
 
 function daysAgo(days: number): Date {
@@ -480,9 +485,10 @@ export function CompaniesClient({ companies, initialQ }: {
       rows = rows.filter((c) => {
         if (cap === "micro") return c.marketCap != null && c.marketCap < 50e6;
         if (cap === "small") return c.marketCap != null && c.marketCap >= 50e6 && c.marketCap < 300e6;
-        if (cap === "mid")   return c.marketCap != null && c.marketCap >= 300e6 && c.marketCap < 2e9;
-        if (cap === "large") return c.marketCap != null && c.marketCap >= 2e9 && c.marketCap < 10e9;
-        if (cap === "mega")  return c.marketCap != null && c.marketCap >= 10e9;
+        if (cap === "sweet") return c.marketCap != null && c.marketCap >= 300e6 && c.marketCap < 1e9;
+        if (cap === "mid")   return c.marketCap != null && c.marketCap >= 1e9   && c.marketCap < 3e9;
+        if (cap === "large") return c.marketCap != null && c.marketCap >= 3e9   && c.marketCap < 15e9;
+        if (cap === "mega")  return c.marketCap != null && c.marketCap >= 15e9;
         return true;
       });
     }
@@ -612,7 +618,7 @@ export function CompaniesClient({ companies, initialQ }: {
               </span>
               <div style={{ flex: "1 1 0", minWidth: 0, overflowX: "auto" }}>
                 <Pill
-                  options={["all", "micro", "small", "mid", "large", "mega"] as CapFilter[]}
+                  options={["all", "micro", "small", "sweet", "mid", "large", "mega"] as CapFilter[]}
                   value={cap}
                   onChange={setCap}
                   labels={CAP_LABELS}

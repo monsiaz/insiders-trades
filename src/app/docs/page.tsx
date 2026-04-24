@@ -799,8 +799,8 @@ print(r.json())`,
             >
               <CodeBlock
                 language="bash"
-                code={`# ${isFr ? "Top 20 signaux d'achat scorés >= 60 sur les 30 derniers jours" : "Top 20 buy signals scored >= 60 over the last 30 days"}
-curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&sort=signalScore&order=desc&limit=20" \\
+                code={`# ${isFr ? "Top 20 signaux d'achat avec score v3 ≥ 50 (conviction élevée) sur 30 derniers jours" : "Top 20 buy signals with v3 score ≥ 50 (high conviction) over the last 30 days"}
+curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=50&from=2026-03-20&sort=signalScore&order=desc&limit=20" \\
   -H "Authorization: Bearer ${EX_KEY}"`}
               />
             </Endpoint>
@@ -852,7 +852,7 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
             >
               <CodeBlock
                 language="bash"
-                code={`curl "${BASE_URL}/api/v1/signals?direction=BUY&minScore=60&lookbackDays=7&limit=5" \\
+                code={`curl "${BASE_URL}/api/v1/signals?direction=BUY&minScore=50&lookbackDays=7&limit=5" \\
   -H "Authorization: Bearer ${EX_KEY}"`}
               />
             </Endpoint>
@@ -874,14 +874,14 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
             >
               <CodeBlock
                 language="bash"
-                code={`curl "${BASE_URL}/api/v1/backtest?direction=BUY&minScore=60" \\
+                code={`curl "${BASE_URL}/api/v1/backtest?direction=BUY&minScore=50" \\
   -H "Authorization: Bearer ${EX_KEY}"`}
               />
               <h5 style={h5}>{T.backtestH5}</h5>
               <CodeBlock
                 language="json"
                 code={`{
-  "filters": { "direction": "BUY", "minScore": "60", "from": null, "to": null },
+  "filters": { "direction": "BUY", "minScore": "50", "from": null, "to": null },
   "total":   2 340,
   "byDirection": { "BUY": 2340 },
   "averageReturnsPct": {
@@ -980,15 +980,15 @@ curl "${BASE_URL}/api/v1/declarations?direction=BUY&minScore=60&from=2026-03-20&
               ]}
             />
 
-            <h4 style={h4}>{isFr ? "Signal (composant de scoring, calculé à la volée)" : "Signal (scoring component, computed on the fly)"}</h4>
+            <h4 style={h4}>{isFr ? "Signal (composant de scoring v3, calculé à la volée)" : "Signal (v3 scoring component, computed on the fly)"}</h4>
             <EntityCard
               color="var(--gold)"
               rows={[
-                ["score", "number (0-100)", isFr ? "Score composite" : "Composite score"],
+                ["score", "number (0-100)", isFr ? "Score composite v3 (10 composantes · voir /methodologie)" : "v3 composite score (10 components · see /methodologie)"],
                 ["pctOfMarketCap", "number | null", isFr ? "Ratio montant / capitalisation (%)" : "Amount / market cap ratio (%)"],
                 ["pctOfInsiderFlow", "number | null", isFr ? "Part dans le flux total du dirigeant" : "Share of the executive's total flow"],
                 ["insiderCumNet", "number | null", isFr ? "Net cumulé (buy - sell) jusqu'au trade" : "Cumulative net (buy - sell) up to this trade"],
-                ["isCluster", "boolean", isFr ? "≥ 2 dirigeants ±30j" : "≥ 2 executives ±30d"],
+                ["isCluster", "boolean", isFr ? "≥ 2 dirigeants dans le MÊME sens ±30j (directionnel v3)" : "≥ 2 executives in the SAME direction ±30d (v3 directional)"],
               ]}
             />
           </Section>

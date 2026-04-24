@@ -79,7 +79,7 @@ function getPersonalRecosCached(userId: string) {
         return { recos, portfolioSize: positions.length, alertEnabled: user?.alertEnabled ?? true };
       } catch { return { recos: [] as RecoItem[], portfolioSize: 0, alertEnabled: true }; }
     },
-    ["reco-personal-v2", userId],
+    ["reco-personal-v3", userId],
     { revalidate: 300, tags: [`reco-personal-${userId}`] }
   )();
 }

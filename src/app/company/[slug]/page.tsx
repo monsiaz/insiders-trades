@@ -137,7 +137,7 @@ const getCompanyFullCached = (slug: string) =>
         relatedCompanies, relatedInsiders,
       };
     },
-    [`company-full-v2-${slug}`],
+    [`company-full-v3-${slug}`],
     { revalidate: 3600, tags: [`company-${slug}`] }
   )();
 

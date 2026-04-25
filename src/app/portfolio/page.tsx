@@ -3,8 +3,16 @@ import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/auth";
 import dynamicImport from "next/dynamic";
 
+function DynLoader() {
+  return (
+    <div className="card" style={{ minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="brand-loader-dots" aria-hidden="true"><span /><span /><span /></div>
+    </div>
+  );
+}
+
 const PortfolioDashboard = dynamicImport(() => import("@/components/PortfolioDashboard").then(m => ({ default: m.PortfolioDashboard })), {
-  loading: () => <div style={{ minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.85rem" }}>Loading portfolio…</div>,
+  loading: () => <DynLoader />,
 });
 
 export const dynamic = "force-dynamic";

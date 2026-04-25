@@ -1,6 +1,20 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 
+/** Minimal branded loading placeholder for nextDynamic components. */
+function DynLoader({ height = 200 }: { height?: number }) {
+  return (
+    <div className="card" style={{
+      height, display: "flex", alignItems: "center", justifyContent: "center",
+      gap: 10, flexDirection: "column",
+    }}>
+      <div className="brand-loader-dots" aria-hidden="true">
+        <span /><span /><span />
+      </div>
+    </div>
+  );
+}
+
 /** Format a monetary amount as a compact string for meta descriptions. */
 function fmtAmtMeta(v: number | bigint | null | undefined): string | null {
   if (v == null) return null;
@@ -22,25 +36,11 @@ import { AnimateIn } from "@/components/AnimateIn";
 import { headers } from "next/headers";
 
 const StockChart = nextDynamic(() => import("@/components/StockChart").then(m => ({ default: m.StockChart })), {
-  loading: () => (
-    <div className="card p-5" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      <div className="skeleton" style={{ height: 14, width: 120 }} />
-      <div className="skeleton" style={{ height: 220, borderRadius: 12 }} />
-    </div>
-  ),
+  loading: () => <DynLoader height={260} />,
 });
 
 const CompanyBacktestWidget = nextDynamic(() => import("@/components/CompanyBacktestWidget").then(m => ({ default: m.CompanyBacktestWidget })), {
-  loading: () => (
-    <div className="card p-5" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      <div className="skeleton" style={{ height: 16, width: 180 }} />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-        <div className="skeleton" style={{ height: 52 }} />
-        <div className="skeleton" style={{ height: 52 }} />
-      </div>
-      <div className="skeleton" style={{ height: 120 }} />
-    </div>
-  ),
+  loading: () => <DynLoader height={180} />,
 });
 import { CompanyNews } from "@/components/CompanyNews";
 import { DeclarationType } from "@prisma/client";

@@ -8,8 +8,16 @@ import { unstable_cache } from "next/cache";
 
 export const dynamic = "force-dynamic"; // locale-aware: prevents FR/EN cache conflict on shared internal route
 
+function DynLoader({ height = 400 }: { height?: number }) {
+  return (
+    <div className="card" style={{ height, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="brand-loader-dots" aria-hidden="true"><span /><span /><span /></div>
+    </div>
+  );
+}
+
 const BacktestDashboard = nextDynamic(() => import("@/components/BacktestDashboard"), {
-  loading: () => <div style={{ minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--tx-3)", fontSize: "0.85rem" }}>Loading dashboard…</div>,
+  loading: () => <DynLoader height={400} />,
 });
 
 const getBacktestMeta = unstable_cache(

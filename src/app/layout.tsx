@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppNav } from "@/components/AppNav";
 import { AppFooter } from "@/components/AppFooter";
 import { DataTicker } from "@/components/DataTicker";
-import { PageTransition } from "@/components/PageTransition";
 import { headers } from "next/headers";
 import type { Locale } from "@/lib/i18n";
 
@@ -159,9 +158,6 @@ export default async function RootLayout({
 
           {/* Top navigation */}
           <AppNav />
-
-          {/* Page transition overlay — shows on every internal navigation */}
-          <PageTransition />
 
           {/* Page content */}
           <main className="page-main">

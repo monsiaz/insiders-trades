@@ -16,6 +16,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { CompanyAvatar } from "@/components/CompanyBadge";
 import { LogoMark } from "@/components/Logo";
+import { HoldingPeriodGuide } from "@/components/HoldingPeriodGuide";
 import {
   getWinningStrategySignals,
   STRATEGY_PROOF,
@@ -507,6 +508,9 @@ export default async function StrategiePage() {
           )}
         </Callout>
       </Section>
+
+      {/* ── HOLDING PERIOD GUIDE ──────────────────────────────────────────── */}
+      <HoldingPeriodGuide locale={locale} />
 
       {/* ── DISCLAIMER ────────────────────────────────────────────────────── */}
       <Section

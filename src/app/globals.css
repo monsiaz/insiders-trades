@@ -2199,3 +2199,192 @@ input[type="search"], textarea, select {
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-bottom: 1px solid var(--border-med);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   HOLDING PERIOD GUIDE · hpg-* utility classes
+   Used by: HoldingPeriodGuide component
+   ═══════════════════════════════════════════════════════════ */
+
+.hpg-section {
+  padding-top: 52px;
+  padding-bottom: 20px;
+  scroll-margin-top: 80px;
+}
+
+.hpg-eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.hpg-title {
+  font-family: "Banana Grotesk", var(--font-inter), system-ui, sans-serif;
+  font-size: clamp(1.3rem, 3vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--tx-1);
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+.hpg-intro {
+  font-size: 0.97rem;
+  color: var(--tx-2);
+  line-height: 1.65;
+  max-width: 660px;
+  margin-bottom: 28px;
+}
+
+/* ── Timeline table ─────────────────────────────────────── */
+.hpg-table-wrap {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  background: var(--bg-surface);
+}
+.hpg-thead {
+  display: grid;
+  grid-template-columns: 112px 1fr 2fr;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+}
+.hpg-th {
+  padding: 9px 16px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.59rem;
+  font-weight: 700;
+  color: var(--tx-4);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-right: 1px solid var(--border);
+}
+.hpg-th:last-child { border-right: none; }
+
+.hpg-row {
+  display: grid;
+  grid-template-columns: 112px 1fr 2fr;
+  align-items: stretch;
+}
+.hpg-cell {
+  padding: 14px 16px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+}
+.hpg-cell:last-child { border-right: none; }
+
+.hpg-cell-horizon { gap: 9px; color: var(--tx-2); }
+.hpg-cell-action  { font-weight: 700; }
+.hpg-cell-why     { color: var(--tx-2); }
+
+.hpg-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.hpg-mono {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ── Gold alert ─────────────────────────────────────────── */
+.hpg-alert {
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-bd);
+  border-left: 3px solid var(--gold);
+  border-radius: 4px;
+  padding: 16px 20px;
+  margin-bottom: 36px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.hpg-alert-star {
+  font-size: 1.05rem;
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.hpg-alert-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--gold);
+  margin-bottom: 4px;
+  font-family: "Banana Grotesk", var(--font-inter), system-ui, sans-serif;
+}
+.hpg-alert-body {
+  font-size: 0.9rem;
+  color: var(--tx-2);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── 4-reason grid ──────────────────────────────────────── */
+.hpg-why-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--tx-4);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.hpg-reasons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.hpg-reason-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hpg-reason-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hpg-reason-icon {
+  font-size: 1.15rem;
+  width: 36px; height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-raised);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.hpg-reason-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--tx-1);
+  line-height: 1.3;
+}
+.hpg-reason-body {
+  font-size: 0.85rem;
+  color: var(--tx-3);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Responsive overrides ───────────────────────────────── */
+@media (max-width: 640px) {
+  .hpg-thead          { grid-template-columns: 1fr; display: none; }
+  .hpg-row            { grid-template-columns: 1fr; }
+  .hpg-cell           { border-right: none; border-bottom: 1px solid var(--border); }
+  .hpg-cell:last-child{ border-bottom: none; }
+  .hpg-cell-action    { background: var(--bg-raised); font-size: 0.85rem; }
+  .hpg-cell-horizon   { padding-bottom: 6px; border-bottom: none; }
+  .hpg-reasons        { grid-template-columns: 1fr; }
+}

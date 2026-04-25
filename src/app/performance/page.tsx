@@ -14,6 +14,7 @@ import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { LogoMark } from "@/components/Logo";
 import { computePerformanceData, type StrategyResult } from "@/lib/performance-data";
+import { HoldingPeriodGuide } from "@/components/HoldingPeriodGuide";
 
 export const dynamic = "force-dynamic";
 
@@ -778,6 +779,9 @@ export default async function PerformancePage() {
           )}
         </ul>
       </Section>
+
+      {/* ── HOLDING PERIOD GUIDE ──────────────────────────────────────────── */}
+      <HoldingPeriodGuide locale={locale} />
 
       {/* ── IMPROVEMENTS ─────────────────────────────────────────────── */}
       <Section

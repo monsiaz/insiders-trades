@@ -7,6 +7,7 @@
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { HoldingPeriodGuide } from "@/components/HoldingPeriodGuide";
 
 export const dynamic = "force-dynamic";
 
@@ -1548,6 +1549,9 @@ export default async function MethodologiePage() {
           )}
         </Paragraph>
       </section>
+
+      {/* ── Holding Period Guide ──────────────── */}
+      <HoldingPeriodGuide locale={locale} />
 
       {/* ── Section 8 · Limits ────────────────── */}
       <section className="mb-16">
